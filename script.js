@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newEventSubCount = document.getElementById('newEventSubCount');
     const subEventsContainer = document.getElementById('subEventsContainer');
     const eventListBody = document.getElementById('eventListBody');
+    const newEventFormula = document.getElementById('newEventFormula');
     const eventSubmitBtn = eventForm.querySelector('button[type="submit"]');
 
     // Athlete Manager
@@ -2081,38 +2082,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const numA = parseFloat(a.mark) || 0;
                 const numB = parseFloat(b.mark) || 0;
                 valA = numA; valB = numB;
-            } else if (wmaSortField === 'rateConv' || wmaSortField === 'ageMark' || wmaSortField === 'pts') {
-                // Since these are calculated during render, sorting by them is tricky without pre-calculating.
-                // For now, let's do a simple comparison or skip if too complex.
-                // Actually, let's try to calculate them here for sorting.
-                const athA = athletes.find(at => at.id == a.athleteId) || athletes.find(at => `${at.lastName}, ${at.firstName}` === a.athlete);
-                const athB = athletes.find(at => at.id == b.athleteId) || athletes.find(at => `${at.lastName}, ${at.firstName}` === b.athlete);
-
-                const eventDefA = events.find(e => e.name === a.event);
-                const eventDefB = events.find(e => e.name === b.event);
-
-                if (wmaSortField === 'rateConv') {
-                    const ruleA = getEventRule(a.event);
-                    const ruleB = getEventRule(b.event);
-                    valA = calculateRateConv(a.mark, a.event);
-                    valB = calculateRateConv(b.mark, b.event);
-                } else if (wmaSortField === 'ageMark') {
-                    const ageA = athA && athA.dob && a.date ? Math.floor((new Date(a.date) - new Date(athA.dob)) / (31557600000)) : 0;
-                    const ageB = athB && athB.dob && b.date ? Math.floor((new Date(b.date) - new Date(athB.dob)) / (31557600000)) : 0;
-                    const factorA = eventDefA && eventDefA.wmaEvent ? (getWMAFactorVal(a.gender, ageA, eventDefA.wmaEvent) || 1) : 1;
-                    const factorB = eventDefB && eventDefB.wmaEvent ? (getWMAFactorVal(b.gender, ageB, eventDefB.wmaEvent) || 1) : 1;
-                    valA = calculateRateConv(a.mark, a.event) * factorA;
-                    valB = calculateRateConv(b.mark, b.event) * factorB;
-                } else if (wmaSortField === 'pts') {
-                    const ageA = athA && athA.dob && a.date ? Math.floor((new Date(a.date) - new Date(athA.dob)) / (31557600000)) : 0;
-                    const ageB = athB && athB.dob && b.date ? Math.floor((new Date(b.date) - new Date(athB.dob)) / (31557600000)) : 0;
-                    const factorA = eventDefA && eventDefA.wmaEvent ? (getWMAFactorVal(a.gender, ageA, eventDefA.wmaEvent) || 1) : 1;
-                    const factorB = eventDefB && eventDefB.wmaEvent ? (getWMAFactorVal(b.gender, ageB, eventDefB.wmaEvent) || 1) : 1;
-                    const ageRecordMarkA = calculateRateConv(a.mark, a.event) * factorA;
-                    const ageRecordMarkB = calculateRateConv(b.mark, b.event) * factorB;
-                    valA = eventDefA && eventDefA.iaafEvent ? (getIAAFPointsVal(a.gender, eventDefA.iaafEvent, ageRecordMarkA) || 0) : 0;
-                    valB = eventDefB && eventDefB.iaafEvent ? (getIAAFPointsVal(b.gender, eventDefB.iaafEvent, ageRecordMarkB) || 0) : 0;
-                }
+            } else if (wmaSortField === 'rateConv') {
+                valA = parseFloat(a.wmaRate) || 0;
+                valB = parseFloat(b.wmaRate) || 0;
+            } else if (wmaSortField === 'ageMark') {
+                valA = parseFloat(a.wmaAgeMark) || 0;
+                valB = parseFloat(b.wmaAgeMark) || 0;
+            } else if (wmaSortField === 'pts') {
+                valA = parseInt(a.wmaPoints) || 0;
+                valB = parseInt(b.wmaPoints) || 0;
             }
 
             if (valA < valB) return wmaSortOrder === 'asc' ? -1 : 1;
@@ -2196,46 +2174,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!confirm('This will recalculate WMA Statistics for all records and save them to the database. This may take a few moments. Continue?')) return;
 
+        const modal = document.getElementById('recalcModal');
+        const progressBar = document.getElementById('recalcProgressBar');
+        const statusText = document.getElementById('recalcStatus');
+        const progressText = document.getElementById('recalcProgressText');
+
+        if (modal) modal.classList.remove('hidden');
+        if (statusText) statusText.textContent = 'Recalculating...';
+
         console.log("Starting global WMA recalculation...");
         let count = 0;
+        const total = (records || []).length;
 
-        records.forEach(r => {
-            const rawMark = calculateRateConv(r.mark, r.event);
-            if (!rawMark) return;
-
-            r.wmaRate = rawMark.toFixed(2);
-
-            // Find linked event definition
-            const eventDef = events.find(e => e.name === r.event);
-
-            // Calculate age at event
-            let ageAtEvent = 0;
-            const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
-            if (athlete && athlete.dob && r.date) {
-                const eventDate = new Date(r.date);
-                const dob = new Date(athlete.dob);
-                const diffTime = eventDate - dob;
-                ageAtEvent = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
-            } else if (r.ageGroup) {
-                ageAtEvent = parseInt(r.ageGroup);
-            }
-
-            if (eventDef && eventDef.wmaEvent) {
-                const factor = getWMAFactorVal(r.gender, ageAtEvent, eventDef.wmaEvent);
-                if (factor) {
-                    const calculatedAgeMark = rawMark * factor;
-                    r.wmaAgeMark = calculatedAgeMark.toFixed(2);
-                    if (eventDef.iaafEvent) {
-                        const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, calculatedAgeMark);
-                        r.wmaPoints = points !== null ? points.toString() : 'Not Found';
-                    }
-                }
-            } else if (eventDef && eventDef.iaafEvent) {
-                const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, rawMark);
-                r.wmaPoints = points !== null ? points.toString() : 'Not Found';
-            }
+        // Process in batches to keep UI responsive
+        const batchSize = 25;
+        for (let i = 0; i < total; i++) {
+            calculateRecordWMAStats(records[i]);
             count++;
-        });
+
+            if (count % batchSize === 0 || count === total) {
+                const percent = Math.round((count / total) * 100);
+                if (progressBar) progressBar.style.width = percent + '%';
+                if (progressText) progressText.textContent = `${count} / ${total} records`;
+                // Allow UI to update
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
 
         // Save updated records
         localStorage.setItem('tf_records', JSON.stringify(records));
@@ -2243,15 +2207,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (db) {
             try {
                 await db.ref('records').set(records);
-                alert(`Successfully recalculated and saved WMA stats for ${count} records.`);
-                renderWMAReport();
+                if (statusText) statusText.textContent = 'Completed!';
+                setTimeout(() => {
+                    if (modal) modal.classList.add('hidden');
+                    alert(`Successfully recalculated and saved WMA stats for ${count} records.`);
+                    renderWMAReport();
+                }, 500);
             } catch (err) {
                 console.error("Firebase save failed:", err);
+                if (modal) modal.classList.add('hidden');
                 alert('Recalculation complete locally, but failed to sync with cloud. Check console for details.');
             }
         } else {
-            alert(`Recalculated stats for ${count} records locally.`);
-            renderWMAReport();
+            if (statusText) statusText.textContent = 'Completed locally!';
+            setTimeout(() => {
+                if (modal) modal.classList.add('hidden');
+                alert(`Recalculated stats for ${count} records locally.`);
+                renderWMAReport();
+            }, 500);
         }
     }
 
@@ -2599,20 +2572,31 @@ document.addEventListener('DOMContentLoaded', () => {
         populateEventDropdowns();
         renderEventList();
         renderReports();
-
-        // Reset Form
-        newEventName.value = '';
-        if (document.getElementById('newEventFormula')) document.getElementById('newEventFormula').value = '';
-        if (newEventIAAF) newEventIAAF.value = '';
-        newEventSpecs.value = '';
-        newEventNotes.value = '';
-        eventTypeTrack.checked = true;  // Reset to Track default
-        newEventSubCount.value = '';
-        newEventSubCount.disabled = true;
-        subEventsContainer.innerHTML = '';
-        subEventsContainer.style.display = 'none';
-
+        resetEventForm();
         newEventName.focus();
+    }
+
+    function resetEventForm() {
+        if (newEventName) newEventName.value = '';
+        if (newEventFormula) newEventFormula.value = '';
+        if (newEventIAAF) newEventIAAF.value = '';
+        if (newEventWMA) newEventWMA.value = '';
+        if (newEventSpecs) newEventSpecs.value = '';
+        if (newEventNotes) newEventNotes.value = '';
+        if (eventTypeTrack) eventTypeTrack.checked = true;
+        if (newEventSubCount) {
+            newEventSubCount.value = '';
+            newEventSubCount.disabled = true;
+        }
+        if (subEventsContainer) {
+            subEventsContainer.innerHTML = '';
+            subEventsContainer.style.display = 'none';
+        }
+        if (eventSubmitBtn) {
+            eventSubmitBtn.innerHTML = '<span>+ Add Event</span>';
+            eventSubmitBtn.style.background = '';
+        }
+        editingEventId = null;
     }
 
     function editEvent(id) {
@@ -2623,10 +2607,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newEventIAAF) newEventIAAF.value = ev.iaafEvent || '';
         if (newEventWMA) newEventWMA.value = ev.wmaEvent || '';
         newEventSpecs.value = ev.specs || '';
-        if (document.getElementById('newEventFormula')) {
-            document.getElementById('newEventFormula').value = ev.formula || '';
-        }
-        newEventNotes.value = ev.notes || '';
+        if (newEventFormula) newEventFormula.value = ev.formula || '';
+        if (newEventNotes) newEventNotes.value = ev.notes || '';
 
         // Set the correct event type radio button
         const eventType = ev.type || (ev.isCombined ? 'Combined' : ev.isRelay ? 'Relay' : 'Track');
@@ -2734,15 +2716,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderEventList();
 
         if (editingEventId == id) {
-            editingEventId = null;
-            newEventName.value = '';
-            newEventSecondary.value = '';
-            newEventSpecs.value = '';
-            newEventNotes.value = '';
-            newEventCombined.checked = false;
-            newEventRelay.checked = false;
-            eventSubmitBtn.innerHTML = '<span>+ Add Event</span>';
-            eventSubmitBtn.style.background = '';
+            resetEventForm();
         }
     }
 

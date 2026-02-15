@@ -369,7 +369,7 @@
             <!-- SETTINGS VIEW -->
             <div id="view-settings" class="view-section">
                 <!-- Sub Navigation -->
-                <div class="card" style="margin-bottom: 2rem;">
+                <div class="card" style="margin-bottom: 0.75rem; padding: 0.4rem; flex: none;">
                     <nav class="sub-nav">
                         <button class="sub-tab active" data-subtab="athletes">Athletes</button>
                         <button class="sub-tab" data-subtab="events">Events</button>
@@ -382,7 +382,7 @@
                 </div>
 
                 <!-- ATHLETES SUB-VIEW -->
-                <div id="setting-athletes" class="setting-section">
+                <div id="setting-athletes" class="setting-section setting-fill">
                     <section class="card">
                         <h2>Manage Athletes</h2>
                         <p class="subtitle" style="margin-bottom: 1rem;">Add and manage athlete profiles.</p>
@@ -461,7 +461,7 @@
                 </div>
 
                 <!-- EVENTS SUB-VIEW -->
-                <div id="setting-events" class="setting-section hidden">
+                <div id="setting-events" class="setting-section setting-fill hidden">
                     <section class="card">
                         <h2>Manage Events</h2>
                         <p class="subtitle" style="margin-bottom: 1rem;">Add or remove event types available in the
@@ -525,7 +525,7 @@
                                 </div>
                             </div>
 
-                            <div id="scorePreview" class="row"
+                            <div id="subEventsContainer" class="row"
                                 style="flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; padding: 1rem; background: var(--bg-nav); border-radius: 12px; display: none;">
                                 <!-- Dynamic Inputs -->
                             </div>
@@ -541,8 +541,8 @@
                                     <textarea id="newEventFormula" rows="2"></textarea>
                                 </div>
                                 <div class="form-group" style="flex: 1.2;">
-                                    <label for="recordNotes">Notes</label>
-                                    <textarea id="recordNotes" rows="2" placeholder="Notes (optional)..."
+                                    <label for="newEventNotes">Notes</label>
+                                    <textarea id="newEventNotes" rows="2" placeholder="Notes (optional)..."
                                         style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 8px; font-family: inherit; width: 100%; height: 62px; outline: none;"></textarea>
                                 </div>
                                 <div class="form-group"
@@ -581,7 +581,7 @@
                 </div>
 
                 <!-- COUNTRIES SUB-VIEW -->
-                <div id="setting-countries" class="setting-section hidden">
+                <div id="setting-countries" class="setting-section setting-fill hidden">
                     <section class="card">
                         <h2>Manage Countries</h2>
                         <p class="subtitle" style="margin-bottom: 1rem;">Add or remove countries available in the
@@ -618,7 +618,7 @@
 
                 <!-- DATA SUB-VIEW -->
                 <!-- IAAF CONVERSION TABLES SUB-VIEW -->
-                <div id="setting-iaaf" class="setting-section hidden">
+                <div id="setting-iaaf" class="setting-section setting-fill hidden">
                     <section class="card">
                         <h2>IAAF Scoring Tables</h2>
                         <p class="subtitle">Manage IAAF scoring coefficients for performance calculations.</p>
@@ -673,7 +673,7 @@
                 </div>
 
                 <!-- WMA CONVERSION TABLES SUB-VIEW -->
-                <div id="setting-wma" class="setting-section hidden">
+                <div id="setting-wma" class="setting-section setting-fill hidden">
                     <section class="card">
                         <h2>WMA Conversion Tables</h2>
                         <p class="subtitle">Manage World Masters Athletics age-grading factors.</p>
@@ -741,7 +741,7 @@
                 </div>
 
                 <!-- GENERAL SETTINGS SUB-VIEW -->
-                <div id="setting-general" class="setting-section hidden">
+                <div id="setting-general" class="setting-section setting-scroll hidden">
                     <section class="card">
                         <h2>General Settings</h2>
                         <p class="subtitle" style="margin-bottom: 2rem;">Configure application-wide preferences and
@@ -791,7 +791,7 @@
                 </div>
 
                 <!-- DATA MANAGEMENT SUB-VIEW -->
-                <div id="setting-data" class="setting-section hidden">
+                <div id="setting-data" class="setting-section setting-scroll hidden">
                     <section class="card" style="margin-bottom: 2rem;">
                         <h2>Backup / Save Data</h2>
                         <p class="subtitle" style="margin-bottom: 1rem;">Save a copy of your database to your program
@@ -1041,6 +1041,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="font_data.js"></script>
+
+    <!-- WMA Recalculation Progress Modal -->
+    <div id="recalcModal" class="modal-overlay hidden">
+        <div class="modal-content card" style="text-align: center;">
+            <h2 id="recalcTitle">Recalculating WMA Statistics</h2>
+            <p id="recalcStatus" class="subtitle" style="margin-bottom: 1rem;">Preparing data...</p>
+
+            <div class="progress-container">
+                <div id="recalcProgressBar" class="progress-bar"></div>
+            </div>
+
+            <div id="recalcProgressText" class="progress-text">0 / 0 records</div>
+        </div>
+    </div>
 
     <!-- Formula Modal -->
     <div id="formulaModal" class="modal-overlay hidden">
