@@ -52,7 +52,7 @@
             </div>
             <p class="subtitle"
                 style="font-size: 1.05rem; font-weight: 500; letter-spacing: 1px; margin-top: 0.25rem; color: var(--accent); transition: color 0.3s ease;">
-                Power by team of GreekAthletics.gr</p>
+                Powered by Team of GreekAthletics.gr</p>
 
             <!-- Navigation Tabs Moved Higher -->
             <nav class="nav-tabs">
@@ -176,20 +176,6 @@
                                 <!-- Rows injected here -->
                             </tbody>
                         </table>
-                        <div id="emptyState" class="empty-state hidden"
-                            style="text-align: center; padding: 4rem 2rem; background: var(--bg-primary-light); border-radius: 20px; border: 2px dashed var(--border); margin: 2rem 0;">
-                            <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.5rem;">📊 No Data Found
-                            </h3>
-                            <p
-                                style="color: var(--text-muted); margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto;">
-                                Your cloud database and local storage appear to be empty. If you have a backup file, you
-                                can restore it now.
-                            </p>
-                            <button onclick="switchTab('settings'); switchSubTab('data')" class="btn-primary"
-                                style="max-width: 250px;">
-                                ⬆️ Restore Data Now
-                            </button>
-                        </div>
                     </div>
                 </section>
             </div>
@@ -366,6 +352,7 @@
                 </section>
             </div>
 
+
             <!-- SETTINGS VIEW -->
             <div id="view-settings" class="view-section">
                 <!-- Sub Navigation -->
@@ -432,9 +419,6 @@
                                     <button id="btnImportAthletes" class="btn-secondary"
                                         style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">
                                         📁 Import Athletes
-                                    </button>
-                                    <button id="btnDeduplicateAthletes" class="btn-small">
-                                        🧹 Deduplicate
                                     </button>
                                     <input type="file" id="athleteImportFile" accept=".xlsx, .xls, .json"
                                         class="hidden">

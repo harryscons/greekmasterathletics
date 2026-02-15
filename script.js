@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reports
     const reportTableBody = document.getElementById('reportTableBody');
-    const emptyState = document.getElementById('emptyState');
     const filterEvent = document.getElementById('filterEvent');
     const filterGender = document.getElementById('filterGender');
     const filterAge = document.getElementById('filterAge');
@@ -89,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const athleteListBody = document.getElementById('athleteListBody');
     const athleteSubmitBtn = athleteForm.querySelector('button[type="submit"]');
     const btnImportAthletes = document.getElementById('btnImportAthletes');
-    const btnDeduplicateAthletes = document.getElementById('btnDeduplicateAthletes');
     const athleteImportFile = document.getElementById('athleteImportFile');
 
     // WMA Manager
@@ -180,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('events').on('value', (snapshot) => {
             events = snapshot.val() || [];
             console.log("Events updated from Firebase:", events.length);
+            if (events.length > 0) repairEventMetadata(); // Auto-repair on load
             populateEventDropdowns();
             renderEventList();
         });
@@ -261,6 +260,42 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
                 console.log("Auto-seed fetch failed or file not found (normal if first run).");
             }
+        }
+    }
+
+    // Logic to repair missing metadata (IAAF, WMA, Formula)
+    async function repairEventMetadata() {
+        try {
+            const response = await fetch('track_data.json');
+            if (!response.ok) return;
+            const data = await response.json();
+            const refEvents = data.events || [];
+
+            let updatedCount = 0;
+
+            events.forEach(ev => {
+                const ref = refEvents.find(e => e.name === ev.name);
+                if (ref) {
+                    let changed = false;
+                    if (!ev.iaafEvent && ref.iaafEvent) { ev.iaafEvent = ref.iaafEvent; changed = true; }
+                    if (!ev.wmaEvent && ref.wmaEvent) { ev.wmaEvent = ref.wmaEvent; changed = true; }
+                    if (!ev.formula && ref.formula) { ev.formula = ref.formula; changed = true; }
+
+                    if (changed) updatedCount++;
+                }
+            });
+
+            if (updatedCount > 0) {
+                console.log(`Repaired metadata for ${updatedCount} events locally. Saving...`);
+                saveEvents(); // Save to local
+                if (db && firebase.auth().currentUser) {
+                    db.ref('events').set(events); // Sync to cloud if possible
+                }
+                populateEventDropdowns();
+                renderEventList();
+            }
+        } catch (e) {
+            console.error("Error repairing event metadata:", e);
         }
     }
 
@@ -752,7 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.toggle('is-admin', isAdmin);
 
         // Toggle Visibility of Admin features
-        const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .edit-btn, .delete-btn, .delete-country-btn, .edit-history-btn, .delete-history-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #btnDeduplicateAthletes, #clearRecords, #clearAthletes, #clearAll');
+        const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .edit-btn, .delete-btn, .delete-country-btn, .edit-history-btn, .delete-history-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
 
         adminElements.forEach(el => {
             if (isAdmin) el.classList.remove('hidden');
@@ -1525,14 +1560,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Import Records Button NOT Found");
         }
         if (btnImportAthletes) btnImportAthletes.addEventListener('click', () => athleteImportFile.click());
-        if (btnDeduplicateAthletes) {
-            btnDeduplicateAthletes.addEventListener('click', () => {
-                if (confirm('Are you sure you want to merge duplicate athletes? This will keep the profiles with birth dates and remove the empty ones.')) {
-                    cleanupDuplicateAthletes();
-                    alert('Cleanup complete!');
-                }
-            });
-        }
         if (athleteImportFile) athleteImportFile.addEventListener('change', handleAthleteImport);
 
         if (recordImportFile) {
@@ -3512,30 +3539,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const filtered = getFilteredRecords();
         const isHideNotesChecked = hideNotesSymbol && hideNotesSymbol.checked;
 
-        if (filtered.length === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-            // Sort applied in getFilteredRecords
+        if (filtered.length === 0) return;
+        // Sort applied in getFilteredRecords
 
-            filtered.forEach(r => {
-                const tr = document.createElement('tr');
-                const hasNotes = r.notes && r.notes.trim().length > 0;
+        filtered.forEach(r => {
+            const tr = document.createElement('tr');
+            const hasNotes = r.notes && r.notes.trim().length > 0;
 
-                // Find athlete for Age Validation using robust helper
-                const athlete = findAthleteByNormalizedName(r.athlete);
-                let ageDisplay = r.ageGroup || '-';
+            // Find athlete for Age Validation using robust helper
+            const athlete = findAthleteByNormalizedName(r.athlete);
+            let ageDisplay = r.ageGroup || '-';
 
-                if (r.ageGroup && athlete && athlete.dob && r.date) {
-                    const calculatedGroup = calculateAgeGroup(athlete.dob, r.date);
-                    if (String(r.ageGroup).trim() !== String(calculatedGroup).trim()) {
-                        const exactAge = getExactAge(athlete.dob, r.date);
-                        ageDisplay = `<span class="age-indicator" title="Click to see exact age" style="cursor:pointer;" onclick="showExactAge(this, '${exactAge}')">${r.ageGroup}</span>`;
-                    }
+            if (r.ageGroup && athlete && athlete.dob && r.date) {
+                const calculatedGroup = calculateAgeGroup(athlete.dob, r.date);
+                if (String(r.ageGroup).trim() !== String(calculatedGroup).trim()) {
+                    const exactAge = getExactAge(athlete.dob, r.date);
+                    ageDisplay = `<span class="age-indicator" title="Click to see exact age" style="cursor:pointer;" onclick="showExactAge(this, '${exactAge}')">${r.ageGroup}</span>`;
                 }
+            }
 
-                // Create main row content
-                tr.innerHTML = `
+            // Create main row content
+            tr.innerHTML = `
                     <td class="expand-col" style="text-align:center;">
                         ${(isHideNotesChecked && hasNotes) ? `<button class="toggle-notes-btn" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1.2rem; font-weight:bold; padding:0; width:24px; height:24px; line-height:24px;">+</button>` : ''}
                     </td>
@@ -3560,27 +3584,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                 `;
 
-                // Add event listener to the toggle button (if present)
-                const btn = tr.querySelector('.toggle-notes-btn');
-                const notesDiv = tr.querySelector('.record-notes');
-                if (btn && notesDiv) {
-                    btn.addEventListener('click', () => {
-                        const isHidden = notesDiv.classList.contains('hidden');
-                        if (isHidden) {
-                            notesDiv.classList.remove('hidden');
-                            btn.textContent = '−';
-                            btn.style.color = 'var(--danger)';
-                        } else {
-                            notesDiv.classList.add('hidden');
-                            btn.textContent = '+';
-                            btn.style.color = 'var(--primary)';
-                        }
-                    });
-                }
+            // Add event listener to the toggle button (if present)
+            const btn = tr.querySelector('.toggle-notes-btn');
+            const notesDiv = tr.querySelector('.record-notes');
+            if (btn && notesDiv) {
+                btn.addEventListener('click', () => {
+                    const isHidden = notesDiv.classList.contains('hidden');
+                    if (isHidden) {
+                        notesDiv.classList.remove('hidden');
+                        btn.textContent = '−';
+                        btn.style.color = 'var(--danger)';
+                    } else {
+                        notesDiv.classList.add('hidden');
+                        btn.textContent = '+';
+                        btn.style.color = 'var(--primary)';
+                    }
+                });
+            }
 
-                reportTableBody.appendChild(tr);
-            });
-        }
+            reportTableBody.appendChild(tr);
+        });
     }
 
     function getExportData() {
