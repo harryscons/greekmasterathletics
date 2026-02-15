@@ -200,7 +200,7 @@ body {
 /* Header */
 header {
     text-align: center;
-    padding: 2rem 1rem;
+    padding: 1rem 1rem 0.5rem;
 }
 
 .status-container {
@@ -209,7 +209,7 @@ header {
     gap: 1rem;
     align-items: center;
     justify-content: center;
-    margin-top: 1.5rem;
+    margin-top: 0.75rem;
 }
 
 #btnSaveCloud:hover {
@@ -229,7 +229,7 @@ header {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .logo-icon {
@@ -264,7 +264,7 @@ h1 {
     padding: 0.5rem;
     background: var(--bg-nav);
     border-radius: 40px;
-    margin-bottom: 2rem;
+    margin-bottom: 0.75rem;
     transition: background 0.3s ease;
 }
 
