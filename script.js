@@ -656,6 +656,13 @@ document.addEventListener('DOMContentLoaded', () => {
         measurementId: "G-K4T2S7X3X4"
     };
 
+    // --- Auth Configuration ---
+    // REPLACE WITH YOUR ALLOWED EMAILS
+    const allowedEmails = [
+        "harryscons@gmail.com",
+        "cha.kons@gmail.com"
+    ];
+
     function initAuth() {
         auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
@@ -678,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnLogout.addEventListener('click', () => {
                 auth.signOut().then(() => {
                     console.log("User signed out");
+                    window.location.reload(); // Reload to clear state
                 }).catch((error) => {
                     console.error("Logout Failed:", error);
                 });
@@ -685,10 +693,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         auth.onAuthStateChanged((user) => {
-            currentUser = user;
-            updateUIForAuth(user);
             if (user) {
+                // Check if user is allowed
+                if (allowedEmails.length > 0 && !allowedEmails.includes(user.email)) {
+                    console.warn(`User ${user.email} is not in the allowed list.`);
+                    alert(`Access Denied: The email ${user.email} is not authorized to edit records.`);
+                    auth.signOut();
+                    return;
+                }
+
                 console.log("User logged in:", user.displayName);
+                currentUser = user;
+                updateUIForAuth(user);
+
                 if (userProfile && btnLogin) {
                     btnLogin.classList.add('hidden');
                     userProfile.classList.remove('hidden');
@@ -696,6 +713,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 console.log("User logged out");
+                currentUser = null;
+                updateUIForAuth(null);
+
                 if (userProfile && btnLogin) {
                     btnLogin.classList.remove('hidden');
                     userProfile.classList.add('hidden');
