@@ -1678,10 +1678,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function switchStatsSubTab(subTabId) {
-        document.querySelectorAll('.stats-section').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.stats-section').forEach(el => el.classList.remove('active-view'));
         const target = document.getElementById('stats-' + subTabId);
         if (subTabId === 'age') renderAgeStats();
-        if (target) target.classList.remove('hidden');
+        if (target) target.classList.add('active-view');
 
         document.querySelectorAll('.stats-sub-tab').forEach(el => el.classList.remove('active'));
         const btn = document.querySelector(`.stats-sub-tab[data-stat-subtab="${subTabId}"]`);

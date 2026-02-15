@@ -308,6 +308,21 @@ main {
 .view-section.active-view {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    /* Allow inner scrolling */
+}
+
+/* Ensure sub-views in stats also flex */
+.stats-section {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.stats-section.active-view {
+    display: flex;
 }
 
 @keyframes fadeIn {
@@ -329,11 +344,15 @@ main {
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border);
     border-radius: 20px;
-    padding: 1.5rem;
+    padding: 1rem;
+    /* Consolidated smaller padding for all views */
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
+    /* Critical for inner table scroll */
+    margin-bottom: 0.5rem;
 }
 
 #view-settings {
@@ -342,10 +361,7 @@ main {
     /* Space for scrollbar */
 }
 
-/* Specific padding for reports card to allow more width */
-#view-reports .card {
-    padding: 1rem;
-}
+/* Specific padding for reports card removed, now global */
 
 h2 {
     font-size: 1.25rem;
