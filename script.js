@@ -3010,24 +3010,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const participantsSection = document.getElementById('relayParticipantsSection');
 
         if (isRelay) {
-            athleteSelect.classList.add('hidden');
-            athleteSelect.required = false;
-            teamInput.classList.remove('hidden');
-            teamInput.required = true;
-            athleteLabel.textContent = 'Team Name';
-            participantsSection.classList.remove('hidden');
-            populateRelayAthletes(genderInput ? genderInput.value : '');
+            if (athleteSelect) {
+                athleteSelect.classList.add('hidden');
+                athleteSelect.required = false;
+            }
+            if (teamInput) {
+                teamInput.classList.remove('hidden');
+                teamInput.required = true;
+            }
+            if (athleteLabel) athleteLabel.textContent = 'Team Name';
+            if (participantsSection) participantsSection.classList.remove('hidden');
+
+            // Only populate if genderInput exists
+            if (typeof genderInput !== 'undefined' && genderInput) {
+                populateRelayAthletes(genderInput.value);
+            }
         } else {
-            athleteSelect.classList.remove('hidden');
-            athleteSelect.required = true;
-            teamInput.classList.add('hidden');
-            teamInput.required = false;
-            athleteLabel.textContent = 'Athlete Name';
-            participantsSection.classList.add('hidden');
+            if (athleteSelect) {
+                athleteSelect.classList.remove('hidden');
+                athleteSelect.required = true;
+            }
+            if (teamInput) {
+                teamInput.classList.add('hidden');
+                teamInput.required = false;
+            }
+            if (athleteLabel) athleteLabel.textContent = 'Athlete Name';
+            if (participantsSection) participantsSection.classList.add('hidden');
         }
     }
 
     function editRecord(id) {
+        console.log("✏️ editRecord called for ID:", id);
+
         // Save the current tab so we can return to it after save/cancel
         const activeView = document.querySelector('.view-section.active-view');
         if (activeView) {
@@ -3036,18 +3050,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
         switchTab('log');
         const r = records.find(item => item.id === id);
-        if (!r) return;
+
+        if (!r) {
+            console.error("❌ Record not found for ID:", id);
+            alert("Error: Record not found!");
+            return;
+        }
+
+        console.log("✅ Record found:", r);
+
+        // Explicitly select elements to ensure we have them
+        const evtInput = document.getElementById('event');
+        const genderInput = document.getElementById('gender');
+        const athleteInput = document.getElementById('athlete');
+        const ageGroupInput = document.getElementById('ageGroup');
+        const trackTypeInput = document.getElementById('trackType');
+        const raceNameInput = document.getElementById('raceName');
+        const notesInput = document.getElementById('notes');
+        const markInput = document.getElementById('mark');
+        const windInput = document.getElementById('wind');
+        const idrInput = document.getElementById('idr');
+        const dateInput = document.getElementById('date');
+        const townInput = document.getElementById('town');
+        const countryInput = document.getElementById('country');
+
+        const relayTeamNameInput = document.getElementById('relayTeamName');
+        const relayAthlete1 = document.getElementById('relayAthlete1');
+        const relayAthlete2 = document.getElementById('relayAthlete2');
+        const relayAthlete3 = document.getElementById('relayAthlete3');
+        const relayAthlete4 = document.getElementById('relayAthlete4');
 
         const ev = events.find(e => e.name === r.event);
         const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
         toggleRelayFields(isRelay);
 
-        if (evtInput) evtInput.value = r.event || '';
+        // Populate Fields with Debugging
+        if (evtInput) {
+            evtInput.value = r.event || '';
+            console.log("Set Event:", evtInput.value);
+            // Trigger change event to filter/update other dropdowns if needed
+            evtInput.dispatchEvent(new Event('change'));
+        }
 
+        // Wait a tiny bit for event listeners (like filtering athletes) to run? 
+        // No, assuming synchronous for now, but let's set gender.
         if (genderInput) {
             genderInput.value = r.gender || '';
             populateRelayAthletes(r.gender || '');
+            // Trigger change to update Age Groups
+            genderInput.dispatchEvent(new Event('change'));
         }
+
+        // Need to wait for Age Groups to populate?
+        // populateAgeGroups is called on gender change.
+        setTimeout(() => {
+            if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
+        }, 50);
 
         if (isRelay) {
             if (relayTeamNameInput) relayTeamNameInput.value = r.athlete || '';
@@ -3057,19 +3115,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (relayAthlete3) relayAthlete3.value = p[2] || '';
             if (relayAthlete4) relayAthlete4.value = p[3] || '';
         } else {
-            // Set athlete value for non-relay records
-            if (athleteInput && r.athlete) {
-                // Trim to handle trailing/leading spaces in stored data
-                const athleteName = r.athlete.trim();
-                athleteInput.value = athleteName;
-                // Debug: log if value wasn't set correctly
-                if (athleteInput.value !== athleteName) {
-                    console.warn(`Failed to set athlete dropdown. Expected: "${athleteName}", Got: "${athleteInput.value}"`);
-                    console.warn('Available options:', Array.from(athleteInput.options).map(o => o.value));
+            // Delay athlete setting slightly to ensure list is populated if it depends on Event/Gender
+            setTimeout(() => {
+                if (athleteInput && r.athlete) {
+                    const athleteName = r.athlete.trim();
+                    athleteInput.value = athleteName;
+                    if (athleteInput.value !== athleteName) {
+                        console.warn(`Failed to set athlete. Expected: "${athleteName}", Got: "${athleteInput.value}"`);
+                        // Fallback: Check if option exists, if not, maybe add it?
+                    }
                 }
-            }
+            }, 50);
         }
-        if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
+
         if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
         if (raceNameInput) raceNameInput.value = r.raceName || '';
         if (notesInput) notesInput.value = r.notes || '';
@@ -3078,8 +3136,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (idrInput) idrInput.value = r.idr || '';
 
         if (dateInput) {
-            if (datePicker) datePicker.setDate(r.date);
-            else dateInput.value = r.date;
+            if (datePicker) {
+                datePicker.setDate(r.date);
+            } else {
+                dateInput.value = r.date;
+            }
         }
 
         if (townInput) townInput.value = r.town || '';
@@ -3088,11 +3149,13 @@ document.addEventListener('DOMContentLoaded', () => {
         editingId = id;
         editingHistoryId = null;
 
-        formTitle.textContent = 'Edit Record (Archives Old)';
-        submitBtn.querySelector('span').textContent = 'Update & Archive';
-        submitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
-        cancelBtn.classList.remove('hidden');
-        recordForm.scrollIntoView({ behavior: 'smooth' });
+        if (formTitle) formTitle.textContent = 'Edit Record (Archives Old)';
+        if (submitBtn) {
+            submitBtn.querySelector('span').textContent = 'Update & Archive';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
+        }
+        if (cancelBtn) cancelBtn.classList.remove('hidden');
+        if (recordForm) recordForm.scrollIntoView({ behavior: 'smooth' });
     }
 
     function cancelEdit() {
