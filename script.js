@@ -838,6 +838,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        const btnRecalculateWMA = document.getElementById('btnRecalculateWMA');
+        if (btnRecalculateWMA) {
+            btnRecalculateWMA.addEventListener('click', recalculateAllWMAStats);
+        }
+
         // Default to Reports
         switchTab('reports');
 
@@ -1963,6 +1968,44 @@ document.addEventListener('DOMContentLoaded', () => {
         return match ? match.points : null;
     }
 
+    function calculateRecordWMAStats(r) {
+        const rawMark = calculateRateConv(r.mark, r.event);
+        if (!rawMark) return r;
+
+        r.wmaRate = rawMark.toFixed(2);
+
+        // Find linked event definition
+        const eventDef = events.find(e => e.name === r.event);
+
+        // Calculate age at event
+        let ageAtEvent = 0;
+        const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+        if (athlete && athlete.dob && r.date) {
+            const eventDate = new Date(r.date);
+            const dob = new Date(athlete.dob);
+            const diffTime = eventDate - dob;
+            ageAtEvent = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
+        } else if (r.ageGroup) {
+            ageAtEvent = parseInt(r.ageGroup);
+        }
+
+        if (eventDef && eventDef.wmaEvent) {
+            const factor = getWMAFactorVal(r.gender, ageAtEvent, eventDef.wmaEvent);
+            if (factor) {
+                const calculatedAgeMark = rawMark * factor;
+                r.wmaAgeMark = calculatedAgeMark.toFixed(2);
+                if (eventDef.iaafEvent) {
+                    const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, calculatedAgeMark);
+                    r.wmaPoints = points !== null ? points.toString() : 'Not Found';
+                }
+            }
+        } else if (eventDef && eventDef.iaafEvent) {
+            const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, rawMark);
+            r.wmaPoints = points !== null ? points.toString() : 'Not Found';
+        }
+        return r;
+    }
+
     window.renderWMAReport = function () {
         populateWMAReportFilters(); // Refresh dropdown options based on current selections
         const tbody = document.getElementById('wmaReportBody');
@@ -2088,7 +2131,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Find linked event definition
             const eventDef = events.find(e => e.name === r.event);
-            const eventType = eventDef ? (eventDef.type || (eventDef.isCombined ? 'Combined' : 'Track')) : 'Track';
 
             // Calculate age at event
             let ageAtEvent = 0;
@@ -2102,29 +2144,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 ageAtEvent = parseInt(r.ageGroup);
             }
 
-            // --- Calculations ---
-            let rateConv = 'Not Set';
-            let ageMark = '-';
-            let pts = 'Not Set';
+            // --- Use Cached or Calculate On-the-fly ---
+            let rateConv = r.wmaRate;
+            let ageMark = r.wmaAgeMark;
+            let pts = r.wmaPoints;
 
-            const rawMark = calculateRateConv(r.mark, r.event);
-            if (rawMark) {
-                rateConv = rawMark.toFixed(2);
-
-                if (eventDef && eventDef.wmaEvent) {
-                    const factor = getWMAFactorVal(gender, ageAtEvent, eventDef.wmaEvent);
-                    if (factor) {
-                        const calculatedAgeMark = rawMark * factor;
-                        ageMark = calculatedAgeMark.toFixed(2);
-
-                        if (eventDef.iaafEvent) {
-                            const points = getIAAFPointsVal(gender, eventDef.iaafEvent, calculatedAgeMark);
-                            pts = points !== null ? points : 'Not Found';
+            if (rateConv === undefined || ageMark === undefined || pts === undefined) {
+                const rawMark = calculateRateConv(r.mark, r.event);
+                if (rawMark) {
+                    rateConv = rawMark.toFixed(2);
+                    if (eventDef && eventDef.wmaEvent) {
+                        const factor = getWMAFactorVal(gender, ageAtEvent, eventDef.wmaEvent);
+                        if (factor) {
+                            const calculatedAgeMark = rawMark * factor;
+                            ageMark = calculatedAgeMark.toFixed(2);
+                            if (eventDef.iaafEvent) {
+                                const points = getIAAFPointsVal(gender, eventDef.iaafEvent, calculatedAgeMark);
+                                pts = points !== null ? points : 'Not Found';
+                            }
                         }
+                    } else if (eventDef && eventDef.iaafEvent) {
+                        const points = getIAAFPointsVal(gender, eventDef.iaafEvent, rawMark);
+                        pts = points !== null ? points : 'Not Found';
                     }
-                } else if (eventDef && eventDef.iaafEvent) {
-                    const points = getIAAFPointsVal(gender, eventDef.iaafEvent, rawMark);
-                    pts = points !== null ? points : 'Not Found';
                 }
             }
 
@@ -2136,14 +2178,81 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${ageAtEvent > 0 ? ageAtEvent : '-'}</td>
                 <td>${r.mark}</td>
                 <td>${r.idr || '-'}</td>
-                <td>${rateConv}</td>
-                <td>${ageMark}</td>
-                <td>${pts}</td>
+                <td>${rateConv || '-'}</td>
+                <td>${ageMark || '-'}</td>
+                <td>${pts || '-'}</td>
                 <td>${r.date}</td>
                 <td>${r.raceName || '-'}</td>
             `;
             tbody.appendChild(row);
         });
+    }
+
+    async function recalculateAllWMAStats() {
+        if (!isAdmin) {
+            alert('You must be logged in as an administrator to recalculate and save statistics.');
+            return;
+        }
+
+        if (!confirm('This will recalculate WMA Statistics for all records and save them to the database. This may take a few moments. Continue?')) return;
+
+        console.log("Starting global WMA recalculation...");
+        let count = 0;
+
+        records.forEach(r => {
+            const rawMark = calculateRateConv(r.mark, r.event);
+            if (!rawMark) return;
+
+            r.wmaRate = rawMark.toFixed(2);
+
+            // Find linked event definition
+            const eventDef = events.find(e => e.name === r.event);
+
+            // Calculate age at event
+            let ageAtEvent = 0;
+            const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+            if (athlete && athlete.dob && r.date) {
+                const eventDate = new Date(r.date);
+                const dob = new Date(athlete.dob);
+                const diffTime = eventDate - dob;
+                ageAtEvent = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
+            } else if (r.ageGroup) {
+                ageAtEvent = parseInt(r.ageGroup);
+            }
+
+            if (eventDef && eventDef.wmaEvent) {
+                const factor = getWMAFactorVal(r.gender, ageAtEvent, eventDef.wmaEvent);
+                if (factor) {
+                    const calculatedAgeMark = rawMark * factor;
+                    r.wmaAgeMark = calculatedAgeMark.toFixed(2);
+                    if (eventDef.iaafEvent) {
+                        const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, calculatedAgeMark);
+                        r.wmaPoints = points !== null ? points.toString() : 'Not Found';
+                    }
+                }
+            } else if (eventDef && eventDef.iaafEvent) {
+                const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, rawMark);
+                r.wmaPoints = points !== null ? points.toString() : 'Not Found';
+            }
+            count++;
+        });
+
+        // Save updated records
+        localStorage.setItem('tf_records', JSON.stringify(records));
+
+        if (db) {
+            try {
+                await db.ref('records').set(records);
+                alert(`Successfully recalculated and saved WMA stats for ${count} records.`);
+                renderWMAReport();
+            } catch (err) {
+                console.error("Firebase save failed:", err);
+                alert('Recalculation complete locally, but failed to sync with cloud. Check console for details.');
+            }
+        } else {
+            alert(`Recalculated stats for ${count} records locally.`);
+            renderWMAReport();
+        }
     }
 
     window.sortWMAReport = function (field) {
@@ -2852,6 +2961,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 town: townInput ? townInput.value : '',
                 country: countryInput ? countryInput.value : ''
             };
+
+            // Calculate WMA stats for new record
+            calculateRecordWMAStats(newRecord);
 
             if (editingHistoryId) {
                 // Update History Record
