@@ -2089,35 +2089,48 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         sortedRecords.sort((a, b) => {
-            let valA = a[wmaSortField];
-            let valB = b[wmaSortField];
+            let valA, valB;
 
-            // Handle virtual fields or complex lookups
-            if (wmaSortField === 'athlete') {
-                valA = a.athlete || '';
-                valB = b.athlete || '';
-            } else if (wmaSortField === 'age') {
-                // Calculate age
-                const athA = athletes.find(at => at.id == a.athleteId);
-                const athB = athletes.find(at => at.id == b.athleteId);
-                let ageA = -1, ageB = -1;
-                if (athA && athA.dob && a.date) ageA = ((new Date(a.date) - new Date(athA.dob)) / (31557600000));
-                if (athB && athB.dob && b.date) ageB = ((new Date(b.date) - new Date(athB.dob)) / (31557600000));
-                valA = ageA;
-                valB = ageB;
-            } else if (wmaSortField === 'mark') {
-                const numA = parseFloat(a.mark) || 0;
-                const numB = parseFloat(b.mark) || 0;
-                valA = numA; valB = numB;
-            } else if (wmaSortField === 'rateConv') {
-                valA = parseFloat(a.wmaRate) || 0;
-                valB = parseFloat(b.wmaRate) || 0;
-            } else if (wmaSortField === 'ageMark') {
-                valA = parseFloat(a.wmaAgeMark) || 0;
-                valB = parseFloat(b.wmaAgeMark) || 0;
-            } else if (wmaSortField === 'pts') {
-                valA = parseInt(a.wmaPoints) || 0;
-                valB = parseInt(b.wmaPoints) || 0;
+            switch (wmaSortField) {
+                case 'athlete':
+                    valA = a.athlete || '';
+                    valB = b.athlete || '';
+                    break;
+                case 'age':
+                    const getAge = (r) => {
+                        const ath = athletes.find(at => `${at.lastName}, ${at.firstName}` === r.athlete);
+                        if (ath && ath.dob && r.date) {
+                            return Math.floor((new Date(r.date) - new Date(ath.dob)) / (1000 * 60 * 60 * 24 * 365.25));
+                        }
+                        return parseInt(r.ageGroup) || 0;
+                    };
+                    valA = getAge(a);
+                    valB = getAge(b);
+                    break;
+                case 'mark':
+                    // Use calculateRateConv to get numeric value for comparison
+                    valA = calculateRateConv(a.mark, a.event);
+                    valB = calculateRateConv(b.mark, b.event);
+                    break;
+                case 'rateConv':
+                    valA = parseFloat(a.wmaRate) || 0;
+                    valB = parseFloat(b.wmaRate) || 0;
+                    break;
+                case 'ageMark':
+                    valA = parseFloat(a.wmaAgeMark) || 0;
+                    valB = parseFloat(b.wmaAgeMark) || 0;
+                    break;
+                case 'pts':
+                    valA = parseInt(a.wmaPoints) || 0;
+                    valB = parseInt(b.wmaPoints) || 0;
+                    break;
+                case 'date':
+                    valA = a.date ? new Date(a.date).getTime() : 0;
+                    valB = b.date ? new Date(b.date).getTime() : 0;
+                    break;
+                default:
+                    valA = a[wmaSortField] || '';
+                    valB = b[wmaSortField] || '';
             }
 
             if (valA < valB) return wmaSortOrder === 'asc' ? -1 : 1;
