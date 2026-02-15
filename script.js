@@ -13,6 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let countries = [];
     let history = [];
 
+    // --- Performance Indexes ---
+    let iaafLookupMap = {}; // Event -> Gender -> [sorted records]
+    let wmaLookupMap = {};  // Event -> Gender -> Age -> factor
+    let athleteLookupMap = {}; // Name -> object
+
     // --- Elements ---
     const recordForm = document.getElementById('recordForm');
     const formTitle = document.getElementById('formTitle');
@@ -149,6 +154,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function rebuildPerformanceIndexes() {
+        console.log("⚡ Rebuilding performance indexes for O(1) matching...");
+
+        // 1. IAAF Index
+        iaafLookupMap = {};
+        if (typeof iaafData !== 'undefined' && Array.isArray(iaafData)) {
+            iaafData.forEach(d => {
+                const g = normalizeGenderLookups(d.gender);
+                if (!iaafLookupMap[d.event]) iaafLookupMap[d.event] = {};
+                if (!iaafLookupMap[d.event][g]) iaafLookupMap[d.event][g] = [];
+                iaafLookupMap[d.event][g].push(d);
+            });
+            // Sort each IAAF group by mark for faster finding
+            for (let ev in iaafLookupMap) {
+                for (let g in iaafLookupMap[ev]) {
+                    iaafLookupMap[ev][g].sort((a, b) => a.mark - b.mark);
+                }
+            }
+        }
+
+        // 2. WMA Index
+        wmaLookupMap = {};
+        if (typeof wmaData !== 'undefined' && Array.isArray(wmaData)) {
+            wmaData.forEach(d => {
+                const g = normalizeGenderLookups(d.gender);
+                const age = parseInt(d.age);
+                if (!wmaLookupMap[d.event]) wmaLookupMap[d.event] = {};
+                if (!wmaLookupMap[d.event][g]) wmaLookupMap[d.event][g] = {};
+                wmaLookupMap[d.event][g][age] = d.factor;
+            });
+        }
+
+        // 3. Athlete Index
+        athleteLookupMap = {};
+        if (typeof athletes !== 'undefined' && Array.isArray(athletes)) {
+            athletes.forEach(a => {
+                athleteLookupMap[`${a.lastName}, ${a.firstName}`] = a;
+            });
+        }
+    }
+
     // --- State for Sorting ---
     let currentSort = { column: 'date', direction: 'desc' };
 
@@ -169,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('athletes').on('value', (snapshot) => {
             athletes = snapshot.val() || [];
             console.log("Athletes updated from Firebase:", athletes.length);
+            rebuildPerformanceIndexes(); // Rebuild name map for age calc
             populateAthleteDropdown();
             populateAthleteFilter();
             renderAthleteList();
@@ -200,8 +247,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderAll() {
+        populateYearDropdown();
+        populateAthleteFilter();
         renderReports();
-        // Any other main render calls needed
     }
 
     // Migration Helper: Push local data to Firebase if Firebase is empty
@@ -1250,36 +1298,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateYearDropdown() {
-        if (!filterYear) {
-            console.error("filterYear element not found!");
-            return;
-        }
+        if (!filterYear) return;
+
+        const currentVal = filterYear.value;
 
         // Extract unique years from records
         const years = new Set();
         const currentYear = new Date().getFullYear();
-        years.add(currentYear); // Always include current year
-
-        console.log("Records for years:", records.length);
-
-        if (records.length === 0) {
-            console.warn("No records found.");
-        }
+        years.add(currentYear);
 
         records.forEach(r => {
             if (r.date) {
-                // Handle different date formats just in case
                 const d = new Date(r.date);
                 if (!isNaN(d.getTime())) {
                     years.add(d.getFullYear());
-                } else {
-                    console.warn("Invalid date found:", r.date);
                 }
             }
         });
 
-        const sortedYears = Array.from(years).sort((a, b) => b - a); // Descending
-        console.log("Years found:", sortedYears);
+        const sortedYears = Array.from(years).sort((a, b) => b - a);
 
         filterYear.innerHTML = '<option value="all" style="color:black;">All Years</option>';
 
@@ -1287,9 +1324,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const opt = document.createElement('option');
             opt.value = y.toString();
             opt.textContent = y.toString();
-            opt.style.color = 'black'; // Force visibility
+            opt.style.color = 'black';
             filterYear.appendChild(opt);
         });
+
+        // Restore value if it still exists
+        if (Array.from(filterYear.options).some(opt => opt.value === currentVal)) {
+            filterYear.value = currentVal;
+        } else {
+            filterYear.value = 'all';
+        }
     }
 
     function populateEventDropdowns() {
@@ -1965,33 +2009,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getWMAFactorVal(gender, age, wmaEventName) {
-        if (!wmaData || !wmaEventName) return null;
+        if (!wmaLookupMap || !wmaEventName) return null;
         const g = normalizeGenderLookups(gender);
         const targetAge = parseInt(age);
         if (isNaN(targetAge)) return null;
-        const entry = wmaData.find(d =>
-            normalizeGenderLookups(d.gender) === g &&
-            parseInt(d.age) === targetAge &&
-            d.event === wmaEventName
-        );
-        return entry ? entry.factor : null;
+
+        const eventGroup = wmaLookupMap[wmaEventName];
+        if (!eventGroup || !eventGroup[g]) return null;
+
+        return eventGroup[g][targetAge] || null;
     }
 
     function getIAAFPointsVal(gender, iaafEventName, markVal) {
-        if (!iaafData || !iaafEventName) return null;
+        if (!iaafLookupMap || !iaafEventName) return null;
         const g = normalizeGenderLookups(gender);
-        const records = iaafData.filter(d =>
-            normalizeGenderLookups(d.gender) === g && d.event === iaafEventName
-        );
+
+        const eventGroup = iaafLookupMap[iaafEventName];
+        if (!eventGroup || !eventGroup[g]) return null;
+
+        const records = eventGroup[g];
         if (records.length === 0) return null;
-        records.sort((a, b) => a.mark - b.mark);
+
+        // Use pre-sorted records (already sorted in rebuildPerformanceIndexes)
         const isTime = records[0].points > records[records.length - 1].points;
+
         let match = null;
         if (isTime) {
             match = records.find(r => r.mark >= markVal - 0.0001);
         } else {
-            const fieldRecords = [...records].sort((a, b) => b.mark - a.mark);
-            match = fieldRecords.find(r => r.mark <= markVal + 0.0001);
+            for (let i = records.length - 1; i >= 0; i--) {
+                if (records[i].mark <= markVal + 0.0001) {
+                    match = records[i];
+                    break;
+                }
+            }
         }
         return match ? match.points : null;
     }
@@ -2007,7 +2058,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Calculate age at event
         let ageAtEvent = 0;
-        const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+        const athlete = athleteLookupMap[r.athlete];
         if (athlete && athlete.dob && r.date) {
             const eventDate = new Date(r.date);
             const dob = new Date(athlete.dob);
@@ -2545,6 +2596,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveAthletes() {
         if (db) db.ref('athletes').set(athletes);
         localStorage.setItem('tf_athletes', JSON.stringify(athletes));
+        rebuildPerformanceIndexes();
     }
 
 
@@ -4705,6 +4757,7 @@ Replace ALL current data with this backup?`;
         if (window.IAAF_SCORING_DATA) {
             iaafData = window.IAAF_SCORING_DATA;
             isIAAFDataLoaded = true;
+            rebuildPerformanceIndexes();
             renderIAAFFilters();
             populateIAAFEventDropdown();  // Populate event creation dropdown
             if (loadingIndicator) loadingIndicator.classList.add('hidden');
@@ -4720,6 +4773,7 @@ Replace ALL current data with this backup?`;
             if (window.IAAF_SCORING_DATA) {
                 iaafData = window.IAAF_SCORING_DATA;
                 isIAAFDataLoaded = true;
+                rebuildPerformanceIndexes();
                 renderIAAFFilters();
                 populateIAAFEventDropdown();  // Populate event creation dropdown
             } else {
@@ -5031,6 +5085,7 @@ Replace ALL current data with this backup?`;
             wmaData[idx].age = newAge;
             wmaData[idx].factor = Math.round(newFactor * 100000) / 100000;
             localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+            rebuildPerformanceIndexes();
         }
 
         editingWMAId = null;
@@ -5041,6 +5096,7 @@ Replace ALL current data with this backup?`;
         if (!confirm('Are you sure you want to delete this factor?')) return;
         wmaData = wmaData.filter(d => d.id !== id);
         localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+        rebuildPerformanceIndexes();
         renderWMATable();
     };
 
@@ -5068,6 +5124,8 @@ Replace ALL current data with this backup?`;
             });
 
             localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+            rebuildPerformanceIndexes();
+            newWMAAge.value = '';
             newWMAAge.value = '';
             newWMAFactor.value = '';
             renderWMATable();
@@ -5093,6 +5151,7 @@ Replace ALL current data with this backup?`;
             if (window.WMA_2023_DATA) {
                 wmaData = window.WMA_2023_DATA;
                 localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+                rebuildPerformanceIndexes();
                 renderWMAFilters();
                 populateWMAEventDropdown();
             }
@@ -5121,6 +5180,7 @@ Replace ALL current data with this backup?`;
                     if (window.WMA_2023_DATA) {
                         wmaData = window.WMA_2023_DATA;
                         localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+                        rebuildPerformanceIndexes();
                         renderWMAFilters();
                         populateWMAEventDropdown();
                     }
