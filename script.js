@@ -715,7 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("User logged out");
 
                 // --- LOCAL ADMIN BYPASS ---
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') {
                     console.log("🚧 Local Environment Detected: Auto-logging in as Admin");
                     const localAdminPayload = {
                         email: 'harryscons@gmail.com',
@@ -758,10 +758,10 @@ document.addEventListener('DOMContentLoaded', () => {
             else el.classList.add('hidden');
         });
 
-        // Hide Save Button in Nav if not admin
-        const navSave = document.querySelector('.nav-actions button');
+        // Hide Save Button if not admin
+        const navSave = document.getElementById('btnSaveCloud');
         if (navSave) {
-            if (isAdmin) navSave.style.display = 'block';
+            if (isAdmin) navSave.style.display = 'flex';
             else navSave.style.display = 'none';
         }
 

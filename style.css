@@ -212,6 +212,18 @@ header {
     margin-top: 1.5rem;
 }
 
+#btnSaveCloud:hover {
+    background: #059669 !important;
+    /* Smooder green */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+#btnSaveCloud:active {
+    transform: translateY(0);
+}
+
+
 .logo-container {
     display: flex;
     align-items: center;
