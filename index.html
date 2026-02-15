@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greek Master Record Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script>
+        // Immediate Theme Application to prevent flicker
+        (function () {
+            const savedTheme = localStorage.getItem('tf_theme') || 'theme-default';
+            document.body.className = savedTheme;
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="background-glow"></div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo-container">
+                <div class="logo-icon" style="font-size: 3rem;">🇬🇷</div>
+                <h1>Greek Masters Track & Field Records</h1>
+            </div>
+            <div class="status-container" style="display: flex; gap: 1rem; align-items: center; margin-left: auto;">
+                <!-- Auth UI -->
+                <div id="authSection" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button id="btnLogin" class="btn-small"
+                        style="background: var(--primary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">
+                        🔐 Admin Login
+                    </button>
+                    <div id="userProfile" class="hidden" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <img id="userAvatar" src="" alt="User"
+                            style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--primary);">
+                        <button id="btnLogout" class="btn-text"
+                            style="color: var(--text-muted); font-size: 0.8rem; text-decoration: underline; cursor: pointer; background: none; border: none;">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cloud Status -->
+                <div id="cloudStatus" title="Cloud Sync Status"
+                    style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-hover); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
+                    <span id="cloudIcon"
+                        style="color: #ef4444; font-size: 1.2rem; transform: translateY(1px); display: inline-block;">●</span>
+                    <span id="cloudText">Cloud Offline</span>
+                </div>
+            </div>
+            <p class="subtitle"
+                style="font-size: 1.2rem; font-weight: bold; letter-spacing: 4px; margin-top: 0.5rem; color: var(--accent); transition: color 0.3s ease;">
+                OUTDOORS</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="reports">Reports</button>
+            <button class="nav-tab" data-tab="stats">Statistics</button>
+
+            <button class="nav-tab" data-tab="log">Log Record</button>
+            <button class="nav-tab" data-tab="history">Record History</button>
+            <button class="nav-tab" data-tab="settings">Settings</button>
+            <div class="nav-actions">
+                <button class="btn-warning" onclick="saveToCloud()" style="display:none;">☁ Save</button>
+            </div>
+        </nav>
+
+        <main>
+            <!-- REPORTS VIEW (First/Default) -->
+            <div id="view-reports" class="view-section active-view">
+                <section class="card reports-section">
+                    <div class="section-header">
+                        <h2>Reports & Analysis</h2>
+                    </div>
+
+                    <div class="report-toolbar">
+                        <div class="filters">
+                            <select id="filterTrackType" title="Filter by Track Type (Outdoor/Indoor)">
+                                <option value="all">All Track Types</option>
+                                <option value="Outdoor" selected>Outdoor</option>
+                                <option value="Indoor">Indoor</option>
+                            </select>
+                            <select id="filterEvent">
+                                <option value="all">All Events</option>
+                                <!-- Populated by JS -->
+                            </select>
+                            <select id="filterGender">
+                                <option value="all">All Genders</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Mixed">Mixed</option>
+                            </select>
+                            <select id="filterAge">
+                                <option value="all">All Age Groups</option>
+                                <!-- Populated by JS -->
+                            </select>
+                            <select id="filterYear">
+                                <option value="all">All Years</option>
+                                <!-- Populated by JS -->
+                            </select>
+                            <select id="filterAthlete" title="Select Athlete">
+                                <option value="all">All Athletes</option>
+                                <!-- Populated by JS -->
+                            </select>
+                            <input type="text" id="filterAthleteName" placeholder="Search Name..." autocomplete="off"
+                                style="width: 140px;">
+                            <select id="filterAgeMismatch" title="Filter by Age Verification Status">
+                                <option value="all">All Records</option>
+                                <option value="issue" style="color:var(--danger); font-weight:bold;">With Age Issues
+                                </option>
+                                <option value="valid" style="color:var(--primary);">Verified OK</option>
+                            </select>
+                        </div>
+
+                        <div class="actions-bar">
+                            <button id="exportExcel" class="btn-small">📊 Excel (CSV)</button>
+                            <button id="exportHTML" class="btn-small">🌐 HTML</button>
+                            <button id="exportPDF" class="btn-small">📄 PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="reportTable" class="report-table">
+                            <thead>
+                                <tr>
+                                    <th class="expand-col" style="width: 40px;"></th>
+                                    <th class="sortable" data-sort="event">Αγώνισμα</th>
+                                    <th class="sortable" data-sort="ageGroup">Κατηγ.</th>
+                                    <th class="sortable" data-sort="athlete">Αθλητής/τρια</th>
+                                    <th class="sortable" data-sort="gender">Φύλο</th>
+                                    <th class="sortable" data-sort="mark">Επίδοση</th>
+                                    <th class="sortable" data-sort="idr">IDR</th>
+                                    <th class="sortable" data-sort="wind">Άνεμος</th>
+                                    <th class="sortable" data-sort="date">Ημερομηνία</th>
+                                    <th class="sortable" data-sort="town">Πόλη</th>
+                                    <th class="sortable" data-sort="raceName">Διοργάνωση</th>
+                                    <th class="actions-col">Ενέργειες</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <!-- Rows injected here -->
+                            </tbody>
+                        </table>
+                        <div id="emptyState" class="empty-state hidden"
+                            style="text-align: center; padding: 4rem 2rem; background: var(--bg-primary-light); border-radius: 20px; border: 2px dashed var(--border); margin: 2rem 0;">
+                            <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.5rem;">📊 No Data Found
+                            </h3>
+                            <p
+                                style="color: var(--text-muted); margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                Your cloud database and local storage appear to be empty. If you have a backup file, you
+                                can restore it now.
+                            </p>
+                            <button onclick="switchTab('settings'); switchSubTab('data')" class="btn-primary"
+                                style="max-width: 250px;">
+                                ⬆️ Restore Data Now
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- LOG RECORD VIEW (Second Tab) -->
+            <div id="view-log" class="view-section">
+                <!-- Form Section -->
+                <section class="card input-section">
+                    <h2 id="formTitle">Log New Record</h2>
+                    <form id="recordForm" style="overflow-y: auto; flex: 1; padding-right: 0.5rem;">
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="event">Event</label>
+                                <select id="event" required>
+                                    <option value="" disabled selected>Select Event</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group" id="athleteGroup">
+                                <label for="athlete" id="athleteLabel">Athlete Name</label>
+                                <select id="athlete" required>
+                                    <option value="" disabled selected>Select Athlete</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                                <input type="text" id="relayTeamName" class="hidden" placeholder="e.g. Greece 4x100m"
+                                    autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Relay Participants Section -->
+                        <div id="selectedAthleteInfo" class="hidden"
+                            style="margin-bottom: 1.5rem; background: var(--bg-nav); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border);">
+                            <h4
+                                style="font-size: 0.9rem; color: var(--accent); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                Relay Participants</h4>
+                            <div class="row" style="gap: 1rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="font-size: 0.8rem; opacity: 0.8;">Athlete 1</label>
+                                    <select id="relayAthlete1" class="relay-participant-select">
+                                        <option value="">(Empty)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="font-size: 0.8rem; opacity: 0.8;">Athlete 2</label>
+                                    <select id="relayAthlete2" class="relay-participant-select">
+                                        <option value="">(Empty)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row" style="gap: 1rem; margin-top: 0.75rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="font-size: 0.8rem; opacity: 0.8;">Athlete 3</label>
+                                    <select id="relayAthlete3" class="relay-participant-select">
+                                        <option value="">(Empty)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="font-size: 0.8rem; opacity: 0.8;">Athlete 4</label>
+                                    <select id="relayAthlete4" class="relay-participant-select">
+                                        <option value="">(Empty)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <select id="gender" required>
+                                    <option value="" disabled selected>Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Mixed" id="optMixed" hidden disabled>Mixed</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ageGroup">Age Group</label>
+                                <select id="ageGroup" required>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="trackType">Track Type</label>
+                                <select id="trackType" required>
+                                    <option value="Outdoor" selected>Outdoor</option>
+                                    <option value="Indoor">Indoor</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- NEW FIELDS: Race Name & Mark -->
+                        <div class="row">
+                            <div class="form-group" style="flex: 2;">
+                                <label for="raceName">Race Name</label>
+                                <input type="text" id="raceName" placeholder="e.g. Diamond League" autocomplete="off">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label for="mark">Mark (Time/Dist)</label>
+                                <input type="text" id="mark" placeholder="9.58s / 8.95m" required autocomplete="off">
+                            </div>
+                            <!-- IDR Moved Here -->
+                            <div class="form-group" style="flex: 0.5;">
+                                <label for="idr">IDR</label>
+                                <input type="text" id="idr" placeholder="ID" maxlength="2" autocomplete="off"
+                                    style="text-align: center;">
+                            </div>
+                        </div>
+
+                        <!-- Notes Field -->
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="notes">Notes</label>
+                                <input type="text" id="notes" placeholder="e.g. 100m: 11.2, LJ: 6.50..."
+                                    autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="wind">Wind (+/-)</label>
+                                <input type="text" id="wind" placeholder="+0.9" autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label for="date">Date</label>
+                                <input type="date" id="date" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="town">Town</label>
+                                <input type="text" id="town" placeholder="e.g. Berlin" autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label for="country">Country</label>
+                                <select id="country">
+                                    <option value="" disabled selected>Select Country</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Inline Age Validation Warning -->
+                        <div id="ageValidationWarning" class="hidden"
+                            style="background: var(--bg-danger-light); border: 1px solid var(--danger); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; color: var(--text-danger-light);">
+                            <h4
+                                style="color: var(--danger); margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                                ⚠️ Age Category Mismatch
+                            </h4>
+                            <p id="ageValidationMessage"
+                                style="font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.4; color: #fca5a5;">
+                                <!-- Message injected via JS -->
+                            </p>
+                            <div style="display: flex; gap: 1rem;">
+                                <button type="button" id="btnAgeWarningProceed" class="btn-small"
+                                    style="background: var(--danger); color: white; border: none;">
+                                    Save Anyway
+                                </button>
+                                <button type="button" id="btnAgeWarningCancel" class="btn-small"
+                                    onclick="document.getElementById('ageValidationWarning').classList.add('hidden')">
+                                    Cancel & Correct
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary" id="submitBtn">
+                                <span>Log Record</span>
+                                <div class="btn-shine"></div>
+                            </button>
+                            <button type="button" id="cancelBtn" class="btn-secondary hidden">Cancel</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <!-- SETTINGS VIEW -->
+            <div id="view-settings" class="view-section">
+                <!-- Sub Navigation -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <nav class="sub-nav">
+                        <button class="sub-tab active" data-subtab="athletes">Athletes</button>
+                        <button class="sub-tab" data-subtab="events">Events</button>
+                        <button class="sub-tab" data-subtab="countries">Countries</button>
+                        <button class="sub-tab" data-subtab="iaaf">IAAF Scoring Tables</button>
+                        <button class="sub-tab" data-subtab="wma">WMA Conversion Tables</button>
+                        <button class="sub-tab" data-subtab="general">General Settings</button>
+                        <button class="sub-tab" data-subtab="data">Data Management</button>
+                    </nav>
+                </div>
+
+                <!-- ATHLETES SUB-VIEW -->
+                <div id="setting-athletes" class="setting-section">
+                    <section class="card">
+                        <h2>Manage Athletes</h2>
+                        <p class="subtitle" style="margin-bottom: 1rem;">Add and manage athlete profiles.</p>
+
+                        <form id="athleteForm" style="margin-bottom: 2rem;">
+                            <div class="row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="newAthleteFirstName">First Name</label>
+                                    <input type="text" id="newAthleteFirstName" placeholder="e.g. Usain" required
+                                        autocomplete="off">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="newAthleteLastName">Last Name</label>
+                                    <input type="text" id="newAthleteLastName" placeholder="e.g. Bolt" required
+                                        autocomplete="off">
+                                </div>
+                                <div class="form-group" style="flex: 0.5;">
+                                    <label for="newAthleteID">ID #</label>
+                                    <input type="text" id="newAthleteID" placeholder="123" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="newAthleteDOB">Date of Birth</label>
+                                    <input type="date" id="newAthleteDOB" required>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="newAthleteGender">Gender</label>
+                                    <select id="newAthleteGender" required>
+                                        <option value="" disabled selected>Select</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">
+                                <span>+ Save Athlete</span>
+                            </button>
+                        </form>
+
+                        <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+                        <div class="table-container">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                                <div style="display:flex; gap:0.5rem;">
+                                    <button id="btnImportAthletes" class="btn-secondary"
+                                        style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">
+                                        📁 Import Athletes
+                                    </button>
+                                    <button id="btnDeduplicateAthletes" class="btn-small">
+                                        🧹 Deduplicate
+                                    </button>
+                                    <input type="file" id="athleteImportFile" accept=".xlsx, .xls, .json"
+                                        class="hidden">
+                                </div>
+                            </div>
+                            <table class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortAthletes('idNumber')" style="cursor:pointer;">ID ↕</th>
+                                        <th onclick="sortAthletes('lastName')" style="cursor:pointer;">Last Name ↕</th>
+                                        <th onclick="sortAthletes('firstName')" style="cursor:pointer;">First Name ↕
+                                        </th>
+                                        <th onclick="sortAthletes('dob')" style="cursor:pointer;">DOB ↕</th>
+                                        <th onclick="sortAthletes('gender')" style="cursor:pointer;">Gender ↕</th>
+                                        <th class="actions-col" style="width: 100px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="athleteListBody">
+                                    <!-- Athletes injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- EVENTS SUB-VIEW -->
+                <div id="setting-events" class="setting-section hidden">
+                    <section class="card">
+                        <h2>Manage Events</h2>
+                        <p class="subtitle" style="margin-bottom: 1rem;">Add or remove event types available in the
+                            dropdowns.</p>
+
+                        <form id="eventForm" style="margin-bottom: 2rem;">
+                            <div class="row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label for="newEventName">Event Name</label>
+                                    <input type="text" id="newEventName" placeholder="e.g. Decathlon" required
+                                        autocomplete="off">
+                                </div>
+                                <div class="form-group" style="flex: 2;">
+                                    <label for="newEventIAAF">IAAF Scoring Event</label>
+                                    <select id="newEventIAAF">
+                                        <option value="">None (No IAAF link)</option>
+                                        <!-- Populated dynamically from IAAF data -->
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 2;">
+                                    <label for="newEventWMA">WMA Conversion Event</label>
+                                    <select id="newEventWMA">
+                                        <option value="">None (No WMA link)</option>
+                                        <!-- Populated dynamically from WMA data -->
+                                    </select>
+                                </div>
+                                <div class="form-group"
+                                    style="flex: 2; display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <label>Event Type</label>
+                                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                        <label
+                                            style="cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+                                            <input type="radio" name="eventType" value="Field" id="eventTypeField">
+                                            Field
+                                        </label>
+                                        <label
+                                            style="cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+                                            <input type="radio" name="eventType" value="Track" id="eventTypeTrack"
+                                                checked> Track
+                                        </label>
+                                        <label
+                                            style="cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+                                            <input type="radio" name="eventType" value="Road" id="eventTypeRoad"> Road
+                                        </label>
+                                        <label
+                                            style="cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+                                            <input type="radio" name="eventType" value="Combined"
+                                                id="eventTypeCombined"> Combined
+                                        </label>
+                                        <label
+                                            style="cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+                                            <input type="radio" name="eventType" value="Relay" id="eventTypeRelay">
+                                            Relay
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="flex: 1;" id="subEventCountGroup">
+                                    <label for="newEventSubCount">Number of Events</label>
+                                    <input type="number" id="newEventSubCount" min="2" max="20" placeholder="e.g. 10"
+                                        disabled>
+                                </div>
+                            </div>
+
+                            <div id="scorePreview" class="row"
+                                style="flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; padding: 1rem; background: var(--bg-nav); border-radius: 12px; display: none;">
+                                <!-- Dynamic Inputs -->
+                            </div>
+
+                            <div class="row" style="align-items: flex-end;">
+                                <div class="form-group" style="flex: 1.2;">
+                                    <label for="newEventSpecs">Technical Specs</label>
+                                    <textarea id="newEventSpecs" rows="2" placeholder="e.g. 10 hurdles, 0.914m height"
+                                        style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 8px; font-family: inherit; width: 100%; height: 62px; outline: none;"></textarea>
+                                </div>
+                                <div class="form-group" style="flex: 1; display: none;">
+                                    <label for="newEventFormula">Parsing Formula</label>
+                                    <textarea id="newEventFormula" rows="2"></textarea>
+                                </div>
+                                <div class="form-group" style="flex: 1.2;">
+                                    <label for="recordNotes">Notes</label>
+                                    <textarea id="recordNotes" rows="2" placeholder="Notes (optional)..."
+                                        style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 8px; font-family: inherit; width: 100%; height: 62px; outline: none;"></textarea>
+                                </div>
+                                <div class="form-group"
+                                    style="flex: 1.5; display: flex; flex-direction: row; gap: 0.5rem; align-items: stretch;">
+                                    <button type="button" class="btn-secondary" id="openFormulaBtn"
+                                        style="flex: 1; height: 62px; margin: 0; display: flex; align-items: center; justify-content: center; padding: 0;">
+                                        <span>Formats</span>
+                                    </button>
+                                    <button type="submit" class="btn-primary" id="eventSubmitBtn"
+                                        style="flex: 1.5; height: 62px; margin: 0; display: flex; align-items: center; justify-content: center; padding: 0;">
+                                        <span>+ Add Event</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="table-container">
+                            <table class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th>Event Name</th>
+                                        <th>Formula</th>
+                                        <th>Tech Specs</th>
+                                        <th>Notes</th>
+                                        <th>IAAF / WMA Link</th>
+                                        <th>Type</th>
+                                        <th class="actions-col" style="width: 100px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eventListBody">
+                                    <!-- Events injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- COUNTRIES SUB-VIEW -->
+                <div id="setting-countries" class="setting-section hidden">
+                    <section class="card">
+                        <h2>Manage Countries</h2>
+                        <p class="subtitle" style="margin-bottom: 1rem;">Add or remove countries available in the
+                            dropdown.
+                        </p>
+
+                        <form id="countryForm"
+                            style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-end;">
+                            <div class="form-group" style="flex: 3;">
+                                <label for="newCountryName">Country Name</label>
+                                <input type="text" id="newCountryName" placeholder="e.g. France" required
+                                    autocomplete="off">
+                            </div>
+                            <button type="submit" class="btn-primary" style="flex: 1;">
+                                <span>+ Add Country</span>
+                            </button>
+                        </form>
+
+                        <div class="table-container">
+                            <table class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th>Country Name</th>
+                                        <th class="actions-col" style="width: 100px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="countryListBody">
+                                    <!-- Countries injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- DATA SUB-VIEW -->
+                <!-- IAAF CONVERSION TABLES SUB-VIEW -->
+                <div id="setting-iaaf" class="setting-section hidden">
+                    <section class="card">
+                        <h2>IAAF Scoring Tables</h2>
+                        <p class="subtitle">Manage IAAF scoring coefficients for performance calculations.</p>
+                        <div class="filter-bar"
+                            style="margin-bottom: 2rem; display: flex; flex-direction: row; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+                            <!-- Category Filter -->
+                            <div class="filter-group">
+                                <label for="iaafFilterCategory">Category</label>
+                                <select id="iaafFilterCategory" class="form-control" onchange="renderIAAFFilters()">
+                                    <option value="outdoor" selected>Outdoor</option>
+                                    <option value="indoor">Indoor</option>
+                                </select>
+                            </div>
+                            <!-- Gender Filter -->
+                            <div class="filter-group">
+                                <label for="iaafFilterGender">Gender</label>
+                                <select id="iaafFilterGender" class="form-control" onchange="renderIAAFFilters()">
+                                    <option value="men">Men</option>
+                                    <option value="women">Women</option>
+                                </select>
+                            </div>
+                            <!-- Event Filter -->
+                            <div class="filter-group" style="flex-grow: 1;">
+                                <label for="iaafFilterEvent">Event</label>
+                                <select id="iaafFilterEvent" class="form-control" onchange="renderIAAFTable()">
+                                    <option value="" disabled selected>Select Event...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="iaafLoading" class="hidden"
+                            style="text-align:center; padding:2rem; color:var(--text-muted);">
+                            <div class="spinner"></div>
+                            <p>Loading Scoring Tables...</p>
+                        </div>
+
+                        <div id="iaafTableContainer" class="table-container hidden">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mark</th>
+                                        <th>Points</th>
+                                        <th style="width: 100px; text-align: center;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="iaafTableBody">
+                                    <!-- Dynamic Content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- WMA CONVERSION TABLES SUB-VIEW -->
+                <div id="setting-wma" class="setting-section hidden">
+                    <section class="card">
+                        <h2>WMA Conversion Tables</h2>
+                        <p class="subtitle">Manage World Masters Athletics age-grading factors.</p>
+
+                        <!-- WMA Filter Bar -->
+                        <div class="filter-bar"
+                            style="margin-bottom: 2rem; display: flex; flex-direction: row; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+                            <div class="filter-group">
+                                <label for="wmaFilterGender">Gender</label>
+                                <select id="wmaFilterGender" class="form-control" onchange="renderWMAFilters()">
+                                    <option value="men">Men</option>
+                                    <option value="women">Women</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="wmaFilterAgeGroup">Age Group</label>
+                                <select id="wmaFilterAgeGroup" class="form-control" onchange="renderWMATable()">
+                                    <option value="" disabled selected>Select Age Group...</option>
+                                </select>
+                            </div>
+                            <div class="filter-group" style="flex-grow: 1;">
+                                <label for="wmaFilterEvent">Event</label>
+                                <select id="wmaFilterEvent" class="form-control" onchange="renderWMATable()">
+                                    <option value="" disabled selected>Select Event...</option>
+                                </select>
+                            </div>
+                            <button id="btnLoadOfficialWMA" class="btn-secondary"
+                                style="height: 42px; width: auto; padding: 0 1.5rem; border-color: var(--accent); color: var(--accent);">
+                                <span>🔄 Reload Official 2023 Tables</span>
+                            </button>
+                        </div>
+
+                        <!-- Add New Factor Form -->
+                        <form id="wmaAddForm"
+                            style="margin-bottom: 2rem; background: var(--bg-nav); padding: 1rem; border-radius: 12px; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 100px;">
+                                <label for="newWMAAge">Age</label>
+                                <input type="number" id="newWMAAge" placeholder="e.g. 45" required min="35" max="110">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 100px;">
+                                <label for="newWMAFactor">Factor (0-1)</label>
+                                <input type="number" id="newWMAFactor" placeholder="e.g. 0.8523" required step="0.00001"
+                                    min="0" max="1">
+                            </div>
+                            <button type="submit" class="btn-primary" style="height: 42px;">
+                                <span>+ Add Factor</span>
+                            </button>
+                        </form>
+
+                        <div id="wmaTableContainer" class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Age</th>
+                                        <th>Factor</th>
+                                        <th style="width: 120px; text-align: center;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="wmaTableBody">
+                                    <!-- Dynamic Content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- GENERAL SETTINGS SUB-VIEW -->
+                <div id="setting-general" class="setting-section hidden">
+                    <section class="card">
+                        <h2>General Settings</h2>
+                        <p class="subtitle" style="margin-bottom: 2rem;">Configure application-wide preferences and
+                            appearance.</p>
+
+                        <div class="row">
+                            <div class="form-group" style="flex: 1; max-width: 400px;">
+                                <label for="themeSelect">Color Theme</label>
+                                <select id="themeSelect">
+                                    <option value="theme-default">Default (Nebula)</option>
+                                    <option value="theme-mint-pale">Mint Pale (Pastel)</option>
+                                    <option value="theme-rose-pale">Rose Pale (Pastel)</option>
+                                    <option value="theme-sky-pale">Sky Pale (Pastel)</option>
+                                    <option value="theme-lavender-pale">Lavender Pale (Pastel)</option>
+                                    <option value="theme-lemon-pale">Lemon Pale (Pastel)</option>
+                                </select>
+                                <p class="help-text"
+                                    style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Select your
+                                    preferred color palette for the application.</p>
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top: 1.5rem;">
+                            <div class="form-group"
+                                style="flex: 1; flex-direction: row; align-items: center; gap: 0.75rem;">
+                                <input type="checkbox" id="hideNotesSymbol"
+                                    style="width: 20px; height: 20px; cursor: pointer;">
+                                <label for="hideNotesSymbol" style="cursor: pointer; margin-bottom: 0;">Hide Notes
+                                    Symbol (Return to Plus Symbol Logic)</label>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- DATA MANAGEMENT SUB-VIEW -->
+                <div id="setting-data" class="setting-section hidden">
+                    <section class="card" style="margin-bottom: 2rem;">
+                        <h2>Backup / Save Data</h2>
+                        <p class="subtitle" style="margin-bottom: 1rem;">Save a copy of your database to your program
+                            folder.</p>
+                        <button id="btnBackup" class="btn-primary"
+                            style="background: linear-gradient(135deg, var(--success), #059669);">
+                            <span>⬇️ Download Database (.json)</span>
+                        </button>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            Save this file as <code>track_data.json</code> in your program folder to keep it safe.
+                        </p>
+                    </section>
+                    <section class="card">
+                        <h2>Restore / Load Data</h2>
+                        <p class="subtitle" style="margin-bottom: 1rem;">Select your saved file to restore your data.
+                        </p>
+                        <div class="form-group">
+                            <label for="fileRestore" style="margin-bottom: 0.5rem;">Select JSON File</label>
+                            <input type="file" id="fileRestore" accept=".json"
+                                style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 8px;">
+                        </div>
+                        <button id="btnRestore" class="btn-secondary" style="width: 100%; margin-top: 1rem;">
+                            <span>⬆️ Restore Database</span>
+                        </button>
+                    </section>
+                    <section class="card" style="margin-top: 2rem;">
+                        <h2>Import Records from Excel</h2>
+                        <p class="subtitle" style="margin-bottom: 1rem;">Bulk upload records. First row must contain
+                            headers.</p>
+                        <div class="form-group">
+                            <div style="display:flex; gap:0.5rem; align-items: center;">
+                                <button id="btnImportRecords" class="btn-secondary"
+                                    style="background: var(--primary); color: white;">
+                                    📁 Select Excel File
+                                </button>
+                                <input type="file" id="recordImportFile" accept=".xlsx, .xls" class="hidden">
+                                <span id="recordImportFileName"
+                                    style="font-size: 0.9rem; color: var(--text-muted); margin-left: 10px;"></span>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="card" style="margin-top: 2rem; border-color: rgba(239, 68, 68, 0.3);">
+                        <h2 style="color: var(--danger);">Danger Zone</h2>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button id="clearRecords" class="btn-text"
+                                style="color: var(--danger); flex: 1; border: 1px solid var(--danger); padding: 1rem; border-radius: 12px;">
+                                🗑️ Clear All Records Only
+                            </button>
+                            <button id="clearAthletes" class="btn-text"
+                                style="color: var(--danger); flex: 1; border: 1px solid var(--danger); padding: 1rem; border-radius: 12px;">
+                                🗑️ Clear All Athletes Only
+                            </button>
+                            <button id="clearAll" class="btn-text"
+                                style="color: var(--danger); flex: 1; border: 1px solid var(--danger); padding: 1rem; border-radius: 12px;">
+                                ⚠️ Factory Reset (Clear Everything)
+                            </button>
+                        </div>
+                    </section>
+                </div> <!-- End Setting Data -->
+            </div> <!-- End View Settings -->
+
+            <!-- JSON VIEWER VIEW -->
+
+
+            <!-- HISTORY VIEW -->
+            <div id="view-history" class="view-section">
+                <section class="card">
+                    <h2>Record History (Archive)</h2>
+                    <p class="subtitle" style="margin-bottom: 1rem;">View and manage previous versions of edited
+                        records.</p>
+                    <div class="table-container">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"></th>
+                                    <th>Event</th>
+                                    <th>Athlete</th>
+                                    <th>Gender</th>
+                                    <th>Age Group</th>
+                                    <th>Mark</th>
+                                    <th>IDR</th>
+                                    <th>Wind</th>
+                                    <th>Date</th>
+                                    <th>Race Name</th>
+                                    <th>Archived At</th>
+                                    <th class="actions-col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyListBody">
+                                <!-- History items injected here -->
+                            </tbody>
+                        </table>
+                        <div id="historyEmptyState" class="empty-state hidden">
+                            <p>No archived records found.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- STATS VIEW -->
+            <div id="view-stats" class="view-section">
+                <!-- Sub Navigation -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <nav class="sub-nav">
+                        <button class="sub-tab stats-sub-tab" data-stat-subtab="medals">Medal Statistics</button>
+                        <button class="sub-tab stats-sub-tab" data-stat-subtab="wma">WMA Statistics</button>
+                    </nav>
+                </div>
+
+                <!-- MEDAL STATS SUB-VIEW -->
+                <div id="stats-medals" class="stats-section">
+                    <section class="card">
+                        <div class="section-header">
+                            <h2>Athlete Statistics</h2>
+                        </div>
+                        <div class="table-container">
+                            <div class="filters"
+                                style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+                                <select id="statsFilterName" class="form-control" style="width:200px;"
+                                    onchange="renderStats()">
+                                    <option value="all">All Athletes</option>
+                                </select>
+                                <select id="statsFilterGender" class="form-control" style="width:auto;"
+                                    onchange="renderStats()">
+                                    <option value="all">All Genders</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Mixed">Mixed</option>
+                                </select>
+                                <select id="statsFilterCategory" class="form-control" style="width:auto;"
+                                    onchange="renderStats()">
+                                    <option value="all">All Categories</option>
+                                </select>
+                                <select id="statsFilterMedal" class="form-control" style="width:auto;"
+                                    onchange="renderStats()">
+                                    <option value="all">All Ranks</option>
+                                    <option value="gold">🥇 Gold</option>
+                                    <option value="silver">🥈 Silver</option>
+                                    <option value="bronze">🥉 Bronze</option>
+                                    <option value="any">🏅 Any Medal</option>
+                                </select>
+                            </div>
+                            <table class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortStats('generalRank')"
+                                            style="width:7%; text-align:center; cursor:pointer;">Gen Rank ↕</th>
+                                        <th onclick="sortStats('name')" style="cursor:pointer; width:58%;">Athlete Name
+                                            ↕
+                                        </th>
+                                        <th onclick="sortStats('ratio')"
+                                            style="cursor:pointer; width:10%; text-align:right;">
+                                            Ratio % ↕</th>
+                                        <th onclick="sortStats('ageRank')"
+                                            style="width:15%; text-align:right; cursor:pointer;">
+                                            Age Rank (Medal) ↕</th>
+                                        <th onclick="sortStats('count')"
+                                            style="cursor:pointer; width:10%; text-align:right;">
+                                            Record Count ↕</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="statsTableBody">
+                                    <!-- Stats injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div> <!-- End Medal Stats -->
+
+                <!-- WMA STATS SUB-VIEW -->
+                <div id="stats-wma" class="stats-section hidden">
+                    <section class="card">
+                        <div class="table-container">
+                            <div class="wma-controls"
+                                style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; align-items:center; background:var(--bg-nav); padding:1rem; border-radius:12px;">
+                                <div class="form-group" style="flex:1; min-width:150px; margin-bottom:0;">
+                                    <label>Event</label>
+                                    <select id="wmaReportFilterEvent" class="form-control" onchange="renderWMAReport()">
+                                        <option value="all">All Events</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:150px; margin-bottom:0;">
+                                    <label>Athlete</label>
+                                    <select id="wmaReportFilterAthlete" class="form-control"
+                                        onchange="renderWMAReport()">
+                                        <option value="all">All Athletes</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:120px; margin-bottom:0;">
+                                    <label>Gender</label>
+                                    <select id="wmaReportFilterGender" class="form-control"
+                                        onchange="renderWMAReport()">
+                                        <option value="all">All Genders</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Mixed">Mixed</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:120px; margin-bottom:0;">
+                                    <label>Age Group</label>
+                                    <select id="wmaReportFilterAgeGroup" class="form-control"
+                                        onchange="renderWMAReport()">
+                                        <option value="all">All Groups</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:100px; margin-bottom:0;">
+                                    <label>Year</label>
+                                    <select id="wmaReportFilterYear" class="form-control" onchange="renderWMAReport()">
+                                        <option value="all">All Years</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <table class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortWMAReport('event')" style="cursor:pointer">Event ↕</th>
+                                        <th onclick="sortWMAReport('athlete')" style="cursor:pointer">Athlete ↕</th>
+                                        <th onclick="sortWMAReport('gender')" style="cursor:pointer">Gender ↕</th>
+                                        <th onclick="sortWMAReport('age')" style="cursor:pointer">Age ↕</th>
+                                        <th onclick="sortWMAReport('mark')" style="cursor:pointer">Mark ↕</th>
+                                        <th onclick="sortWMAReport('idr')" style="cursor:pointer">IDR ↕</th>
+                                        <th onclick="sortWMAReport('rateConv')" style="cursor:pointer">RateConv ↕</th>
+                                        <th onclick="sortWMAReport('ageMark')" style="cursor:pointer">AgeMark ↕</th>
+                                        <th onclick="sortWMAReport('pts')" style="cursor:pointer">Pts ↕</th>
+                                        <th onclick="sortWMAReport('date')" style="cursor:pointer">Date ↕</th>
+                                        <th onclick="sortWMAReport('raceName')" style="cursor:pointer">Race Name ↕</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="wmaReportBody">
+                                    <!-- WMA Records injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+
+            </div>
+    </div>
+
+
+
+    </main>
+    </div>
+
+    <!-- Libraries for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="font_data.js"></script>
+
+    <!-- Formula Modal -->
+    <div id="formulaModal" class="modal-overlay hidden">
+        <div class="modal-content card">
+            <h2>Parsing Formula</h2>
+            <p class="subtitle" style="margin-bottom: 1rem; text-transform: none;">Set the rules for translating marks
+                to values.</p>
+            <div class="form-group">
+                <label for="modalFormulaInput">Rule Definition</label>
+                <textarea id="modalFormulaInput" rows="8"
+                    placeholder="HOWTO: Time; Rule: IF IN MARK THERE ARE 1 DOT THE FORMAT IS Seconds.Hundreds of Second ELSE FORMAT IS Minutes.Seconds.Hundreds of Second"
+                    style="background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 1rem; color: var(--text-main); width: 100%; font-family: inherit; outline: none; transition: all 0.2s;"></textarea>
+            </div>
+            <div class="form-actions" style="justify-content: flex-end; margin-top: 1.5rem;">
+                <button id="cancelFormulaBtn" class="btn-secondary" style="width: auto;">Cancel</button>
+                <button id="saveFormulaBtn" class="btn-primary" style="width: auto;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data/wma_data_2023.js"></script>
+    <script src="data/iaaf_data.js"></script>
+    <script src="data/event_rules.js"></script>
+    <script src="seed_data.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
