@@ -1028,15 +1028,17 @@
 
     <!-- WMA Recalculation Progress Modal -->
     <div id="recalcModal" class="modal-overlay hidden">
-        <div class="modal-content card" style="text-align: center;">
-            <h2 id="recalcTitle">Recalculating WMA Statistics</h2>
-            <p id="recalcStatus" class="subtitle" style="margin-bottom: 1rem;">Preparing data...</p>
+        <div class="modal-content card" style="text-align: center; max-width: 400px;">
+            <div class="spinner" style="margin: 0 auto 1.5rem;"></div>
+            <h2 id="recalcTitle" style="margin-bottom: 0.5rem;">WMA Recalculation</h2>
+            <p id="recalcStatus" class="subtitle" style="margin-bottom: 1.5rem;">Processing records...</p>
 
             <div class="progress-container">
                 <div id="recalcProgressBar" class="progress-bar"></div>
             </div>
 
-            <div id="recalcProgressText" class="progress-text">0 / 0 records</div>
+            <div id="recalcProgressText" class="progress-text" style="font-weight: 600; color: var(--primary);">0 / 0
+                records</div>
         </div>
     </div>
 

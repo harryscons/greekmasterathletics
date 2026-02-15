@@ -2226,15 +2226,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusText = document.getElementById('recalcStatus');
         const progressText = document.getElementById('recalcProgressText');
 
-        if (modal) modal.classList.remove('hidden');
-        if (statusText) statusText.textContent = 'Recalculating...';
+        if (modal) {
+            modal.classList.remove('hidden');
+            if (progressBar) progressBar.style.width = '0%';
+            if (statusText) statusText.textContent = 'Calculating...';
+            if (progressText) progressText.textContent = `0 / ${records.length} records`;
+        }
 
         console.log("Starting global WMA recalculation...");
         let count = 0;
         const total = (records || []).length;
 
         // Process in batches to keep UI responsive
-        const batchSize = 25;
+        const batchSize = 50;
         for (let i = 0; i < total; i++) {
             calculateRecordWMAStats(records[i]);
             count++;
@@ -2243,35 +2247,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 const percent = Math.round((count / total) * 100);
                 if (progressBar) progressBar.style.width = percent + '%';
                 if (progressText) progressText.textContent = `${count} / ${total} records`;
-                // Allow UI to update
-                await new Promise(resolve => setTimeout(resolve, 0));
+                // Brief pause to allow browser to render the update
+                await new Promise(r => setTimeout(r, 10));
             }
         }
 
-        // Save updated records
+        // Phase 2: Saving
+        if (statusText) statusText.textContent = 'Saving to Database...';
         localStorage.setItem('tf_records', JSON.stringify(records));
 
         if (db) {
             try {
                 await db.ref('records').set(records);
-                if (statusText) statusText.textContent = 'Completed!';
+                if (statusText) statusText.textContent = 'Success!';
                 setTimeout(() => {
                     if (modal) modal.classList.add('hidden');
                     alert(`Successfully recalculated and saved WMA stats for ${count} records.`);
                     renderWMAReport();
-                }, 500);
+                }, 800);
             } catch (err) {
                 console.error("Firebase save failed:", err);
                 if (modal) modal.classList.add('hidden');
                 alert('Recalculation complete locally, but failed to sync with cloud. Check console for details.');
             }
         } else {
-            if (statusText) statusText.textContent = 'Completed locally!';
+            if (statusText) statusText.textContent = 'Success (Local)!';
             setTimeout(() => {
                 if (modal) modal.classList.add('hidden');
                 alert(`Recalculated stats for ${count} records locally.`);
                 renderWMAReport();
-            }, 500);
+            }, 800);
         }
     }
 
