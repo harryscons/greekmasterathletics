@@ -2046,7 +2046,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fAgeGroup = document.getElementById('wmaReportFilterAgeGroup')?.value || 'all';
         const fYear = document.getElementById('wmaReportFilterYear')?.value || 'all';
 
-        let sortedRecords = records.filter(r => {
+        let filtered = records.filter(r => {
             if (!r.athlete || !r.mark || r.athlete.trim() === '' || r.mark.trim() === '') return false;
 
             if (fEvent !== 'all' && r.event !== fEvent) return false;
@@ -2088,8 +2088,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
+        // Pre-calculate stats for all filtered records so sorting works on calculated fields
+        let sortedRecords = filtered.map(r => calculateRecordWMAStats({ ...r }));
+
         sortedRecords.sort((a, b) => {
             let valA, valB;
+
+            const getNumeric = (val) => {
+                const n = parseFloat(val);
+                return isNaN(n) ? -1 : n;
+            };
 
             switch (wmaSortField) {
                 case 'athlete':
@@ -2108,21 +2116,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     valB = getAge(b);
                     break;
                 case 'mark':
-                    // Use calculateRateConv to get numeric value for comparison
                     valA = calculateRateConv(a.mark, a.event);
                     valB = calculateRateConv(b.mark, b.event);
                     break;
                 case 'rateConv':
-                    valA = parseFloat(a.wmaRate) || 0;
-                    valB = parseFloat(b.wmaRate) || 0;
+                    valA = getNumeric(a.wmaRate);
+                    valB = getNumeric(b.wmaRate);
                     break;
                 case 'ageMark':
-                    valA = parseFloat(a.wmaAgeMark) || 0;
-                    valB = parseFloat(b.wmaAgeMark) || 0;
+                    valA = getNumeric(a.wmaAgeMark);
+                    valB = getNumeric(b.wmaAgeMark);
                     break;
                 case 'pts':
-                    valA = parseInt(a.wmaPoints) || 0;
-                    valB = parseInt(b.wmaPoints) || 0;
+                    valA = getNumeric(a.wmaPoints);
+                    valB = getNumeric(b.wmaPoints);
                     break;
                 case 'date':
                     valA = a.date ? new Date(a.date).getTime() : 0;
