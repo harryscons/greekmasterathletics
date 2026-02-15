@@ -708,7 +708,7 @@ select:focus {
     padding: 0.5rem;
     background: var(--bg-nav);
     border-radius: 12px;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.25rem;
     flex-wrap: wrap;
     transition: background 0.3s ease;
 }
