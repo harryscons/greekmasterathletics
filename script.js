@@ -713,6 +713,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 console.log("User logged out");
+
+                // --- LOCAL ADMIN BYPASS ---
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log("🚧 Local Environment Detected: Auto-logging in as Admin");
+                    const localAdminPayload = {
+                        email: 'harryscons@gmail.com',
+                        displayName: 'Local Admin (Dev)',
+                        uid: 'local_admin_dev',
+                        photoURL: 'https://ui-avatars.com/api/?name=Local+Admin&background=random'
+                    };
+                    currentUser = localAdminPayload;
+                    updateUIForAuth(localAdminPayload);
+
+                    if (userProfile && btnLogin) {
+                        btnLogin.classList.add('hidden');
+                        userProfile.classList.remove('hidden');
+                        if (userAvatar) userAvatar.src = localAdminPayload.photoURL;
+                    }
+                    return;
+                }
+                // ---------------------------
+
                 currentUser = null;
                 updateUIForAuth(null);
 

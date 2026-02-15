@@ -200,6 +200,16 @@ body {
 /* Header */
 header {
     text-align: center;
+    padding: 2rem 1rem;
+}
+
+.status-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.5rem;
 }
 
 .logo-container {
