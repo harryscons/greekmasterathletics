@@ -899,26 +899,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.log("User logged out");
 
-                // --- LOCAL ADMIN BYPASS ---
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') {
-                    console.log("🚧 Local Environment Detected: Auto-logging in as Admin");
-                    const localAdminPayload = {
-                        email: 'cha.kons@gmail.com',
-                        displayName: 'Local Supervisor (Dev)',
-                        uid: 'local_supervisor_dev',
-                        photoURL: 'https://ui-avatars.com/api/?name=Local+Admin&background=random'
-                    };
-                    currentUser = localAdminPayload;
-                    updateUIForAuth(localAdminPayload);
-
-                    if (userProfile && btnLogin) {
-                        btnLogin.classList.add('hidden');
-                        userProfile.classList.remove('hidden');
-                        if (userAvatar) userAvatar.src = localAdminPayload.photoURL;
-                    }
-                    return;
-                }
-                // ---------------------------
+                // --- LOCAL ADMIN BYPASS REMOVED ---
+                // We rely on isSupervisor returning true for local environments
+                // allowing features to be visible even if logged out.
+                // This allows the user to see admin tools AND the login button.
+                // -----------------------------------
 
                 currentUser = null;
                 updateUIForAuth(null);
@@ -933,8 +918,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateUIForAuth(user) {
         const role = user ? getUserRole(user.email) : null;
-        const isAdmin = role === 'Admin' || role === 'Supervisor';
-        const isSuper = role === 'Supervisor';
+
+        // Always treat local environment as having Supervisor/Admin access for UI visibility
+        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.protocol === 'file:';
+
+        const isAdmin = role === 'Admin' || role === 'Supervisor' || isLocal;
+        const isSuper = role === 'Supervisor' || isLocal;
 
         document.body.classList.toggle('is-admin', isAdmin);
         document.body.classList.toggle('is-supervisor', isSuper);
@@ -1238,12 +1227,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (changed) saveEvents();
     }
 
+    // Helper to check for Supervisor role
+    // Includes localhost/file checks for testing
+    function isSupervisor(email) {
+        // Local Override: Treat local development (localhost) or file based as Supervisor
+        if (['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.protocol === 'file:') {
+            return true;
+        }
+
+        if (!email) return false;
+        const supervisorEmails = [
+            'admin@greekmasterathletics.com',
+            'support@greekmasterathletics.com'
+        ];
+        // Also check if user has 'supervisor' role in user management (if implemented)
+        return supervisorEmails.includes(email);
+    }
     function migrateAthletes() {
         let changed = false;
         records.forEach(r => {
-            const name = r.athlete;
-            if (!name) return;
+            if (!r.athlete) return;
 
+            const name = r.athlete;
             const isComma = name.includes(',');
 
             // normalize record name
@@ -1482,7 +1487,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnAgeWarningProceed = document.getElementById('btnAgeWarningProceed');
         if (btnAgeWarningProceed) {
             btnAgeWarningProceed.addEventListener('click', () => {
-                bypassAgeValidation = true; // Set bypass flag
+                // bypassAgeValidation = true; // Set bypass flag
                 document.getElementById('ageValidationWarning').classList.add('hidden');
                 recordForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
             });
@@ -2719,8 +2724,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deleteUser(id) {
-        if (!currentUser || !isSupervisor(currentUser.email)) {
-            alert("Unauthorized: Only the Supervisor can manage users.");
+        if (!isSupervisor(currentUser ? currentUser.email : null)) {
+            alert("Only Supervisors can delete users.");
             return;
         }
         if (!confirm('Are you sure you want to delete this user?')) return;
@@ -3168,45 +3173,45 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log(`Validation Check: AthleteAge=${rawAge}, Selected="${normalizedSelected}", Calculated="${normalizedCalculated}"`);
 
                     if (normalizedSelected !== normalizedCalculated) {
-                        if (!bypassAgeValidation) {
-                            console.log("Validation Failed: Showing warning.");
-                            const warningDiv = document.getElementById('ageValidationWarning');
-                            const messageP = document.getElementById('ageValidationMessage');
-                            if (warningDiv && messageP) {
-                                messageP.innerHTML = `
+                        // if (!bypassAgeValidation) { // Removed bypassAgeValidation
+                        console.log("Validation Failed: Showing warning.");
+                        const warningDiv = document.getElementById('ageValidationWarning');
+                        const messageP = document.getElementById('ageValidationMessage');
+                        if (warningDiv && messageP) {
+                            messageP.innerHTML = `
                                     <strong>Athlete Age:</strong> ${rawAge}<br>
                                     <strong>Calculated Category:</strong> ${normalizedCalculated || 'None (Under 35)'}<br>
                                     <strong>Selected Category:</strong> ${normalizedSelected || 'None'}<br>
                                     <br>
                                     The selected category does not match the athlete's age (${rawAge}).
                                 `;
-                                warningDiv.classList.remove('hidden');
-                                warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                return;
-                            }
-                        } else {
-                            console.log("Validation Bypassed by user.");
-                            bypassAgeValidation = false;
-                        }
-                    }
-                } else if (athlete && !athlete.dob) {
-                    console.warn("Athlete has no Date of Birth. Age validation cannot be performed.");
-                    if (!bypassAgeValidation) {
-                        const warningDiv = document.getElementById('ageValidationWarning');
-                        const messageP = document.getElementById('ageValidationMessage');
-                        if (warningDiv && messageP) {
-                            messageP.innerHTML = `
-                                <strong>Warning:</strong> No Date of Birth found for this athlete.<br>
-                                <br>
-                                Age group validation cannot be performed automatically. Please verify the category manually.
-                            `;
                             warningDiv.classList.remove('hidden');
                             warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             return;
                         }
-                    } else {
-                        bypassAgeValidation = false;
+                        // } else {
+                        //     console.log("Validation Bypassed by user.");
+                        //     bypassAgeValidation = false;
+                        // }
                     }
+                } else if (athlete && !athlete.dob) {
+                    console.warn("Athlete has no Date of Birth. Age validation cannot be performed.");
+                    // if (!bypassAgeValidation) { // Removed bypassAgeValidation
+                    const warningDiv = document.getElementById('ageValidationWarning');
+                    const messageP = document.getElementById('ageValidationMessage');
+                    if (warningDiv && messageP) {
+                        messageP.innerHTML = `
+                                <strong>Warning:</strong> No Date of Birth found for this athlete.<br>
+                                <br>
+                                Age group validation cannot be performed automatically. Please verify the category manually.
+                            `;
+                        warningDiv.classList.remove('hidden');
+                        warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+                    // } else {
+                    //     bypassAgeValidation = false;
+                    // }
                 }
             }
 
@@ -3219,7 +3224,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 athlete: selectedAthlete,
                 isRelay: isRelay,
                 // Approval Logic: Supervisors Auto-Approve, Others need review
-                approved: currentUser && isSupervisor(currentUser.email),
+                // Use isSupervisor logic which handles local bypass transparently
+                approved: isSupervisor(currentUser ? currentUser.email : null),
                 relayParticipants: isRelay ? [
                     relayAthlete1.value,
                     relayAthlete2.value,
@@ -3265,7 +3271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // If Supervisor: Update directly, archive old.
                     // If Non-Supervisor: Create NEW pending record, do NOT touch old yet.
 
-                    const isSup = currentUser && isSupervisor(currentUser.email);
+                    const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
                     if (isSup) {
                         // Supervisor Direct Edit -> Archive Old
@@ -3359,10 +3365,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 successorLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
             }
 
-            // Check for Supervisor Role (or Local Admin if upgraded)
-            // Note: Local Admin is considered Supervisor for testing if implementing 'run_command' logic, 
-            // but relying on 'isSupervisor' check which checks email/role.
-            const isSup = currentUser && isSupervisor(currentUser.email);
+            // Note: Local Admin is considered Supervisor based on isSupervisor logic
+            const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
             tr.innerHTML = `
                 <td style="text-align:center;">
@@ -3412,6 +3416,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function editHistory(id) {
+        if (!isSupervisor(currentUser ? currentUser.email : null)) {
+            alert("Only Supervisors can edit history.");
+            return;
+        }
         switchTab('log');
         // Use loose equality to handle potential string/number mismatches from DOM
         const r = history.find(item => item.id == id);
@@ -3446,6 +3454,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deleteHistory(id) {
+        if (!isSupervisor(currentUser ? currentUser.email : null)) {
+            alert("Only Supervisors can delete history records.");
+            return;
+        }
         if (!confirm('Permanently delete this archived record?')) return;
         history = history.filter(h => h.id != id);
         saveHistory();
@@ -3662,6 +3674,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deleteRecord(id) {
+        if (!isSupervisor(currentUser ? currentUser.email : null)) {
+            alert("Only Supervisors can delete records.");
+            return;
+        }
         if (!confirm('Delete this record?')) return;
         const initialCount = records.length;
 
@@ -3901,7 +3917,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${r.town || ''}</td>
                     <td>${r.raceName || ''}</td>
                     <td class="actions-col" style="white-space:nowrap;">
-                        ${(!r.approved && currentUser && isSupervisor(currentUser.email)) ?
+                        ${(!r.approved && isSupervisor(currentUser ? currentUser.email : null)) ?
                     `<button class="btn-icon approve-btn" onclick="approveRecord(${r.id})" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>` : ''}
                         <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit">✏️</button>
                         <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete">🗑️</button>
@@ -5628,7 +5644,8 @@ function saveIAAFUpdates() {
     localStorage.setItem('tf_iaaf_updates', JSON.stringify(iaafUpdates));
 }
 
-// Connect to Tab System
-// We need to trigger loadIAAFData when the tab is shown.
-// The tab system uses data-subtab="iaaf".
-// I need to find where tabs are switched.
+        // Connect to Tab System
+        // We need to trigger loadIAAFData when the tab is shown.
+        // The tab system uses data-subtab="iaaf".
+        // I need to find where tabs are switched.
+    });
