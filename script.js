@@ -3217,7 +3217,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 wind: windInput ? windInput.value : '',
                 date: dateInput ? dateInput.value : '',
                 town: townInput ? townInput.value : '',
-                country: countryInput ? countryInput.value : ''
+                country: countryInput ? countryInput.value : '',
+                updatedBy: currentUser ? (currentUser.displayName || currentUser.email) : 'System'
             };
 
             // Calculate WMA stats for new record
@@ -3245,6 +3246,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const oldRecord = { ...records[index] };
                     oldRecord.archivedAt = new Date().toISOString();
                     oldRecord.originalId = oldRecord.id;
+                    // Preserve existing updatedBy or tag as System if missing
+                    if (!oldRecord.updatedBy) oldRecord.updatedBy = 'System';
+
                     // Use integer ID to avoid float precision issues in DOM
                     oldRecord.id = Date.now() + Math.floor(Math.random() * 100000);
 
@@ -3324,6 +3328,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${r.wind || '-'}</td>
                 <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
                 <td>${r.raceName || '-'}</td>
+                <td>${r.updatedBy || 'System'}</td>
                 <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
                  <td>
                     <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
@@ -3339,11 +3344,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 trDetail.innerHTML = `
                     <td colspan="1" style="border-top:none; background:transparent;"></td>
                     <td colspan="11" style="padding: 8px 10px; border-top:none; background: rgba(16, 185, 129, 0.1);">
-                        <div style="display:flex; gap:1rem; align-items:center;">
-                            <span style="font-weight:bold; color:var(--success);">${successor.athlete}</span>
-                            <span>${successor.mark} (${successor.wind || '-'})</span>
-                            <span>| ${new Date(successor.date).toLocaleDateString('en-GB')}</span>
-                            <span>| ${successor.raceName || '-'}</span>
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:4px;">
+                                <strong>Edited by:</strong> ${r.updatedBy || 'System'}
+                            </div>
+                            <div style="display:flex; gap:1rem; align-items:center;">
+                                <span style="font-weight:bold; color:var(--success);">${successor.athlete}</span>
+                                <span>${successor.mark} (${successor.wind || '-'})</span>
+                                <span>| ${new Date(successor.date).toLocaleDateString('en-GB')}</span>
+                                <span>| ${successor.raceName || '-'}</span>
+                            </div>
                         </div>
                     </td>
                 `;
@@ -5447,6 +5457,11 @@ Replace ALL current data with this backup?`;
         }
 
         console.log("🚀 System verified and ready for interaction.");
+    }
+
+    function initThemes() {
+        const savedTheme = localStorage.getItem('tf_theme') || 'theme-default';
+        setTheme(savedTheme);
     }
 
 });
