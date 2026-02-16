@@ -3888,7 +3888,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>
                         <div style="font-weight:500; display:flex; align-items:center; gap:5px;">
                             ${r.athlete}
-                            ${!r.approved ? `<span class="badge-pending" style="background:#fef3c7; color:#d97706; padding:2px 6px; border-radius:4px; font-size:0.7em; font-weight:bold; border:1px solid #d97706;">Προς Εγκριση</span>` : ''}
                         </div>
                         ${hasNotes ? `
                             <div class="record-notes ${isHideNotesChecked ? 'hidden' : ''}" style="font-size:0.85em; color:var(--text-muted); font-style:italic; margin-top:2px; white-space:pre-wrap;">${r.notes}</div>
@@ -3896,7 +3895,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     <td>${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
                     <td style="font-weight:700; color:var(--accent);">${r.mark}</td>
-                    <td>${r.idr || '-'}</td>
+                    <td>${!r.approved ? `<span class="badge-pending">Προς Εγκριση</span>` : (r.idr || '-')}</td>
                     <td>${r.wind || '-'}</td>
                     <td style="white-space:nowrap;">${new Date(r.date).toLocaleDateString('en-GB')}</td>
                     <td>${r.town || ''}</td>
@@ -5571,9 +5570,9 @@ window.runDiagnostics = async function () {
 function migrateApprovalStatus() {
     let changed = false;
     records.forEach(r => {
-        if (typeof r.approved === 'undefined') {
-            // If records are older than this feature, assume they are approved.
-            // Or maybe just approve ALL, as per user request "Mark all current records as true".
+        // Unconditionally approve records that are NOT part of a pending edit workflow (replacesId)
+        // This fixes the issue where user sees all existing records as unapproved.
+        if (!r.replacesId && r.approved !== true) {
             r.approved = true;
             changed = true;
         }

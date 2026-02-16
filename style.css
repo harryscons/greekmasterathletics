@@ -911,22 +911,21 @@ body.is-admin td:nth-child(10) {
 .badge-pending {
     background: #fef3c7;
     /* Pale Yellow/Amber */
-    color: #b45309;
-    /* Dark Amber Text */
-    padding: 1px 4px;
+    color: #0f172a;
+    /* Dark Blue Text (matching bg-dark) */
+    padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.6em;
-    /* Smaller font */
+    font-size: 0.75em;
     font-weight: bold;
     border: 1px solid #d97706;
-
-    /* Absolute Positioning */
-    position: absolute;
-    top: -8px;
-    right: -25px;
     white-space: nowrap;
-    /* Prevent wrapping */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    vertical-align: middle;
+}
+
+td .badge-pending {
+    /* If covering IDR content in existing layout, maybe center it? */
+    margin: 0 auto;
 }
 
 /* Ensure parent cell has relative positioning for badge context */
