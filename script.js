@@ -6,13 +6,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let wmaSortOrder = 'asc';
     let db = null;
 
-    // --- State ---
+    // --- State & Initial Loading ---
     let records = [];
     let events = [];
     let athletes = [];
     let countries = [];
     let history = [];
     let appUsers = [];
+
+    // Fast Pass: Load immediate cache from LocalStorage for permission checks & initial state
+    try {
+        records = JSON.parse(localStorage.getItem('tf_records')) || [];
+        events = JSON.parse(localStorage.getItem('tf_events')) || [];
+        athletes = JSON.parse(localStorage.getItem('tf_athletes')) || [];
+        countries = JSON.parse(localStorage.getItem('tf_countries')) || [];
+        history = JSON.parse(localStorage.getItem('tf_history')) || [];
+        appUsers = JSON.parse(localStorage.getItem('tf_users')) || [];
+        console.log("⚡ Fast Pass: Core state initialized from LocalStorage");
+    } catch (e) {
+        console.error("❌ Fast Pass failed:", e);
+    }
 
     // --- Performance Indexes ---
     let iaafLookupMap = {}; // Event -> Gender -> [sorted records]
@@ -767,7 +780,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // REPLACE WITH YOUR ALLOWED EMAILS
     const allowedEmails = [
         "harryscons@gmail.com",
-        "cha.kons@gmail.com"
+        "cha.kons@gmail.com",
+        "efimitselou@gmail.com"
     ];
 
     function isUserAllowed(email) {
@@ -909,17 +923,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadLocalDataOnly() {
         console.log("Loading data from LocalStorage fallback...");
-        try {
-            records = JSON.parse(localStorage.getItem('tf_records')) || [];
-            events = JSON.parse(localStorage.getItem('tf_events')) || [];
-            athletes = JSON.parse(localStorage.getItem('tf_athletes')) || [];
-            countries = JSON.parse(localStorage.getItem('tf_countries')) || [];
-            history = JSON.parse(localStorage.getItem('tf_history')) || [];
-            appUsers = JSON.parse(localStorage.getItem('tf_users')) || [];
-            renderAll();
-        } catch (e) {
-            console.error("Local load failed", e);
-        }
+        // Fast Pass already loaded the data, just need to render
+        renderAll();
     }
 
     // Initialize Firebase
