@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let athletes = [];
     let countries = [];
     let history = [];
+    let appUsers = [];
 
     // --- Performance Indexes ---
     let iaafLookupMap = {}; // Event -> Gender -> [sorted records]
@@ -121,6 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const raceNameInput = document.getElementById('raceName');
     const idrInput = document.getElementById('idr');
     const notesInput = document.getElementById('notes');
+
+    // User Manager
+    const userForm = document.getElementById('userForm');
+    const editingUserIdInput = document.getElementById('editingUserId');
+    const newUserName = document.getElementById('newUserName');
+    const newUserRole = document.getElementById('newUserRole');
+    const newUserEmail = document.getElementById('newUserEmail');
+    const userListBody = document.getElementById('userListBody');
+    const userSubmitBtn = document.getElementById('userSubmitBtn');
 
     // --- UI/UX Helpers ---
     const themeSelect = document.getElementById('themeSelect');
@@ -244,17 +254,25 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("History updated from Firebase:", history.length);
             renderHistoryList();
         });
+
+        // Listen for Users
+        db.ref('users').on('value', (snapshot) => {
+            appUsers = snapshot.val() || [];
+            console.log("Users updated from Firebase:", appUsers.length);
+            renderUserList();
+        });
     }
 
     function renderAll() {
         populateYearDropdown();
         populateAthleteFilter();
         renderReports();
+        renderUserList();
     }
 
     // Migration Helper: Push local data to Firebase if Firebase is empty
     async function migrateLocalToCloud(db) {
-        const nodes = ['records', 'athletes', 'events', 'countries', 'history'];
+        const nodes = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
         let cloudIsEmpty = true;
 
         // 1. Check if cloud has any records at all
@@ -863,6 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
             athletes = JSON.parse(localStorage.getItem('tf_athletes')) || [];
             countries = JSON.parse(localStorage.getItem('tf_countries')) || [];
             history = JSON.parse(localStorage.getItem('tf_history')) || [];
+            appUsers = JSON.parse(localStorage.getItem('tf_users')) || [];
             renderAll();
         } catch (e) {
             console.error("Local load failed", e);
@@ -1633,6 +1652,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnBackup) btnBackup.addEventListener('click', exportDatabase);
         if (btnRestore) btnRestore.addEventListener('click', importDatabase);
+
+        if (userForm) userForm.addEventListener('submit', handleUserSubmit);
+        if (userListBody) {
+            userListBody.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.edit-user-btn');
+                const delBtn = e.target.closest('.delete-user-btn');
+                if (editBtn) editUser(editBtn.dataset.id);
+                if (delBtn) deleteUser(delBtn.dataset.id);
+            });
+        }
 
         if (reportTableBody) {
             reportTableBody.addEventListener('click', (e) => {
@@ -2597,6 +2626,77 @@ document.addEventListener('DOMContentLoaded', () => {
         if (db) db.ref('athletes').set(athletes);
         localStorage.setItem('tf_athletes', JSON.stringify(athletes));
         rebuildPerformanceIndexes();
+    }
+
+
+    // --- User Manager ---
+    function handleUserSubmit(e) {
+        e.preventDefault();
+        const id = editingUserIdInput.value || Date.now().toString();
+        const name = newUserName.value.trim();
+        const role = newUserRole.value;
+        const email = newUserEmail.value.trim();
+
+        if (!name || !email) return alert("All fields are required.");
+
+        const existingIdx = appUsers.findIndex(u => u.id === id);
+        const userObj = { id, name, role, email };
+
+        if (existingIdx !== -1) {
+            appUsers[existingIdx] = userObj;
+        } else {
+            appUsers.push(userObj);
+        }
+
+        saveUsers();
+        userForm.reset();
+        editingUserIdInput.value = '';
+        userSubmitBtn.textContent = 'Add';
+    }
+
+    function editUser(id) {
+        const user = appUsers.find(u => u.id === id);
+        if (!user) return;
+
+        editingUserIdInput.value = user.id;
+        newUserName.value = user.name;
+        newUserRole.value = user.role;
+        newUserEmail.value = user.email;
+        userSubmitBtn.textContent = 'Update';
+        // Scroll to form
+        userForm.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function deleteUser(id) {
+        if (!confirm('Are you sure you want to delete this user?')) return;
+        appUsers = appUsers.filter(u => u.id !== id);
+        saveUsers();
+    }
+
+    function renderUserList() {
+        if (!userListBody) return;
+        userListBody.innerHTML = '';
+        appUsers.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${u.name}</td>
+                <td><span class="badge" style="background:var(--primary); color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${u.role}</span></td>
+                <td>${u.email}</td>
+                <td style="text-align:center;">
+                    <div style="display:flex; gap:0.5rem; justify-content:center;">
+                        <button class="edit-user-btn btn-text" data-id="${u.id}" title="Edit">✏️</button>
+                        <button class="delete-user-btn btn-text" data-id="${u.id}" title="Delete">🗑️</button>
+                    </div>
+                </td>
+            `;
+            userListBody.appendChild(tr);
+        });
+    }
+
+    function saveUsers() {
+        if (db) db.ref('users').set(appUsers);
+        localStorage.setItem('tf_users', JSON.stringify(appUsers));
+        renderUserList();
     }
 
 
