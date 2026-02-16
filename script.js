@@ -14,6 +14,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let history = [];
     let appUsers = [];
 
+    // --- Data Protection ---
+    let isDataReady = false; // Flag to prevent saving over cloud until sync is verified
+    const loadedNodes = new Set();
+    const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
+
+    function checkReady() {
+        if (isDataReady) return;
+        // Verify we have received snapshots for all critical data nodes
+        if (loadedNodes.size >= CORE_NODES.length) {
+            console.log("✅ Data Consensus Reached. System is now READY.");
+            isDataReady = true;
+            // Now safe to run migrations and seeding
+            if (typeof runPostLoadMaintenance === 'function') {
+                runPostLoadMaintenance();
+            } else {
+                renderAll();
+            }
+        }
+    }
+
     // Fast Pass: Load immediate cache from LocalStorage for permission checks & initial state
     try {
         records = JSON.parse(localStorage.getItem('tf_records')) || [];
@@ -213,12 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
         athleteLookupMap = {};
         if (typeof athletes !== 'undefined' && Array.isArray(athletes)) {
             athletes.forEach(a => {
-                const key = `${a.lastName}, ${a.firstName}`;
-                const existing = athleteLookupMap[key];
-                // Prioritize preserving the entry with a DOB
-                if (!existing || (!existing.dob && a.dob)) {
-                    athleteLookupMap[key] = a;
-                }
+                athleteLookupMap[`${a.lastName}, ${a.firstName}`] = a;
             });
         }
     }
@@ -241,6 +256,8 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('records').on('value', (snapshot) => {
             records = valToArray(snapshot.val());
             console.log("Records updated from Firebase:", records.length);
+            loadedNodes.add('records');
+            checkReady();
             renderAll();
         });
 
@@ -249,11 +266,14 @@ document.addEventListener('DOMContentLoaded', () => {
             athletes = valToArray(snapshot.val());
             console.log("Athletes updated from Firebase. Count:", athletes.length);
 
-            // Log a sample if athletes exist to verify DOB presence during sync
+            // Sync Trace: Verify if DOB is being received correctly
             if (athletes.length > 0) {
                 const sample = athletes.find(a => a.dob) || athletes[0];
-                console.log(`Sync Trace: Sample Athlete ${sample.lastName} has DOB: ${sample.dob || 'MISSING'}`);
+                console.log(`Sync Trace: Sample athlete ${sample.lastName} has DOB: ${sample.dob || 'MISSING'}`);
             }
+
+            loadedNodes.add('athletes');
+            checkReady();
 
             rebuildPerformanceIndexes(); // Rebuild name map for age calc
             populateAthleteDropdown();
@@ -265,6 +285,9 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('events').on('value', (snapshot) => {
             events = valToArray(snapshot.val());
             console.log("Events updated from Firebase:", events.length);
+            loadedNodes.add('events');
+            checkReady();
+
             if (events.length > 0) repairEventMetadata(); // Auto-repair on load
             populateEventDropdowns();
             renderEventList();
@@ -274,6 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('countries').on('value', (snapshot) => {
             countries = valToArray(snapshot.val());
             console.log("Countries updated from Firebase:", countries.length);
+            loadedNodes.add('countries');
+            checkReady();
+
             populateCountryDropdown();
             renderCountryList();
         });
@@ -282,12 +308,20 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('history').on('value', (snapshot) => {
             history = valToArray(snapshot.val());
             console.log("History updated from Firebase:", history.length);
+            loadedNodes.add('history');
+            checkReady();
+
             renderHistoryList();
         });
 
         // Listen for Users
         db.ref('users').on('value', (snapshot) => {
-            appUsers = valToArray(snapshot.val());
+            const val = snapshot.val();
+            if (val) {
+                appUsers = Array.isArray(val) ? val : Object.values(val);
+            } else {
+                appUsers = [];
+            }
             console.log("Users updated from Firebase. Count:", appUsers.length);
             renderUserList();
         });
@@ -303,35 +337,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // Migration Helper: Push local data to Firebase if Firebase is empty
     async function migrateLocalToCloud(db) {
         const nodes = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
-        let migrationSourceFound = false;
+        let cloudIsEmpty = true;
 
-        console.log("Checking for local data to push to cloud (Node-by-node protection)...");
-
-        for (const node of nodes) {
-            try {
-                // Check if this specific node exists in the cloud
-                const sn = await db.ref(node).once('value');
-                if (!sn.exists()) {
-                    // Cloud node is empty, see if we have local data to push
-                    const storageKey = node === 'history' ? 'tf_history' : `tf_${node}`;
-                    const localData = JSON.parse(localStorage.getItem(storageKey)) || [];
-
-                    if (localData.length > 0) {
-                        console.log(`Pushing ${localData.length} ${node} from localStorage to cloud...`);
-                        await db.ref(node).set(localData);
-                        migrationSourceFound = true;
-                    }
-                }
-            } catch (e) {
-                console.error(`Migration check failed for ${node}`, e);
-                if (e.code === 'PERMISSION_DENIED') {
-                    updateCloudStatus('permission_denied');
-                }
+        // 1. Check if cloud has any records at all
+        try {
+            const sn = await db.ref('records').once('value');
+            if (sn.exists()) cloudIsEmpty = false;
+        } catch (e) {
+            console.error("Cloud check failed", e);
+            if (e.code === 'PERMISSION_DENIED') {
+                updateCloudStatus('permission_denied');
             }
         }
 
-        if (migrationSourceFound) {
-            console.log("Local-to-Cloud sync/migration complete.");
+        if (!cloudIsEmpty) return; // Cloud has data, no migration needed
+
+        console.log("Cloud database empty. Attempting migration/seeding...");
+
+        let migrationSourceFound = false;
+
+        // 2. Try to migrate from LocalStorage first
+        for (const node of nodes) {
+            try {
+                const localData = JSON.parse(localStorage.getItem(`tf_${node === 'history' ? 'history' : node}`)) || [];
+                if (localData.length > 0) {
+                    console.log(`Pushing ${localData.length} ${node} from localStorage to cloud...`);
+                    await db.ref(node).set(localData);
+                    migrationSourceFound = true;
+                }
+            } catch (e) {
+                console.error(`Error migrating ${node}:`, e);
+            }
         }
 
         // 3. IF still empty, try to seed from track_data.json (Emergency Fallback)
@@ -998,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Default to Reports
         switchTab('reports');
 
-        // Populate dropdowns from potential local data
+        // Populate dropdowns from potential local data (Fast Pass)
         populateIAAFEventDropdown();
         populateWMAEventDropdown();
 
@@ -1034,54 +1070,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Flatpickr init failed:', e);
         }
 
-        // Migrations
-        migrateAthletes();
-        migrateAthleteNames();
-        migrateEvents();
-        migrateRecordFormat();
-        migrateAgeGroupsToStartAge();
-        migrateEventDescriptions();
-
-        // 5. Migration: Convert range age groups back to single numbers (e.g., "50-54" -> "50")
-        let ageGroupRangeMigrationCount = 0;
-        records.forEach(r => {
-            if (r.ageGroup && r.ageGroup.includes('-') && r.ageGroup !== '100+') {
-                const parts = r.ageGroup.split('-');
-                const ageNum = parseInt(parts[0]);
-                if (!isNaN(ageNum)) {
-                    r.ageGroup = ageNum.toString();
-                    ageGroupRangeMigrationCount++;
-                }
-            }
-        });
-        if (ageGroupRangeMigrationCount > 0) {
-            console.log(`Migrated ${ageGroupRangeMigrationCount} records from range format back to single number.`);
-            saveRecords();
-        }
-
-        // Seeding
-        // Seeding
-        seedEvents();
-        seedCountries();
-        seedRecords();
-
-        populateAgeSelects();
-        populateEventDropdowns();
-        populateAthleteDropdown();
-        populateAthleteFilter();
-        populateCountryDropdown();
-
-        renderEventList();
-        renderAthleteList();
-        renderCountryList();
-        renderCountryList();
-        renderHistoryList(); // Ensure this exists
-
-        // Run cleanup
-        cleanupDuplicateAthletes();
-
-        console.log("Rendered lists. Now populating year dropdown..."); // DEBUG
-
         // Defaults
         if (dateInput) {
             if (datePicker) {
@@ -1089,25 +1077,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (dateInput.type === 'date') {
                 dateInput.valueAsDate = new Date();
             } else {
-                // Fallback for text input
                 dateInput.value = new Date().toISOString().split('T')[0];
             }
         }
 
-        try {
-            populateYearDropdown();
-            // Set default to "All Years" to ensure visibility of data
-            if (filterYear) {
-                filterYear.value = 'all';
-            }
-            console.log("populateYearDropdown finished. Default set to All Years."); // DEBUG
-        } catch (e) {
-            console.error("Error in populateYearDropdown:", e);
-            alert("Error initializing Year Dropdown: " + e.message);
-        }
-
-        renderReports();
-        console.log("Init finished."); // DEBUG
+        console.log("UI Init finished. Waiting for data consensus..."); // DEBUG
     }
 
     function seedEvents() {
@@ -2672,6 +2646,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveAthletes() {
+        if (!isDataReady) {
+            console.warn("Save aborted: System not ready (Synchronization in progress).");
+            return;
+        }
         if (db) db.ref('athletes').set(athletes);
         localStorage.setItem('tf_athletes', JSON.stringify(athletes));
         rebuildPerformanceIndexes();
@@ -2791,6 +2769,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveUsers() {
+        if (!isDataReady) return;
         console.log("💾 saveUsers: saving to Firebase and LocalStorage...", appUsers);
         if (db) db.ref('users').set(appUsers);
         localStorage.setItem('tf_users', JSON.stringify(appUsers));
@@ -3023,6 +3002,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveCountries() {
+        if (!isDataReady) return;
         if (db) db.ref('countries').set(countries);
         localStorage.setItem('tf_countries', JSON.stringify(countries));
     }
@@ -3132,12 +3112,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveEvents() {
+        if (!isDataReady) return;
         if (db) db.ref('events').set(events);
         localStorage.setItem('tf_events', JSON.stringify(events));
     }
 
     // --- Records ---
     function saveHistory() {
+        if (!isDataReady) return;
         if (db) db.ref('history').set(history);
         localStorage.setItem('tf_history', JSON.stringify(history));
     }
@@ -3235,8 +3217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 wind: windInput ? windInput.value : '',
                 date: dateInput ? dateInput.value : '',
                 town: townInput ? townInput.value : '',
-                country: countryInput ? countryInput.value : '',
-                updatedBy: currentUser ? currentUser.displayName : 'Unknown'
+                country: countryInput ? countryInput.value : ''
             };
 
             // Calculate WMA stats for new record
@@ -3342,9 +3323,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${r.idr || '-'}</td>
                 <td>${r.wind || '-'}</td>
                 <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
-            <td>${r.raceName || '-'}</td>
-            <td>${r.updatedBy || 'Supervisor'}</td>
-            <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
+                <td>${r.raceName || '-'}</td>
+                <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
                  <td>
                     <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
                     <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>
@@ -3359,9 +3339,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 trDetail.innerHTML = `
                     <td colspan="1" style="border-top:none; background:transparent;"></td>
                     <td colspan="11" style="padding: 8px 10px; border-top:none; background: rgba(16, 185, 129, 0.1);">
-                        <div style="margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted); font-style: italic;">
-                            Edited by: <span style="font-weight: 600; color: var(--text);">${successor.updatedBy || 'Supervisor'}</span>
-                        </div>
                         <div style="display:flex; gap:1rem; align-items:center;">
                             <span style="font-weight:bold; color:var(--success);">${successor.athlete}</span>
                             <span>${successor.mark} (${successor.wind || '-'})</span>
@@ -3661,6 +3638,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveRecords() {
+        if (!isDataReady) {
+            console.warn("Save aborted: System not ready (Synchronization in progress).");
+            return;
+        }
         if (db) db.ref('records').set(records);
         localStorage.setItem('tf_records', JSON.stringify(records));
         populateAthleteFilter();
@@ -5409,9 +5390,63 @@ Replace ALL current data with this backup?`;
         }
     }
 
-    function initThemes() {
-        const savedTheme = localStorage.getItem('tf_theme') || 'theme-default';
-        setTheme(savedTheme);
+    function runPostLoadMaintenance() {
+        console.log("🛠️ Running Post-Load Maintenance (Migrations & Seeding)...");
+        let recordsUpdated = false;
+
+        // 1. Core Data Prep
+        rebuildPerformanceIndexes();
+        if (typeof repairEventMetadata === 'function') repairEventMetadata();
+
+        // 2. Seeding
+        if (typeof seedEvents === 'function') seedEvents();
+        if (typeof seedCountries === 'function') seedCountries();
+        if (typeof seedRecords === 'function') seedRecords();
+
+        // 3. Migrations
+        if (typeof migrateAthletes === 'function') migrateAthletes();
+        if (typeof migrateAthleteNames === 'function') migrateAthleteNames();
+        if (typeof migrateEvents === 'function') migrateEvents();
+        if (typeof migrateRecordFormat === 'function') migrateRecordFormat();
+        if (typeof migrateAgeGroupsToStartAge === 'function') migrateAgeGroupsToStartAge();
+        if (typeof migrateEventDescriptions === 'function') migrateEventDescriptions();
+
+        // Specific Migration: Normalize age groups (e.g. "50-54" -> "50")
+        records.forEach(r => {
+            if (r.ageGroup && typeof r.ageGroup === 'string' && r.ageGroup.includes('-') && r.ageGroup !== '100+') {
+                const parts = r.ageGroup.split('-');
+                const ageNum = parseInt(parts[0]);
+                if (!isNaN(ageNum)) {
+                    r.ageGroup = ageNum.toString();
+                    recordsUpdated = true;
+                }
+            }
+        });
+
+        // 4. Cleanup
+        if (typeof cleanupDuplicateAthletes === 'function') cleanupDuplicateAthletes();
+
+        // 5. UI Population
+        populateAgeSelects();
+        populateEventDropdowns();
+        populateAthleteDropdown();
+        populateAthleteFilter();
+        populateCountryDropdown();
+        if (typeof populateYearDropdown === 'function') populateYearDropdown();
+
+        // 6. Rendering
+        renderEventList();
+        renderAthleteList();
+        renderCountryList();
+        renderHistoryList();
+        renderReports();
+
+        if (recordsUpdated) {
+            console.log("💾 Post-Load Maintenance complete. Changes persisted.");
+            saveRecords();
+        }
+
+        console.log("🚀 System verified and ready for interaction.");
     }
 
 });
