@@ -848,6 +848,32 @@ document.addEventListener('DOMContentLoaded', () => {
         return getUserRole(email) === 'Supervisor';
     }
 
+    function attemptLocalAdminLogin() {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') {
+            console.log("🚧 Local Environment Detected: Auto-logging in as Local Admin");
+            const localAdminPayload = {
+                email: 'admin@greekmasterathletics.com',
+                displayName: 'Local Supervisor (Offline)',
+                uid: 'local_supervisor_offline',
+                photoURL: 'https://ui-avatars.com/api/?name=Local+Admin&background=random&color=fff&background=10b981'
+            };
+            currentUser = localAdminPayload;
+            updateUIForAuth(localAdminPayload);
+
+            const btnLogin = document.getElementById('btnLogin');
+            const userProfile = document.getElementById('userProfile');
+            const userAvatar = document.getElementById('userAvatar');
+
+            if (userProfile && btnLogin) {
+                btnLogin.classList.add('hidden');
+                userProfile.classList.remove('hidden');
+                if (userAvatar) userAvatar.src = localAdminPayload.photoURL;
+            }
+            return true;
+        }
+        return false;
+    }
+
     function initAuth() {
         auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
@@ -897,13 +923,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (userAvatar) userAvatar.src = user.photoURL;
                 }
             } else {
-                console.log("User logged out");
+                console.log("User logged out (Auth Check)");
 
-                // --- LOCAL ADMIN BYPASS REMOVED ---
-                // We rely on isSupervisor returning true for local environments
-                // allowing features to be visible even if logged out.
-                // This allows the user to see admin tools AND the login button.
-                // -----------------------------------
+                // --- LOCAL ADMIN BYPASS RESTORED ---
+                if (attemptLocalAdminLogin()) return;
+                // ---------------------------
 
                 currentUser = null;
                 updateUIForAuth(null);
@@ -1000,11 +1024,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Firebase initialization failed:", error);
             updateCloudStatus('disconnected');
+            // Try explicit local fallback for auth too
+            attemptLocalAdminLogin();
             loadLocalDataOnly();
         }
     } else {
         console.warn("Firebase not configured. Using localStorage only.");
         updateCloudStatus('disconnected');
+        attemptLocalAdminLogin();
         loadLocalDataOnly();
     }
 
@@ -4016,8 +4043,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function exportToExcel() {
-        const data = getExportData();
-        if (!data.length) return alert('No data to export!');
+        // Enforce STRICT approval check (must be explicitly true)
+        const data = getFilteredRecords().filter(r => r.approved === true);
+        if (!data.length) return alert('No approved data to export!');
 
         const timestamp = new Date().toLocaleString('el-GR');
         let csv = `Ημερομηνία Εξαγωγής: ${timestamp}\n\n`;
@@ -4051,8 +4079,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function exportToHTML() {
-        const data = getExportData();
-        if (!data.length) return alert('No data to export!');
+        // Enforce STRICT approval check (must be explicitly true)
+        // getExportData() already filters approved !== false, but we want strict === true for safety as per request
+        // Actually getExportData used to filter !== false. Let's make it strict inside getExportData OR here.
+        // User said: "not approved records ... are not exporting"
+        // Let's rely on getExportData but refined.
+
+        const data = getFilteredRecords().filter(r => r.approved === true);
+        if (!data.length) return alert('No approved data to export!');
 
         const timestamp = new Date().toLocaleString('el-GR');
 
@@ -4159,7 +4193,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const timestamp = new Date().toLocaleString('el-GR');
-        const data = getExportData();
+        // Enforce STRICT approval check
+        const data = getFilteredRecords().filter(r => r.approved === true);
+
 
         const mapper = r => [
             r.event,
@@ -4591,7 +4627,9 @@ Replace ALL current data with this backup?`;
             if (isRelay) return;
 
             // --- Approval Logic: Exclude Unapproved Records from Medal Stats ---
-            if (r.approved === false) return;
+            // STRICT check: must be true. Undefined is NOT enough for stats as per "newly migrated" logic?
+            // Actually, migration sets undefined -> true. So this is safe.
+            if (r.approved !== true) return;
 
             if (r.athlete) {
                 if (!agg[r.athlete]) agg[r.athlete] = { count: 0, minYear: null, maxYear: null };
@@ -5586,16 +5624,17 @@ window.runDiagnostics = async function () {
 function migrateApprovalStatus() {
     let changed = false;
     records.forEach(r => {
-        // Unconditionally approve records that are NOT part of a pending edit workflow (replacesId)
-        // This fixes the issue where user sees all existing records as unapproved.
-        if (!r.replacesId && r.approved !== true) {
+        // Only migrate if the field is completely MISSING (undefined).
+        // Do NOT touch records that are explicitly false (pending).
+        if (typeof r.approved === 'undefined') {
+            // For legacy records, we assume they are approved.
             r.approved = true;
             changed = true;
         }
     });
     if (changed) {
         saveRecords();
-        console.log("Migrated Approval Status: All existing records set to approved.");
+        console.log("Migrated Approval Status: All legacy records set to approved.");
     }
 }
 
@@ -5648,4 +5687,5 @@ function saveIAAFUpdates() {
         // We need to trigger loadIAAFData when the tab is shown.
         // The tab system uses data-subtab="iaaf".
         // I need to find where tabs are switched.
-    });
+    }
+});
