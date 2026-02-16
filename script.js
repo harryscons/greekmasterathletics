@@ -875,30 +875,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initAuth() {
-        auth = firebase.auth();
-        const provider = new firebase.auth.GoogleAuthProvider();
-
         const btnLogin = document.getElementById('btnLogin');
         const btnLogout = document.getElementById('btnLogout');
         const userProfile = document.getElementById('userProfile');
         const userAvatar = document.getElementById('userAvatar');
 
+        // Safe Login Handler
         if (btnLogin) {
-            btnLogin.addEventListener('click', () => {
-                auth.signInWithPopup(provider).catch((error) => {
-                    console.error("Login Failed:", error);
-                    alert("Login Failed: " + error.message);
-                });
-            });
+            // Remove existing listeners (not easily possible without reference, but we can overwite or just add)
+            // Better to clone and replace to strip old listeners if re-initializing, but for now just add.
+            btnLogin.onclick = () => {
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    firebase.auth().signInWithPopup(provider).catch((error) => {
+                        console.error("Login Failed:", error);
+                        alert("Login Failed: " + error.message);
+                    });
+                } else {
+                    console.log("Firebase Auth not available. Attempting Local Login.");
+                    if (!attemptLocalAdminLogin()) {
+                        alert("Cloud Login is unavailable (Offline).");
+                    }
+                }
+            };
         }
+
+        if (typeof firebase === 'undefined' || !firebase.auth) {
+            console.warn("Firebase Auth module not loaded. Skipping Auth listeners.");
+            return;
+        }
+
+        auth = firebase.auth();
 
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
                 auth.signOut().then(() => {
                     console.log("User signed out");
-                    window.location.reload(); // Reload to clear state
+                    window.location.reload();
                 }).catch((error) => {
                     console.error("Logout Failed:", error);
+                    // Force reload anyway
+                    window.location.reload();
                 });
             });
         }
@@ -1025,13 +1042,28 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Firebase initialization failed:", error);
             updateCloudStatus('disconnected');
             // Try explicit local fallback for auth too
-            attemptLocalAdminLogin();
+            if (attemptLocalAdminLogin()) {
+                // Attach listener specifically for offline logout/login cycling
+                const btnLogin = document.getElementById('btnLogin');
+                if (btnLogin) {
+                    btnLogin.onclick = () => {
+                        if (!attemptLocalAdminLogin()) alert("Offline Login Failed.");
+                    };
+                }
+            }
             loadLocalDataOnly();
         }
     } else {
         console.warn("Firebase not configured. Using localStorage only.");
         updateCloudStatus('disconnected');
         attemptLocalAdminLogin();
+        // Attach listener for manual login attempt in unconfigured state
+        const btnLogin = document.getElementById('btnLogin');
+        if (btnLogin) {
+            btnLogin.onclick = () => {
+                if (!attemptLocalAdminLogin()) alert("Offline Login Failed.");
+            };
+        }
         loadLocalDataOnly();
     }
 
@@ -5687,5 +5719,4 @@ function saveIAAFUpdates() {
         // We need to trigger loadIAAFData when the tab is shown.
         // The tab system uses data-subtab="iaaf".
         // I need to find where tabs are switched.
-    }
 });
