@@ -903,9 +903,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') {
                     console.log("🚧 Local Environment Detected: Auto-logging in as Admin");
                     const localAdminPayload = {
-                        email: 'harryscons@gmail.com',
-                        displayName: 'Local Admin (Dev)',
-                        uid: 'local_admin_dev',
+                        email: 'cha.kons@gmail.com',
+                        displayName: 'Local Supervisor (Dev)',
+                        uid: 'local_supervisor_dev',
                         photoURL: 'https://ui-avatars.com/api/?name=Local+Admin&background=random'
                     };
                     currentUser = localAdminPayload;
@@ -940,10 +940,20 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.toggle('is-supervisor', isSuper);
 
         // Toggle Visibility of Admin features
-        const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .edit-btn, .delete-btn, .delete-country-btn, .edit-history-btn, .delete-history-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
+        // Toggle Visibility of Admin features (General Admin)
+        const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .edit-btn, .delete-btn, .delete-country-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
 
         adminElements.forEach(el => {
             if (isAdmin) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+            if (isAdmin) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+        });
+
+        // Toggle Visibility of Supervisor features (Critical Actions: History Edit/Delete, User Mgmt)
+        const supervisorElements = document.querySelectorAll('.edit-history-btn, .delete-history-btn');
+        supervisorElements.forEach(el => {
+            if (isSuper) el.classList.remove('hidden');
             else el.classList.add('hidden');
         });
 
@@ -1298,6 +1308,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function migrateAthleteNames() {
         let changed = false;
+
         athletes.forEach(a => {
             if (a.name) {
                 const parts = a.name.trim().split(' ');
@@ -2187,6 +2198,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const ev = events.find(e => e.name === r.event);
             const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
             if (isRelay) return false;
+
+            // --- Approval Logic: Exclude Unapproved Records from WMA Stats ---
+            if (r.approved === false) return false;
 
             return true;
         });
@@ -3204,6 +3218,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 trackType: trackTypeInput ? trackTypeInput.value : 'Outdoor',
                 athlete: selectedAthlete,
                 isRelay: isRelay,
+                // Approval Logic: Supervisors Auto-Approve, Others need review
+                approved: currentUser && isSupervisor(currentUser.email),
                 relayParticipants: isRelay ? [
                     relayAthlete1.value,
                     relayAthlete2.value,
@@ -3240,25 +3256,53 @@ document.addEventListener('DOMContentLoaded', () => {
                     switchTab('history');
                 }, 1000);
             } else if (editingId) {
-                // Edit Live Record -> Archive Old Version
+                // Edit Live Record
                 const index = records.findIndex(r => r.id === editingId);
                 if (index !== -1) {
-                    const oldRecord = { ...records[index] };
-                    oldRecord.archivedAt = new Date().toISOString();
-                    oldRecord.originalId = oldRecord.id;
-                    // Preserve existing updatedBy or tag as System if missing
-                    if (!oldRecord.updatedBy) oldRecord.updatedBy = 'System';
+                    const originalRecord = records[index];
 
-                    // Use integer ID to avoid float precision issues in DOM
-                    oldRecord.id = Date.now() + Math.floor(Math.random() * 100000);
+                    // Logic: 
+                    // If Supervisor: Update directly, archive old.
+                    // If Non-Supervisor: Create NEW pending record, do NOT touch old yet.
 
-                    history.unshift(oldRecord);
-                    saveHistory();
-                    renderHistoryList();
+                    const isSup = currentUser && isSupervisor(currentUser.email);
 
-                    records[index] = newRecord;
+                    if (isSup) {
+                        // Supervisor Direct Edit -> Archive Old
+                        const oldRecordData = { ...originalRecord };
+                        oldRecordData.archivedAt = new Date().toISOString();
+                        oldRecordData.originalId = oldRecordData.id; // Link to original
+                        if (!oldRecordData.updatedBy) oldRecordData.updatedBy = 'System';
+                        // Unique ID for history
+                        oldRecordData.id = Date.now() + Math.random();
+
+                        history.unshift(oldRecordData);
+                        saveHistory();
+
+                        // Update Live Record in place
+                        // Ensure ID remains same to maintain history linkage? 
+                        // Actually, if we keep ID, external links break? No, usually keep ID.
+                        // But newRecord has `editingId` as ID.
+                        records[index] = newRecord;
+
+                        submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
+                    } else {
+                        // Non-Supervisor -> Propose Edit (New Pending Record)
+                        // Do NOT archive old yet.
+                        // New record ID is already set to `editingId` in code above? 
+                        // Wait, `newRecord.id` uses `editingId` if set.
+                        // We need a NEW ID for the pending record, but we must link to `editingId` as `replacesId`.
+
+                        newRecord.id = Date.now() + Math.random();
+                        newRecord.replacesId = editingId; // The ID of the record being edited
+                        newRecord.approved = false; // Force false
+
+                        records.unshift(newRecord);
+
+                        submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
+                        alert("Your edit has been submitted for approval. Both the original and your proposed change are now visible.");
+                    }
                 }
-                submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
                 setTimeout(() => cancelEdit(), 1000);
             } else {
                 records.unshift(newRecord);
@@ -3315,6 +3359,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 successorLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
             }
 
+            // Check for Supervisor Role (or Local Admin if upgraded)
+            // Note: Local Admin is considered Supervisor for testing if implementing 'run_command' logic, 
+            // but relying on 'isSupervisor' check which checks email/role.
+            const isSup = currentUser && isSupervisor(currentUser.email);
+
             tr.innerHTML = `
                 <td style="text-align:center;">
                     ${successor ? `<button class="btn-icon expand-btn" data-id="${r.id}" style="font-weight:bold; color:var(--primary); cursor:pointer;">+</button>` : ''}
@@ -3330,7 +3379,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${r.raceName || '-'}</td>
                 <td>${r.updatedBy || 'System'}</td>
                 <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
-                 <td>
+                 <td class="history-actions-col" style="${isSup ? '' : 'display:none;'}">
                     <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
                     <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>
                 </td>
@@ -3837,7 +3886,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="font-weight:600;">${r.event}</td>
                     <td style="white-space:nowrap;">${ageDisplay}</td>
                     <td>
-                        <div style="font-weight:500;">${r.athlete}</div>
+                        <div style="font-weight:500; display:flex; align-items:center; gap:5px;">
+                            ${r.athlete}
+                            ${!r.approved ? `<span class="badge-pending" style="background:#fef3c7; color:#d97706; padding:2px 6px; border-radius:4px; font-size:0.7em; font-weight:bold; border:1px solid #d97706;">Προς Εγκριση</span>` : ''}
+                        </div>
                         ${hasNotes ? `
                             <div class="record-notes ${isHideNotesChecked ? 'hidden' : ''}" style="font-size:0.85em; color:var(--text-muted); font-style:italic; margin-top:2px; white-space:pre-wrap;">${r.notes}</div>
                         ` : ''}
@@ -3849,7 +3901,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="white-space:nowrap;">${new Date(r.date).toLocaleDateString('en-GB')}</td>
                     <td>${r.town || ''}</td>
                     <td>${r.raceName || ''}</td>
-                    <td class="actions-col">
+                    <td class="actions-col" style="white-space:nowrap;">
+                        ${(!r.approved && currentUser && isSupervisor(currentUser.email)) ?
+                    `<button class="btn-icon approve-btn" onclick="approveRecord(${r.id})" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>` : ''}
                         <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit">✏️</button>
                         <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete">🗑️</button>
                     </td>
@@ -3878,7 +3932,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getExportData() {
-        const rawData = getFilteredRecords();
+        // Filter out unapproved records from exports
+        const rawData = getFilteredRecords().filter(r => r.approved !== false);
         const categoryOrder = ['Track', 'Road', 'Field', 'Combined', 'Relay'];
 
         const sortedData = rawData.sort((a, b) => {
@@ -3993,13 +4048,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!records.length) return '';
             let rows = '';
             records.forEach(r => {
+                const hasNotes = r.notes && r.notes.trim().length > 0;
                 rows += `
                     <tr>
                         <td style="font-weight:600;">${r.event}</td>
                         <td>${r.ageGroup || '-'}</td>
                         <td>
-                            <div style="font-weight:600;">${r.athlete}</div>
-                            ${r.notes ? `<div style="font-size:0.85em; color:#666; font-style:italic; margin-top:2px;">${r.notes}</div>` : ''}
+                        <div style="font-weight:500; display:flex; align-items:center; gap:5px;">
+                            ${r.athlete}
+                            ${!r.approved ? `<span class="badge-pending">Προς Εγκριση</span>` : ''}
+                        </div>
+                        ${hasNotes ? `<div style="font-size:0.85em; color:#666; font-style:italic; margin-top:2px;">${r.notes}</div>` : ''}
                         </td>
                         <td>${r.dob}</td>
                         <td style="font-weight:700;">${r.mark}</td>
@@ -4515,6 +4574,9 @@ Replace ALL current data with this backup?`;
             const ev = events.find(e => e.name === r.event);
             const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
             if (isRelay) return;
+
+            // --- Approval Logic: Exclude Unapproved Records from Medal Stats ---
+            if (r.approved === false) return;
 
             if (r.athlete) {
                 if (!agg[r.athlete]) agg[r.athlete] = { count: 0, minYear: null, maxYear: null };
@@ -5420,6 +5482,7 @@ Replace ALL current data with this backup?`;
         if (typeof migrateRecordFormat === 'function') migrateRecordFormat();
         if (typeof migrateAgeGroupsToStartAge === 'function') migrateAgeGroupsToStartAge();
         if (typeof migrateEventDescriptions === 'function') migrateEventDescriptions();
+        if (typeof migrateApprovalStatus === 'function') migrateApprovalStatus();
 
         // Specific Migration: Normalize age groups (e.g. "50-54" -> "50")
         records.forEach(r => {
@@ -5502,6 +5565,63 @@ window.runDiagnostics = async function () {
         console.log("track_data.json access: FAILED (Likely restricted by local file protocol).");
         console.log("Tip: If running locally without a server, use the 'Restore' button to manually select track_data.json.");
     }
+};
+
+
+function migrateApprovalStatus() {
+    let changed = false;
+    records.forEach(r => {
+        if (typeof r.approved === 'undefined') {
+            // If records are older than this feature, assume they are approved.
+            // Or maybe just approve ALL, as per user request "Mark all current records as true".
+            r.approved = true;
+            changed = true;
+        }
+    });
+    if (changed) {
+        saveRecords();
+        console.log("Migrated Approval Status: All existing records set to approved.");
+    }
+}
+
+window.approveRecord = function (id) {
+    if (!confirm('Are you sure you want to approve this record?')) return;
+    const pendingRecord = records.find(r => r.id === id);
+    if (!pendingRecord) return;
+
+    // Check if this record replaces another one
+    if (pendingRecord.replacesId) {
+        const originalIndex = records.findIndex(r => r.id === pendingRecord.replacesId);
+        if (originalIndex !== -1) {
+            const originalRecord = records[originalIndex];
+
+            // Archive Original
+            const historyRecord = { ...originalRecord };
+            historyRecord.archivedAt = new Date().toISOString();
+            historyRecord.originalId = originalRecord.id;
+            historyRecord.id = Date.now() + Math.random(); // New ID for history
+            if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
+
+            history.unshift(historyRecord);
+            saveHistory();
+
+            // Remove Original from Live Records
+            // We splice it out. 
+            // Note: pendingRecord is already in `records`. We just keep it and update it.
+            records.splice(originalIndex, 1);
+        }
+        // Clear the linkage
+        pendingRecord.replacesId = undefined; // or delete
+        delete pendingRecord.replacesId;
+    }
+
+    // Approve
+    pendingRecord.approved = true;
+    // pendingRecord.updatedBy = currentUser... (Optional, keep original editor?)
+
+    saveRecords();
+    renderReports();
+    calculateRecordWMAStats(pendingRecord);
 };
 
 
