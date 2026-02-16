@@ -257,8 +257,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listen for Users
         db.ref('users').on('value', (snapshot) => {
-            appUsers = snapshot.val() || [];
-            console.log("Users updated from Firebase:", appUsers.length);
+            const val = snapshot.val();
+            if (val) {
+                appUsers = Array.isArray(val) ? val : Object.values(val);
+            } else {
+                appUsers = [];
+            }
+            console.log("Users updated from Firebase. Count:", appUsers.length);
             renderUserList();
         });
     }
@@ -765,6 +770,24 @@ document.addEventListener('DOMContentLoaded', () => {
         "cha.kons@gmail.com"
     ];
 
+    function isUserAllowed(email) {
+        if (!email) return false;
+        if (allowedEmails.includes(email)) return true;
+        return appUsers.some(u => u.email.toLowerCase() === email.toLowerCase());
+    }
+
+    function getUserRole(email) {
+        if (!email) return 'User';
+        if (email.toLowerCase() === 'cha.kons@gmail.com') return 'Supervisor';
+        if (email.toLowerCase() === 'harryscons@gmail.com') return 'Admin';
+        const user = appUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+        return user ? user.role : 'User';
+    }
+
+    function isSupervisor(email) {
+        return getUserRole(email) === 'Supervisor';
+    }
+
     function initAuth() {
         auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
@@ -797,7 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
         auth.onAuthStateChanged((user) => {
             if (user) {
                 // Check if user is allowed
-                if (allowedEmails.length > 0 && !allowedEmails.includes(user.email)) {
+                if (!isUserAllowed(user.email)) {
                     console.warn(`User ${user.email} is not in the allowed list.`);
                     alert(`Access Denied: The email ${user.email} is not authorized to edit records.`);
                     auth.signOut();
@@ -849,8 +872,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUIForAuth(user) {
-        const isAdmin = !!user;
+        const role = user ? getUserRole(user.email) : null;
+        const isAdmin = role === 'Admin' || role === 'Supervisor';
+        const isSuper = role === 'Supervisor';
+
         document.body.classList.toggle('is-admin', isAdmin);
+        document.body.classList.toggle('is-supervisor', isSuper);
 
         // Toggle Visibility of Admin features
         const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .edit-btn, .delete-btn, .delete-country-btn, .edit-history-btn, .delete-history-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
@@ -859,6 +886,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isAdmin) el.classList.remove('hidden');
             else el.classList.add('hidden');
         });
+
+        // Specific Visibility for User Management (Supervisor only)
+        const userManagementBtn = document.getElementById('subtab-users');
+        if (userManagementBtn) {
+            if (isSuper) userManagementBtn.classList.remove('hidden');
+            else userManagementBtn.classList.add('hidden');
+        }
 
         // Hide Save Button if not admin
         const navSave = document.getElementById('btnSaveCloud');
@@ -2632,6 +2666,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- User Manager ---
     function handleUserSubmit(e) {
         e.preventDefault();
+        console.log("🚀 handleUserSubmit called");
+
+        if (!currentUser || !isSupervisor(currentUser.email)) {
+            alert("Unauthorized: Only the Supervisor can manage users.");
+            return;
+        }
+
         const id = editingUserIdInput.value || Date.now().toString();
         const name = newUserName.value.trim();
         const role = newUserRole.value;
@@ -2655,8 +2696,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function editUser(id) {
+        if (!currentUser || !isSupervisor(currentUser.email)) {
+            alert("Unauthorized: Only the Supervisor can manage users.");
+            return;
+        }
         const user = appUsers.find(u => u.id === id);
-        if (!user) return;
 
         editingUserIdInput.value = user.id;
         newUserName.value = user.name;
@@ -2668,32 +2712,71 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deleteUser(id) {
+        if (!currentUser || !isSupervisor(currentUser.email)) {
+            alert("Unauthorized: Only the Supervisor can manage users.");
+            return;
+        }
         if (!confirm('Are you sure you want to delete this user?')) return;
         appUsers = appUsers.filter(u => u.id !== id);
         saveUsers();
     }
 
     function renderUserList() {
-        if (!userListBody) return;
+        if (!userListBody) {
+            console.error("❌ userListBody element not found in DOM");
+            return;
+        }
+
+        // Defensive: Ensure appUsers is an array
+        let displayUsers = appUsers;
+        if (appUsers && typeof appUsers === 'object' && !Array.isArray(appUsers)) {
+            console.warn("⚠️ appUsers is an object, converting to array for rendering");
+            displayUsers = Object.values(appUsers);
+        }
+
+        if (!Array.isArray(displayUsers)) {
+            console.error("❌ displayUsers is not an array:", displayUsers);
+            userListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Critical Data Error: User list format invalid</td></tr>';
+            return;
+        }
+
         userListBody.innerHTML = '';
-        appUsers.forEach(u => {
+
+        if (displayUsers.length === 0) {
+            userListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 2rem;">No users found. Use the form above to add an administrator or supervisor.</td></tr>';
+            return;
+        }
+
+        const isSuper = currentUser && isSupervisor(currentUser.email);
+
+        displayUsers.forEach(u => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${u.name}</td>
-                <td><span class="badge" style="background:var(--primary); color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${u.role}</span></td>
-                <td>${u.email}</td>
+                <td>${u.name || 'N/A'}</td>
+                <td><span class="badge" style="background:var(--primary); color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${u.role || 'User'}</span></td>
+                <td>${u.email || 'N/A'}</td>
                 <td style="text-align:center;">
+                    ${isSuper ? `
                     <div style="display:flex; gap:0.5rem; justify-content:center;">
                         <button class="edit-user-btn btn-text" data-id="${u.id}" title="Edit">✏️</button>
                         <button class="delete-user-btn btn-text" data-id="${u.id}" title="Delete">🗑️</button>
                     </div>
+                    ` : '<span style="color:var(--text-muted); font-size: 0.8rem;">Read Only</span>'}
                 </td>
             `;
             userListBody.appendChild(tr);
         });
+
+        // Hide form if not supervisor
+        if (userForm) {
+            if (isSuper) userForm.classList.remove('hidden');
+            else userForm.classList.add('hidden');
+        }
+        console.log(`✅ Rendered ${displayUsers.length} users in table.`);
     }
 
     function saveUsers() {
+        console.log("💾 saveUsers: saving to Firebase and LocalStorage...", appUsers);
         if (db) db.ref('users').set(appUsers);
         localStorage.setItem('tf_users', JSON.stringify(appUsers));
         renderUserList();
@@ -4060,6 +4143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             athletes: athletes,
             countries: countries,
             history: history,
+            users: appUsers,
             wma_data: wmaData,
             iaaf_updates: iaafUpdates,
             theme: localStorage.getItem('tf_theme') || 'theme-default',
@@ -4359,6 +4443,7 @@ document.addEventListener('DOMContentLoaded', () => {
 - ${db.athletes ? db.athletes.length : 0} athletes
 - ${db.events.length} events
 - ${db.history ? db.history.length : 0} history entries
+- ${db.users ? db.users.length : 0} users
 
 Replace ALL current data with this backup?`;
 
@@ -4370,6 +4455,7 @@ Replace ALL current data with this backup?`;
                 localStorage.setItem('tf_athletes', JSON.stringify(db.athletes || []));
                 localStorage.setItem('tf_countries', JSON.stringify(db.countries || []));
                 localStorage.setItem('tf_history', JSON.stringify(db.history || []));
+                localStorage.setItem('tf_users', JSON.stringify(db.users || []));
 
                 // Scoring Tables
                 if (db.wma_data) localStorage.setItem('tf_wma_data', JSON.stringify(db.wma_data));
