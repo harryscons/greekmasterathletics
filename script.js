@@ -213,7 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
         athleteLookupMap = {};
         if (typeof athletes !== 'undefined' && Array.isArray(athletes)) {
             athletes.forEach(a => {
-                athleteLookupMap[`${a.lastName}, ${a.firstName}`] = a;
+                const key = `${a.lastName}, ${a.firstName}`;
+                const existing = athleteLookupMap[key];
+                // Prioritize preserving the entry with a DOB
+                if (!existing || (!existing.dob && a.dob)) {
+                    athleteLookupMap[key] = a;
+                }
             });
         }
     }
@@ -227,17 +232,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadInitialData(db) {
         console.log("Fetching data from Firebase...");
 
+        const valToArray = (val) => {
+            if (!val) return [];
+            return Array.isArray(val) ? val : Object.values(val);
+        };
+
         // Listen for Records
         db.ref('records').on('value', (snapshot) => {
-            records = snapshot.val() || [];
+            records = valToArray(snapshot.val());
             console.log("Records updated from Firebase:", records.length);
             renderAll();
         });
 
         // Listen for Athletes
         db.ref('athletes').on('value', (snapshot) => {
-            athletes = snapshot.val() || [];
-            console.log("Athletes updated from Firebase:", athletes.length);
+            athletes = valToArray(snapshot.val());
+            console.log("Athletes updated from Firebase. Count:", athletes.length);
+
+            // Log a sample if athletes exist to verify DOB presence during sync
+            if (athletes.length > 0) {
+                const sample = athletes.find(a => a.dob) || athletes[0];
+                console.log(`Sync Trace: Sample Athlete ${sample.lastName} has DOB: ${sample.dob || 'MISSING'}`);
+            }
+
             rebuildPerformanceIndexes(); // Rebuild name map for age calc
             populateAthleteDropdown();
             populateAthleteFilter();
@@ -246,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listen for Events
         db.ref('events').on('value', (snapshot) => {
-            events = snapshot.val() || [];
+            events = valToArray(snapshot.val());
             console.log("Events updated from Firebase:", events.length);
             if (events.length > 0) repairEventMetadata(); // Auto-repair on load
             populateEventDropdowns();
@@ -255,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listen for Countries
         db.ref('countries').on('value', (snapshot) => {
-            countries = snapshot.val() || [];
+            countries = valToArray(snapshot.val());
             console.log("Countries updated from Firebase:", countries.length);
             populateCountryDropdown();
             renderCountryList();
@@ -263,19 +280,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listen for History
         db.ref('history').on('value', (snapshot) => {
-            history = snapshot.val() || [];
+            history = valToArray(snapshot.val());
             console.log("History updated from Firebase:", history.length);
             renderHistoryList();
         });
 
         // Listen for Users
         db.ref('users').on('value', (snapshot) => {
-            const val = snapshot.val();
-            if (val) {
-                appUsers = Array.isArray(val) ? val : Object.values(val);
-            } else {
-                appUsers = [];
-            }
+            appUsers = valToArray(snapshot.val());
             console.log("Users updated from Firebase. Count:", appUsers.length);
             renderUserList();
         });
@@ -291,37 +303,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Migration Helper: Push local data to Firebase if Firebase is empty
     async function migrateLocalToCloud(db) {
         const nodes = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
-        let cloudIsEmpty = true;
+        let migrationSourceFound = false;
 
-        // 1. Check if cloud has any records at all
-        try {
-            const sn = await db.ref('records').once('value');
-            if (sn.exists()) cloudIsEmpty = false;
-        } catch (e) {
-            console.error("Cloud check failed", e);
-            if (e.code === 'PERMISSION_DENIED') {
-                updateCloudStatus('permission_denied');
+        console.log("Checking for local data to push to cloud (Node-by-node protection)...");
+
+        for (const node of nodes) {
+            try {
+                // Check if this specific node exists in the cloud
+                const sn = await db.ref(node).once('value');
+                if (!sn.exists()) {
+                    // Cloud node is empty, see if we have local data to push
+                    const storageKey = node === 'history' ? 'tf_history' : `tf_${node}`;
+                    const localData = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+                    if (localData.length > 0) {
+                        console.log(`Pushing ${localData.length} ${node} from localStorage to cloud...`);
+                        await db.ref(node).set(localData);
+                        migrationSourceFound = true;
+                    }
+                }
+            } catch (e) {
+                console.error(`Migration check failed for ${node}`, e);
+                if (e.code === 'PERMISSION_DENIED') {
+                    updateCloudStatus('permission_denied');
+                }
             }
         }
 
-        if (!cloudIsEmpty) return; // Cloud has data, no migration needed
-
-        console.log("Cloud database empty. Attempting migration/seeding...");
-
-        let migrationSourceFound = false;
-
-        // 2. Try to migrate from LocalStorage first
-        for (const node of nodes) {
-            try {
-                const localData = JSON.parse(localStorage.getItem(`tf_${node === 'history' ? 'history' : node}`)) || [];
-                if (localData.length > 0) {
-                    console.log(`Pushing ${localData.length} ${node} from localStorage to cloud...`);
-                    await db.ref(node).set(localData);
-                    migrationSourceFound = true;
-                }
-            } catch (e) {
-                console.error(`Error migrating ${node}:`, e);
-            }
+        if (migrationSourceFound) {
+            console.log("Local-to-Cloud sync/migration complete.");
         }
 
         // 3. IF still empty, try to seed from track_data.json (Emergency Fallback)
