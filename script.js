@@ -3225,7 +3225,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 wind: windInput ? windInput.value : '',
                 date: dateInput ? dateInput.value : '',
                 town: townInput ? townInput.value : '',
-                country: countryInput ? countryInput.value : ''
+                country: countryInput ? countryInput.value : '',
+                updatedBy: currentUser ? currentUser.displayName : 'Unknown'
             };
 
             // Calculate WMA stats for new record
@@ -3331,8 +3332,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${r.idr || '-'}</td>
                 <td>${r.wind || '-'}</td>
                 <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
-                <td>${r.raceName || '-'}</td>
-                <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
+            <td>${r.raceName || '-'}</td>
+            <td>${r.updatedBy || 'Supervisor'}</td>
+            <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
                  <td>
                     <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
                     <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>
@@ -3347,6 +3349,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 trDetail.innerHTML = `
                     <td colspan="1" style="border-top:none; background:transparent;"></td>
                     <td colspan="11" style="padding: 8px 10px; border-top:none; background: rgba(16, 185, 129, 0.1);">
+                        <div style="margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted); font-style: italic;">
+                            Edited by: <span style="font-weight: 600; color: var(--text);">${successor.updatedBy || 'Supervisor'}</span>
+                        </div>
                         <div style="display:flex; gap:1rem; align-items:center;">
                             <span style="font-weight:bold; color:var(--success);">${successor.athlete}</span>
                             <span>${successor.mark} (${successor.wind || '-'})</span>
