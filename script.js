@@ -173,26 +173,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const cloudIcon = document.getElementById('cloudIcon');
     const cloudText = document.getElementById('cloudText');
 
+    function isLocalEnvironment() {
+        const hostname = window.location.hostname;
+        const protocol = window.location.protocol;
+        return hostname === 'localhost' ||
+            hostname === '127.0.0.1' ||
+            hostname.startsWith('192.168.') ||
+            hostname.startsWith('10.') ||
+            hostname.startsWith('172.') ||
+            protocol === 'file:';
+    }
+
     function updateCloudStatus(status) {
         if (!cloudIcon || !cloudText) return;
+
+        const local = isLocalEnvironment();
+
         switch (status) {
             case 'connected':
                 cloudIcon.style.color = '#10b981'; // Green
                 cloudText.textContent = 'Cloud Online';
+                cloudIcon.textContent = '●';
                 break;
             case 'connecting':
                 cloudIcon.style.color = '#f59e0b'; // Amber
                 cloudText.textContent = 'Connecting...';
+                cloudIcon.textContent = '●';
                 break;
             case 'permission_denied':
                 cloudIcon.style.color = '#ef4444'; // Red
                 cloudText.textContent = 'Permission Denied';
-                cloudIcon.title = "Firebase rules are blocking access. Set rules to public or test mode.";
+                cloudIcon.title = "Firebase rules are blocking access.";
+                cloudIcon.textContent = '●';
                 break;
             case 'disconnected':
             default:
-                cloudIcon.style.color = '#ef4444'; // Red
-                cloudText.textContent = 'Cloud Offline';
+                if (local) {
+                    cloudIcon.style.color = '#3b82f6'; // Blue
+                    cloudText.textContent = 'Local Mode (Supervisor)';
+                    cloudIcon.textContent = '🏠';
+                } else {
+                    cloudIcon.style.color = '#ef4444'; // Red
+                    cloudText.textContent = 'Cloud Offline';
+                    cloudIcon.textContent = '●';
+                }
                 break;
         }
     }
@@ -845,11 +869,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function isSupervisor(email) {
+        if (isLocalEnvironment()) return true;
         return getUserRole(email) === 'Supervisor';
     }
 
     function attemptLocalAdminLogin() {
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') {
+        if (isLocalEnvironment()) {
             console.log("🚧 Local Environment Detected: Auto-logging in as Local Admin");
             const localAdminPayload = {
                 email: 'admin@greekmasterathletics.com',
@@ -869,6 +894,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 userProfile.classList.remove('hidden');
                 if (userAvatar) userAvatar.src = localAdminPayload.photoURL;
             }
+            // Also ensure cloud status reflects this
+            updateCloudStatus('disconnected');
             return true;
         }
         return false;
@@ -878,23 +905,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleLoginClick() {
         console.log("🔐 Login Button Clicked");
 
-        // 1. Try Firebase Login if available
-        if (typeof firebase !== 'undefined' && firebase.auth && !['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.protocol !== 'file:') {
+        const local = isLocalEnvironment();
+
+        // 1. Try Firebase Login if available and NOT local
+        if (typeof firebase !== 'undefined' && firebase.auth && !local) {
             const provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithPopup(provider).catch((error) => {
                 console.error("Cloud Login Failed:", error);
-                // Fallback to local if cloud fails? Maybe not automatically, user should know.
                 alert("Cloud Login Failed: " + error.message);
             });
-        } else {
+        } else if (local) {
             // 2. Local / Offline Fallback
-            console.log("⚡ Attempting Local/Offline Login...");
+            console.log("⚡ Forcing Local Admin Login...");
             if (attemptLocalAdminLogin()) {
                 console.log("✅ Local Login Success");
             } else {
-                console.warn("❌ Local Login Not Allowed (Not LocalHost)");
-                alert("Cloud Login Unavailable & Not LocalHost.");
+                alert("Local Login Failed.");
             }
+        } else {
+            alert("Cloud Login is unavailable (Offline).");
         }
     }
 
@@ -968,7 +997,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const role = user ? getUserRole(user.email) : null;
 
         // Always treat local environment as having Supervisor/Admin access for UI visibility
-        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.protocol === 'file:';
+        const isLocal = isLocalEnvironment();
 
         const isAdmin = role === 'Admin' || role === 'Supervisor' || isLocal;
         const isSuper = role === 'Supervisor' || isLocal;
@@ -5616,111 +5645,109 @@ Replace ALL current data with this backup?`;
         setTheme(savedTheme);
     }
 
-});
+    window.runDiagnostics = async function () {
+        console.log("--- Application Diagnostics ---");
+        console.log("Protocol:", window.location.protocol);
 
-window.runDiagnostics = async function () {
-    console.log("--- Application Diagnostics ---");
-    console.log("Protocol:", window.location.protocol);
-
-    const nodes = ['records', 'athletes', 'events', 'countries'];
-    nodes.forEach(n => {
-        try {
-            const local = JSON.parse(localStorage.getItem(`tf_${n}`)) || [];
-            console.log(`LocalStorage ${n}:`, local.length);
-        } catch (e) {
-            console.log(`LocalStorage ${n}: ERROR PARSING`);
-        }
-    });
-
-    if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
-        console.log("Firebase App initialized.");
-        try {
-            const sn = await db.ref('records').once('value');
-            console.log("Cloud Access: SUCCESS. Records:", sn.exists() ? Object.keys(sn.val()).length : 0);
-        } catch (e) {
-            console.error("Cloud Access: FAILED.", e.code, e.message);
-            if (e.code === 'PERMISSION_DENIED') {
-                alert("Firebase Permission Denied! Please update your Firebase Realtime Database rules to 'Public' or 'Test Mode' in the Firebase Console.");
+        const nodes = ['records', 'athletes', 'events', 'countries'];
+        nodes.forEach(n => {
+            try {
+                const local = JSON.parse(localStorage.getItem(`tf_${n}`)) || [];
+                console.log(`LocalStorage ${n}:`, local.length);
+            } catch (e) {
+                console.log(`LocalStorage ${n}: ERROR PARSING`);
             }
+        });
+
+        if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
+            console.log("Firebase App initialized.");
+            try {
+                const sn = await db.ref('records').once('value');
+                console.log("Cloud Access: SUCCESS. Records:", sn.exists() ? Object.keys(sn.val()).length : 0);
+            } catch (e) {
+                console.error("Cloud Access: FAILED.", e.code, e.message);
+                if (e.code === 'PERMISSION_DENIED') {
+                    alert("Firebase Permission Denied! Please update your Firebase Realtime Database rules to 'Public' or 'Test Mode' in the Firebase Console.");
+                }
+            }
+        } else {
+            console.log("Firebase/Database not initialized or configured.");
         }
-    } else {
-        console.log("Firebase/Database not initialized or configured.");
+
+        try {
+            const res = await fetch('track_data.json');
+            console.log("track_data.json access:", res.ok ? "SUCCESS" : "FAILED (" + res.status + ")");
+        } catch (e) {
+            console.log("track_data.json access: FAILED (Likely restricted by local file protocol).");
+            console.log("Tip: If running locally without a server, use the 'Restore' button to manually select track_data.json.");
+        }
+    };
+
+
+    function migrateApprovalStatus() {
+        let changed = false;
+        records.forEach(r => {
+            // Only migrate if the field is completely MISSING (undefined).
+            // Do NOT touch records that are explicitly false (pending).
+            if (typeof r.approved === 'undefined') {
+                // For legacy records, we assume they are approved.
+                r.approved = true;
+                changed = true;
+            }
+        });
+        if (changed) {
+            saveRecords();
+            console.log("Migrated Approval Status: All legacy records set to approved.");
+        }
     }
 
-    try {
-        const res = await fetch('track_data.json');
-        console.log("track_data.json access:", res.ok ? "SUCCESS" : "FAILED (" + res.status + ")");
-    } catch (e) {
-        console.log("track_data.json access: FAILED (Likely restricted by local file protocol).");
-        console.log("Tip: If running locally without a server, use the 'Restore' button to manually select track_data.json.");
-    }
-};
+    window.approveRecord = function (id) {
+        if (!confirm('Are you sure you want to approve this record?')) return;
+        const pendingRecord = records.find(r => r.id === id);
+        if (!pendingRecord) return;
 
+        // Check if this record replaces another one
+        if (pendingRecord.replacesId) {
+            const originalIndex = records.findIndex(r => r.id === pendingRecord.replacesId);
+            if (originalIndex !== -1) {
+                const originalRecord = records[originalIndex];
 
-function migrateApprovalStatus() {
-    let changed = false;
-    records.forEach(r => {
-        // Only migrate if the field is completely MISSING (undefined).
-        // Do NOT touch records that are explicitly false (pending).
-        if (typeof r.approved === 'undefined') {
-            // For legacy records, we assume they are approved.
-            r.approved = true;
-            changed = true;
+                // Archive Original
+                const historyRecord = { ...originalRecord };
+                historyRecord.archivedAt = new Date().toISOString();
+                historyRecord.originalId = originalRecord.id;
+                historyRecord.id = Date.now() + Math.random(); // New ID for history
+                if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
+
+                history.unshift(historyRecord);
+                saveHistory();
+
+                // Remove Original from Live Records
+                // We splice it out. 
+                // Note: pendingRecord is already in `records`. We just keep it and update it.
+                records.splice(originalIndex, 1);
+            }
+            // Clear the linkage
+            pendingRecord.replacesId = undefined; // or delete
+            delete pendingRecord.replacesId;
         }
-    });
-    if (changed) {
+
+        // Approve
+        pendingRecord.approved = true;
+        // pendingRecord.updatedBy = currentUser... (Optional, keep original editor?)
+
         saveRecords();
-        console.log("Migrated Approval Status: All legacy records set to approved.");
-    }
-}
+        renderReports();
+        calculateRecordWMAStats(pendingRecord);
+    };
 
-window.approveRecord = function (id) {
-    if (!confirm('Are you sure you want to approve this record?')) return;
-    const pendingRecord = records.find(r => r.id === id);
-    if (!pendingRecord) return;
 
-    // Check if this record replaces another one
-    if (pendingRecord.replacesId) {
-        const originalIndex = records.findIndex(r => r.id === pendingRecord.replacesId);
-        if (originalIndex !== -1) {
-            const originalRecord = records[originalIndex];
-
-            // Archive Original
-            const historyRecord = { ...originalRecord };
-            historyRecord.archivedAt = new Date().toISOString();
-            historyRecord.originalId = originalRecord.id;
-            historyRecord.id = Date.now() + Math.random(); // New ID for history
-            if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
-
-            history.unshift(historyRecord);
-            saveHistory();
-
-            // Remove Original from Live Records
-            // We splice it out. 
-            // Note: pendingRecord is already in `records`. We just keep it and update it.
-            records.splice(originalIndex, 1);
-        }
-        // Clear the linkage
-        pendingRecord.replacesId = undefined; // or delete
-        delete pendingRecord.replacesId;
+    function saveIAAFUpdates() {
+        localStorage.setItem('tf_iaaf_updates', JSON.stringify(iaafUpdates));
     }
 
-    // Approve
-    pendingRecord.approved = true;
-    // pendingRecord.updatedBy = currentUser... (Optional, keep original editor?)
-
-    saveRecords();
-    renderReports();
-    calculateRecordWMAStats(pendingRecord);
-};
-
-
-function saveIAAFUpdates() {
-    localStorage.setItem('tf_iaaf_updates', JSON.stringify(iaafUpdates));
-}
-
-        // Connect to Tab System
-        // We need to trigger loadIAAFData when the tab is shown.
-        // The tab system uses data-subtab="iaaf".
-        // I need to find where tabs are switched.
+    // Connect to Tab System
+    // We need to trigger loadIAAFData when the tab is shown.
+    // The tab system uses data-subtab="iaaf".
+    // I need to find where tabs are switched.
 });
