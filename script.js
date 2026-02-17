@@ -874,31 +874,38 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
+    // --- Login Handler (Robust) ---
+    function handleLoginClick() {
+        console.log("🔐 Login Button Clicked");
+
+        // 1. Try Firebase Login if available
+        if (typeof firebase !== 'undefined' && firebase.auth && !['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.protocol !== 'file:') {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).catch((error) => {
+                console.error("Cloud Login Failed:", error);
+                // Fallback to local if cloud fails? Maybe not automatically, user should know.
+                alert("Cloud Login Failed: " + error.message);
+            });
+        } else {
+            // 2. Local / Offline Fallback
+            console.log("⚡ Attempting Local/Offline Login...");
+            if (attemptLocalAdminLogin()) {
+                console.log("✅ Local Login Success");
+            } else {
+                console.warn("❌ Local Login Not Allowed (Not LocalHost)");
+                alert("Cloud Login Unavailable & Not LocalHost.");
+            }
+        }
+    }
+
     function initAuth() {
         const btnLogin = document.getElementById('btnLogin');
         const btnLogout = document.getElementById('btnLogout');
         const userProfile = document.getElementById('userProfile');
         const userAvatar = document.getElementById('userAvatar');
 
-        // Safe Login Handler
-        if (btnLogin) {
-            // Remove existing listeners (not easily possible without reference, but we can overwite or just add)
-            // Better to clone and replace to strip old listeners if re-initializing, but for now just add.
-            btnLogin.onclick = () => {
-                if (typeof firebase !== 'undefined' && firebase.auth) {
-                    const provider = new firebase.auth.GoogleAuthProvider();
-                    firebase.auth().signInWithPopup(provider).catch((error) => {
-                        console.error("Login Failed:", error);
-                        alert("Login Failed: " + error.message);
-                    });
-                } else {
-                    console.log("Firebase Auth not available. Attempting Local Login.");
-                    if (!attemptLocalAdminLogin()) {
-                        alert("Cloud Login is unavailable (Offline).");
-                    }
-                }
-            };
-        }
+        // Note: btnLogin click listener is now handled in init() / setupEventListeners()
+        // to ensure it works even if this function crashes or is skipped.
 
         if (typeof firebase === 'undefined' || !firebase.auth) {
             console.warn("Firebase Auth module not loaded. Skipping Auth listeners.");
@@ -1044,12 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Try explicit local fallback for auth too
             if (attemptLocalAdminLogin()) {
                 // Attach listener specifically for offline logout/login cycling
-                const btnLogin = document.getElementById('btnLogin');
-                if (btnLogin) {
-                    btnLogin.onclick = () => {
-                        if (!attemptLocalAdminLogin()) alert("Offline Login Failed.");
-                    };
-                }
+                // ensureLoginListener(); // Handled in init now
             }
             loadLocalDataOnly();
         }
@@ -1057,13 +1059,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn("Firebase not configured. Using localStorage only.");
         updateCloudStatus('disconnected');
         attemptLocalAdminLogin();
-        // Attach listener for manual login attempt in unconfigured state
-        const btnLogin = document.getElementById('btnLogin');
-        if (btnLogin) {
-            btnLogin.onclick = () => {
-                if (!attemptLocalAdminLogin()) alert("Offline Login Failed.");
-            };
-        }
+        attemptLocalAdminLogin();
+        // ensureLoginListener(); // Handled in init now
         loadLocalDataOnly();
     }
 
@@ -1071,6 +1068,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function init() {
         initThemes();
+
+        // Critical: Attach Login Listener immediately
+        const btnLogin = document.getElementById('btnLogin');
+        if (btnLogin) {
+            btnLogin.onclick = handleLoginClick; // Robust attachment
+        }
+
         setupEventListeners();
         setupTableSorting(); // Initialize sorting listeners
         renderReports();
