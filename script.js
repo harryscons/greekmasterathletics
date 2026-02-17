@@ -4003,13 +4003,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     <td>${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
                     <td style="font-weight:700; color:var(--accent);">${r.mark}</td>
-                    <td>${!r.approved ? `<span class="badge-pending">Προς Εγκριση</span>` : (r.idr || '-')}</td>
+                    <td>${r.approved === false ? `<span class="badge-pending">Προς Εγκριση</span>` : (r.idr || '-')}</td>
                     <td>${r.wind || '-'}</td>
                     <td style="white-space:nowrap;">${new Date(r.date).toLocaleDateString('en-GB')}</td>
                     <td>${r.town || ''}</td>
                     <td>${r.raceName || ''}</td>
                     <td class="actions-col" style="white-space:nowrap;">
-                        ${(!r.approved && isSupervisor(currentUser ? currentUser.email : null)) ?
+                        ${(r.approved === false && isSupervisor(currentUser ? currentUser.email : null)) ?
                     `<button class="btn-icon approve-btn" onclick="approveRecord(${r.id})" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>` : ''}
                         <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit">✏️</button>
                         <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete">🗑️</button>
@@ -4170,7 +4170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>
                         <div style="font-weight:500; display:flex; align-items:center; gap:5px;">
                             ${r.athlete}
-                            ${!r.approved ? `<span class="badge-pending">Προς Εγκριση</span>` : ''}
+                            ${r.approved === false ? `<span class="badge-pending">Προς Εγκριση</span>` : ''}
                         </div>
                         ${hasNotes ? `<div style="font-size:0.85em; color:#666; font-style:italic; margin-top:2px;">${r.notes}</div>` : ''}
                         </td>
