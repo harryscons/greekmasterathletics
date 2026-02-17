@@ -352,10 +352,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderAll() {
+        populateAgeSelects();
+        populateEventDropdowns();
+        populateAthleteDropdown();
+        populateCountryDropdown();
         populateYearDropdown();
         populateAthleteFilter();
+
+        renderEventList();
+        renderAthleteList();
+        renderCountryList();
+        renderHistoryList();
         renderReports();
         renderUserList();
+
+        // Also populate sub-feature dropdowns
+        if (typeof populateIAAFEventDropdown === 'function') populateIAAFEventDropdown();
+        if (typeof populateWMAEventDropdown === 'function') populateWMAEventDropdown();
     }
 
     // Migration Helper: Push local data to Firebase if Firebase is empty
@@ -1097,6 +1110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function init() {
         initThemes();
+        populateAgeSelects(); // Immediate static population
 
         // Critical: Attach Login Listener immediately
         const btnLogin = document.getElementById('btnLogin');
@@ -1106,7 +1120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setupEventListeners();
         setupTableSorting(); // Initialize sorting listeners
-        renderReports();
+        renderAll();
 
         // General Settings Init
         if (hideNotesSymbol) {
@@ -1125,9 +1139,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Default to Reports
         switchTab('reports');
 
-        // Populate dropdowns from potential local data (Fast Pass)
-        populateIAAFEventDropdown();
-        populateWMAEventDropdown();
 
         // Init Flatpickr
         try {
@@ -3677,7 +3688,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Need to wait for Age Groups to populate?
-        // populateAgeGroups is called on gender change.
+        // Wait a tiny bit for UI state to settle if needed
         setTimeout(() => {
             if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
         }, 50);
@@ -5617,20 +5628,8 @@ Replace ALL current data with this backup?`;
         // 4. Cleanup
         if (typeof cleanupDuplicateAthletes === 'function') cleanupDuplicateAthletes();
 
-        // 5. UI Population
-        populateAgeSelects();
-        populateEventDropdowns();
-        populateAthleteDropdown();
-        populateAthleteFilter();
-        populateCountryDropdown();
-        if (typeof populateYearDropdown === 'function') populateYearDropdown();
-
-        // 6. Rendering
-        renderEventList();
-        renderAthleteList();
-        renderCountryList();
-        renderHistoryList();
-        renderReports();
+        // 5. Rendering & UI Population
+        renderAll();
 
         if (recordsUpdated) {
             console.log("💾 Post-Load Maintenance complete. Changes persisted.");
