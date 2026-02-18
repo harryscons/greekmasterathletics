@@ -916,6 +916,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function attemptLocalAdminLogin() {
+        // Check if user explicitly logged out
+        if (localStorage.getItem('tf_manual_logout') === 'true') {
+            console.log("🛑 Local Admin Auto-Login bypassed due to manual logout.");
+            return false;
+        }
+
         if (isLocalEnvironment()) {
             console.log("🚧 Local Environment Detected: Auto-logging in as Local Admin");
             const localAdminPayload = {
@@ -946,6 +952,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Login Handler (Robust) ---
     function handleLoginClick() {
         console.log("🔐 Login Button Clicked");
+        // Clear manual logout flag to allow re-login
+        localStorage.removeItem('tf_manual_logout');
 
         const local = isLocalEnvironment();
 
@@ -987,6 +995,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
+                // Set flag to prevent auto-login on reload
+                localStorage.setItem('tf_manual_logout', 'true');
+
                 auth.signOut().then(() => {
                     console.log("User signed out");
                     window.location.reload();
