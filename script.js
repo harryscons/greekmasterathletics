@@ -3325,8 +3325,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 trackType: trackTypeInput ? trackTypeInput.value : 'Outdoor',
                 athlete: selectedAthlete,
                 isRelay: isRelay,
-                // Approval Logic: Admins/Supervisors Auto-Approve, Others need review
-                approved: isAdminOrSupervisor(currentUser ? currentUser.email : null),
+                // Approval Logic: Admins/Supervisors Auto-Approve
+                // Explicitly force approval for trusted emails to prevent role-check failures
+                approved: (currentUser && ['harryscons@gmail.com', 'cha.kons@gmail.com', 'admin@greekmasterathletics.com'].includes(currentUser.email.toLowerCase())) || isAdminOrSupervisor(currentUser ? currentUser.email : null),
                 relayParticipants: isRelay ? [
                     relayAthlete1.value,
                     relayAthlete2.value,
@@ -3814,12 +3815,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveRecords() {
+        // ALWAYS save to LocalStorage first (Synchronous Backup)
+        try {
+            localStorage.setItem('tf_records', JSON.stringify(records));
+        } catch (e) {
+            console.error("Local Save Failed:", e);
+        }
+
         if (!isDataReady) {
-            console.warn("Save aborted: System not ready (Synchronization in progress).");
+            console.warn("Cloud Save aborted: System not ready (Synchronization in progress). Local backup saved.");
             return;
         }
-        if (db) db.ref('records').set(records);
-        localStorage.setItem('tf_records', JSON.stringify(records));
+
+        if (db) {
+            db.ref('records').set(records).catch(err => console.error("Firebase Save Failed:", err));
+        }
         populateAthleteFilter();
     }
 
