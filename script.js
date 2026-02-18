@@ -278,7 +278,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listen for Records
         db.ref('records').on('value', (snapshot) => {
-            records = valToArray(snapshot.val());
+            const serverRecords = valToArray(snapshot.val());
+            const localRecords = JSON.parse(localStorage.getItem('tf_records')) || [];
+
+            // "Pending Rescue": Find records that are pending approvals (not approved: true) locally but MISSING from server
+            // These would be lost if we blindly overwrite.
+            const pendingRescue = localRecords.filter(l =>
+                (l.approved === false) &&
+                !serverRecords.some(s => s.id === l.id)
+            );
+
+            if (pendingRescue.length > 0) {
+                console.warn(`🔄 Rescued ${pendingRescue.length} pending records from LocalStorage override.`);
+                // Merge them into the live list (Server + Pending Local)
+                records = [...serverRecords, ...pendingRescue];
+                // Force a resync to server to persist them
+                // We delay slightly to avoid race conditions with initial load
+                setTimeout(() => saveRecords(), 2000);
+            } else {
+                records = serverRecords;
+            }
+
             console.log("Records updated from Firebase:", records.length);
             loadedNodes.add('records');
             checkReady();
@@ -1134,6 +1154,17 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
         setupTableSorting(); // Initialize sorting listeners
         renderAll();
+
+        // Safety Timeout: Force Data Ready if Firebase hangs
+        setTimeout(() => {
+            if (!isDataReady) {
+                console.warn("⚠️ Data Sync Timeout: Forcing System Ready state to allow saves.");
+                isDataReady = true;
+                if (typeof runPostLoadMaintenance === 'function') {
+                    runPostLoadMaintenance();
+                }
+            }
+        }, 5000);
 
         // General Settings Init
         if (hideNotesSymbol) {
@@ -3325,9 +3356,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 trackType: trackTypeInput ? trackTypeInput.value : 'Outdoor',
                 athlete: selectedAthlete,
                 isRelay: isRelay,
-                // Approval Logic: Admins/Supervisors Auto-Approve
-                // Explicitly force approval for trusted emails to prevent role-check failures
-                approved: (currentUser && ['harryscons@gmail.com', 'cha.kons@gmail.com', 'admin@greekmasterathletics.com'].includes(currentUser.email.toLowerCase())) || isAdminOrSupervisor(currentUser ? currentUser.email : null),
+                // Approval Logic: Strictly Supervisors ONLY (or local override)
+                // Admins (harryscons) must PROPOSE edits.
+                approved: isSupervisor(currentUser ? currentUser.email : null),
                 relayParticipants: isRelay ? [
                     relayAthlete1.value,
                     relayAthlete2.value,
@@ -3342,7 +3373,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 date: dateInput ? dateInput.value : '',
                 town: townInput ? townInput.value : '',
                 country: countryInput ? countryInput.value : '',
-                updatedBy: currentUser ? (currentUser.displayName || currentUser.email) : 'System'
+                updatedBy: currentUser ? (currentUser.displayName || currentUser.email || 'Admin') : 'System'
             };
 
             // Calculate WMA stats for new record
@@ -3373,7 +3404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // If Supervisor: Update directly, archive old.
                     // If Non-Supervisor: Create NEW pending record, do NOT touch old yet.
 
-                    const isSup = isAdminOrSupervisor(currentUser ? currentUser.email : null);
+                    const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
                     if (isSup) {
                         // Supervisor Direct Edit -> Archive Old
