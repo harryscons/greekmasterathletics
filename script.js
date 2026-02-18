@@ -347,6 +347,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 appUsers = [];
             }
             console.log("Users updated from Firebase. Count:", appUsers.length);
+            loadedNodes.add('users');
+            checkReady();
             renderUserList();
         });
     }
@@ -875,15 +877,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getUserRole(email) {
         if (!email) return 'User';
-        if (email.toLowerCase() === 'cha.kons@gmail.com') return 'Supervisor';
-        if (email.toLowerCase() === 'harryscons@gmail.com') return 'Admin';
-        const user = appUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+        const lowerEmail = email.toLowerCase();
+        if (lowerEmail === 'cha.kons@gmail.com' || lowerEmail === 'admin@greekmasterathletics.com' || lowerEmail === 'support@greekmasterathletics.com') return 'Supervisor';
+        if (lowerEmail === 'harryscons@gmail.com') return 'Admin';
+        const user = appUsers.find(u => u.email.toLowerCase() === lowerEmail);
         return user ? user.role : 'User';
     }
 
     function isSupervisor(email) {
         if (isLocalEnvironment()) return true;
         return getUserRole(email) === 'Supervisor';
+    }
+
+    function isAdminOrSupervisor(email) {
+        if (isLocalEnvironment()) return true;
+        const role = getUserRole(email);
+        return role === 'Admin' || role === 'Supervisor';
     }
 
     function attemptLocalAdminLogin() {
@@ -1058,8 +1067,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadLocalDataOnly() {
         console.log("Loading data from LocalStorage fallback...");
-        // Fast Pass already loaded the data, just need to render
-        renderAll();
+        isDataReady = true;
+        if (typeof runPostLoadMaintenance === 'function') {
+            runPostLoadMaintenance();
+        } else {
+            renderAll();
+        }
     }
 
     // Initialize Firebase
@@ -1332,20 +1345,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper to check for Supervisor role
     // Includes localhost/file checks for testing
-    function isSupervisor(email) {
-        // Local Override: Treat local development (localhost) or file based as Supervisor
-        if (['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.protocol === 'file:') {
-            return true;
-        }
-
-        if (!email) return false;
-        const supervisorEmails = [
-            'admin@greekmasterathletics.com',
-            'support@greekmasterathletics.com'
-        ];
-        // Also check if user has 'supervisor' role in user management (if implemented)
-        return supervisorEmails.includes(email);
-    }
     function migrateAthletes() {
         let changed = false;
         records.forEach(r => {
@@ -3326,9 +3325,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 trackType: trackTypeInput ? trackTypeInput.value : 'Outdoor',
                 athlete: selectedAthlete,
                 isRelay: isRelay,
-                // Approval Logic: Supervisors Auto-Approve, Others need review
-                // Use isSupervisor logic which handles local bypass transparently
-                approved: isSupervisor(currentUser ? currentUser.email : null),
+                // Approval Logic: Admins/Supervisors Auto-Approve, Others need review
+                approved: isAdminOrSupervisor(currentUser ? currentUser.email : null),
                 relayParticipants: isRelay ? [
                     relayAthlete1.value,
                     relayAthlete2.value,
@@ -3374,7 +3372,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // If Supervisor: Update directly, archive old.
                     // If Non-Supervisor: Create NEW pending record, do NOT touch old yet.
 
-                    const isSup = isSupervisor(currentUser ? currentUser.email : null);
+                    const isSup = isAdminOrSupervisor(currentUser ? currentUser.email : null);
 
                     if (isSup) {
                         // Supervisor Direct Edit -> Archive Old
