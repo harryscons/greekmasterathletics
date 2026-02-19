@@ -1,12 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Global Error Handler for UI Freezes
-    window.onerror = function (msg, url, line, col, error) {
-        console.error("🔥 CRITICAL UI ERROR:", msg, "\nLocation:", url, ":", line, ":", col, "\nStack:", error);
-        alert("CRITICAL ERROR: " + msg + "\nSee console for details.");
-        return false;
-    };
-    console.log("🚀 Script loaded. Global error handler attached.");
-
+    console.log("🚀 DOMContentLoaded: Starting initialization...");
     // --- Sorting State ---
     let athleteSortField = 'lastName';
     let athleteSortOrder = 'asc';
@@ -106,6 +99,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Navigation
     const navTabs = document.querySelectorAll('.nav-tab');
     const viewSections = document.querySelectorAll('.view-section');
+
+    console.log("🔍 Elements Found:", {
+        recordForm: !!recordForm,
+        reportTableBody: !!reportTableBody,
+        navTabs: navTabs.length,
+        viewSections: viewSections.length
+    });
 
     // Event Manager
     const eventForm = document.getElementById('eventForm');
@@ -618,6 +618,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (lastSeedVersion < SEED_VERSION) {
             console.log(`Seeding version ${SEED_VERSION}...`);
             SEED_RELAYS.forEach(sr => {
+                // Ensure SEED_RELAYS have trackType
+                if (!sr.trackType) sr.trackType = 'Outdoor';
+
                 const existingIndex = records.findIndex(r => String(r.id) === String(sr.id));
                 if (existingIndex === -1) {
                     records.push(sr);
@@ -951,1520 +954,1357 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isLocalEnvironment()) {
             console.log("🚧 Local Environment Detected: Auto-logging in as Local Admin");
             const localAdminPayload = {
-                const localAdminPayload = {
-                    email: 'harryscons@gmail.com',
-                    displayName: 'Harry (Local Admin)',
-                    uid: 'local_supervisor_offline',
-                    photoURL: 'https://ui-avatars.com/api/?name=Local+Admin&background=random&color=fff&background=10b981'
-                };
-                currentUser = localAdminPayload;
-                updateUIForAuth(localAdminPayload);
+                email: 'harryscons@gmail.com',
+                displayName: 'Harry (Local Admin)',
+                uid: 'local_supervisor_offline',
+                photoURL: 'https://ui-avatars.com/api/?name=Local+Admin&background=random&color=fff&background=10b981'
+            };
+            currentUser = localAdminPayload;
+            updateUIForAuth(localAdminPayload);
 
             const btnLogin = document.getElementById('btnLogin');
-                const userProfile = document.getElementById('userProfile');
-                const userAvatar = document.getElementById('userAvatar');
-
-                if(userProfile && btnLogin) {
-    btnLogin.classList.add('hidden');
-    userProfile.classList.remove('hidden');
-    if (userAvatar) userAvatar.src = localAdminPayload.photoURL;
-}
-// Also ensure cloud status reflects this
-updateCloudStatus('disconnected');
-return true;
-        }
-return false;
-    }
-
-// --- Login Handler (Robust) ---
-function handleLoginClick() {
-    console.log("🔐 Login Button Clicked");
-    // Clear manual logout flag to allow re-login
-    localStorage.removeItem('tf_manual_logout');
-
-    const local = isLocalEnvironment();
-
-    // 1. Try Firebase Login if available and NOT local
-    if (typeof firebase !== 'undefined' && firebase.auth && !local) {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithPopup(provider).catch((error) => {
-            console.error("Cloud Login Failed:", error);
-            alert("Cloud Login Failed: " + error.message);
-        });
-    } else if (local) {
-        // 2. Local / Offline Fallback
-        console.log("⚡ Forcing Local Admin Login...");
-        if (attemptLocalAdminLogin()) {
-            console.log("✅ Local Login Success");
-        } else {
-            alert("Local Login Failed.");
-        }
-    } else {
-        alert("Cloud Login is unavailable (Offline).");
-    }
-}
-
-function initAuth() {
-    const btnLogin = document.getElementById('btnLogin');
-    const btnLogout = document.getElementById('btnLogout');
-    const userProfile = document.getElementById('userProfile');
-    const userAvatar = document.getElementById('userAvatar');
-
-    // Note: btnLogin click listener is now handled in init() / setupEventListeners()
-    // to ensure it works even if this function crashes or is skipped.
-
-    if (typeof firebase === 'undefined' || !firebase.auth) {
-        console.warn("Firebase Auth module not loaded. Skipping Auth listeners.");
-        return;
-    }
-
-    auth = firebase.auth();
-
-
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            // Check if user is allowed
-            if (!isUserAllowed(user.email)) {
-                console.warn(`User ${user.email} is not in the allowed list.`);
-                alert(`Access Denied: The email ${user.email} is not authorized to edit records.`);
-                auth.signOut();
-                return;
-            }
-
-            console.log("User logged in:", user.displayName);
-            currentUser = user;
-            updateUIForAuth(user);
+            const userProfile = document.getElementById('userProfile');
+            const userAvatar = document.getElementById('userAvatar');
 
             if (userProfile && btnLogin) {
                 btnLogin.classList.add('hidden');
                 userProfile.classList.remove('hidden');
-                if (userAvatar) userAvatar.src = user.photoURL;
+                if (userAvatar) userAvatar.src = localAdminPayload.photoURL;
+            }
+            // Also ensure cloud status reflects this
+            updateCloudStatus('disconnected');
+            return true;
+        }
+        return false;
+    }
+
+    // --- Login Handler (Robust) ---
+    function handleLoginClick() {
+        console.log("🔐 Login Button Clicked");
+        // Clear manual logout flag to allow re-login
+        localStorage.removeItem('tf_manual_logout');
+
+        const local = isLocalEnvironment();
+
+        // 1. Try Firebase Login if available and NOT local
+        if (typeof firebase !== 'undefined' && firebase.auth && !local) {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).catch((error) => {
+                console.error("Cloud Login Failed:", error);
+                alert("Cloud Login Failed: " + error.message);
+            });
+        } else if (local) {
+            // 2. Local / Offline Fallback
+            console.log("⚡ Forcing Local Admin Login...");
+            if (attemptLocalAdminLogin()) {
+                console.log("✅ Local Login Success");
+            } else {
+                alert("Local Login Failed.");
             }
         } else {
-            console.log("User logged out (Auth Check)");
-
-            // --- LOCAL ADMIN BYPASS RESTORED ---
-            if (attemptLocalAdminLogin()) return;
-            // ---------------------------
-
-            currentUser = null;
-            updateUIForAuth(null);
-
-            if (userProfile && btnLogin) {
-                btnLogin.classList.remove('hidden');
-                userProfile.classList.add('hidden');
-            }
+            alert("Cloud Login is unavailable (Offline).");
         }
-    });
-}
-
-function updateUIForAuth(user) {
-    const role = user ? getUserRole(user.email) : null;
-
-    // Always treat local environment as having Supervisor/Admin access for UI visibility
-    const isLocal = isLocalEnvironment();
-
-    const isAdmin = role === 'Admin' || role === 'Supervisor' || isLocal;
-    const isSuper = role === 'Supervisor' || isLocal;
-
-    document.body.classList.toggle('is-admin', isAdmin);
-    document.body.classList.toggle('is-supervisor', isSuper);
-
-    // Toggle Visibility of Admin features
-    // Toggle Visibility of Admin features (General Admin)
-    const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .edit-btn, .delete-btn, .delete-country-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
-
-    adminElements.forEach(el => {
-        if (isAdmin) el.classList.remove('hidden');
-        else el.classList.add('hidden');
-        if (isAdmin) el.classList.remove('hidden');
-        else el.classList.add('hidden');
-    });
-
-    // Toggle Visibility of Supervisor features (Critical Actions: History Edit/Delete, User Mgmt)
-    const supervisorElements = document.querySelectorAll('.edit-history-btn, .delete-history-btn');
-    supervisorElements.forEach(el => {
-        if (isSuper) el.classList.remove('hidden');
-        else el.classList.add('hidden');
-    });
-
-    // Specific Visibility for User Management (Supervisor only)
-    const userManagementBtn = document.getElementById('subtab-users');
-    if (userManagementBtn) {
-        if (isSuper) userManagementBtn.classList.remove('hidden');
-        else userManagementBtn.classList.add('hidden');
     }
 
-    // Hide Save Button if not admin
-    const navSave = document.getElementById('btnSaveCloud');
-    if (navSave) {
-        if (isAdmin) navSave.style.display = 'flex';
-        else navSave.style.display = 'none';
-    }
+    function initAuth() {
+        const btnLogin = document.getElementById('btnLogin');
+        const btnLogout = document.getElementById('btnLogout');
+        const userProfile = document.getElementById('userProfile');
+        const userAvatar = document.getElementById('userAvatar');
 
-    // Hide Log Record Tab content or show login prompt? 
-    // For now, let's just disable the Submit button in Log Record
-    const submitBtn = document.getElementById('submitBtn');
-    if (submitBtn) submitBtn.disabled = !isAdmin;
-}
+        // Note: btnLogin click listener is now handled in init() / setupEventListeners()
+        // to ensure it works even if this function crashes or is skipped.
 
-function loadLocalDataOnly() {
-    console.log("Loading data from LocalStorage fallback...");
-    isDataReady = true;
-    if (typeof runPostLoadMaintenance === 'function') {
-        runPostLoadMaintenance();
-    } else {
-        renderAll();
-    }
-}
+        if (typeof firebase === 'undefined' || !firebase.auth) {
+            console.warn("Firebase Auth module not loaded. Skipping Auth listeners.");
+            return;
+        }
 
-// Initialize Firebase
-if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.apiKey !== "PASTE_YOUR_API_KEY_HERE") {
-    try {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database(); // Use global db variable
-        initAuth(); // Initialize Auth
+        auth = firebase.auth();
 
-        // Monitor Firebase Connection Status
-        db.ref('.info/connected').on('value', (snapshot) => {
-            if (snapshot.val() === true) {
-                updateCloudStatus('connected');
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Check if user is allowed
+                if (!isUserAllowed(user.email)) {
+                    console.warn(`User ${user.email} is not in the allowed list.`);
+                    alert(`Access Denied: The email ${user.email} is not authorized to edit records.`);
+                    auth.signOut();
+                    return;
+                }
+
+                console.log("User logged in:", user.displayName);
+                currentUser = user;
+                updateUIForAuth(user);
+
+                if (userProfile && btnLogin) {
+                    btnLogin.classList.add('hidden');
+                    userProfile.classList.remove('hidden');
+                    if (userAvatar) userAvatar.src = user.photoURL;
+                }
             } else {
-                updateCloudStatus('disconnected');
+                console.log("User logged out (Auth Check)");
+
+                // --- LOCAL ADMIN BYPASS RESTORED ---
+                if (attemptLocalAdminLogin()) return;
+                // ---------------------------
+
+                currentUser = null;
+                updateUIForAuth(null);
+
+                if (userProfile && btnLogin) {
+                    btnLogin.classList.remove('hidden');
+                    userProfile.classList.add('hidden');
+                }
             }
         });
+    }
 
-        // Robust Migration + Loading sequence
-        migrateLocalToCloud(db).then(() => {
-            console.log("Migration check complete. Starting cloud listeners...");
-            loadInitialData(db);
-        }).catch(err => {
-            console.error("Migration/Init failed:", err);
-            loadLocalDataOnly();
+    function updateUIForAuth(user) {
+        const role = user ? getUserRole(user.email) : null;
+
+        // Always treat local environment as having Supervisor/Admin access for UI visibility
+        const isLocal = isLocalEnvironment();
+
+        const isAdmin = role === 'Admin' || role === 'Supervisor' || isLocal;
+        const isSuper = role === 'Supervisor' || isLocal;
+
+        document.body.classList.toggle('is-admin', isAdmin);
+        document.body.classList.toggle('is-supervisor', isSuper);
+
+        // Toggle Visibility of Admin features
+        // Toggle Visibility of Admin features (General Admin)
+        const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .edit-btn, .delete-btn, .delete-country-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
+
+        adminElements.forEach(el => {
+            if (isAdmin) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+            if (isAdmin) el.classList.remove('hidden');
+            else el.classList.add('hidden');
         });
 
-    } catch (error) {
-        console.error("Firebase initialization failed:", error);
-        updateCloudStatus('disconnected');
-        // Try explicit local fallback for auth too
-        if (attemptLocalAdminLogin()) {
-            // Attach listener specifically for offline logout/login cycling
-            // ensureLoginListener(); // Handled in init now
+        // Toggle Visibility of Supervisor features (Critical Actions: History Edit/Delete, User Mgmt)
+        const supervisorElements = document.querySelectorAll('.edit-history-btn, .delete-history-btn');
+        supervisorElements.forEach(el => {
+            if (isSuper) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+        });
+
+        // Specific Visibility for User Management (Supervisor only)
+        const userManagementBtn = document.getElementById('subtab-users');
+        if (userManagementBtn) {
+            if (isSuper) userManagementBtn.classList.remove('hidden');
+            else userManagementBtn.classList.add('hidden');
         }
+
+        // Hide Save Button if not admin
+        const navSave = document.getElementById('btnSaveCloud');
+        if (navSave) {
+            if (isAdmin) navSave.style.display = 'flex';
+            else navSave.style.display = 'none';
+        }
+
+        // Hide Log Record Tab content or show login prompt? 
+        // For now, let's just disable the Submit button in Log Record
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) submitBtn.disabled = !isAdmin;
+    }
+
+    function loadLocalDataOnly() {
+        console.log("Loading data from LocalStorage fallback...");
+        isDataReady = true;
+        if (typeof runPostLoadMaintenance === 'function') {
+            runPostLoadMaintenance();
+        } else {
+            renderAll();
+        }
+    }
+
+    // Initialize Firebase
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.apiKey !== "PASTE_YOUR_API_KEY_HERE") {
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database(); // Use global db variable
+            initAuth(); // Initialize Auth
+
+            // Monitor Firebase Connection Status
+            db.ref('.info/connected').on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    updateCloudStatus('connected');
+                } else {
+                    updateCloudStatus('disconnected');
+                }
+            });
+
+            // Robust Migration + Loading sequence
+            migrateLocalToCloud(db).then(() => {
+                console.log("Migration check complete. Starting cloud listeners...");
+                loadInitialData(db);
+            }).catch(err => {
+                console.error("Migration/Init failed:", err);
+                loadLocalDataOnly();
+            });
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            updateCloudStatus('disconnected');
+            // Try explicit local fallback for auth too
+            if (attemptLocalAdminLogin()) {
+                // Attach listener specifically for offline logout/login cycling
+                // ensureLoginListener(); // Handled in init now
+            }
+            loadLocalDataOnly();
+        }
+    } else {
+        console.warn("Firebase not configured. Using localStorage only.");
+        updateCloudStatus('disconnected');
+        attemptLocalAdminLogin();
+        attemptLocalAdminLogin();
+        // ensureLoginListener(); // Handled in init now
         loadLocalDataOnly();
     }
-} else {
-    console.warn("Firebase not configured. Using localStorage only.");
-    updateCloudStatus('disconnected');
-    attemptLocalAdminLogin();
-    attemptLocalAdminLogin();
-    // ensureLoginListener(); // Handled in init now
-    loadLocalDataOnly();
-}
 
-try {
-    console.log("🚀 Starting System Initialization...");
     init();
-    console.log("✅ System Initialization Complete.");
-} catch (e) {
-    console.error("🔥 CRITICAL INIT ERROR:", e);
-    alert("System Initialization Failed: " + e.message);
-}
 
-function init() {
-    initThemes();
-    populateAgeSelects(); // Immediate static population
+    function init() {
+        initThemes();
+        populateAgeSelects(); // Immediate static population
 
-    // Critical: Attach Login Listener immediately
-    const btnLogin = document.getElementById('btnLogin');
-    if (btnLogin) {
-        btnLogin.onclick = handleLoginClick; // Robust attachment
-    }
+        // Critical: Attach Login Listener immediately
+        const btnLogin = document.getElementById('btnLogin');
+        if (btnLogin) {
+            btnLogin.onclick = handleLoginClick; // Robust attachment
+        }
 
-    const btnLogout = document.getElementById('btnLogout');
-    if (btnLogout) {
-        btnLogout.addEventListener('click', () => {
-            localStorage.setItem('tf_manual_logout', 'true');
-            if (typeof firebase !== 'undefined' && firebase.auth && auth) {
-                auth.signOut().then(() => {
+        const btnLogout = document.getElementById('btnLogout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                localStorage.setItem('tf_manual_logout', 'true');
+                if (typeof firebase !== 'undefined' && firebase.auth && auth) {
+                    auth.signOut().then(() => {
+                        window.location.reload();
+                    }).catch((e) => {
+                        console.error("Logout error:", e);
+                        window.location.reload();
+                    });
+                } else {
+                    // Local Logout
+                    currentUser = null;
                     window.location.reload();
-                }).catch((e) => {
-                    console.error("Logout error:", e);
-                    window.location.reload();
-                });
-            } else {
-                // Local Logout
-                currentUser = null;
-                window.location.reload();
+                }
+            });
+        }
+
+        setupEventListeners();
+        setupTableSorting(); // Initialize sorting listeners
+        renderAll();
+
+        // Safety Timeout: Force Data Ready if Firebase hangs
+        setTimeout(() => {
+            if (!isDataReady) {
+                console.warn("⚠️ Data Sync Timeout: Forcing System Ready state to allow saves.");
+                isDataReady = true;
+                if (typeof runPostLoadMaintenance === 'function') {
+                    runPostLoadMaintenance();
+                }
             }
-        });
-    }
+        }, 5000);
 
-    setupEventListeners();
-    setupTableSorting(); // Initialize sorting listeners
-    renderAll();
+        // General Settings Init
+        if (hideNotesSymbol) {
+            hideNotesSymbol.checked = localStorage.getItem('tf_hide_notes_symbol') === 'true';
+            hideNotesSymbol.addEventListener('change', () => {
+                localStorage.setItem('tf_hide_notes_symbol', hideNotesSymbol.checked);
+                renderReports();
+            });
+        }
 
-    // Safety Timeout: Force Data Ready if Firebase hangs
-    setTimeout(() => {
-        if (!isDataReady) {
-            console.warn("⚠️ Data Sync Timeout: Forcing System Ready state to allow saves.");
-            isDataReady = true;
-            if (typeof runPostLoadMaintenance === 'function') {
-                runPostLoadMaintenance();
+        const btnRecalculateWMA = document.getElementById('btnRecalculateWMA');
+        if (btnRecalculateWMA) {
+            btnRecalculateWMA.addEventListener('click', recalculateAllWMAStats);
+        }
+
+        // Default to Reports
+        switchTab('reports');
+
+
+        // Init Flatpickr
+        try {
+            if (typeof flatpickr !== 'undefined') {
+                if (dateInput) {
+                    datePicker = flatpickr(dateInput, {
+                        dateFormat: "Y-m-d",
+                        altInput: true,
+                        altFormat: "d/m/Y",
+                        allowInput: true,
+                        defaultDate: "today",
+                        onChange: function (selectedDates, dateStr, instance) {
+                            if (typeof updateCalculatedAgeGroup === 'function') {
+                                updateCalculatedAgeGroup();
+                            }
+                        }
+                    });
+                }
+                if (newAthleteDOB) {
+                    dobPicker = flatpickr(newAthleteDOB, {
+                        dateFormat: "Y-m-d",
+                        altInput: true,
+                        altFormat: "d/m/Y",
+                        allowInput: true
+                    });
+                }
+            } else {
+                console.warn('Flatpickr library not loaded.');
+            }
+        } catch (e) {
+            console.error('Flatpickr init failed:', e);
+        }
+
+        // Defaults
+        if (dateInput) {
+            if (datePicker) {
+                datePicker.setDate(new Date());
+            } else if (dateInput.type === 'date') {
+                dateInput.valueAsDate = new Date();
+            } else {
+                dateInput.value = new Date().toISOString().split('T')[0];
             }
         }
-    }, 5000);
 
-    // General Settings Init
-    if (hideNotesSymbol) {
-        hideNotesSymbol.checked = localStorage.getItem('tf_hide_notes_symbol') === 'true';
-        hideNotesSymbol.addEventListener('change', () => {
-            localStorage.setItem('tf_hide_notes_symbol', hideNotesSymbol.checked);
-            renderReports();
+        console.log("UI Init finished. Waiting for data consensus..."); // DEBUG
+    }
+
+    function seedEvents() {
+        const defaults = {
+            "10000μ": "10,000m", "10000μ Βάδην": "10,000m Race Walk", "100μ": "100m",
+            "100μ Εμπόδια": "100m Hurdles", "110μ Εμπόδια": "110m Hurdles", "1500μ": "1,500m",
+            "20000μ Βάδην": "20,000m Race Walk", "2000μ ΦΕ": "2,000m Steeplechase", "200μ": "200m",
+            "200μ Εμπόδια": "200m Hurdles", "3000μ": "3,000m", "3000μ Βάδην": "3,000m Race Walk",
+            "3000μ ΦΕ": "3,000m Steeplechase", "300μ Εμπόδια": "300m Hurdles", "400μ": "400m",
+            "400μ Εμπόδια": "400m Hurdles", "4x100": "4x100m Relay", "4x400": "4x400m Relay",
+            "5000μ": "5,000m", "5000μ Βάδην": "5,000m Race Walk", "800μ": "800m",
+            "80μ Εμπόδια": "80m Hurdles", "Ακόντιο": "Javelin Throw", "Βαλκανική Σκυτάλη": "Balkan Relay",
+            "Βαρύ Οργανο": "Weight Throw", "Δέκαθλο": "Decathlon", "Δίσκος": "Discus Throw",
+            "Επι Κοντώ": "Pole Vault", "Έπταθλο": "Heptathlon", "Ημιμαραθώνιος": "Half Marathon",
+            "Μαραθώνιος": "Marathon", "Μήκος": "Long Jump", "Πένταθλο": "Pentathlon",
+            "Πένταθλο Ρίψεων": "Throws Pentathlon", "Σφαίρα": "Shot Put", "Σφύρα": "Hammer Throw",
+            "Τριπλούν": "Triple Jump", "Υψος": "High Jump"
+        };
+
+        let changed = false;
+        Object.entries(defaults).forEach(([name, desc]) => {
+            const exists = events.some(e => e.name.trim().toLowerCase() === name.trim().toLowerCase());
+
+            if (!exists) {
+                const isRelay = name.includes('4x') || name.includes('Σκυτάλη');
+                const isCombined = ["Δέκαθλο", "Έπταθλο", "Πένταθλο", "Πένταθλο Ρίψεων"].includes(name);
+
+                events.push({
+                    id: Date.now() + Math.random(),
+                    name: name.trim(),
+                    descriptionEn: desc,
+                    specs: '',
+                    notes: '',
+                    isCombined: isCombined,
+                    isRelay: isRelay
+                });
+                changed = true;
+            }
+        });
+
+        // Ensure properties exist
+        events.forEach(ev => {
+            if (ev.notes === undefined) { ev.notes = ''; changed = true; }
+        });
+
+        if (changed) {
+            saveEvents();
+            console.log("Seeded/Updated events.");
+        }
+    }
+
+    function seedCountries() {
+        if (countries.length === 0 || (countries.length > 0 && countries.includes("USA") && !countries.includes("ΗΠΑ"))) {
+            // Seed if empty OR if it looks like the old English list
+            countries = [
+                'Ελλάδα', 'Κύπρος', 'ΗΠΑ', 'Ηνωμένο Βασίλειο', 'Γερμανία', 'Γαλλία', 'Ιταλία', 'Ισπανία',
+                'Τζαμάικα', 'Κένυα', 'Αιθιοπία', 'Καναδάς', 'Αυστραλία', 'Ιαπωνία', 'Κίνα', 'Ρωσία', 'Βραζιλία'
+            ].sort();
+            saveCountries();
+            console.log("Seeded Countries");
+        }
+    }
+
+    function seedRecords() {
+        if (records.length === 0) {
+            console.log("Records empty. Starting clean.");
+            // records = [...]; // Disabled sample seeding
+        }
+    }
+
+
+    function migrateRecordFormat() {
+        let changed = false;
+        records.forEach(r => {
+            if (r.athlete && !r.athlete.includes(',')) {
+                const match = athletes.find(a => `${a.firstName} ${a.lastName}`.trim() === r.athlete);
+                if (match) {
+                    r.athlete = `${match.lastName}, ${match.firstName}`;
+                    changed = true;
+                } else {
+                    const parts = r.athlete.trim().split(' ');
+                    if (parts.length >= 2) {
+                        const last = parts.pop();
+                        const first = parts.join(' ');
+                        r.athlete = `${last}, ${first}`;
+                        changed = true;
+                    }
+                }
+            }
+        });
+        if (changed) saveRecords();
+    }
+    function migrateEvents() {
+        if (events.length > 0 && typeof events[0] === 'string') {
+            console.log("Migrating Events to Object Schema...");
+            events = events.map(name => ({
+                id: Date.now() + Math.random(),
+                name: name,
+                specs: '',
+                notes: '',
+                isCombined: false,
+                isRelay: false
+            }));
+            saveEvents();
+        }
+
+        let changed = false;
+        events.forEach(ev => {
+            if (!ev.eventType) {
+                if (ev.isRelay) ev.eventType = 'Relay';
+                else if (ev.isCombined) ev.eventType = 'Combined';
+                else ev.eventType = 'Track';
+                changed = true;
+            }
+        });
+        if (changed) saveEvents();
+    }
+
+    function migrateEventDescriptions() {
+        const defaults = {
+            "10000μ": "10,000m", "10000μ Βάδην": "10,000m Race Walk", "100μ": "100m",
+            "100μ Εμπόδια": "100m Hurdles", "110μ Εμπόδια": "110m Hurdles", "1500μ": "1,500m",
+            "20000μ Βάδην": "20,000m Race Walk", "2000μ ΦΕ": "2,000m Steeplechase", "200μ": "200m",
+            "200μ Εμπόδια": "200m Hurdles", "3000μ": "3,000m", "3000μ Βάδην": "3,000m Race Walk",
+            "3000μ ΦΕ": "3,000m Steeplechase", "300μ Εμπόδια": "300m Hurdles", "400μ": "400m",
+            "400μ Εμπόδια": "400m Hurdles", "4x100": "4x100m Relay", "4x400": "4x400m Relay",
+            "5000μ": "5,000m", "5000μ Βάδην": "5,000m Race Walk", "800μ": "800m",
+            "80μ Εμπόδια": "80m Hurdles", "Ακόντιο": "Javelin Throw", "Βαλκανική Σκυτάλη": "Balkan Relay",
+            "Βαρύ Οργανο": "Weight Throw", "Δέκαθλο": "Decathlon", "Δίσκος": "Discus Throw",
+            "Επι Κοντώ": "Pole Vault", "Έπταθλο": "Heptathlon", "Ημιμαραθώνιος": "Half Marathon",
+            "Μαραθώνιος": "Marathon", "Μήκος": "Long Jump", "Πένταθλο": "Pentathlon",
+            "Πένταθλο Ρίψεων": "Throws Pentathlon", "Σφαίρα": "Shot Put", "Σφύρα": "Hammer Throw",
+            "Τριπλούν": "Triple Jump", "Υψος": "High Jump"
+        };
+        let changed = false;
+        events.forEach(ev => {
+            if (ev.descriptionEn === undefined) {
+                // Try to match default
+                const key = Object.keys(defaults).find(k => k.toLowerCase() === ev.name.toLowerCase());
+                ev.descriptionEn = key ? defaults[key] : '';
+                changed = true;
+            }
+        });
+        if (changed) saveEvents();
+    }
+
+    // Helper to check for Supervisor role
+    // Includes localhost/file checks for testing
+    function migrateAthletes() {
+        let changed = false;
+        records.forEach(r => {
+            if (!r.athlete) return;
+
+            const name = r.athlete;
+            const isComma = name.includes(',');
+
+            // normalize record name
+            let rFirst = '', rLast = '';
+            if (isComma) {
+                const parts = name.split(',');
+                rLast = parts[0].trim();
+                rFirst = parts[1] ? parts[1].trim() : '';
+            } else {
+                const parts = name.trim().split(' ');
+                if (parts.length > 1) {
+                    rFirst = parts[0];
+                    rLast = parts.slice(1).join(' ');
+                } else {
+                    rLast = name.trim();
+                }
+            }
+
+            const rFirstLower = rFirst.toLowerCase();
+            const rLastLower = rLast.toLowerCase();
+
+            const exists = athletes.some(a => {
+                const aFirst = a.firstName.toLowerCase();
+                const aLast = a.lastName.toLowerCase();
+
+                // Check exact match
+                if (aFirst === rFirstLower && aLast === rLastLower) return true;
+
+                // Check swapped match (Record: "Last First" vs Athlete: "First Last")
+                // e.g. Record "Bolt Usain" vs Athlete "Usain Bolt"
+                // In my parsing logic above, if record was "Bolt Usain" (no comma), rFirst="Bolt", rLast="Usain"
+                // Athlete is First="Usain", Last="Bolt"
+                if (aFirst === rLastLower && aLast === rFirstLower) return true;
+
+                // Check concatenated
+                const flName = `${a.firstName} ${a.lastName}`.toLowerCase();
+                const lfName = `${a.lastName}, ${a.firstName}`.toLowerCase();
+                const recNameLower = name.toLowerCase();
+
+                return flName === recNameLower || lfName === recNameLower;
+            });
+
+            if (!exists) {
+                // Only add if we rely purely on the record's format
+                let first = rFirst || 'Unknown';
+                let last = rLast || name;
+
+                athletes.push({
+                    id: Date.now() + Math.random(),
+                    idNumber: '',
+                    firstName: first,
+                    lastName: last,
+                    dob: '',
+                    gender: r.gender || ''
+                });
+                changed = true;
+            }
+        });
+
+        if (changed) saveAthletes();
+    }
+
+    function migrateAthleteNames() {
+        let changed = false;
+
+        athletes.forEach(a => {
+            if (a.name) {
+                const parts = a.name.trim().split(' ');
+                a.firstName = parts.shift() || 'Unknown';
+                a.lastName = parts.join(' ') || '';
+                delete a.name;
+                changed = true;
+            }
+        });
+        if (changed) saveAthletes();
+    }
+
+    // --- Logic ---
+    function populateAgeSelects() {
+        const groups = [];
+        for (let i = 35; i < 100; i += 5) {
+            groups.push(i.toString());
+        }
+        groups.push('100+');
+
+        if (ageGroupInput) {
+            ageGroupInput.innerHTML = '<option value="">Select Age Group</option>';
+            groups.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g;
+                opt.textContent = g;
+                ageGroupInput.appendChild(opt);
+            });
+        }
+
+        if (filterAge) {
+            filterAge.innerHTML = '<option value="all">All Age Groups</option>';
+            groups.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g;
+                opt.textContent = g;
+                filterAge.appendChild(opt);
+            });
+        }
+    }
+
+    function populateYearDropdown() {
+        if (!filterYear) return;
+
+        const currentVal = filterYear.value;
+
+        // Extract unique years from records
+        const years = new Set();
+        const currentYear = new Date().getFullYear();
+        years.add(currentYear);
+
+        records.forEach(r => {
+            if (r.date) {
+                const d = new Date(r.date);
+                if (!isNaN(d.getTime())) {
+                    years.add(d.getFullYear());
+                }
+            }
+        });
+
+        const sortedYears = Array.from(years).sort((a, b) => b - a);
+
+        filterYear.innerHTML = '<option value="all" style="color:black;">All Years</option>';
+
+        sortedYears.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y.toString();
+            opt.textContent = y.toString();
+            opt.style.color = 'black';
+            filterYear.appendChild(opt);
+        });
+
+        // Restore value if it still exists
+        if (Array.from(filterYear.options).some(opt => opt.value === currentVal)) {
+            filterYear.value = currentVal;
+        } else {
+            filterYear.value = 'all';
+        }
+    }
+
+    function populateEventDropdowns() {
+        if (evtInput) {
+            evtInput.innerHTML = '<option value="" disabled selected>Select Event</option>';
+            events.forEach(ev => {
+                const opt = document.createElement('option');
+                opt.value = ev.name;
+                opt.textContent = ev.name;
+                evtInput.appendChild(opt);
+            });
+        }
+
+        if (filterEvent) {
+            filterEvent.innerHTML = '<option value="all">All Events</option>';
+            events.forEach(ev => {
+                const opt = document.createElement('option');
+                opt.value = ev.name;
+                opt.textContent = ev.name;
+                filterEvent.appendChild(opt);
+            });
+        }
+    }
+
+    function populateAthleteDropdown() {
+        athletes.sort((a, b) => {
+            const lastA = a.lastName || '';
+            const lastB = b.lastName || '';
+            const firstA = a.firstName || '';
+            const firstB = b.firstName || '';
+
+            if (lastA === lastB) return firstA.localeCompare(firstB);
+            return lastA.localeCompare(lastB);
+        });
+
+        if (athleteInput) {
+            athleteInput.innerHTML = '<option value="" disabled selected>Select Athlete</option>';
+            athletes.forEach(a => {
+                const opt = document.createElement('option');
+                const idText = a.idNumber ? ` (#${a.idNumber})` : '';
+                opt.textContent = `${a.lastName}${a.lastName ? ', ' : ''}${a.firstName}${idText}`;
+                opt.value = `${a.lastName}, ${a.firstName}`;
+                opt.dataset.id = a.id;
+                athleteInput.appendChild(opt);
+            });
+        }
+
+        // Also populate relay participant dropdowns with default state
+        populateRelayAthletes(genderInput ? genderInput.value : '');
+    }
+
+    function populateRelayAthletes(gender) {
+        const relayDropdowns = [relayAthlete1, relayAthlete2, relayAthlete3, relayAthlete4];
+        relayDropdowns.forEach(dd => {
+            if (!dd) return;
+            const currentVal = dd.value;
+            dd.innerHTML = '<option value="">(Empty)</option>';
+
+            // Filter athletes by gender if not "Mixed" or empty
+            const filtered = athletes.filter(a => {
+                if (!gender || gender === 'Mixed' || gender === 'all') return true;
+                return a.gender === gender;
+            });
+
+            filtered.forEach(a => {
+                const opt = document.createElement('option');
+                const idText = a.idNumber ? ` (#${a.idNumber})` : '';
+                opt.textContent = `${a.lastName}${a.lastName ? ', ' : ''}${a.firstName}${idText}`;
+                opt.value = `${a.lastName}, ${a.firstName}`;
+                dd.appendChild(opt);
+            });
+            console.log(`Populated relay dropdown with ${filtered.length} athletes for gender: ${gender}`);
+            dd.value = currentVal;
         });
     }
 
-    const btnRecalculateWMA = document.getElementById('btnRecalculateWMA');
-    if (btnRecalculateWMA) {
-        btnRecalculateWMA.addEventListener('click', recalculateAllWMAStats);
-    }
+    function setupEventListeners() {
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+        });
 
-    // Default to Reports
-    switchTab('reports');
+        document.querySelectorAll('.sub-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchSubTab(tab.dataset.subtab));
+        });
+        document.querySelectorAll('.stats-sub-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchStatsSubTab(tab.dataset.statSubtab));
+        });
+
+        if (recordForm) recordForm.addEventListener('submit', handleFormSubmit);
+        if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
+
+        // Inline Age Validation Warning Handlers
+        const btnAgeWarningProceed = document.getElementById('btnAgeWarningProceed');
+        if (btnAgeWarningProceed) {
+            btnAgeWarningProceed.addEventListener('click', () => {
+                // bypassAgeValidation = true; // Set bypass flag
+                document.getElementById('ageValidationWarning').classList.add('hidden');
+                recordForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+            });
+        }
+
+        const btnAgeWarningCancel = document.getElementById('btnAgeWarningCancel');
+        if (btnAgeWarningCancel) {
+            btnAgeWarningCancel.addEventListener('click', () => {
+                document.getElementById('ageValidationWarning').classList.add('hidden');
+            });
+        }
 
 
-    // Init Flatpickr
-    try {
-        if (typeof flatpickr !== 'undefined') {
-            if (dateInput) {
-                datePicker = flatpickr(dateInput, {
-                    dateFormat: "Y-m-d",
-                    altInput: true,
-                    altFormat: "d/m/Y",
-                    allowInput: true,
-                    defaultDate: "today",
-                    onChange: function (selectedDates, dateStr, instance) {
-                        if (typeof updateCalculatedAgeGroup === 'function') {
-                            updateCalculatedAgeGroup();
-                        }
+        if (athleteInput) {
+            athleteInput.addEventListener('change', updateCalculatedAgeGroup);
+        }
+
+        if (dateInput) {
+            dateInput.addEventListener('change', updateCalculatedAgeGroup);
+        }
+
+        if (evtInput) {
+            evtInput.addEventListener('change', () => {
+                const eventName = evtInput.value;
+                handleMixedGenderVisibility(eventName);
+                const ev = events.find(e => e.name === eventName);
+                // Robust check for relay type
+                const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
+                toggleRelayFields(isRelay);
+            });
+        }
+
+        if (genderInput) {
+            genderInput.addEventListener('change', () => {
+                populateRelayAthletes(genderInput.value);
+            });
+        }
+
+        if (eventForm) eventForm.addEventListener('submit', handleEventSubmit);
+        if (eventListBody) {
+            eventListBody.addEventListener('click', (e) => {
+                const delBtn = e.target.closest('.delete-event-btn');
+                const editBtn = e.target.closest('.edit-event-btn');
+                if (delBtn && !delBtn.disabled) deleteEvent(delBtn.dataset.id);
+                if (editBtn) editEvent(editBtn.dataset.id);
+            });
+        }
+
+        if (athleteForm) athleteForm.addEventListener('submit', handleAthleteSubmit);
+        if (athleteListBody) {
+            athleteListBody.addEventListener('click', (e) => {
+                const delBtn = e.target.closest('.delete-athlete-btn');
+                const editBtn = e.target.closest('.edit-athlete-btn');
+                console.log('AthleteList Click:', e.target, 'EditBtn:', editBtn, 'DelBtn:', delBtn);
+
+                if (delBtn && !delBtn.disabled) deleteAthlete(delBtn.dataset.id);
+                if (editBtn) {
+                    const idToEdit = delBtn ? delBtn.dataset.id : editBtn.dataset.id;
+                    console.log('Editing ID:', idToEdit);
+                    editAthlete(idToEdit);
+                }
+            });
+        }
+
+        // Event Type Radio Button Handlers
+        const eventTypeRadios = [eventTypeField, eventTypeTrack, eventTypeCombined, eventTypeRelay];
+        eventTypeRadios.forEach(radio => {
+            if (radio) {
+                radio.addEventListener('change', () => {
+                    if (eventTypeCombined.checked) {
+                        // Combined event - enable Number of Events field
+                        newEventSubCount.disabled = false;
+                        newEventSubCount.focus();
+                    } else {
+                        // Other types - disable Number of Events field
+                        newEventSubCount.disabled = true;
+                        newEventSubCount.value = '';
+                        subEventsContainer.innerHTML = '';
+                        subEventsContainer.style.display = 'none';
                     }
                 });
             }
-            if (newAthleteDOB) {
-                dobPicker = flatpickr(newAthleteDOB, {
-                    dateFormat: "Y-m-d",
-                    altInput: true,
-                    altFormat: "d/m/Y",
-                    allowInput: true
-                });
-            }
-        } else {
-            console.warn('Flatpickr library not loaded.');
-        }
-    } catch (e) {
-        console.error('Flatpickr init failed:', e);
-    }
-
-    // Defaults
-    if (dateInput) {
-        if (datePicker) {
-            datePicker.setDate(new Date());
-        } else if (dateInput.type === 'date') {
-            dateInput.valueAsDate = new Date();
-        } else {
-            dateInput.value = new Date().toISOString().split('T')[0];
-        }
-    }
-
-    console.log("UI Init finished. Waiting for data consensus..."); // DEBUG
-}
-
-function seedEvents() {
-    const defaults = {
-        "10000μ": "10,000m", "10000μ Βάδην": "10,000m Race Walk", "100μ": "100m",
-        "100μ Εμπόδια": "100m Hurdles", "110μ Εμπόδια": "110m Hurdles", "1500μ": "1,500m",
-        "20000μ Βάδην": "20,000m Race Walk", "2000μ ΦΕ": "2,000m Steeplechase", "200μ": "200m",
-        "200μ Εμπόδια": "200m Hurdles", "3000μ": "3,000m", "3000μ Βάδην": "3,000m Race Walk",
-        "3000μ ΦΕ": "3,000m Steeplechase", "300μ Εμπόδια": "300m Hurdles", "400μ": "400m",
-        "400μ Εμπόδια": "400m Hurdles", "4x100": "4x100m Relay", "4x400": "4x400m Relay",
-        "5000μ": "5,000m", "5000μ Βάδην": "5,000m Race Walk", "800μ": "800m",
-        "80μ Εμπόδια": "80m Hurdles", "Ακόντιο": "Javelin Throw", "Βαλκανική Σκυτάλη": "Balkan Relay",
-        "Βαρύ Οργανο": "Weight Throw", "Δέκαθλο": "Decathlon", "Δίσκος": "Discus Throw",
-        "Επι Κοντώ": "Pole Vault", "Έπταθλο": "Heptathlon", "Ημιμαραθώνιος": "Half Marathon",
-        "Μαραθώνιος": "Marathon", "Μήκος": "Long Jump", "Πένταθλο": "Pentathlon",
-        "Πένταθλο Ρίψεων": "Throws Pentathlon", "Σφαίρα": "Shot Put", "Σφύρα": "Hammer Throw",
-        "Τριπλούν": "Triple Jump", "Υψος": "High Jump"
-    };
-
-    let changed = false;
-    Object.entries(defaults).forEach(([name, desc]) => {
-        const exists = events.some(e => e.name.trim().toLowerCase() === name.trim().toLowerCase());
-
-        if (!exists) {
-            const isRelay = name.includes('4x') || name.includes('Σκυτάλη');
-            const isCombined = ["Δέκαθλο", "Έπταθλο", "Πένταθλο", "Πένταθλο Ρίψεων"].includes(name);
-
-            events.push({
-                id: Date.now() + Math.random(),
-                name: name.trim(),
-                descriptionEn: desc,
-                specs: '',
-                notes: '',
-                isCombined: isCombined,
-                isRelay: isRelay
-            });
-            changed = true;
-        }
-    });
-
-    // Ensure properties exist
-    events.forEach(ev => {
-        if (ev.notes === undefined) { ev.notes = ''; changed = true; }
-    });
-
-    if (changed) {
-        saveEvents();
-        console.log("Seeded/Updated events.");
-    }
-}
-
-function seedCountries() {
-    if (countries.length === 0 || (countries.length > 0 && countries.includes("USA") && !countries.includes("ΗΠΑ"))) {
-        // Seed if empty OR if it looks like the old English list
-        countries = [
-            'Ελλάδα', 'Κύπρος', 'ΗΠΑ', 'Ηνωμένο Βασίλειο', 'Γερμανία', 'Γαλλία', 'Ιταλία', 'Ισπανία',
-            'Τζαμάικα', 'Κένυα', 'Αιθιοπία', 'Καναδάς', 'Αυστραλία', 'Ιαπωνία', 'Κίνα', 'Ρωσία', 'Βραζιλία'
-        ].sort();
-        saveCountries();
-        console.log("Seeded Countries");
-    }
-}
-
-function seedRecords() {
-    if (records.length === 0) {
-        console.log("Records empty. Starting clean.");
-        // records = [...]; // Disabled sample seeding
-    }
-}
-
-
-function migrateRecordFormat() {
-    let changed = false;
-    records.forEach(r => {
-        if (r.athlete && !r.athlete.includes(',')) {
-            const match = athletes.find(a => `${a.firstName} ${a.lastName}`.trim() === r.athlete);
-            if (match) {
-                r.athlete = `${match.lastName}, ${match.firstName}`;
-                changed = true;
-            } else {
-                const parts = r.athlete.trim().split(' ');
-                if (parts.length >= 2) {
-                    const last = parts.pop();
-                    const first = parts.join(' ');
-                    r.athlete = `${last}, ${first}`;
-                    changed = true;
-                }
-            }
-        }
-    });
-    if (changed) saveRecords();
-}
-function migrateEvents() {
-    if (events.length > 0 && typeof events[0] === 'string') {
-        console.log("Migrating Events to Object Schema...");
-        events = events.map(name => ({
-            id: Date.now() + Math.random(),
-            name: name,
-            specs: '',
-            notes: '',
-            isCombined: false,
-            isRelay: false
-        }));
-        saveEvents();
-    }
-
-    let changed = false;
-    events.forEach(ev => {
-        if (!ev.eventType) {
-            if (ev.isRelay) ev.eventType = 'Relay';
-            else if (ev.isCombined) ev.eventType = 'Combined';
-            else ev.eventType = 'Track';
-            changed = true;
-        }
-    });
-    if (changed) saveEvents();
-}
-
-function migrateEventDescriptions() {
-    const defaults = {
-        "10000μ": "10,000m", "10000μ Βάδην": "10,000m Race Walk", "100μ": "100m",
-        "100μ Εμπόδια": "100m Hurdles", "110μ Εμπόδια": "110m Hurdles", "1500μ": "1,500m",
-        "20000μ Βάδην": "20,000m Race Walk", "2000μ ΦΕ": "2,000m Steeplechase", "200μ": "200m",
-        "200μ Εμπόδια": "200m Hurdles", "3000μ": "3,000m", "3000μ Βάδην": "3,000m Race Walk",
-        "3000μ ΦΕ": "3,000m Steeplechase", "300μ Εμπόδια": "300m Hurdles", "400μ": "400m",
-        "400μ Εμπόδια": "400m Hurdles", "4x100": "4x100m Relay", "4x400": "4x400m Relay",
-        "5000μ": "5,000m", "5000μ Βάδην": "5,000m Race Walk", "800μ": "800m",
-        "80μ Εμπόδια": "80m Hurdles", "Ακόντιο": "Javelin Throw", "Βαλκανική Σκυτάλη": "Balkan Relay",
-        "Βαρύ Οργανο": "Weight Throw", "Δέκαθλο": "Decathlon", "Δίσκος": "Discus Throw",
-        "Επι Κοντώ": "Pole Vault", "Έπταθλο": "Heptathlon", "Ημιμαραθώνιος": "Half Marathon",
-        "Μαραθώνιος": "Marathon", "Μήκος": "Long Jump", "Πένταθλο": "Pentathlon",
-        "Πένταθλο Ρίψεων": "Throws Pentathlon", "Σφαίρα": "Shot Put", "Σφύρα": "Hammer Throw",
-        "Τριπλούν": "Triple Jump", "Υψος": "High Jump"
-    };
-    let changed = false;
-    events.forEach(ev => {
-        if (ev.descriptionEn === undefined) {
-            // Try to match default
-            const key = Object.keys(defaults).find(k => k.toLowerCase() === ev.name.toLowerCase());
-            ev.descriptionEn = key ? defaults[key] : '';
-            changed = true;
-        }
-    });
-    if (changed) saveEvents();
-}
-
-// Helper to check for Supervisor role
-// Includes localhost/file checks for testing
-function migrateAthletes() {
-    let changed = false;
-    records.forEach(r => {
-        if (!r.athlete) return;
-
-        const name = r.athlete;
-        const isComma = name.includes(',');
-
-        // normalize record name
-        let rFirst = '', rLast = '';
-        if (isComma) {
-            const parts = name.split(',');
-            rLast = parts[0].trim();
-            rFirst = parts[1] ? parts[1].trim() : '';
-        } else {
-            const parts = name.trim().split(' ');
-            if (parts.length > 1) {
-                rFirst = parts[0];
-                rLast = parts.slice(1).join(' ');
-            } else {
-                rLast = name.trim();
-            }
-        }
-
-        const rFirstLower = rFirst.toLowerCase();
-        const rLastLower = rLast.toLowerCase();
-
-        const exists = athletes.some(a => {
-            const aFirst = a.firstName.toLowerCase();
-            const aLast = a.lastName.toLowerCase();
-
-            // Check exact match
-            if (aFirst === rFirstLower && aLast === rLastLower) return true;
-
-            // Check swapped match (Record: "Last First" vs Athlete: "First Last")
-            // e.g. Record "Bolt Usain" vs Athlete "Usain Bolt"
-            // In my parsing logic above, if record was "Bolt Usain" (no comma), rFirst="Bolt", rLast="Usain"
-            // Athlete is First="Usain", Last="Bolt"
-            if (aFirst === rLastLower && aLast === rFirstLower) return true;
-
-            // Check concatenated
-            const flName = `${a.firstName} ${a.lastName}`.toLowerCase();
-            const lfName = `${a.lastName}, ${a.firstName}`.toLowerCase();
-            const recNameLower = name.toLowerCase();
-
-            return flName === recNameLower || lfName === recNameLower;
         });
 
-        if (!exists) {
-            // Only add if we rely purely on the record's format
-            let first = rFirst || 'Unknown';
-            let last = rLast || name;
 
-            athletes.push({
-                id: Date.now() + Math.random(),
-                idNumber: '',
-                firstName: first,
-                lastName: last,
-                dob: '',
-                gender: r.gender || ''
-            });
-            changed = true;
-        }
-    });
+        if (newEventSubCount) {
+            newEventSubCount.addEventListener('input', () => {
+                const count = parseInt(newEventSubCount.value) || 0;
+                subEventsContainer.innerHTML = '';
 
-    if (changed) saveAthletes();
-}
+                if (count > 0) {
+                    subEventsContainer.style.display = 'flex';
 
-function migrateAthleteNames() {
-    let changed = false;
+                    // Generate Options
+                    let options = '<option value="" disabled selected>Select Event</option>';
+                    // Filter out Combined and Relay events
+                    const availableEvents = events.filter(e => !e.isCombined && !e.isRelay);
+                    availableEvents.sort((a, b) => a.name.localeCompare(b.name));
 
-    athletes.forEach(a => {
-        if (a.name) {
-            const parts = a.name.trim().split(' ');
-            a.firstName = parts.shift() || 'Unknown';
-            a.lastName = parts.join(' ') || '';
-            delete a.name;
-            changed = true;
-        }
-    });
-    if (changed) saveAthletes();
-}
+                    availableEvents.forEach(e => {
+                        options += `<option value="${e.name}">${e.name}</option>`;
+                    });
 
-// --- Logic ---
-function populateAgeSelects() {
-    const groups = [];
-    for (let i = 35; i < 100; i += 5) {
-        groups.push(i.toString());
-    }
-    groups.push('100+');
-
-    if (ageGroupInput) {
-        ageGroupInput.innerHTML = '<option value="">Select Age Group</option>';
-        groups.forEach(g => {
-            const opt = document.createElement('option');
-            opt.value = g;
-            opt.textContent = g;
-            ageGroupInput.appendChild(opt);
-        });
-    }
-
-    if (filterAge) {
-        filterAge.innerHTML = '<option value="all">All Age Groups</option>';
-        groups.forEach(g => {
-            const opt = document.createElement('option');
-            opt.value = g;
-            opt.textContent = g;
-            filterAge.appendChild(opt);
-        });
-    }
-}
-
-function populateYearDropdown() {
-    if (!filterYear) return;
-
-    const currentVal = filterYear.value;
-
-    // Extract unique years from records
-    const years = new Set();
-    const currentYear = new Date().getFullYear();
-    years.add(currentYear);
-
-    records.forEach(r => {
-        if (r.date) {
-            const d = new Date(r.date);
-            if (!isNaN(d.getTime())) {
-                years.add(d.getFullYear());
-            }
-        }
-    });
-
-    const sortedYears = Array.from(years).sort((a, b) => b - a);
-
-    filterYear.innerHTML = '<option value="all" style="color:black;">All Years</option>';
-
-    sortedYears.forEach(y => {
-        const opt = document.createElement('option');
-        opt.value = y.toString();
-        opt.textContent = y.toString();
-        opt.style.color = 'black';
-        filterYear.appendChild(opt);
-    });
-
-    // Restore value if it still exists
-    if (Array.from(filterYear.options).some(opt => opt.value === currentVal)) {
-        filterYear.value = currentVal;
-    } else {
-        filterYear.value = 'all';
-    }
-}
-
-function populateEventDropdowns() {
-    if (evtInput) {
-        evtInput.innerHTML = '<option value="" disabled selected>Select Event</option>';
-        events.forEach(ev => {
-            const opt = document.createElement('option');
-            opt.value = ev.name;
-            opt.textContent = ev.name;
-            evtInput.appendChild(opt);
-        });
-    }
-
-    if (filterEvent) {
-        filterEvent.innerHTML = '<option value="all">All Events</option>';
-        events.forEach(ev => {
-            const opt = document.createElement('option');
-            opt.value = ev.name;
-            opt.textContent = ev.name;
-            filterEvent.appendChild(opt);
-        });
-    }
-}
-
-function populateAthleteDropdown() {
-    athletes.sort((a, b) => {
-        const lastA = a.lastName || '';
-        const lastB = b.lastName || '';
-        const firstA = a.firstName || '';
-        const firstB = b.firstName || '';
-
-        if (lastA === lastB) return firstA.localeCompare(firstB);
-        return lastA.localeCompare(lastB);
-    });
-
-    if (athleteInput) {
-        athleteInput.innerHTML = '<option value="" disabled selected>Select Athlete</option>';
-        athletes.forEach(a => {
-            const opt = document.createElement('option');
-            const idText = a.idNumber ? ` (#${a.idNumber})` : '';
-            opt.textContent = `${a.lastName}${a.lastName ? ', ' : ''}${a.firstName}${idText}`;
-            opt.value = `${a.lastName}, ${a.firstName}`;
-            opt.dataset.id = a.id;
-            athleteInput.appendChild(opt);
-        });
-    }
-
-    // Also populate relay participant dropdowns with default state
-    populateRelayAthletes(genderInput ? genderInput.value : '');
-}
-
-function populateRelayAthletes(gender) {
-    const relayDropdowns = [relayAthlete1, relayAthlete2, relayAthlete3, relayAthlete4];
-    relayDropdowns.forEach(dd => {
-        if (!dd) return;
-        const currentVal = dd.value;
-        dd.innerHTML = '<option value="">(Empty)</option>';
-
-        // Filter athletes by gender if not "Mixed" or empty
-        const filtered = athletes.filter(a => {
-            if (!gender || gender === 'Mixed' || gender === 'all') return true;
-            return a.gender === gender;
-        });
-
-        filtered.forEach(a => {
-            const opt = document.createElement('option');
-            const idText = a.idNumber ? ` (#${a.idNumber})` : '';
-            opt.textContent = `${a.lastName}${a.lastName ? ', ' : ''}${a.firstName}${idText}`;
-            opt.value = `${a.lastName}, ${a.firstName}`;
-            dd.appendChild(opt);
-        });
-        console.log(`Populated relay dropdown with ${filtered.length} athletes for gender: ${gender}`);
-        dd.value = currentVal;
-    });
-}
-
-function setupEventListeners() {
-    navTabs.forEach(tab => {
-        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-    });
-
-    document.querySelectorAll('.sub-tab').forEach(tab => {
-        tab.addEventListener('click', () => switchSubTab(tab.dataset.subtab));
-    });
-    document.querySelectorAll('.stats-sub-tab').forEach(tab => {
-        tab.addEventListener('click', () => switchStatsSubTab(tab.dataset.statSubtab));
-    });
-
-    if (recordForm) recordForm.addEventListener('submit', handleFormSubmit);
-    if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
-
-    // Inline Age Validation Warning Handlers
-    const btnAgeWarningProceed = document.getElementById('btnAgeWarningProceed');
-    if (btnAgeWarningProceed) {
-        btnAgeWarningProceed.addEventListener('click', () => {
-            // bypassAgeValidation = true; // Set bypass flag
-            document.getElementById('ageValidationWarning').classList.add('hidden');
-            recordForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-        });
-    }
-
-    const btnAgeWarningCancel = document.getElementById('btnAgeWarningCancel');
-    if (btnAgeWarningCancel) {
-        btnAgeWarningCancel.addEventListener('click', () => {
-            document.getElementById('ageValidationWarning').classList.add('hidden');
-        });
-    }
-
-
-    if (athleteInput) {
-        athleteInput.addEventListener('change', updateCalculatedAgeGroup);
-    }
-
-    if (dateInput) {
-        dateInput.addEventListener('change', updateCalculatedAgeGroup);
-    }
-
-    if (evtInput) {
-        evtInput.addEventListener('change', () => {
-            const eventName = evtInput.value;
-            handleMixedGenderVisibility(eventName);
-            const ev = events.find(e => e.name === eventName);
-            // Robust check for relay type
-            const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
-            toggleRelayFields(isRelay);
-        });
-    }
-
-    if (genderInput) {
-        genderInput.addEventListener('change', () => {
-            populateRelayAthletes(genderInput.value);
-        });
-    }
-
-    if (eventForm) eventForm.addEventListener('submit', handleEventSubmit);
-    if (eventListBody) {
-        eventListBody.addEventListener('click', (e) => {
-            const delBtn = e.target.closest('.delete-event-btn');
-            const editBtn = e.target.closest('.edit-event-btn');
-            if (delBtn && !delBtn.disabled) deleteEvent(delBtn.dataset.id);
-            if (editBtn) editEvent(editBtn.dataset.id);
-        });
-    }
-
-    if (athleteForm) athleteForm.addEventListener('submit', handleAthleteSubmit);
-    if (athleteListBody) {
-        athleteListBody.addEventListener('click', (e) => {
-            const delBtn = e.target.closest('.delete-athlete-btn');
-            const editBtn = e.target.closest('.edit-athlete-btn');
-            console.log('AthleteList Click:', e.target, 'EditBtn:', editBtn, 'DelBtn:', delBtn);
-
-            if (delBtn && !delBtn.disabled) deleteAthlete(delBtn.dataset.id);
-            if (editBtn) {
-                const idToEdit = delBtn ? delBtn.dataset.id : editBtn.dataset.id;
-                console.log('Editing ID:', idToEdit);
-                editAthlete(idToEdit);
-            }
-        });
-    }
-
-    // Event Type Radio Button Handlers
-    const eventTypeRadios = [eventTypeField, eventTypeTrack, eventTypeCombined, eventTypeRelay];
-    eventTypeRadios.forEach(radio => {
-        if (radio) {
-            radio.addEventListener('change', () => {
-                if (eventTypeCombined.checked) {
-                    // Combined event - enable Number of Events field
-                    newEventSubCount.disabled = false;
-                    newEventSubCount.focus();
-                } else {
-                    // Other types - disable Number of Events field
-                    newEventSubCount.disabled = true;
-                    newEventSubCount.value = '';
-                    subEventsContainer.innerHTML = '';
-                    subEventsContainer.style.display = 'none';
-                }
-            });
-        }
-    });
-
-
-    if (newEventSubCount) {
-        newEventSubCount.addEventListener('input', () => {
-            const count = parseInt(newEventSubCount.value) || 0;
-            subEventsContainer.innerHTML = '';
-
-            if (count > 0) {
-                subEventsContainer.style.display = 'flex';
-
-                // Generate Options
-                let options = '<option value="" disabled selected>Select Event</option>';
-                // Filter out Combined and Relay events
-                const availableEvents = events.filter(e => !e.isCombined && !e.isRelay);
-                availableEvents.sort((a, b) => a.name.localeCompare(b.name));
-
-                availableEvents.forEach(e => {
-                    options += `<option value="${e.name}">${e.name}</option>`;
-                });
-
-                for (let i = 1; i <= count; i++) {
-                    const div = document.createElement('div');
-                    div.className = 'form-group';
-                    div.style.flex = '1 1 45%'; // Responsive-ish
-                    div.style.minWidth = '150px';
-                    div.innerHTML = `
+                    for (let i = 1; i <= count; i++) {
+                        const div = document.createElement('div');
+                        div.className = 'form-group';
+                        div.style.flex = '1 1 45%'; // Responsive-ish
+                        div.style.minWidth = '150px';
+                        div.innerHTML = `
                             <label style="font-size:0.75rem;">Event ${i}</label>
                             <select class="sub-event-input" required style="width:100%;">
                                 ${options}
                             </select>
                         `;
-                    subEventsContainer.appendChild(div);
-                }
-            } else {
-                subEventsContainer.style.display = 'none';
-            }
-        });
-    }
-
-    if (filterTrackType) filterTrackType.addEventListener('change', renderReports);
-    if (filterEvent) filterEvent.addEventListener('change', renderReports);
-
-    if (filterGender) filterGender.addEventListener('change', genderFilterChange);
-    if (filterAge) filterAge.addEventListener('change', renderReports);
-    if (filterYear) filterYear.addEventListener('change', renderReports);
-    if (filterAgeMismatch) filterAgeMismatch.addEventListener('change', renderReports);
-    if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
-    if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
-
-    if (themeSelect) {
-        themeSelect.addEventListener('change', () => {
-            setTheme(themeSelect.value);
-        });
-    }
-
-    if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllData);
-    if (clearRecordsBtn) {
-        clearRecordsBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to DELETE ALL RECORDS? This cannot be undone.')) {
-                records = [];
-                saveRecords();
-                renderReports();
-                renderHistoryList();
-                alert('All records deleted.');
-            }
-        });
-    }
-
-    if (clearAthletesBtn) {
-        clearAthletesBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to DELETE ALL ATHLETES? This cannot be undone.')) {
-                athletes = [];
-                saveAthletes();
-                renderAthleteList();
-                populateAthleteDropdown();
-                alert('All athletes deleted.');
-            }
-        });
-    }
-
-    if (btnImportRecords) {
-        console.log("Import Records Button Found");
-        btnImportRecords.addEventListener('click', () => {
-            console.log("Import Button Clicked");
-            if (recordImportFile) recordImportFile.click();
-            else alert("File input not found!");
-        });
-    } else {
-        console.error("Import Records Button NOT Found");
-    }
-    if (btnImportAthletes) btnImportAthletes.addEventListener('click', () => athleteImportFile.click());
-    if (athleteImportFile) athleteImportFile.addEventListener('change', handleAthleteImport);
-
-    if (recordImportFile) {
-        recordImportFile.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) importRecordsFromFile(file);
-        });
-    }
-
-    if (athleteListBody) {
-        athleteListBody.addEventListener('click', (e) => {
-            const editBtn = e.target.closest('.edit-athlete-btn');
-            const delBtn = e.target.closest('.delete-athlete-btn');
-            if (editBtn) editAthlete(editBtn.dataset.id);
-            if (delBtn) deleteAthlete(delBtn.dataset.id);
-        });
-    }
-
-    const btnExcel = document.getElementById('exportExcel');
-    if (btnExcel) btnExcel.addEventListener('click', exportToExcel);
-
-    const btnHTML = document.getElementById('exportHTML');
-    if (btnHTML) btnHTML.addEventListener('click', exportToHTML);
-
-    const btnPDF = document.getElementById('exportPDF');
-    if (btnPDF) btnPDF.addEventListener('click', exportToPDF);
-
-    if (btnBackup) btnBackup.addEventListener('click', exportDatabase);
-    if (btnRestore) btnRestore.addEventListener('click', importDatabase);
-
-    if (userForm) userForm.addEventListener('submit', handleUserSubmit);
-    if (userListBody) {
-        userListBody.addEventListener('click', (e) => {
-            const editBtn = e.target.closest('.edit-user-btn');
-            const delBtn = e.target.closest('.delete-user-btn');
-            if (editBtn) editUser(editBtn.dataset.id);
-            if (delBtn) deleteUser(delBtn.dataset.id);
-        });
-    }
-
-    if (reportTableBody) {
-        reportTableBody.addEventListener('click', (e) => {
-            const expandBtn = e.target.closest('.expand-btn');
-            const editBtn = e.target.closest('.edit-btn');
-            const delBtn = e.target.closest('.delete-btn');
-
-            if (expandBtn) {
-                const id = expandBtn.dataset.id;
-                const detailRow = document.getElementById(`detail-${id}`);
-                if (detailRow) {
-                    detailRow.classList.toggle('hidden');
-                    expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
-                }
-            }
-            if (editBtn) editRecord(Number(editBtn.dataset.id));
-            if (delBtn) deleteRecord(Number(delBtn.dataset.id));
-        });
-    }
-
-    if (countryForm) countryForm.addEventListener('submit', handleCountrySubmit);
-    if (countryListBody) {
-        countryListBody.addEventListener('click', (e) => {
-            const delBtn = e.target.closest('.delete-country-btn');
-            if (delBtn) deleteCountry(delBtn.dataset.country);
-        });
-    }
-
-    const historyListBody = document.getElementById('historyListBody');
-    if (historyListBody) {
-        historyListBody.addEventListener('click', (e) => {
-            const expandBtn = e.target.closest('.expand-btn');
-            const delBtn = e.target.closest('.delete-history-btn');
-            const editBtn = e.target.closest('.edit-history-btn');
-
-            if (expandBtn) {
-                const id = expandBtn.dataset.id;
-                const detailRow = document.getElementById(`detail-hist-${id}`);
-                if (detailRow) {
-                    detailRow.classList.toggle('hidden');
-                    expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
-                }
-            }
-            if (delBtn) deleteHistory(Number(delBtn.dataset.id));
-            if (editBtn) editHistory(Number(editBtn.dataset.id));
-        });
-    }
-}
-
-function switchTab(tabId) {
-    console.log("Switching tab to:", tabId);
-    // Hide all views by removing active class
-    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
-
-    // Show target view
-    const target = document.getElementById('view-' + tabId);
-    if (target) {
-        target.classList.add('active-view');
-    }
-
-    // Update nav buttons
-    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-    const btn = document.querySelector(`.nav-tab[data-tab="${tabId}"]`);
-    if (btn) btn.classList.add('active');
-
-    // Handling specific views
-    if (tabId === 'history') renderHistoryList();
-    if (tabId === 'stats') {
-        const activeSub = document.querySelector('#view-stats .stats-sub-tab.active');
-        if (activeSub) switchStatsSubTab(activeSub.dataset.statSubtab);
-        else switchStatsSubTab('medals');
-    }
-
-    // Settings View Default
-    if (tabId === 'settings') {
-        const activeSub = document.querySelector('#view-settings .sub-tab.active');
-        if (activeSub) {
-            switchSubTab(activeSub.dataset.subtab);
-        } else {
-            switchSubTab('athletes');
-        }
-    }
-}
-
-function switchSubTab(subTabId) {
-    // Hide all setting sections
-    document.querySelectorAll('.setting-section').forEach(el => el.classList.add('hidden'));
-
-    // Show target section
-    const target = document.getElementById('setting-' + subTabId);
-    if (target) {
-        target.classList.remove('hidden');
-    }
-
-    // Update sub-tab buttons
-    document.querySelectorAll('#view-settings .sub-tab').forEach(el => el.classList.remove('active'));
-    const btn = document.querySelector(`#view-settings .sub-tab[data-subtab="${subTabId}"]`);
-    if (btn) btn.classList.add('active');
-
-    // Render lists if needed
-    try {
-        if (subTabId === 'athletes') renderAthleteList();
-        if (subTabId === 'events') {
-            renderEventList();
-            loadIAAFData(); // Load IAAF data to populate the linking dropdown
-        }
-        if (subTabId === 'countries') renderCountryList();
-        if (subTabId === 'iaaf') {
-            loadIAAFData();
-        }
-        if (subTabId === 'wma') {
-            renderWMAFilters();
-            initWMAOfficialData();
-        }
-        if (subTabId === 'general') {
-            // Any specific initialization for general settings
-        }
-    } catch (e) {
-        // Error rendering list for subTabId
-    }
-}
-
-function switchStatsSubTab(subTabId) {
-    document.querySelectorAll('.stats-section').forEach(el => el.classList.remove('active-view'));
-    const target = document.getElementById('stats-' + subTabId);
-    if (subTabId === 'age') renderAgeStats();
-    if (target) target.classList.add('active-view');
-
-    document.querySelectorAll('.stats-sub-tab').forEach(el => el.classList.remove('active'));
-    const btn = document.querySelector(`.stats-sub-tab[data-stat-subtab="${subTabId}"]`);
-    if (btn) btn.classList.add('active');
-
-    if (subTabId === 'medals') renderStats();
-    if (subTabId === 'wma') {
-        loadIAAFData();
-        initWMAOfficialData();
-        populateWMAReportFilters();
-        renderWMAReport();
-    }
-}
-
-function populateWMAReportFilters() {
-    // Current selections
-    const selEvent = document.getElementById('wmaReportFilterEvent')?.value || 'all';
-    const selAthlete = document.getElementById('wmaReportFilterAthlete')?.value || 'all';
-    const selGender = document.getElementById('wmaReportFilterGender')?.value || 'all';
-    const selAgeGroup = document.getElementById('wmaReportFilterAgeGroup')?.value || 'all';
-    const selYear = document.getElementById('wmaReportFilterYear')?.value || 'all';
-
-    // Base records (non-empty)
-    const baseRecords = records.filter(r => r.athlete && r.mark && r.athlete.trim() !== '' && r.mark.trim() !== '');
-
-    // Standard filter function
-    const matches = (r, exclusions = {}) => {
-        if (!exclusions.event && selEvent !== 'all' && r.event !== selEvent) return false;
-        if (!exclusions.athlete && selAthlete !== 'all' && r.athlete !== selAthlete) return false;
-        if (!exclusions.gender && selGender !== 'all') {
-            const g = normalizeGenderLookups(r.gender);
-            if (selGender === 'Male' && g !== 'men') return false;
-            if (selGender === 'Female' && g !== 'women') return false;
-            if (selGender === 'Mixed' && g !== 'mixed') return false;
-        }
-        if (!exclusions.year && selYear !== 'all') {
-            const y = r.date ? new Date(r.date).getFullYear().toString() : '';
-            if (y !== selYear) return false;
-        }
-        if (!exclusions.ageGroup && selAgeGroup !== 'all') {
-            const athleteObj = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
-            let ageAtEvent = 0;
-            if (athleteObj && athleteObj.dob && r.date) {
-                ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
-            } else if (r.ageGroup) {
-                ageAtEvent = parseInt(r.ageGroup);
-            } else {
-                return false;
-            }
-
-            const floorAge = Math.floor(ageAtEvent / 5) * 5;
-            const g = normalizeGenderLookups(r.gender);
-            const prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
-            if (`${prefix}${floorAge}` !== selAgeGroup) return false;
-        }
-        return true;
-    };
-
-    const updateSelect = (id, list, currentVal) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-
-        // Check if this is the active element to minimize disruption
-        const isActive = (document.activeElement === el);
-
-        const newListHtml = `<option value="all">All ${id.replace('wmaReportFilter', '')}s</option>` +
-            list.map(item => `<option value="${item}">${item}</option>`).join('');
-
-        // Only update if content changed or if it was empty to avoid flicker/lose focus
-        if (el.innerHTML !== newListHtml) {
-            el.innerHTML = newListHtml;
-            el.value = currentVal;
-            // If currentVal no longer exists, it will fall back to "all" automatically by browser or we handle it
-            if (el.value !== currentVal) el.value = 'all';
-        }
-    };
-
-    // 1. Events List (filtered by Athlete, Gender, Year, AgeGroup)
-    const eventsList = [...new Set(baseRecords.filter(r => matches(r, { event: true })).map(r => r.event))].filter(e => e).sort();
-    updateSelect('wmaReportFilterEvent', eventsList, selEvent);
-
-    // 2. Athletes List (filtered by Event, Gender, Year, AgeGroup)
-    const athletesList = [...new Set(baseRecords.filter(r => matches(r, { athlete: true })).map(r => r.athlete))].filter(a => a).sort();
-    updateSelect('wmaReportFilterAthlete', athletesList, selAthlete);
-
-    // 3. Years List (filtered by Event, Athlete, Gender, AgeGroup)
-    const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => r.date ? new Date(r.date).getFullYear() : null).filter(y => y))].sort((a, b) => b - a);
-    updateSelect('wmaReportFilterYear', yearsList, selYear);
-
-    // 4. Age Groups (filtered by Event, Athlete, Gender, Year)
-    // We can either keep a static list or dynamically find which age groups have records
-    const allPossibleGroups = ["M35", "M40", "M45", "M50", "M55", "M60", "M65", "M70", "M75", "M80", "M85", "M90",
-        "W35", "W40", "W45", "W50", "W55", "W60", "W65", "W70", "W75", "W80", "W85", "W90",
-        "X35", "X40", "X45", "X50", "X55", "X60", "X65", "X70", "X75", "X80", "X85", "X90"];
-    const relevantGroups = allPossibleGroups.filter(g_loop => {
-        return baseRecords.some(r => {
-            if (!matches(r, { ageGroup: true })) return false;
-            const athleteObj = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
-            let ageAtEvent = 0;
-            if (athleteObj && athleteObj.dob && r.date) {
-                ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
-            } else if (r.ageGroup) {
-                ageAtEvent = parseInt(r.ageGroup);
-            } else {
-                return false;
-            }
-            const floorAge = Math.floor(ageAtEvent / 5) * 5;
-            const gNorm = normalizeGenderLookups(r.gender);
-            const prefix = gNorm === 'men' ? 'M' : (gNorm === 'women' ? 'W' : 'X');
-            return `${prefix}${floorAge}` === g_loop;
-        });
-    });
-    updateSelect('wmaReportFilterAgeGroup', relevantGroups, selAgeGroup);
-}
-
-// --- WMA / IAAF Calculation Helpers ---
-
-// --- WMA / IAAF Calculation Helpers (Rule-Based) ---
-
-function getEventRule(eventName) {
-    if (!window.EVENT_RULES || !eventName) return null;
-    // Normalize search: some events in tracks might have extra spaces or different Greek forms
-    const normalizedSearch = eventName.trim().replace(/\u03bc/g, 'm'); // μ -> m
-    return window.EVENT_RULES.find(r => {
-        const ruleEvent = r.Event.trim().replace(/\u03bc/g, 'm');
-        return ruleEvent === normalizedSearch;
-    });
-}
-
-function calculateRateConv(markStr, eventName) {
-    if (!markStr) return 0;
-    let s = markStr.toString().trim().replace(/,/g, '.');
-
-    // 1. Resolve rule (Prioritize Event Formula > Static Rules)
-    const ev = events.find(e => e.name === eventName);
-    let ruleHowto = 'Meters';
-    let ruleText = '';
-
-    if (ev && ev.formula && ev.formula.trim() !== '') {
-        const f = ev.formula;
-        ruleHowto = f.match(/HOWTO:\s*([^;]+)/)?.[1]?.trim() || 'Meters';
-        ruleText = f.match(/Rule:\s*(.+)$/)?.[1]?.trim() || '';
-        if (!ruleText) ruleText = f.match(/Rule:\s*([^;]+)/)?.[1]?.trim() || '';
-    } else {
-        const r = getEventRule(eventName);
-        if (r) {
-            ruleHowto = r.HOWTO || 'Meters';
-            ruleText = r.Rule || (r.RULE1 || '') + (r.RULE2 || '');
-        }
-    }
-
-    if (ruleHowto === 'Points' || ruleHowto === 'Meters') {
-        return parseFloat(s) || 0;
-    }
-
-    if (ruleHowto === 'Time') {
-        const dots = (s.match(/\./g) || []).length;
-        const colons = (s.match(/:/g) || []).length;
-        const totalSeparators = dots + colons;
-
-        let finalFormat = ruleText;
-
-        // Handle conditional "IF ... THE FORMAT IS ... ELSE FORMAT IS ..."
-        if (ruleText.toUpperCase().includes('IF')) {
-            // Support DOTS, COLONS, or SEPARATORS
-            const match = ruleText.match(/ARE\s+(\d+)\s+(DOTS?|COLONS?|SEPARATORS?)\s+THE\s+FORMAT\s+IS\s+([^;]+)\s+ELSE\s+(?:IT\s+)?FORMAT\s+IS\s+([^;]+)/i);
-            if (match) {
-                const reqCount = parseInt(match[1]);
-                const unitType = match[2].toUpperCase();
-                const formatIf = match[3].trim();
-                const formatElse = match[4].trim();
-
-                let actualCount = 0;
-                if (unitType.startsWith('DOT')) {
-                    actualCount = dots;
-                } else if (unitType.startsWith('COLON')) {
-                    actualCount = colons;
+                        subEventsContainer.appendChild(div);
+                    }
                 } else {
-                    actualCount = totalSeparators;
+                    subEventsContainer.style.display = 'none';
+                }
+            });
+        }
+
+        if (filterTrackType) filterTrackType.addEventListener('change', renderReports);
+        if (filterEvent) filterEvent.addEventListener('change', renderReports);
+
+        if (filterGender) filterGender.addEventListener('change', genderFilterChange);
+        if (filterAge) filterAge.addEventListener('change', renderReports);
+        if (filterYear) filterYear.addEventListener('change', renderReports);
+        if (filterAgeMismatch) filterAgeMismatch.addEventListener('change', renderReports);
+        if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
+        if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
+
+        if (themeSelect) {
+            themeSelect.addEventListener('change', () => {
+                setTheme(themeSelect.value);
+            });
+        }
+
+        if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllData);
+        if (clearRecordsBtn) {
+            clearRecordsBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to DELETE ALL RECORDS? This cannot be undone.')) {
+                    records = [];
+                    saveRecords();
+                    renderReports();
+                    renderHistoryList();
+                    alert('All records deleted.');
+                }
+            });
+        }
+
+        if (clearAthletesBtn) {
+            clearAthletesBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to DELETE ALL ATHLETES? This cannot be undone.')) {
+                    athletes = [];
+                    saveAthletes();
+                    renderAthleteList();
+                    populateAthleteDropdown();
+                    alert('All athletes deleted.');
+                }
+            });
+        }
+
+        if (btnImportRecords) {
+            console.log("Import Records Button Found");
+            btnImportRecords.addEventListener('click', () => {
+                console.log("Import Button Clicked");
+                if (recordImportFile) recordImportFile.click();
+                else alert("File input not found!");
+            });
+        } else {
+            console.error("Import Records Button NOT Found");
+        }
+        if (btnImportAthletes) btnImportAthletes.addEventListener('click', () => athleteImportFile.click());
+        if (athleteImportFile) athleteImportFile.addEventListener('change', handleAthleteImport);
+
+        if (recordImportFile) {
+            recordImportFile.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) importRecordsFromFile(file);
+            });
+        }
+
+        if (athleteListBody) {
+            athleteListBody.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.edit-athlete-btn');
+                const delBtn = e.target.closest('.delete-athlete-btn');
+                if (editBtn) editAthlete(editBtn.dataset.id);
+                if (delBtn) deleteAthlete(delBtn.dataset.id);
+            });
+        }
+
+        const btnExcel = document.getElementById('exportExcel');
+        if (btnExcel) btnExcel.addEventListener('click', exportToExcel);
+
+        const btnHTML = document.getElementById('exportHTML');
+        if (btnHTML) btnHTML.addEventListener('click', exportToHTML);
+
+        const btnPDF = document.getElementById('exportPDF');
+        if (btnPDF) btnPDF.addEventListener('click', exportToPDF);
+
+        if (btnBackup) btnBackup.addEventListener('click', exportDatabase);
+        if (btnRestore) btnRestore.addEventListener('click', importDatabase);
+
+        if (userForm) userForm.addEventListener('submit', handleUserSubmit);
+        if (userListBody) {
+            userListBody.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.edit-user-btn');
+                const delBtn = e.target.closest('.delete-user-btn');
+                if (editBtn) editUser(editBtn.dataset.id);
+                if (delBtn) deleteUser(delBtn.dataset.id);
+            });
+        }
+
+        if (reportTableBody) {
+            reportTableBody.addEventListener('click', (e) => {
+                const expandBtn = e.target.closest('.expand-btn');
+                const editBtn = e.target.closest('.edit-btn');
+                const delBtn = e.target.closest('.delete-btn');
+
+                if (expandBtn) {
+                    const id = expandBtn.dataset.id;
+                    const detailRow = document.getElementById(`detail-${id}`);
+                    if (detailRow) {
+                        detailRow.classList.toggle('hidden');
+                        expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
+                    }
+                }
+                if (editBtn) editRecord(Number(editBtn.dataset.id));
+                if (delBtn) deleteRecord(Number(delBtn.dataset.id));
+            });
+        }
+
+        if (countryForm) countryForm.addEventListener('submit', handleCountrySubmit);
+        if (countryListBody) {
+            countryListBody.addEventListener('click', (e) => {
+                const delBtn = e.target.closest('.delete-country-btn');
+                if (delBtn) deleteCountry(delBtn.dataset.country);
+            });
+        }
+
+        const historyListBody = document.getElementById('historyListBody');
+        if (historyListBody) {
+            historyListBody.addEventListener('click', (e) => {
+                const expandBtn = e.target.closest('.expand-btn');
+                const delBtn = e.target.closest('.delete-history-btn');
+                const editBtn = e.target.closest('.edit-history-btn');
+
+                if (expandBtn) {
+                    const id = expandBtn.dataset.id;
+                    const detailRow = document.getElementById(`detail-hist-${id}`);
+                    if (detailRow) {
+                        detailRow.classList.toggle('hidden');
+                        expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
+                    }
+                }
+                if (delBtn) deleteHistory(Number(delBtn.dataset.id));
+                if (editBtn) editHistory(Number(editBtn.dataset.id));
+            });
+        }
+    }
+
+    function switchTab(tabId) {
+        console.log("Switching tab to:", tabId);
+        // Hide all views by removing active class
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+
+        // Show target view
+        const target = document.getElementById('view-' + tabId);
+        if (target) {
+            target.classList.add('active-view');
+        }
+
+        // Update nav buttons
+        document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+        const btn = document.querySelector(`.nav-tab[data-tab="${tabId}"]`);
+        if (btn) btn.classList.add('active');
+
+        // Handling specific views
+        if (tabId === 'history') renderHistoryList();
+        if (tabId === 'stats') {
+            const activeSub = document.querySelector('#view-stats .stats-sub-tab.active');
+            if (activeSub) switchStatsSubTab(activeSub.dataset.statSubtab);
+            else switchStatsSubTab('medals');
+        }
+
+        // Settings View Default
+        if (tabId === 'settings') {
+            const activeSub = document.querySelector('#view-settings .sub-tab.active');
+            if (activeSub) {
+                switchSubTab(activeSub.dataset.subtab);
+            } else {
+                switchSubTab('athletes');
+            }
+        }
+    }
+
+    function switchSubTab(subTabId) {
+        // Hide all setting sections
+        document.querySelectorAll('.setting-section').forEach(el => el.classList.add('hidden'));
+
+        // Show target section
+        const target = document.getElementById('setting-' + subTabId);
+        if (target) {
+            target.classList.remove('hidden');
+        }
+
+        // Update sub-tab buttons
+        document.querySelectorAll('#view-settings .sub-tab').forEach(el => el.classList.remove('active'));
+        const btn = document.querySelector(`#view-settings .sub-tab[data-subtab="${subTabId}"]`);
+        if (btn) btn.classList.add('active');
+
+        // Render lists if needed
+        try {
+            if (subTabId === 'athletes') renderAthleteList();
+            if (subTabId === 'events') {
+                renderEventList();
+                loadIAAFData(); // Load IAAF data to populate the linking dropdown
+            }
+            if (subTabId === 'countries') renderCountryList();
+            if (subTabId === 'iaaf') {
+                loadIAAFData();
+            }
+            if (subTabId === 'wma') {
+                renderWMAFilters();
+                initWMAOfficialData();
+            }
+            if (subTabId === 'general') {
+                // Any specific initialization for general settings
+            }
+        } catch (e) {
+            // Error rendering list for subTabId
+        }
+    }
+
+    function switchStatsSubTab(subTabId) {
+        document.querySelectorAll('.stats-section').forEach(el => el.classList.remove('active-view'));
+        const target = document.getElementById('stats-' + subTabId);
+        if (subTabId === 'age') renderAgeStats();
+        if (target) target.classList.add('active-view');
+
+        document.querySelectorAll('.stats-sub-tab').forEach(el => el.classList.remove('active'));
+        const btn = document.querySelector(`.stats-sub-tab[data-stat-subtab="${subTabId}"]`);
+        if (btn) btn.classList.add('active');
+
+        if (subTabId === 'medals') renderStats();
+        if (subTabId === 'wma') {
+            loadIAAFData();
+            initWMAOfficialData();
+            populateWMAReportFilters();
+            renderWMAReport();
+        }
+    }
+
+    function populateWMAReportFilters() {
+        // Current selections
+        const selEvent = document.getElementById('wmaReportFilterEvent')?.value || 'all';
+        const selAthlete = document.getElementById('wmaReportFilterAthlete')?.value || 'all';
+        const selGender = document.getElementById('wmaReportFilterGender')?.value || 'all';
+        const selAgeGroup = document.getElementById('wmaReportFilterAgeGroup')?.value || 'all';
+        const selYear = document.getElementById('wmaReportFilterYear')?.value || 'all';
+
+        // Base records (non-empty)
+        const baseRecords = records.filter(r => r.athlete && r.mark && r.athlete.trim() !== '' && r.mark.trim() !== '');
+
+        // Standard filter function
+        const matches = (r, exclusions = {}) => {
+            if (!exclusions.event && selEvent !== 'all' && r.event !== selEvent) return false;
+            if (!exclusions.athlete && selAthlete !== 'all' && r.athlete !== selAthlete) return false;
+            if (!exclusions.gender && selGender !== 'all') {
+                const g = normalizeGenderLookups(r.gender);
+                if (selGender === 'Male' && g !== 'men') return false;
+                if (selGender === 'Female' && g !== 'women') return false;
+                if (selGender === 'Mixed' && g !== 'mixed') return false;
+            }
+            if (!exclusions.year && selYear !== 'all') {
+                const y = r.date ? new Date(r.date).getFullYear().toString() : '';
+                if (y !== selYear) return false;
+            }
+            if (!exclusions.ageGroup && selAgeGroup !== 'all') {
+                const athleteObj = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+                let ageAtEvent = 0;
+                if (athleteObj && athleteObj.dob && r.date) {
+                    ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
+                } else if (r.ageGroup) {
+                    ageAtEvent = parseInt(r.ageGroup);
+                } else {
+                    return false;
                 }
 
-                finalFormat = (actualCount === reqCount) ? formatIf : formatElse;
+                const floorAge = Math.floor(ageAtEvent / 5) * 5;
+                const g = normalizeGenderLookups(r.gender);
+                const prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
+                if (`${prefix}${floorAge}` !== selAgeGroup) return false;
             }
-        } else if (ruleText.toUpperCase().includes('FORMAT IS')) {
-            const match = ruleText.match(/FORMAT\s+IS\s+([^;]+)/i);
-            if (match) finalFormat = match[1].trim();
-        }
-
-        const parts = s.split(/[:.]/);
-        const lowerF = finalFormat.toLowerCase();
-
-        if (lowerF.includes('hours')) {
-            let h = 0, m = 0, sec = 0, ms = 0;
-            if (parts.length >= 4) {
-                h = parseFloat(parts[0]) || 0;
-                m = parseFloat(parts[1]) || 0;
-                sec = parseFloat(parts[2]) || 0;
-                ms = parseFloat(parts[3]) || 0;
-            } else if (parts.length === 3) {
-                h = parseFloat(parts[0]) || 0;
-                m = parseFloat(parts[1]) || 0;
-                sec = parseFloat(parts[2]) || 0;
-            } else if (parts.length === 2) {
-                h = parseFloat(parts[0]) || 0;
-                m = parseFloat(parts[1]) || 0;
-            } else {
-                h = parseFloat(parts[0]) || 0;
-            }
-            return (h * 3600) + (m * 60) + sec + (ms / 100);
-        } else if (lowerF.includes('minutes')) {
-            let m = 0, sec = 0, ms = 0;
-            if (parts.length >= 3) {
-                m = parseFloat(parts[0]) || 0;
-                sec = parseFloat(parts[1]) || 0;
-                ms = parseFloat(parts[2]) || 0;
-            } else if (parts.length === 2) {
-                m = parseFloat(parts[0]) || 0;
-                sec = parseFloat(parts[1]) || 0;
-            } else {
-                m = parseFloat(parts[0]) || 0;
-            }
-            return (m * 60) + sec + (ms / 100);
-        } else if (lowerF.includes('seconds')) {
-            let sec = 0, ms = 0;
-            if (parts.length >= 2) {
-                sec = parseFloat(parts[0]) || 0;
-                ms = parseFloat(parts[1]) || 0;
-            } else {
-                sec = parseFloat(parts[0]) || 0;
-            }
-            return sec + (ms / 100);
-        }
-        return parseFloat(s) || 0;
-    }
-    return parseFloat(s) || 0;
-}
-
-function parseMarkByRule(markStr, eventName) {
-    return calculateRateConv(markStr, eventName);
-}
-function normalizeGenderLookups(gender) {
-    if (!gender) return 'men';
-    const g = gender.toLowerCase();
-    if (g === 'male' || g === 'man' || g === 'men' || g === 'm') return 'men';
-    if (g === 'female' || g === 'woman' || g === 'women' || g === 'w' || g === 'f') return 'women';
-    if (g === 'mixed' || g === 'x') return 'mixed';
-    return 'men';
-}
-
-function getWMAFactorVal(gender, age, wmaEventName) {
-    if (!wmaLookupMap || !wmaEventName) return null;
-    const g = normalizeGenderLookups(gender);
-    const targetAge = parseInt(age);
-    if (isNaN(targetAge)) return null;
-
-    const eventGroup = wmaLookupMap[wmaEventName];
-    if (!eventGroup || !eventGroup[g]) return null;
-
-    return eventGroup[g][targetAge] || null;
-}
-
-function getIAAFPointsVal(gender, iaafEventName, markVal) {
-    if (!iaafLookupMap || !iaafEventName) return null;
-    const g = normalizeGenderLookups(gender);
-
-    const eventGroup = iaafLookupMap[iaafEventName];
-    if (!eventGroup || !eventGroup[g]) return null;
-
-    const records = eventGroup[g];
-    if (records.length === 0) return null;
-
-    // Use pre-sorted records (already sorted in rebuildPerformanceIndexes)
-    const isTime = records[0].points > records[records.length - 1].points;
-
-    let match = null;
-    if (isTime) {
-        match = records.find(r => r.mark >= markVal - 0.0001);
-    } else {
-        for (let i = records.length - 1; i >= 0; i--) {
-            if (records[i].mark <= markVal + 0.0001) {
-                match = records[i];
-                break;
-            }
-        }
-    }
-    return match ? match.points : null;
-}
-
-function calculateRecordWMAStats(r) {
-    const rawMark = calculateRateConv(r.mark, r.event);
-    if (!rawMark) return r;
-
-    r.wmaRate = rawMark.toFixed(2);
-
-    // Find linked event definition
-    const eventDef = events.find(e => e.name === r.event);
-
-    // Calculate age at event
-    let ageAtEvent = 0;
-    const athlete = athleteLookupMap[r.athlete];
-    if (athlete && athlete.dob && r.date) {
-        const eventDate = new Date(r.date);
-        const dob = new Date(athlete.dob);
-        const diffTime = eventDate - dob;
-        ageAtEvent = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
-    } else if (r.ageGroup) {
-        ageAtEvent = parseInt(r.ageGroup);
-    }
-
-    if (eventDef && eventDef.wmaEvent) {
-        const factor = getWMAFactorVal(r.gender, ageAtEvent, eventDef.wmaEvent);
-        if (factor) {
-            const calculatedAgeMark = rawMark * factor;
-            r.wmaAgeMark = calculatedAgeMark.toFixed(2);
-            if (eventDef.iaafEvent) {
-                const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, calculatedAgeMark);
-                r.wmaPoints = points !== null ? points.toString() : 'Not Found';
-            }
-        }
-    } else if (eventDef && eventDef.iaafEvent) {
-        const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, rawMark);
-        r.wmaPoints = points !== null ? points.toString() : 'Not Found';
-    }
-    return r;
-}
-
-window.renderWMAReport = function () {
-    populateWMAReportFilters(); // Refresh dropdown options based on current selections
-    const tbody = document.getElementById('wmaReportBody');
-    tbody.innerHTML = '';
-
-    // Filter and Sort Records
-    const fEvent = document.getElementById('wmaReportFilterEvent')?.value || 'all';
-    const fAthlete = document.getElementById('wmaReportFilterAthlete')?.value || 'all';
-    const fGender = document.getElementById('wmaReportFilterGender')?.value || 'all';
-    const fAgeGroup = document.getElementById('wmaReportFilterAgeGroup')?.value || 'all';
-    const fYear = document.getElementById('wmaReportFilterYear')?.value || 'all';
-
-    let filtered = records.filter(r => {
-        if (!r.athlete || !r.mark || r.athlete.trim() === '' || r.mark.trim() === '') return false;
-
-        if (fEvent !== 'all' && r.event !== fEvent) return false;
-        if (fAthlete !== 'all' && r.athlete !== fAthlete) return false;
-
-        if (fGender !== 'all') {
-            const g = normalizeGenderLookups(r.gender);
-            if (fGender === 'Male' && g !== 'men') return false;
-            if (fGender === 'Female' && g !== 'women') return false;
-            if (fGender === 'Mixed' && g !== 'mixed') return false;
-        }
-
-        if (fYear !== 'all') {
-            const y = r.date ? new Date(r.date).getFullYear().toString() : '';
-            if (y !== fYear) return false;
-        }
-
-        if (fAgeGroup !== 'all') {
-            const athleteObj = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
-            let ageAtEvent = 0;
-            if (athleteObj && athleteObj.dob && r.date) {
-                ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
-            } else if (r.ageGroup) {
-                ageAtEvent = parseInt(r.ageGroup);
-            } else {
-                return false;
-            }
-            const floorAge = Math.floor(ageAtEvent / 5) * 5;
-            const g = normalizeGenderLookups(r.gender);
-            const prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
-            if (`${prefix}${floorAge}` !== fAgeGroup) return false;
-        }
-
-        // --- Exclude Relays from WMA Statistics ---
-        const ev = events.find(e => e.name === r.event);
-        const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
-        if (isRelay) return false;
-
-        // --- Approval Logic: Exclude Unapproved Records from WMA Stats ---
-        if (r.approved === false) return false;
-
-        return true;
-    });
-
-    // Pre-calculate stats for all filtered records so sorting works on calculated fields
-    let sortedRecords = filtered.map(r => calculateRecordWMAStats({ ...r }));
-
-    sortedRecords.sort((a, b) => {
-        let valA, valB;
-
-        const getNumeric = (val) => {
-            const n = parseFloat(val);
-            return isNaN(n) ? -1 : n;
+            return true;
         };
 
-        switch (wmaSortField) {
-            case 'athlete':
-                valA = a.athlete || '';
-                valB = b.athlete || '';
-                break;
-            case 'age':
-                const getAge = (r) => {
-                    const ath = athletes.find(at => `${at.lastName}, ${at.firstName}` === r.athlete);
-                    if (ath && ath.dob && r.date) {
-                        return Math.floor((new Date(r.date) - new Date(ath.dob)) / (1000 * 60 * 60 * 24 * 365.25));
-                    }
-                    return parseInt(r.ageGroup) || 0;
-                };
-                valA = getAge(a);
-                valB = getAge(b);
-                break;
-            case 'mark':
-                valA = calculateRateConv(a.mark, a.event);
-                valB = calculateRateConv(b.mark, b.event);
-                break;
-            case 'rateConv':
-                valA = getNumeric(a.wmaRate);
-                valB = getNumeric(b.wmaRate);
-                break;
-            case 'ageMark':
-                valA = getNumeric(a.wmaAgeMark);
-                valB = getNumeric(b.wmaAgeMark);
-                break;
-            case 'pts':
-                valA = getNumeric(a.wmaPoints);
-                valB = getNumeric(b.wmaPoints);
-                break;
-            case 'date':
-                valA = a.date ? new Date(a.date).getTime() : 0;
-                valB = b.date ? new Date(b.date).getTime() : 0;
-                break;
-            default:
-                valA = a[wmaSortField] || '';
-                valB = b[wmaSortField] || '';
-        }
+        const updateSelect = (id, list, currentVal) => {
+            const el = document.getElementById(id);
+            if (!el) return;
 
-        if (valA < valB) return wmaSortOrder === 'asc' ? -1 : 1;
-        if (valA > valB) return wmaSortOrder === 'asc' ? 1 : -1;
-        return 0;
-    });
+            // Check if this is the active element to minimize disruption
+            const isActive = (document.activeElement === el);
 
-    if (sortedRecords.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No records found.</td></tr>';
-        return;
+            const newListHtml = `<option value="all">All ${id.replace('wmaReportFilter', '')}s</option>` +
+                list.map(item => `<option value="${item}">${item}</option>`).join('');
+
+            // Only update if content changed or if it was empty to avoid flicker/lose focus
+            if (el.innerHTML !== newListHtml) {
+                el.innerHTML = newListHtml;
+                el.value = currentVal;
+                // If currentVal no longer exists, it will fall back to "all" automatically by browser or we handle it
+                if (el.value !== currentVal) el.value = 'all';
+            }
+        };
+
+        // 1. Events List (filtered by Athlete, Gender, Year, AgeGroup)
+        const eventsList = [...new Set(baseRecords.filter(r => matches(r, { event: true })).map(r => r.event))].filter(e => e).sort();
+        updateSelect('wmaReportFilterEvent', eventsList, selEvent);
+
+        // 2. Athletes List (filtered by Event, Gender, Year, AgeGroup)
+        const athletesList = [...new Set(baseRecords.filter(r => matches(r, { athlete: true })).map(r => r.athlete))].filter(a => a).sort();
+        updateSelect('wmaReportFilterAthlete', athletesList, selAthlete);
+
+        // 3. Years List (filtered by Event, Athlete, Gender, AgeGroup)
+        const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => r.date ? new Date(r.date).getFullYear() : null).filter(y => y))].sort((a, b) => b - a);
+        updateSelect('wmaReportFilterYear', yearsList, selYear);
+
+        // 4. Age Groups (filtered by Event, Athlete, Gender, Year)
+        // We can either keep a static list or dynamically find which age groups have records
+        const allPossibleGroups = ["M35", "M40", "M45", "M50", "M55", "M60", "M65", "M70", "M75", "M80", "M85", "M90",
+            "W35", "W40", "W45", "W50", "W55", "W60", "W65", "W70", "W75", "W80", "W85", "W90",
+            "X35", "X40", "X45", "X50", "X55", "X60", "X65", "X70", "X75", "X80", "X85", "X90"];
+        const relevantGroups = allPossibleGroups.filter(g_loop => {
+            return baseRecords.some(r => {
+                if (!matches(r, { ageGroup: true })) return false;
+                const athleteObj = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+                let ageAtEvent = 0;
+                if (athleteObj && athleteObj.dob && r.date) {
+                    ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
+                } else if (r.ageGroup) {
+                    ageAtEvent = parseInt(r.ageGroup);
+                } else {
+                    return false;
+                }
+                const floorAge = Math.floor(ageAtEvent / 5) * 5;
+                const gNorm = normalizeGenderLookups(r.gender);
+                const prefix = gNorm === 'men' ? 'M' : (gNorm === 'women' ? 'W' : 'X');
+                return `${prefix}${floorAge}` === g_loop;
+            });
+        });
+        updateSelect('wmaReportFilterAgeGroup', relevantGroups, selAgeGroup);
     }
 
-    sortedRecords.forEach(r => {
-        const athleteName = r.athlete || 'Unknown';
-        const gender = r.gender || '-';
+    // --- WMA / IAAF Calculation Helpers ---
+
+    // --- WMA / IAAF Calculation Helpers (Rule-Based) ---
+
+    function getEventRule(eventName) {
+        if (!window.EVENT_RULES || !eventName) return null;
+        // Normalize search: some events in tracks might have extra spaces or different Greek forms
+        const normalizedSearch = eventName.trim().replace(/\u03bc/g, 'm'); // μ -> m
+        return window.EVENT_RULES.find(r => {
+            const ruleEvent = r.Event.trim().replace(/\u03bc/g, 'm');
+            return ruleEvent === normalizedSearch;
+        });
+    }
+
+    function calculateRateConv(markStr, eventName) {
+        if (!markStr) return 0;
+        let s = markStr.toString().trim().replace(/,/g, '.');
+
+        // 1. Resolve rule (Prioritize Event Formula > Static Rules)
+        const ev = events.find(e => e.name === eventName);
+        let ruleHowto = 'Meters';
+        let ruleText = '';
+
+        if (ev && ev.formula && ev.formula.trim() !== '') {
+            const f = ev.formula;
+            ruleHowto = f.match(/HOWTO:\s*([^;]+)/)?.[1]?.trim() || 'Meters';
+            ruleText = f.match(/Rule:\s*(.+)$/)?.[1]?.trim() || '';
+            if (!ruleText) ruleText = f.match(/Rule:\s*([^;]+)/)?.[1]?.trim() || '';
+        } else {
+            const r = getEventRule(eventName);
+            if (r) {
+                ruleHowto = r.HOWTO || 'Meters';
+                ruleText = r.Rule || (r.RULE1 || '') + (r.RULE2 || '');
+            }
+        }
+
+        if (ruleHowto === 'Points' || ruleHowto === 'Meters') {
+            return parseFloat(s) || 0;
+        }
+
+        if (ruleHowto === 'Time') {
+            const dots = (s.match(/\./g) || []).length;
+            const colons = (s.match(/:/g) || []).length;
+            const totalSeparators = dots + colons;
+
+            let finalFormat = ruleText;
+
+            // Handle conditional "IF ... THE FORMAT IS ... ELSE FORMAT IS ..."
+            if (ruleText.toUpperCase().includes('IF')) {
+                // Support DOTS, COLONS, or SEPARATORS
+                const match = ruleText.match(/ARE\s+(\d+)\s+(DOTS?|COLONS?|SEPARATORS?)\s+THE\s+FORMAT\s+IS\s+([^;]+)\s+ELSE\s+(?:IT\s+)?FORMAT\s+IS\s+([^;]+)/i);
+                if (match) {
+                    const reqCount = parseInt(match[1]);
+                    const unitType = match[2].toUpperCase();
+                    const formatIf = match[3].trim();
+                    const formatElse = match[4].trim();
+
+                    let actualCount = 0;
+                    if (unitType.startsWith('DOT')) {
+                        actualCount = dots;
+                    } else if (unitType.startsWith('COLON')) {
+                        actualCount = colons;
+                    } else {
+                        actualCount = totalSeparators;
+                    }
+
+                    finalFormat = (actualCount === reqCount) ? formatIf : formatElse;
+                }
+            } else if (ruleText.toUpperCase().includes('FORMAT IS')) {
+                const match = ruleText.match(/FORMAT\s+IS\s+([^;]+)/i);
+                if (match) finalFormat = match[1].trim();
+            }
+
+            const parts = s.split(/[:.]/);
+            const lowerF = finalFormat.toLowerCase();
+
+            if (lowerF.includes('hours')) {
+                let h = 0, m = 0, sec = 0, ms = 0;
+                if (parts.length >= 4) {
+                    h = parseFloat(parts[0]) || 0;
+                    m = parseFloat(parts[1]) || 0;
+                    sec = parseFloat(parts[2]) || 0;
+                    ms = parseFloat(parts[3]) || 0;
+                } else if (parts.length === 3) {
+                    h = parseFloat(parts[0]) || 0;
+                    m = parseFloat(parts[1]) || 0;
+                    sec = parseFloat(parts[2]) || 0;
+                } else if (parts.length === 2) {
+                    h = parseFloat(parts[0]) || 0;
+                    m = parseFloat(parts[1]) || 0;
+                } else {
+                    h = parseFloat(parts[0]) || 0;
+                }
+                return (h * 3600) + (m * 60) + sec + (ms / 100);
+            } else if (lowerF.includes('minutes')) {
+                let m = 0, sec = 0, ms = 0;
+                if (parts.length >= 3) {
+                    m = parseFloat(parts[0]) || 0;
+                    sec = parseFloat(parts[1]) || 0;
+                    ms = parseFloat(parts[2]) || 0;
+                } else if (parts.length === 2) {
+                    m = parseFloat(parts[0]) || 0;
+                    sec = parseFloat(parts[1]) || 0;
+                } else {
+                    m = parseFloat(parts[0]) || 0;
+                }
+                return (m * 60) + sec + (ms / 100);
+            } else if (lowerF.includes('seconds')) {
+                let sec = 0, ms = 0;
+                if (parts.length >= 2) {
+                    sec = parseFloat(parts[0]) || 0;
+                    ms = parseFloat(parts[1]) || 0;
+                } else {
+                    sec = parseFloat(parts[0]) || 0;
+                }
+                return sec + (ms / 100);
+            }
+            return parseFloat(s) || 0;
+        }
+        return parseFloat(s) || 0;
+    }
+
+    function parseMarkByRule(markStr, eventName) {
+        return calculateRateConv(markStr, eventName);
+    }
+    function normalizeGenderLookups(gender) {
+        if (!gender) return 'men';
+        const g = gender.toLowerCase();
+        if (g === 'male' || g === 'man' || g === 'men' || g === 'm') return 'men';
+        if (g === 'female' || g === 'woman' || g === 'women' || g === 'w' || g === 'f') return 'women';
+        if (g === 'mixed' || g === 'x') return 'mixed';
+        return 'men';
+    }
+
+    function getWMAFactorVal(gender, age, wmaEventName) {
+        if (!wmaLookupMap || !wmaEventName) return null;
+        const g = normalizeGenderLookups(gender);
+        const targetAge = parseInt(age);
+        if (isNaN(targetAge)) return null;
+
+        const eventGroup = wmaLookupMap[wmaEventName];
+        if (!eventGroup || !eventGroup[g]) return null;
+
+        return eventGroup[g][targetAge] || null;
+    }
+
+    function getIAAFPointsVal(gender, iaafEventName, markVal) {
+        if (!iaafLookupMap || !iaafEventName) return null;
+        const g = normalizeGenderLookups(gender);
+
+        const eventGroup = iaafLookupMap[iaafEventName];
+        if (!eventGroup || !eventGroup[g]) return null;
+
+        const records = eventGroup[g];
+        if (records.length === 0) return null;
+
+        // Use pre-sorted records (already sorted in rebuildPerformanceIndexes)
+        const isTime = records[0].points > records[records.length - 1].points;
+
+        let match = null;
+        if (isTime) {
+            match = records.find(r => r.mark >= markVal - 0.0001);
+        } else {
+            for (let i = records.length - 1; i >= 0; i--) {
+                if (records[i].mark <= markVal + 0.0001) {
+                    match = records[i];
+                    break;
+                }
+            }
+        }
+        return match ? match.points : null;
+    }
+
+    function calculateRecordWMAStats(r) {
+        const rawMark = calculateRateConv(r.mark, r.event);
+        if (!rawMark) return r;
+
+        r.wmaRate = rawMark.toFixed(2);
 
         // Find linked event definition
         const eventDef = events.find(e => e.name === r.event);
 
         // Calculate age at event
         let ageAtEvent = 0;
-        const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+        const athlete = athleteLookupMap[r.athlete];
         if (athlete && athlete.dob && r.date) {
             const eventDate = new Date(r.date);
             const dob = new Date(athlete.dob);
@@ -2474,34 +2314,189 @@ window.renderWMAReport = function () {
             ageAtEvent = parseInt(r.ageGroup);
         }
 
-        // --- Use Cached or Calculate On-the-fly ---
-        let rateConv = r.wmaRate;
-        let ageMark = r.wmaAgeMark;
-        let pts = r.wmaPoints;
-
-        if (rateConv === undefined || ageMark === undefined || pts === undefined) {
-            const rawMark = calculateRateConv(r.mark, r.event);
-            if (rawMark) {
-                rateConv = rawMark.toFixed(2);
-                if (eventDef && eventDef.wmaEvent) {
-                    const factor = getWMAFactorVal(gender, ageAtEvent, eventDef.wmaEvent);
-                    if (factor) {
-                        const calculatedAgeMark = rawMark * factor;
-                        ageMark = calculatedAgeMark.toFixed(2);
-                        if (eventDef.iaafEvent) {
-                            const points = getIAAFPointsVal(gender, eventDef.iaafEvent, calculatedAgeMark);
-                            pts = points !== null ? points : 'Not Found';
-                        }
-                    }
-                } else if (eventDef && eventDef.iaafEvent) {
-                    const points = getIAAFPointsVal(gender, eventDef.iaafEvent, rawMark);
-                    pts = points !== null ? points : 'Not Found';
+        if (eventDef && eventDef.wmaEvent) {
+            const factor = getWMAFactorVal(r.gender, ageAtEvent, eventDef.wmaEvent);
+            if (factor) {
+                const calculatedAgeMark = rawMark * factor;
+                r.wmaAgeMark = calculatedAgeMark.toFixed(2);
+                if (eventDef.iaafEvent) {
+                    const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, calculatedAgeMark);
+                    r.wmaPoints = points !== null ? points.toString() : 'Not Found';
                 }
             }
+        } else if (eventDef && eventDef.iaafEvent) {
+            const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, rawMark);
+            r.wmaPoints = points !== null ? points.toString() : 'Not Found';
+        }
+        return r;
+    }
+
+    window.renderWMAReport = function () {
+        populateWMAReportFilters(); // Refresh dropdown options based on current selections
+        const tbody = document.getElementById('wmaReportBody');
+        tbody.innerHTML = '';
+
+        // Filter and Sort Records
+        const fEvent = document.getElementById('wmaReportFilterEvent')?.value || 'all';
+        const fAthlete = document.getElementById('wmaReportFilterAthlete')?.value || 'all';
+        const fGender = document.getElementById('wmaReportFilterGender')?.value || 'all';
+        const fAgeGroup = document.getElementById('wmaReportFilterAgeGroup')?.value || 'all';
+        const fYear = document.getElementById('wmaReportFilterYear')?.value || 'all';
+
+        let filtered = records.filter(r => {
+            if (!r.athlete || !r.mark || r.athlete.trim() === '' || r.mark.trim() === '') return false;
+
+            if (fEvent !== 'all' && r.event !== fEvent) return false;
+            if (fAthlete !== 'all' && r.athlete !== fAthlete) return false;
+
+            if (fGender !== 'all') {
+                const g = normalizeGenderLookups(r.gender);
+                if (fGender === 'Male' && g !== 'men') return false;
+                if (fGender === 'Female' && g !== 'women') return false;
+                if (fGender === 'Mixed' && g !== 'mixed') return false;
+            }
+
+            if (fYear !== 'all') {
+                const y = r.date ? new Date(r.date).getFullYear().toString() : '';
+                if (y !== fYear) return false;
+            }
+
+            if (fAgeGroup !== 'all') {
+                const athleteObj = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+                let ageAtEvent = 0;
+                if (athleteObj && athleteObj.dob && r.date) {
+                    ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
+                } else if (r.ageGroup) {
+                    ageAtEvent = parseInt(r.ageGroup);
+                } else {
+                    return false;
+                }
+                const floorAge = Math.floor(ageAtEvent / 5) * 5;
+                const g = normalizeGenderLookups(r.gender);
+                const prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
+                if (`${prefix}${floorAge}` !== fAgeGroup) return false;
+            }
+
+            // --- Exclude Relays from WMA Statistics ---
+            const ev = events.find(e => e.name === r.event);
+            const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
+            if (isRelay) return false;
+
+            // --- Approval Logic: Exclude Unapproved Records from WMA Stats ---
+            if (r.approved === false) return false;
+
+            return true;
+        });
+
+        // Pre-calculate stats for all filtered records so sorting works on calculated fields
+        let sortedRecords = filtered.map(r => calculateRecordWMAStats({ ...r }));
+
+        sortedRecords.sort((a, b) => {
+            let valA, valB;
+
+            const getNumeric = (val) => {
+                const n = parseFloat(val);
+                return isNaN(n) ? -1 : n;
+            };
+
+            switch (wmaSortField) {
+                case 'athlete':
+                    valA = a.athlete || '';
+                    valB = b.athlete || '';
+                    break;
+                case 'age':
+                    const getAge = (r) => {
+                        const ath = athletes.find(at => `${at.lastName}, ${at.firstName}` === r.athlete);
+                        if (ath && ath.dob && r.date) {
+                            return Math.floor((new Date(r.date) - new Date(ath.dob)) / (1000 * 60 * 60 * 24 * 365.25));
+                        }
+                        return parseInt(r.ageGroup) || 0;
+                    };
+                    valA = getAge(a);
+                    valB = getAge(b);
+                    break;
+                case 'mark':
+                    valA = calculateRateConv(a.mark, a.event);
+                    valB = calculateRateConv(b.mark, b.event);
+                    break;
+                case 'rateConv':
+                    valA = getNumeric(a.wmaRate);
+                    valB = getNumeric(b.wmaRate);
+                    break;
+                case 'ageMark':
+                    valA = getNumeric(a.wmaAgeMark);
+                    valB = getNumeric(b.wmaAgeMark);
+                    break;
+                case 'pts':
+                    valA = getNumeric(a.wmaPoints);
+                    valB = getNumeric(b.wmaPoints);
+                    break;
+                case 'date':
+                    valA = a.date ? new Date(a.date).getTime() : 0;
+                    valB = b.date ? new Date(b.date).getTime() : 0;
+                    break;
+                default:
+                    valA = a[wmaSortField] || '';
+                    valB = b[wmaSortField] || '';
+            }
+
+            if (valA < valB) return wmaSortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return wmaSortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        if (sortedRecords.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No records found.</td></tr>';
+            return;
         }
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
+        sortedRecords.forEach(r => {
+            const athleteName = r.athlete || 'Unknown';
+            const gender = r.gender || '-';
+
+            // Find linked event definition
+            const eventDef = events.find(e => e.name === r.event);
+
+            // Calculate age at event
+            let ageAtEvent = 0;
+            const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+            if (athlete && athlete.dob && r.date) {
+                const eventDate = new Date(r.date);
+                const dob = new Date(athlete.dob);
+                const diffTime = eventDate - dob;
+                ageAtEvent = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
+            } else if (r.ageGroup) {
+                ageAtEvent = parseInt(r.ageGroup);
+            }
+
+            // --- Use Cached or Calculate On-the-fly ---
+            let rateConv = r.wmaRate;
+            let ageMark = r.wmaAgeMark;
+            let pts = r.wmaPoints;
+
+            if (rateConv === undefined || ageMark === undefined || pts === undefined) {
+                const rawMark = calculateRateConv(r.mark, r.event);
+                if (rawMark) {
+                    rateConv = rawMark.toFixed(2);
+                    if (eventDef && eventDef.wmaEvent) {
+                        const factor = getWMAFactorVal(gender, ageAtEvent, eventDef.wmaEvent);
+                        if (factor) {
+                            const calculatedAgeMark = rawMark * factor;
+                            ageMark = calculatedAgeMark.toFixed(2);
+                            if (eventDef.iaafEvent) {
+                                const points = getIAAFPointsVal(gender, eventDef.iaafEvent, calculatedAgeMark);
+                                pts = points !== null ? points : 'Not Found';
+                            }
+                        }
+                    } else if (eventDef && eventDef.iaafEvent) {
+                        const points = getIAAFPointsVal(gender, eventDef.iaafEvent, rawMark);
+                        pts = points !== null ? points : 'Not Found';
+                    }
+                }
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
                 <td>${r.event}</td>
                 <td>${athleteName}</td>
                 <td>${gender}</td>
@@ -2514,269 +2509,217 @@ window.renderWMAReport = function () {
                 <td>${r.date}</td>
                 <td>${r.raceName || '-'}</td>
             `;
-        tbody.appendChild(row);
-    });
-}
-
-async function recalculateAllWMAStats() {
-    if (!isAdmin) {
-        alert('You must be logged in as an administrator to recalculate and save statistics.');
-        return;
-    }
-
-    if (!confirm('This will recalculate WMA Statistics for all records and save them to the database. This may take a few moments. Continue?')) return;
-
-    const modal = document.getElementById('recalcModal');
-    const progressBar = document.getElementById('recalcProgressBar');
-    const statusText = document.getElementById('recalcStatus');
-    const progressText = document.getElementById('recalcProgressText');
-
-    if (modal) {
-        modal.classList.remove('hidden');
-        if (progressBar) progressBar.style.width = '0%';
-        if (statusText) statusText.textContent = 'Calculating...';
-        if (progressText) progressText.textContent = `0 / ${records.length} records`;
-    }
-
-    console.log("Starting global WMA recalculation...");
-    let count = 0;
-    const total = (records || []).length;
-
-    // Process in batches to keep UI responsive
-    const batchSize = 50;
-    for (let i = 0; i < total; i++) {
-        calculateRecordWMAStats(records[i]);
-        count++;
-
-        if (count % batchSize === 0 || count === total) {
-            const percent = Math.round((count / total) * 100);
-            if (progressBar) progressBar.style.width = percent + '%';
-            if (progressText) progressText.textContent = `${count} / ${total} records`;
-            // Brief pause to allow browser to render the update
-            await new Promise(r => setTimeout(r, 10));
-        }
-    }
-
-    // Phase 2: Saving
-    if (statusText) statusText.textContent = 'Saving to Database...';
-    localStorage.setItem('tf_records', JSON.stringify(records));
-
-    if (db) {
-        try {
-            await db.ref('records').set(records);
-            if (statusText) statusText.textContent = 'Success!';
-            setTimeout(() => {
-                if (modal) modal.classList.add('hidden');
-                alert(`Successfully recalculated and saved WMA stats for ${count} records.`);
-                renderWMAReport();
-            }, 800);
-        } catch (err) {
-            console.error("Firebase save failed:", err);
-            if (modal) modal.classList.add('hidden');
-            alert('Recalculation complete locally, but failed to sync with cloud. Check console for details.');
-        }
-    } else {
-        if (statusText) statusText.textContent = 'Success (Local)!';
-        setTimeout(() => {
-            if (modal) modal.classList.add('hidden');
-            alert(`Recalculated stats for ${count} records locally.`);
-            renderWMAReport();
-        }, 800);
-    }
-}
-
-window.sortWMAReport = function (field) {
-    if (wmaSortField === field) {
-        wmaSortOrder = wmaSortOrder === 'asc' ? 'desc' : 'asc';
-    } else {
-        wmaSortField = field;
-        wmaSortOrder = 'asc'; // Default new sort to ascending
-        // Exception for Date and Mark -> Default Descending usually better?
-        if (field === 'date' || field === 'mark' || field === 'pts' || field === 'rateConv' || field === 'ageMark') {
-            wmaSortOrder = 'desc';
-        }
-    }
-    renderWMAReport();
-};
-function cleanupDuplicateAthletes() {
-    const groups = {};
-
-    // Group by normalized name (accent-insensitive)
-    athletes.forEach(a => {
-        const f = normalizeName(a.firstName);
-        const l = normalizeName(a.lastName);
-
-        // Still sorting to be order-agnostic, but using normalized versions
-        const key = [f, l].sort().join('|');
-        if (!key || key === '|') return; // Skip invalid entries
-
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(a);
-    });
-
-    let removedCount = 0;
-    const newAthletes = [];
-
-    Object.values(groups).forEach(group => {
-        if (group.length === 1) {
-            newAthletes.push(group[0]);
-        } else {
-            // Duplicates found: Pick BEST candidate
-            // Score: Has DOB (10) > Has Gender (2) > Has IDNumber (1)
-            group.sort((a, b) => {
-                const scoreA = (a.dob && a.dob.trim() !== "" ? 10 : 0) +
-                    (a.gender ? 2 : 0) +
-                    (a.idNumber ? 1 : 0);
-                const scoreB = (b.dob && b.dob.trim() !== "" ? 10 : 0) +
-                    (b.gender ? 2 : 0) +
-                    (b.idNumber ? 1 : 0);
-                return scoreB - scoreA;
-            });
-
-            newAthletes.push(group[0]);
-            removedCount += (group.length - 1);
-        }
-    });
-
-    if (removedCount > 0) {
-        athletes = newAthletes;
-        saveAthletes();
-        console.log(`Cleaned up ${removedCount} duplicate athletes.`);
-        alert(`System Maintenance: Removed ${removedCount} duplicate athlete profiles.`);
-    }
-}
-
-
-function migrateAgeGroupsToStartAge() {
-    let changed = false;
-    records.forEach(r => {
-        if (r.ageGroup && r.ageGroup.includes('-')) {
-            r.ageGroup = r.ageGroup.split('-')[0];
-            changed = true;
-        }
-    });
-    history.forEach(h => {
-        if (h.ageGroup && h.ageGroup.includes('-')) {
-            h.ageGroup = h.ageGroup.split('-')[0];
-            changed = true;
-        }
-    });
-    if (changed) {
-        saveRecords();
-        localStorage.setItem('tf_history', JSON.stringify(history));
-        console.log("Migrated Age Groups to Start Age format.");
-    }
-}
-
-// --- Athlete CRUD ---
-function handleAthleteSubmit(e) {
-    e.preventDefault();
-    const first = newAthleteFirstName.value.trim();
-    const last = newAthleteLastName.value.trim();
-    const idNum = newAthleteID.value.trim();
-
-    if (!first || !last) return;
-
-    if (editingAthleteId) {
-        const idx = athletes.findIndex(a => a.id == editingAthleteId);
-        if (idx !== -1) {
-            const oldNameLF = `${athletes[idx].lastName}, ${athletes[idx].firstName}`;
-
-            athletes[idx].idNumber = idNum;
-            athletes[idx].firstName = first;
-            athletes[idx].lastName = last;
-            athletes[idx].dob = newAthleteDOB.value;
-            athletes[idx].gender = newAthleteGender.value;
-
-            const newNameLF = `${last}, ${first}`;
-
-            // Propagate Name Update
-            records.forEach(r => {
-                if (r.athlete === oldNameLF) r.athlete = newNameLF;
-                else if (r.athlete === `${athletes[idx].firstName} ${athletes[idx].lastName}`) r.athlete = newNameLF;
-            });
-        }
-
-        editingAthleteId = null;
-        athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
-        athleteSubmitBtn.style.background = '';
-    } else {
-        const exists = athletes.some(a =>
-            (a.firstName.toLowerCase() === first.toLowerCase() &&
-                a.lastName.toLowerCase() === last.toLowerCase()) ||
-            (idNum && a.idNumber === idNum)
-        );
-
-        if (exists) return alert('Athlete already exists (Name or ID match)!');
-
-        athletes.push({
-            id: Date.now(),
-            idNumber: idNum,
-            firstName: first,
-            lastName: last,
-            dob: newAthleteDOB.value,
-            gender: newAthleteGender.value
+            tbody.appendChild(row);
         });
     }
 
-    saveAthletes();
-    saveRecords();
-    populateAthleteDropdown();
-    renderAthleteList();
-    renderReports();
+    async function recalculateAllWMAStats() {
+        if (!isAdmin) {
+            alert('You must be logged in as an administrator to recalculate and save statistics.');
+            return;
+        }
 
-    newAthleteID.value = '';
-    newAthleteFirstName.value = '';
-    newAthleteLastName.value = '';
-    newAthleteLastName.value = '';
-    if (dobPicker) dobPicker.clear();
-    else newAthleteDOB.value = '';
-    newAthleteGender.value = '';
-    newAthleteFirstName.focus();
-}
+        if (!confirm('This will recalculate WMA Statistics for all records and save them to the database. This may take a few moments. Continue?')) return;
 
-function editAthlete(id) {
-    console.log('editAthlete called with:', id);
-    const athlete = athletes.find(a => a.id == id);
-    console.log('Found athlete:', athlete);
-    if (!athlete) return;
+        const modal = document.getElementById('recalcModal');
+        const progressBar = document.getElementById('recalcProgressBar');
+        const statusText = document.getElementById('recalcStatus');
+        const progressText = document.getElementById('recalcProgressText');
 
-    newAthleteID.value = athlete.idNumber || '';
-    newAthleteFirstName.value = athlete.firstName;
-    newAthleteLastName.value = athlete.lastName;
+        if (modal) {
+            modal.classList.remove('hidden');
+            if (progressBar) progressBar.style.width = '0%';
+            if (statusText) statusText.textContent = 'Calculating...';
+            if (progressText) progressText.textContent = `0 / ${records.length} records`;
+        }
 
-    if (dobPicker) dobPicker.setDate(athlete.dob);
-    else newAthleteDOB.value = athlete.dob;
+        console.log("Starting global WMA recalculation...");
+        let count = 0;
+        const total = (records || []).length;
 
-    newAthleteGender.value = athlete.gender;
+        // Process in batches to keep UI responsive
+        const batchSize = 50;
+        for (let i = 0; i < total; i++) {
+            calculateRecordWMAStats(records[i]);
+            count++;
 
-    editingAthleteId = id;
-    athleteSubmitBtn.innerHTML = '<span>Update Athlete</span>';
-    athleteSubmitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
+            if (count % batchSize === 0 || count === total) {
+                const percent = Math.round((count / total) * 100);
+                if (progressBar) progressBar.style.width = percent + '%';
+                if (progressText) progressText.textContent = `${count} / ${total} records`;
+                // Brief pause to allow browser to render the update
+                await new Promise(r => setTimeout(r, 10));
+            }
+        }
 
-    // Scroll to form so user sees the change
-    athleteForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
+        // Phase 2: Saving
+        if (statusText) statusText.textContent = 'Saving to Database...';
+        localStorage.setItem('tf_records', JSON.stringify(records));
 
-function deleteAthlete(id) {
-    const athlete = athletes.find(a => a.id == id);
-    if (!athlete) return;
+        if (db) {
+            try {
+                await db.ref('records').set(records);
+                if (statusText) statusText.textContent = 'Success!';
+                setTimeout(() => {
+                    if (modal) modal.classList.add('hidden');
+                    alert(`Successfully recalculated and saved WMA stats for ${count} records.`);
+                    renderWMAReport();
+                }, 800);
+            } catch (err) {
+                console.error("Firebase save failed:", err);
+                if (modal) modal.classList.add('hidden');
+                alert('Recalculation complete locally, but failed to sync with cloud. Check console for details.');
+            }
+        } else {
+            if (statusText) statusText.textContent = 'Success (Local)!';
+            setTimeout(() => {
+                if (modal) modal.classList.add('hidden');
+                alert(`Recalculated stats for ${count} records locally.`);
+                renderWMAReport();
+            }, 800);
+        }
+    }
 
-    const fullNameLF = `${athlete.lastName}, ${athlete.firstName}`;
-    const fullNameFL = `${athlete.firstName} ${athlete.lastName}`;
+    window.sortWMAReport = function (field) {
+        if (wmaSortField === field) {
+            wmaSortOrder = wmaSortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            wmaSortField = field;
+            wmaSortOrder = 'asc'; // Default new sort to ascending
+            // Exception for Date and Mark -> Default Descending usually better?
+            if (field === 'date' || field === 'mark' || field === 'pts' || field === 'rateConv' || field === 'ageMark') {
+                wmaSortOrder = 'desc';
+            }
+        }
+        renderWMAReport();
+    };
+    function cleanupDuplicateAthletes() {
+        const groups = {};
 
-    const isUsed = records.some(r => r.athlete === fullNameLF || r.athlete === fullNameFL);
-    if (isUsed) return alert(`Cannot delete ${fullNameLF} because they have records.`);
+        // Group by normalized name (accent-insensitive)
+        athletes.forEach(a => {
+            const f = normalizeName(a.firstName);
+            const l = normalizeName(a.lastName);
 
-    if (!confirm(`Delete profile for ${fullNameLF}?`)) return;
+            // Still sorting to be order-agnostic, but using normalized versions
+            const key = [f, l].sort().join('|');
+            if (!key || key === '|') return; // Skip invalid entries
 
-    athletes = athletes.filter(a => a.id != id);
-    saveAthletes();
-    populateAthleteDropdown();
-    renderAthleteList();
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(a);
+        });
 
-    if (editingAthleteId == id) {
-        editingAthleteId = null;
+        let removedCount = 0;
+        const newAthletes = [];
+
+        Object.values(groups).forEach(group => {
+            if (group.length === 1) {
+                newAthletes.push(group[0]);
+            } else {
+                // Duplicates found: Pick BEST candidate
+                // Score: Has DOB (10) > Has Gender (2) > Has IDNumber (1)
+                group.sort((a, b) => {
+                    const scoreA = (a.dob && a.dob.trim() !== "" ? 10 : 0) +
+                        (a.gender ? 2 : 0) +
+                        (a.idNumber ? 1 : 0);
+                    const scoreB = (b.dob && b.dob.trim() !== "" ? 10 : 0) +
+                        (b.gender ? 2 : 0) +
+                        (b.idNumber ? 1 : 0);
+                    return scoreB - scoreA;
+                });
+
+                newAthletes.push(group[0]);
+                removedCount += (group.length - 1);
+            }
+        });
+
+        if (removedCount > 0) {
+            athletes = newAthletes;
+            saveAthletes();
+            console.log(`Cleaned up ${removedCount} duplicate athletes.`);
+            alert(`System Maintenance: Removed ${removedCount} duplicate athlete profiles.`);
+        }
+    }
+
+
+    function migrateAgeGroupsToStartAge() {
+        let changed = false;
+        records.forEach(r => {
+            if (r.ageGroup && r.ageGroup.includes('-')) {
+                r.ageGroup = r.ageGroup.split('-')[0];
+                changed = true;
+            }
+        });
+        history.forEach(h => {
+            if (h.ageGroup && h.ageGroup.includes('-')) {
+                h.ageGroup = h.ageGroup.split('-')[0];
+                changed = true;
+            }
+        });
+        if (changed) {
+            saveRecords();
+            localStorage.setItem('tf_history', JSON.stringify(history));
+            console.log("Migrated Age Groups to Start Age format.");
+        }
+    }
+
+    // --- Athlete CRUD ---
+    function handleAthleteSubmit(e) {
+        e.preventDefault();
+        const first = newAthleteFirstName.value.trim();
+        const last = newAthleteLastName.value.trim();
+        const idNum = newAthleteID.value.trim();
+
+        if (!first || !last) return;
+
+        if (editingAthleteId) {
+            const idx = athletes.findIndex(a => a.id == editingAthleteId);
+            if (idx !== -1) {
+                const oldNameLF = `${athletes[idx].lastName}, ${athletes[idx].firstName}`;
+
+                athletes[idx].idNumber = idNum;
+                athletes[idx].firstName = first;
+                athletes[idx].lastName = last;
+                athletes[idx].dob = newAthleteDOB.value;
+                athletes[idx].gender = newAthleteGender.value;
+
+                const newNameLF = `${last}, ${first}`;
+
+                // Propagate Name Update
+                records.forEach(r => {
+                    if (r.athlete === oldNameLF) r.athlete = newNameLF;
+                    else if (r.athlete === `${athletes[idx].firstName} ${athletes[idx].lastName}`) r.athlete = newNameLF;
+                });
+            }
+
+            editingAthleteId = null;
+            athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+            athleteSubmitBtn.style.background = '';
+        } else {
+            const exists = athletes.some(a =>
+                (a.firstName.toLowerCase() === first.toLowerCase() &&
+                    a.lastName.toLowerCase() === last.toLowerCase()) ||
+                (idNum && a.idNumber === idNum)
+            );
+
+            if (exists) return alert('Athlete already exists (Name or ID match)!');
+
+            athletes.push({
+                id: Date.now(),
+                idNumber: idNum,
+                firstName: first,
+                lastName: last,
+                dob: newAthleteDOB.value,
+                gender: newAthleteGender.value
+            });
+        }
+
+        saveAthletes();
+        saveRecords();
+        populateAthleteDropdown();
+        renderAthleteList();
+        renderReports();
+
         newAthleteID.value = '';
         newAthleteFirstName.value = '';
         newAthleteLastName.value = '';
@@ -2784,48 +2727,100 @@ function deleteAthlete(id) {
         if (dobPicker) dobPicker.clear();
         else newAthleteDOB.value = '';
         newAthleteGender.value = '';
-        athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
-        athleteSubmitBtn.style.background = '';
+        newAthleteFirstName.focus();
     }
-}
 
+    function editAthlete(id) {
+        console.log('editAthlete called with:', id);
+        const athlete = athletes.find(a => a.id == id);
+        console.log('Found athlete:', athlete);
+        if (!athlete) return;
 
-window.sortAthletes = function (field) {
-    if (athleteSortField === field) {
-        athleteSortOrder = athleteSortOrder === 'asc' ? 'desc' : 'asc';
-    } else {
-        athleteSortField = field;
-        athleteSortOrder = 'asc';
+        newAthleteID.value = athlete.idNumber || '';
+        newAthleteFirstName.value = athlete.firstName;
+        newAthleteLastName.value = athlete.lastName;
+
+        if (dobPicker) dobPicker.setDate(athlete.dob);
+        else newAthleteDOB.value = athlete.dob;
+
+        newAthleteGender.value = athlete.gender;
+
+        editingAthleteId = id;
+        athleteSubmitBtn.innerHTML = '<span>Update Athlete</span>';
+        athleteSubmitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
+
+        // Scroll to form so user sees the change
+        athleteForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    renderAthleteList();
-};
 
-function renderAthleteList() {
-    if (!athleteListBody) return;
-    athleteListBody.innerHTML = '';
+    function deleteAthlete(id) {
+        const athlete = athletes.find(a => a.id == id);
+        if (!athlete) return;
 
-    try {
-        // Sorting Logic
-        if (athletes && athletes.length > 0) {
-            athletes.sort((a, b) => {
-                if (!a || !b) return 0;
-                let valA = (a[athleteSortField] || '').toString().toLowerCase();
-                let valB = (b[athleteSortField] || '').toString().toLowerCase();
+        const fullNameLF = `${athlete.lastName}, ${athlete.firstName}`;
+        const fullNameFL = `${athlete.firstName} ${athlete.lastName}`;
 
-                if (athleteSortField === 'dob') {
-                    valA = a.dob ? new Date(a.dob).getTime() : 0;
-                    valB = b.dob ? new Date(b.dob).getTime() : 0;
-                }
+        const isUsed = records.some(r => r.athlete === fullNameLF || r.athlete === fullNameFL);
+        if (isUsed) return alert(`Cannot delete ${fullNameLF} because they have records.`);
 
-                if (valA < valB) return athleteSortOrder === 'asc' ? -1 : 1;
-                if (valA > valB) return athleteSortOrder === 'asc' ? 1 : -1;
-                return 0;
-            });
+        if (!confirm(`Delete profile for ${fullNameLF}?`)) return;
 
-            athletes.forEach(a => {
-                if (!a) return;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+        athletes = athletes.filter(a => a.id != id);
+        saveAthletes();
+        populateAthleteDropdown();
+        renderAthleteList();
+
+        if (editingAthleteId == id) {
+            editingAthleteId = null;
+            newAthleteID.value = '';
+            newAthleteFirstName.value = '';
+            newAthleteLastName.value = '';
+            newAthleteLastName.value = '';
+            if (dobPicker) dobPicker.clear();
+            else newAthleteDOB.value = '';
+            newAthleteGender.value = '';
+            athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+            athleteSubmitBtn.style.background = '';
+        }
+    }
+
+
+    window.sortAthletes = function (field) {
+        if (athleteSortField === field) {
+            athleteSortOrder = athleteSortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            athleteSortField = field;
+            athleteSortOrder = 'asc';
+        }
+        renderAthleteList();
+    };
+
+    function renderAthleteList() {
+        if (!athleteListBody) return;
+        athleteListBody.innerHTML = '';
+
+        try {
+            // Sorting Logic
+            if (athletes && athletes.length > 0) {
+                athletes.sort((a, b) => {
+                    if (!a || !b) return 0;
+                    let valA = (a[athleteSortField] || '').toString().toLowerCase();
+                    let valB = (b[athleteSortField] || '').toString().toLowerCase();
+
+                    if (athleteSortField === 'dob') {
+                        valA = a.dob ? new Date(a.dob).getTime() : 0;
+                        valB = b.dob ? new Date(b.dob).getTime() : 0;
+                    }
+
+                    if (valA < valB) return athleteSortOrder === 'asc' ? -1 : 1;
+                    if (valA > valB) return athleteSortOrder === 'asc' ? 1 : -1;
+                    return 0;
+                });
+
+                athletes.forEach(a => {
+                    if (!a) return;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
                         <td>${a.idNumber || '-'}</td>
                         <td style="font-weight:600;">${a.lastName}</td>
                         <td>${a.firstName}</td>
@@ -2836,117 +2831,117 @@ function renderAthleteList() {
                             <button class="btn-icon delete delete-athlete-btn" data-id="${a.id}" title="Delete">🗑️</button>
                         </td>
                     `;
-                athleteListBody.appendChild(tr);
-            });
-        } else {
-            athleteListBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No athletes found.</td></tr>';
+                    athleteListBody.appendChild(tr);
+                });
+            } else {
+                athleteListBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No athletes found.</td></tr>';
+            }
+        } catch (e) {
+            console.error("Error rendering athlete list:", e);
+            athleteListBody.innerHTML = `<tr><td colspan="6" style="color:red;">Error loading athletes: ${e.message}</td></tr>`;
         }
-    } catch (e) {
-        console.error("Error rendering athlete list:", e);
-        athleteListBody.innerHTML = `<tr><td colspan="6" style="color:red;">Error loading athletes: ${e.message}</td></tr>`;
-    }
-}
-
-function saveAthletes() {
-    if (!isDataReady) {
-        console.warn("Save aborted: System not ready (Synchronization in progress).");
-        return;
-    }
-    if (db) db.ref('athletes').set(athletes);
-    localStorage.setItem('tf_athletes', JSON.stringify(athletes));
-    rebuildPerformanceIndexes();
-}
-
-
-// --- User Manager ---
-function handleUserSubmit(e) {
-    e.preventDefault();
-    console.log("🚀 handleUserSubmit called");
-
-    if (!currentUser || !isSupervisor(currentUser.email)) {
-        alert("Unauthorized: Only the Supervisor can manage users.");
-        return;
     }
 
-    const id = editingUserIdInput.value || Date.now().toString();
-    const name = newUserName.value.trim();
-    const role = newUserRole.value;
-    const email = newUserEmail.value.trim();
-
-    if (!name || !email) return alert("All fields are required.");
-
-    const existingIdx = appUsers.findIndex(u => u.id === id);
-    const userObj = { id, name, role, email };
-
-    if (existingIdx !== -1) {
-        appUsers[existingIdx] = userObj;
-    } else {
-        appUsers.push(userObj);
+    function saveAthletes() {
+        if (!isDataReady) {
+            console.warn("Save aborted: System not ready (Synchronization in progress).");
+            return;
+        }
+        if (db) db.ref('athletes').set(athletes);
+        localStorage.setItem('tf_athletes', JSON.stringify(athletes));
+        rebuildPerformanceIndexes();
     }
 
-    saveUsers();
-    userForm.reset();
-    editingUserIdInput.value = '';
-    userSubmitBtn.textContent = 'Add';
-}
 
-function editUser(id) {
-    if (!currentUser || !isSupervisor(currentUser.email)) {
-        alert("Unauthorized: Only the Supervisor can manage users.");
-        return;
-    }
-    const user = appUsers.find(u => u.id === id);
+    // --- User Manager ---
+    function handleUserSubmit(e) {
+        e.preventDefault();
+        console.log("🚀 handleUserSubmit called");
 
-    editingUserIdInput.value = user.id;
-    newUserName.value = user.name;
-    newUserRole.value = user.role;
-    newUserEmail.value = user.email;
-    userSubmitBtn.textContent = 'Update';
-    // Scroll to form
-    userForm.scrollIntoView({ behavior: 'smooth' });
-}
+        if (!currentUser || !isSupervisor(currentUser.email)) {
+            alert("Unauthorized: Only the Supervisor can manage users.");
+            return;
+        }
 
-function deleteUser(id) {
-    if (!isSupervisor(currentUser ? currentUser.email : null)) {
-        alert("Only Supervisors can delete users.");
-        return;
-    }
-    if (!confirm('Are you sure you want to delete this user?')) return;
-    appUsers = appUsers.filter(u => u.id !== id);
-    saveUsers();
-}
+        const id = editingUserIdInput.value || Date.now().toString();
+        const name = newUserName.value.trim();
+        const role = newUserRole.value;
+        const email = newUserEmail.value.trim();
 
-function renderUserList() {
-    if (!userListBody) {
-        console.error("❌ userListBody element not found in DOM");
-        return;
+        if (!name || !email) return alert("All fields are required.");
+
+        const existingIdx = appUsers.findIndex(u => u.id === id);
+        const userObj = { id, name, role, email };
+
+        if (existingIdx !== -1) {
+            appUsers[existingIdx] = userObj;
+        } else {
+            appUsers.push(userObj);
+        }
+
+        saveUsers();
+        userForm.reset();
+        editingUserIdInput.value = '';
+        userSubmitBtn.textContent = 'Add';
     }
 
-    // Defensive: Ensure appUsers is an array
-    let displayUsers = appUsers;
-    if (appUsers && typeof appUsers === 'object' && !Array.isArray(appUsers)) {
-        console.warn("⚠️ appUsers is an object, converting to array for rendering");
-        displayUsers = Object.values(appUsers);
+    function editUser(id) {
+        if (!currentUser || !isSupervisor(currentUser.email)) {
+            alert("Unauthorized: Only the Supervisor can manage users.");
+            return;
+        }
+        const user = appUsers.find(u => u.id === id);
+
+        editingUserIdInput.value = user.id;
+        newUserName.value = user.name;
+        newUserRole.value = user.role;
+        newUserEmail.value = user.email;
+        userSubmitBtn.textContent = 'Update';
+        // Scroll to form
+        userForm.scrollIntoView({ behavior: 'smooth' });
     }
 
-    if (!Array.isArray(displayUsers)) {
-        console.error("❌ displayUsers is not an array:", displayUsers);
-        userListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Critical Data Error: User list format invalid</td></tr>';
-        return;
+    function deleteUser(id) {
+        if (!isSupervisor(currentUser ? currentUser.email : null)) {
+            alert("Only Supervisors can delete users.");
+            return;
+        }
+        if (!confirm('Are you sure you want to delete this user?')) return;
+        appUsers = appUsers.filter(u => u.id !== id);
+        saveUsers();
     }
 
-    userListBody.innerHTML = '';
+    function renderUserList() {
+        if (!userListBody) {
+            console.error("❌ userListBody element not found in DOM");
+            return;
+        }
 
-    if (displayUsers.length === 0) {
-        userListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 2rem;">No users found. Use the form above to add an administrator or supervisor.</td></tr>';
-        return;
-    }
+        // Defensive: Ensure appUsers is an array
+        let displayUsers = appUsers;
+        if (appUsers && typeof appUsers === 'object' && !Array.isArray(appUsers)) {
+            console.warn("⚠️ appUsers is an object, converting to array for rendering");
+            displayUsers = Object.values(appUsers);
+        }
 
-    const isSuper = currentUser && isSupervisor(currentUser.email);
+        if (!Array.isArray(displayUsers)) {
+            console.error("❌ displayUsers is not an array:", displayUsers);
+            userListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Critical Data Error: User list format invalid</td></tr>';
+            return;
+        }
 
-    displayUsers.forEach(u => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+        userListBody.innerHTML = '';
+
+        if (displayUsers.length === 0) {
+            userListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 2rem;">No users found. Use the form above to add an administrator or supervisor.</td></tr>';
+            return;
+        }
+
+        const isSuper = currentUser && isSupervisor(currentUser.email);
+
+        displayUsers.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
                 <td>${u.name || 'N/A'}</td>
                 <td><span class="badge" style="background:var(--primary); color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${u.role || 'User'}</span></td>
                 <td>${u.email || 'N/A'}</td>
@@ -2959,344 +2954,344 @@ function renderUserList() {
                     ` : '<span style="color:var(--text-muted); font-size: 0.8rem;">Read Only</span>'}
                 </td>
             `;
-        userListBody.appendChild(tr);
-    });
-
-    // Hide form if not supervisor
-    if (userForm) {
-        if (isSuper) userForm.classList.remove('hidden');
-        else userForm.classList.add('hidden');
-    }
-    console.log(`✅ Rendered ${displayUsers.length} users in table.`);
-}
-
-function saveUsers() {
-    if (!isDataReady) return;
-    console.log("💾 saveUsers: saving to Firebase and LocalStorage...", appUsers);
-    if (db) db.ref('users').set(appUsers);
-    localStorage.setItem('tf_users', JSON.stringify(appUsers));
-    renderUserList();
-}
-
-
-// --- Enhanced Events ---
-function handleEventSubmit(e) {
-    e.preventDefault();
-    const name = newEventName.value.trim();
-    const specs = newEventSpecs.value.trim();
-    const iaafEvent = newEventIAAF.value;  // Selected IAAF event (or empty string)
-    const formula = document.getElementById('newEventFormula').value.trim();
-    const notes = newEventNotes.value.trim();
-
-    // Get selected event type from radio buttons
-    const eventType = document.querySelector('input[name="eventType"]:checked')?.value || 'Track';
-    const isCombined = eventType === 'Combined';
-    const isRelay = eventType === 'Relay';
-
-    let subEvents = [];
-    if (isCombined) {
-        const inputs = subEventsContainer.querySelectorAll('.sub-event-input');
-        inputs.forEach(input => {
-            if (input.value) subEvents.push(input.value);
+            userListBody.appendChild(tr);
         });
+
+        // Hide form if not supervisor
+        if (userForm) {
+            if (isSuper) userForm.classList.remove('hidden');
+            else userForm.classList.add('hidden');
+        }
+        console.log(`✅ Rendered ${displayUsers.length} users in table.`);
     }
 
-    if (editingEventId) {
-        const idx = events.findIndex(ev => ev.id == editingEventId);
-        if (idx !== -1) {
-            const ev = events[idx]; // Define ev here
-            const oldName = ev.name;
-            if (oldName !== name && events.some(event => event.name === name)) { // Renamed ev to event to avoid conflict
-                return alert('Event Name already exists!');
+    function saveUsers() {
+        if (!isDataReady) return;
+        console.log("💾 saveUsers: saving to Firebase and LocalStorage...", appUsers);
+        if (db) db.ref('users').set(appUsers);
+        localStorage.setItem('tf_users', JSON.stringify(appUsers));
+        renderUserList();
+    }
+
+
+    // --- Enhanced Events ---
+    function handleEventSubmit(e) {
+        e.preventDefault();
+        const name = newEventName.value.trim();
+        const specs = newEventSpecs.value.trim();
+        const iaafEvent = newEventIAAF.value;  // Selected IAAF event (or empty string)
+        const formula = document.getElementById('newEventFormula').value.trim();
+        const notes = newEventNotes.value.trim();
+
+        // Get selected event type from radio buttons
+        const eventType = document.querySelector('input[name="eventType"]:checked')?.value || 'Track';
+        const isCombined = eventType === 'Combined';
+        const isRelay = eventType === 'Relay';
+
+        let subEvents = [];
+        if (isCombined) {
+            const inputs = subEventsContainer.querySelectorAll('.sub-event-input');
+            inputs.forEach(input => {
+                if (input.value) subEvents.push(input.value);
+            });
+        }
+
+        if (editingEventId) {
+            const idx = events.findIndex(ev => ev.id == editingEventId);
+            if (idx !== -1) {
+                const ev = events[idx]; // Define ev here
+                const oldName = ev.name;
+                if (oldName !== name && events.some(event => event.name === name)) { // Renamed ev to event to avoid conflict
+                    return alert('Event Name already exists!');
+                }
+
+                ev.name = name;
+                ev.specs = specs;
+                ev.iaafEvent = iaafEvent;  // IAAF event link
+                ev.wmaEvent = newEventWMA.value; // WMA event link
+                ev.formula = formula; // Save formula
+                ev.notes = notes;
+                ev.type = eventType;  // Store event type
+                ev.isCombined = isCombined;
+                ev.isRelay = isRelay;
+                ev.subEvents = subEvents;
+
+                records.forEach(r => {
+                    if (r.event === oldName) r.event = name;
+                });
             }
 
-            ev.name = name;
-            ev.specs = specs;
-            ev.iaafEvent = iaafEvent;  // IAAF event link
-            ev.wmaEvent = newEventWMA.value; // WMA event link
-            ev.formula = formula; // Save formula
-            ev.notes = notes;
-            ev.type = eventType;  // Store event type
-            ev.isCombined = isCombined;
-            ev.isRelay = isRelay;
-            ev.subEvents = subEvents;
-
-            records.forEach(r => {
-                if (r.event === oldName) r.event = name;
+            editingEventId = null;
+            eventSubmitBtn.innerHTML = '<span>+ Add Event</span>';
+            eventSubmitBtn.style.background = '';
+        } else {
+            // Create New
+            if (events.some(ev => ev.name.toLowerCase() === name.toLowerCase())) {
+                return alert('Event already exists!');
+            }
+            events.push({
+                id: Date.now(),
+                name: name,
+                iaafEvent: iaafEvent,  // IAAF event link
+                wmaEvent: newEventWMA.value, // WMA event link
+                formula: formula, // Save formula
+                specs: specs,
+                notes: notes,
+                type: eventType,  // Store event type
+                isCombined: isCombined,
+                isRelay: isRelay,
+                subEvents: subEvents
             });
         }
 
-        editingEventId = null;
-        eventSubmitBtn.innerHTML = '<span>+ Add Event</span>';
-        eventSubmitBtn.style.background = '';
-    } else {
-        // Create New
-        if (events.some(ev => ev.name.toLowerCase() === name.toLowerCase())) {
-            return alert('Event already exists!');
-        }
-        events.push({
-            id: Date.now(),
-            name: name,
-            iaafEvent: iaafEvent,  // IAAF event link
-            wmaEvent: newEventWMA.value, // WMA event link
-            formula: formula, // Save formula
-            specs: specs,
-            notes: notes,
-            type: eventType,  // Store event type
-            isCombined: isCombined,
-            isRelay: isRelay,
-            subEvents: subEvents
-        });
-    }
-
-    saveEvents();
-    saveRecords();
-    populateYearDropdown(); // Added this line
-    populateEventDropdowns();
-    renderEventList();
-    renderReports();
-    resetEventForm();
-    newEventName.focus();
-}
-
-function resetEventForm() {
-    if (newEventName) newEventName.value = '';
-    if (newEventFormula) newEventFormula.value = '';
-    if (newEventIAAF) newEventIAAF.value = '';
-    if (newEventWMA) newEventWMA.value = '';
-    if (newEventSpecs) newEventSpecs.value = '';
-    if (newEventNotes) newEventNotes.value = '';
-    if (eventTypeTrack) eventTypeTrack.checked = true;
-    if (newEventSubCount) {
-        newEventSubCount.value = '';
-        newEventSubCount.disabled = true;
-    }
-    if (subEventsContainer) {
-        subEventsContainer.innerHTML = '';
-        subEventsContainer.style.display = 'none';
-    }
-    if (eventSubmitBtn) {
-        eventSubmitBtn.innerHTML = '<span>+ Add Event</span>';
-        eventSubmitBtn.style.background = '';
-    }
-    editingEventId = null;
-}
-
-function editEvent(id) {
-    const ev = events.find(e => e.id == id);
-    if (!ev) return;
-
-    newEventName.value = ev.name;
-    if (newEventIAAF) newEventIAAF.value = ev.iaafEvent || '';
-    if (newEventWMA) newEventWMA.value = ev.wmaEvent || '';
-    newEventSpecs.value = ev.specs || '';
-    if (newEventFormula) newEventFormula.value = ev.formula || '';
-    if (newEventNotes) newEventNotes.value = ev.notes || '';
-
-    // Set the correct event type radio button
-    const eventType = ev.type || (ev.isCombined ? 'Combined' : ev.isRelay ? 'Relay' : 'Track');
-    document.querySelector(`input[name="eventType"][value="${eventType}"]`).checked = true;
-
-    editingEventId = id; // Set ID early for filter logic
-
-    if (ev.isCombined) {
-        newEventSubCount.disabled = false;
-        const subs = ev.subEvents || [];
-        const count = subs.length;
-        if (count > 0) {
-            subEventsContainer.style.display = 'flex';
-            const availableEvents = events.filter(e => !e.isCombined && !e.isRelay && e.id != editingEventId);
-            availableEvents.sort((a, b) => a.name.localeCompare(b.name));
-
-            subEventsContainer.innerHTML = '';
-            subs.forEach((subName, i) => {
-                const div = document.createElement('div');
-                div.className = 'form-group';
-                div.style.flex = '1 1 45%';
-                div.style.minWidth = '150px';
-
-                const select = document.createElement('select');
-                select.className = 'sub-event-input';
-                select.required = true;
-                select.style.width = '100%';
-
-                const defOpt = document.createElement('option');
-                defOpt.value = "";
-                defOpt.disabled = true;
-                defOpt.textContent = "Select Event";
-                if (!subName) defOpt.selected = true;
-                select.appendChild(defOpt);
-
-                availableEvents.forEach(ae => {
-                    const opt = document.createElement('option');
-                    opt.value = ae.name;
-                    opt.textContent = ae.name;
-                    if (ae.name === subName) opt.selected = true;
-                    select.appendChild(opt);
-                });
-
-                div.innerHTML = `<label style="font-size:0.75rem;">Event ${i + 1}</label>`;
-                div.appendChild(select);
-                subEventsContainer.appendChild(div);
-            });
-        }
-    } else {
-        newEventSubCount.disabled = true;
-        newEventSubCount.value = '';
-        subEventsContainer.innerHTML = '';
-        subEventsContainer.style.display = 'none';
-    }
-
-    editingEventId = id;
-    newEventName.focus();
-    eventSubmitBtn.innerHTML = '<span>Update Event</span>';
-    eventSubmitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
-}
-
-// Modal Logic Initialization
-function initFormulaModal() {
-    const openFormulaBtn = document.getElementById('openFormulaBtn');
-    const saveFormulaBtn = document.getElementById('saveFormulaBtn');
-    const cancelFormulaBtn = document.getElementById('cancelFormulaBtn');
-    const formulaModal = document.getElementById('formulaModal');
-    const modalFormulaInput = document.getElementById('modalFormulaInput');
-    const newEventFormula = document.getElementById('newEventFormula');
-
-    if (openFormulaBtn && formulaModal && modalFormulaInput && newEventFormula) {
-        openFormulaBtn.addEventListener('click', () => {
-            modalFormulaInput.value = newEventFormula.value;
-            formulaModal.classList.remove('hidden');
-        });
-    }
-
-    if (saveFormulaBtn && formulaModal && modalFormulaInput && newEventFormula) {
-        saveFormulaBtn.addEventListener('click', () => {
-            newEventFormula.value = modalFormulaInput.value;
-            formulaModal.classList.add('hidden');
-        });
-    }
-
-    if (cancelFormulaBtn && formulaModal) {
-        cancelFormulaBtn.addEventListener('click', () => {
-            formulaModal.classList.add('hidden');
-        });
-    }
-}
-initFormulaModal();
-
-function deleteEvent(id) {
-    const ev = events.find(e => e.id == id);
-    if (!ev) return;
-
-    const isUsed = records.some(r => r.event === ev.name);
-    if (isUsed) return alert(`Cannot delete "${ev.name}" because it has associated records.`);
-
-    if (!confirm(`Delete event "${ev.name}"?`)) return;
-
-    events = events.filter(e => e.id != id);
-    saveEvents();
-    populateEventDropdowns();
-    renderEventList();
-
-    if (editingEventId == id) {
+        saveEvents();
+        saveRecords();
+        populateYearDropdown(); // Added this line
+        populateEventDropdowns();
+        renderEventList();
+        renderReports();
         resetEventForm();
-    }
-}
-
-function saveCountries() {
-    if (!isDataReady) return;
-    if (db) db.ref('countries').set(countries);
-    localStorage.setItem('tf_countries', JSON.stringify(countries));
-}
-
-function populateCountryDropdown() {
-    if (!countryInput) return;
-    let html = '<option value="" disabled>Select Country</option>';
-    // Sort safely
-    const safeCountries = Array.isArray(countries) ? countries : [];
-    safeCountries.sort((a, b) => a.localeCompare(b)).forEach(c => {
-        const isSelected = c === 'Ελλάδα' ? 'selected' : '';
-        html += `<option value="${c}" ${isSelected}>${c}</option>`;
-    });
-    countryInput.innerHTML = html;
-}
-
-function handleCountrySubmit(e) {
-    e.preventDefault();
-    const name = newCountryName.value.trim();
-    if (!name) return;
-
-    if (countries.some(c => c.toLowerCase() === name.toLowerCase())) {
-        return alert('Country already exists!');
+        newEventName.focus();
     }
 
-    countries.push(name);
-    countries.sort();
-    saveCountries();
-    renderCountryList();
-    populateCountryDropdown();
-    newCountryName.value = '';
-}
+    function resetEventForm() {
+        if (newEventName) newEventName.value = '';
+        if (newEventFormula) newEventFormula.value = '';
+        if (newEventIAAF) newEventIAAF.value = '';
+        if (newEventWMA) newEventWMA.value = '';
+        if (newEventSpecs) newEventSpecs.value = '';
+        if (newEventNotes) newEventNotes.value = '';
+        if (eventTypeTrack) eventTypeTrack.checked = true;
+        if (newEventSubCount) {
+            newEventSubCount.value = '';
+            newEventSubCount.disabled = true;
+        }
+        if (subEventsContainer) {
+            subEventsContainer.innerHTML = '';
+            subEventsContainer.style.display = 'none';
+        }
+        if (eventSubmitBtn) {
+            eventSubmitBtn.innerHTML = '<span>+ Add Event</span>';
+            eventSubmitBtn.style.background = '';
+        }
+        editingEventId = null;
+    }
 
-function deleteCountry(name) {
-    if (!confirm(`Delete ${name}?`)) return;
-    countries = countries.filter(c => c !== name);
-    saveCountries();
-    renderCountryList();
-    populateCountryDropdown();
-}
+    function editEvent(id) {
+        const ev = events.find(e => e.id == id);
+        if (!ev) return;
 
-function renderCountryList() {
-    if (!countryListBody) return;
-    countryListBody.innerHTML = '';
-    const safeCountries = Array.isArray(countries) ? countries : [];
-    safeCountries.forEach(c => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+        newEventName.value = ev.name;
+        if (newEventIAAF) newEventIAAF.value = ev.iaafEvent || '';
+        if (newEventWMA) newEventWMA.value = ev.wmaEvent || '';
+        newEventSpecs.value = ev.specs || '';
+        if (newEventFormula) newEventFormula.value = ev.formula || '';
+        if (newEventNotes) newEventNotes.value = ev.notes || '';
+
+        // Set the correct event type radio button
+        const eventType = ev.type || (ev.isCombined ? 'Combined' : ev.isRelay ? 'Relay' : 'Track');
+        document.querySelector(`input[name="eventType"][value="${eventType}"]`).checked = true;
+
+        editingEventId = id; // Set ID early for filter logic
+
+        if (ev.isCombined) {
+            newEventSubCount.disabled = false;
+            const subs = ev.subEvents || [];
+            const count = subs.length;
+            if (count > 0) {
+                subEventsContainer.style.display = 'flex';
+                const availableEvents = events.filter(e => !e.isCombined && !e.isRelay && e.id != editingEventId);
+                availableEvents.sort((a, b) => a.name.localeCompare(b.name));
+
+                subEventsContainer.innerHTML = '';
+                subs.forEach((subName, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'form-group';
+                    div.style.flex = '1 1 45%';
+                    div.style.minWidth = '150px';
+
+                    const select = document.createElement('select');
+                    select.className = 'sub-event-input';
+                    select.required = true;
+                    select.style.width = '100%';
+
+                    const defOpt = document.createElement('option');
+                    defOpt.value = "";
+                    defOpt.disabled = true;
+                    defOpt.textContent = "Select Event";
+                    if (!subName) defOpt.selected = true;
+                    select.appendChild(defOpt);
+
+                    availableEvents.forEach(ae => {
+                        const opt = document.createElement('option');
+                        opt.value = ae.name;
+                        opt.textContent = ae.name;
+                        if (ae.name === subName) opt.selected = true;
+                        select.appendChild(opt);
+                    });
+
+                    div.innerHTML = `<label style="font-size:0.75rem;">Event ${i + 1}</label>`;
+                    div.appendChild(select);
+                    subEventsContainer.appendChild(div);
+                });
+            }
+        } else {
+            newEventSubCount.disabled = true;
+            newEventSubCount.value = '';
+            subEventsContainer.innerHTML = '';
+            subEventsContainer.style.display = 'none';
+        }
+
+        editingEventId = id;
+        newEventName.focus();
+        eventSubmitBtn.innerHTML = '<span>Update Event</span>';
+        eventSubmitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
+    }
+
+    // Modal Logic Initialization
+    function initFormulaModal() {
+        const openFormulaBtn = document.getElementById('openFormulaBtn');
+        const saveFormulaBtn = document.getElementById('saveFormulaBtn');
+        const cancelFormulaBtn = document.getElementById('cancelFormulaBtn');
+        const formulaModal = document.getElementById('formulaModal');
+        const modalFormulaInput = document.getElementById('modalFormulaInput');
+        const newEventFormula = document.getElementById('newEventFormula');
+
+        if (openFormulaBtn && formulaModal && modalFormulaInput && newEventFormula) {
+            openFormulaBtn.addEventListener('click', () => {
+                modalFormulaInput.value = newEventFormula.value;
+                formulaModal.classList.remove('hidden');
+            });
+        }
+
+        if (saveFormulaBtn && formulaModal && modalFormulaInput && newEventFormula) {
+            saveFormulaBtn.addEventListener('click', () => {
+                newEventFormula.value = modalFormulaInput.value;
+                formulaModal.classList.add('hidden');
+            });
+        }
+
+        if (cancelFormulaBtn && formulaModal) {
+            cancelFormulaBtn.addEventListener('click', () => {
+                formulaModal.classList.add('hidden');
+            });
+        }
+    }
+    initFormulaModal();
+
+    function deleteEvent(id) {
+        const ev = events.find(e => e.id == id);
+        if (!ev) return;
+
+        const isUsed = records.some(r => r.event === ev.name);
+        if (isUsed) return alert(`Cannot delete "${ev.name}" because it has associated records.`);
+
+        if (!confirm(`Delete event "${ev.name}"?`)) return;
+
+        events = events.filter(e => e.id != id);
+        saveEvents();
+        populateEventDropdowns();
+        renderEventList();
+
+        if (editingEventId == id) {
+            resetEventForm();
+        }
+    }
+
+    function saveCountries() {
+        if (!isDataReady) return;
+        if (db) db.ref('countries').set(countries);
+        localStorage.setItem('tf_countries', JSON.stringify(countries));
+    }
+
+    function populateCountryDropdown() {
+        if (!countryInput) return;
+        let html = '<option value="" disabled>Select Country</option>';
+        // Sort safely
+        const safeCountries = Array.isArray(countries) ? countries : [];
+        safeCountries.sort((a, b) => a.localeCompare(b)).forEach(c => {
+            const isSelected = c === 'Ελλάδα' ? 'selected' : '';
+            html += `<option value="${c}" ${isSelected}>${c}</option>`;
+        });
+        countryInput.innerHTML = html;
+    }
+
+    function handleCountrySubmit(e) {
+        e.preventDefault();
+        const name = newCountryName.value.trim();
+        if (!name) return;
+
+        if (countries.some(c => c.toLowerCase() === name.toLowerCase())) {
+            return alert('Country already exists!');
+        }
+
+        countries.push(name);
+        countries.sort();
+        saveCountries();
+        renderCountryList();
+        populateCountryDropdown();
+        newCountryName.value = '';
+    }
+
+    function deleteCountry(name) {
+        if (!confirm(`Delete ${name}?`)) return;
+        countries = countries.filter(c => c !== name);
+        saveCountries();
+        renderCountryList();
+        populateCountryDropdown();
+    }
+
+    function renderCountryList() {
+        if (!countryListBody) return;
+        countryListBody.innerHTML = '';
+        const safeCountries = Array.isArray(countries) ? countries : [];
+        safeCountries.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
                 <td>${c}</td>
                 <td style="text-align:right;">
                     <button class="btn-icon delete delete-country-btn" data-country="${c}" title="Delete">🗑️</button>
                 </td>
             `;
-        countryListBody.appendChild(tr);
-    });
-}
+            countryListBody.appendChild(tr);
+        });
+    }
 
-function renderEventList() {
-    if (!eventListBody) return;
-    eventListBody.innerHTML = '';
-    // Sort by Name
-    events.sort((a, b) => a.name.localeCompare(b.name));
+    function renderEventList() {
+        if (!eventListBody) return;
+        eventListBody.innerHTML = '';
+        // Sort by Name
+        events.sort((a, b) => a.name.localeCompare(b.name));
 
-    events.forEach(ev => {
-        const isUsed = records.some(r => r.event === ev.name);
-        const tr = document.createElement('tr');
+        events.forEach(ev => {
+            const isUsed = records.some(r => r.event === ev.name);
+            const tr = document.createElement('tr');
 
-        // Determine event type and create badge
-        const eventType = ev.type || (ev.isCombined ? 'Combined' : ev.isRelay ? 'Relay' : 'Track');
-        let typeBadge = '';
+            // Determine event type and create badge
+            const eventType = ev.type || (ev.isCombined ? 'Combined' : ev.isRelay ? 'Relay' : 'Track');
+            let typeBadge = '';
 
-        switch (eventType) {
-            case 'Field':
-                typeBadge = '<span style="background:#10b981; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Field</span>';
-                break;
-            case 'Track':
-                typeBadge = '<span style="background:#3b82f6; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Track</span>';
-                break;
-            case 'Road':
-                typeBadge = '<span style="background:#f59e0b; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Road</span>';
-                break;
-            case 'Combined':
-                const count = ev.subEvents ? ev.subEvents.length : 0;
-                typeBadge = `<span style="background:var(--accent); color:black; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Combined (${count})</span>`;
-                break;
-            case 'Relay':
-                typeBadge = '<span style="background:var(--primary); color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Relay</span>';
-                break;
-        }
+            switch (eventType) {
+                case 'Field':
+                    typeBadge = '<span style="background:#10b981; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Field</span>';
+                    break;
+                case 'Track':
+                    typeBadge = '<span style="background:#3b82f6; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Track</span>';
+                    break;
+                case 'Road':
+                    typeBadge = '<span style="background:#f59e0b; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Road</span>';
+                    break;
+                case 'Combined':
+                    const count = ev.subEvents ? ev.subEvents.length : 0;
+                    typeBadge = `<span style="background:var(--accent); color:black; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Combined (${count})</span>`;
+                    break;
+                case 'Relay':
+                    typeBadge = '<span style="background:var(--primary); color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Relay</span>';
+                    break;
+            }
 
 
-        tr.innerHTML = `
+            tr.innerHTML = `
                 <td style="font-weight:600;">${ev.name}</td>
                 <td style="font-size:0.85em; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${ev.formula || ''}">${ev.formula || '-'}</td>
                 <td style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.specs || '-'}</td>
@@ -3309,249 +3304,249 @@ function renderEventList() {
                         title="${isUsed ? 'In use' : 'Delete'}" ${isUsed ? 'disabled' : ''}>🗑️</button>
                 </td>
             `;
-        eventListBody.appendChild(tr);
-    });
-}
+            eventListBody.appendChild(tr);
+        });
+    }
 
-function saveEvents() {
-    if (!isDataReady) return;
-    if (db) db.ref('events').set(events);
-    localStorage.setItem('tf_events', JSON.stringify(events));
-}
+    function saveEvents() {
+        if (!isDataReady) return;
+        if (db) db.ref('events').set(events);
+        localStorage.setItem('tf_events', JSON.stringify(events));
+    }
 
-// --- Records ---
-function saveHistory() {
-    if (!isDataReady) return;
-    if (db) db.ref('history').set(history);
-    localStorage.setItem('tf_history', JSON.stringify(history));
-}
+    // --- Records ---
+    function saveHistory() {
+        if (!isDataReady) return;
+        if (db) db.ref('history').set(history);
+        localStorage.setItem('tf_history', JSON.stringify(history));
+    }
 
-// --- Records ---
+    // --- Records ---
 
 
-function handleFormSubmit(e) {
-    e.preventDefault();
-    try {
-        const raceName = raceNameInput ? raceNameInput.value.trim() : '';
-        const idr = idrInput ? idrInput.value.trim() : '';
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        try {
+            const raceName = raceNameInput ? raceNameInput.value.trim() : '';
+            const idr = idrInput ? idrInput.value.trim() : '';
 
-        const ev = evtInput ? events.find(e => e.name === evtInput.value) : null;
-        const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
-        const selectedAthlete = isRelay ? (relayTeamNameInput ? relayTeamNameInput.value.trim() : '') : (athleteInput ? athleteInput.value : '');
-        const selectedAgeGroup = ageGroupInput ? ageGroupInput.value : '';
-        const selectedDate = dateInput ? dateInput.value : '';
+            const ev = evtInput ? events.find(e => e.name === evtInput.value) : null;
+            const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
+            const selectedAthlete = isRelay ? (relayTeamNameInput ? relayTeamNameInput.value.trim() : '') : (athleteInput ? athleteInput.value : '');
+            const selectedAgeGroup = ageGroupInput ? ageGroupInput.value : '';
+            const selectedDate = dateInput ? dateInput.value : '';
 
-        if (!isRelay && selectedAthlete && selectedDate) {
-            const athlete = findAthleteByNormalizedName(selectedAthlete);
-            console.log(`Validation: Athlete="${selectedAthlete}", Found=${!!athlete}, DoB="${athlete?.dob}", Date="${selectedDate}"`);
+            if (!isRelay && selectedAthlete && selectedDate) {
+                const athlete = findAthleteByNormalizedName(selectedAthlete);
+                console.log(`Validation: Athlete="${selectedAthlete}", Found=${!!athlete}, DoB="${athlete?.dob}", Date="${selectedDate}"`);
 
-            if (athlete && athlete.dob) {
-                const dobYear = parseInt(athlete.dob.split('-')[0]);
-                const eventYear = parseInt(selectedDate.split('-')[0]);
-                const rawAge = eventYear - dobYear;
+                if (athlete && athlete.dob) {
+                    const dobYear = parseInt(athlete.dob.split('-')[0]);
+                    const eventYear = parseInt(selectedDate.split('-')[0]);
+                    const rawAge = eventYear - dobYear;
 
-                const calculatedGroup = calculateAgeGroup(athlete.dob, selectedDate);
-                const normalizedSelected = selectedAgeGroup || "";
-                const normalizedCalculated = calculatedGroup || "";
-                console.log(`Validation Check: AthleteAge=${rawAge}, Selected="${normalizedSelected}", Calculated="${normalizedCalculated}"`);
+                    const calculatedGroup = calculateAgeGroup(athlete.dob, selectedDate);
+                    const normalizedSelected = selectedAgeGroup || "";
+                    const normalizedCalculated = calculatedGroup || "";
+                    console.log(`Validation Check: AthleteAge=${rawAge}, Selected="${normalizedSelected}", Calculated="${normalizedCalculated}"`);
 
-                if (normalizedSelected !== normalizedCalculated) {
-                    // if (!bypassAgeValidation) { // Removed bypassAgeValidation
-                    console.log("Validation Failed: Showing warning.");
-                    const warningDiv = document.getElementById('ageValidationWarning');
-                    const messageP = document.getElementById('ageValidationMessage');
-                    if (warningDiv && messageP) {
-                        messageP.innerHTML = `
+                    if (normalizedSelected !== normalizedCalculated) {
+                        // if (!bypassAgeValidation) { // Removed bypassAgeValidation
+                        console.log("Validation Failed: Showing warning.");
+                        const warningDiv = document.getElementById('ageValidationWarning');
+                        const messageP = document.getElementById('ageValidationMessage');
+                        if (warningDiv && messageP) {
+                            messageP.innerHTML = `
                                     <strong>Athlete Age:</strong> ${rawAge}<br>
                                     <strong>Calculated Category:</strong> ${normalizedCalculated || 'None (Under 35)'}<br>
                                     <strong>Selected Category:</strong> ${normalizedSelected || 'None'}<br>
                                     <br>
                                     The selected category does not match the athlete's age (${rawAge}).
                                 `;
+                            warningDiv.classList.remove('hidden');
+                            warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            return;
+                        }
+                        // } else {
+                        //     console.log("Validation Bypassed by user.");
+                        //     bypassAgeValidation = false;
+                        // }
+                    }
+                } else if (athlete && !athlete.dob) {
+                    console.warn("Athlete has no Date of Birth. Age validation cannot be performed.");
+                    // if (!bypassAgeValidation) { // Removed bypassAgeValidation
+                    const warningDiv = document.getElementById('ageValidationWarning');
+                    const messageP = document.getElementById('ageValidationMessage');
+                    if (warningDiv && messageP) {
+                        messageP.innerHTML = `
+                                <strong>Warning:</strong> No Date of Birth found for this athlete.<br>
+                                <br>
+                                Age group validation cannot be performed automatically. Please verify the category manually.
+                            `;
                         warningDiv.classList.remove('hidden');
                         warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return;
                     }
                     // } else {
-                    //     console.log("Validation Bypassed by user.");
                     //     bypassAgeValidation = false;
                     // }
                 }
-            } else if (athlete && !athlete.dob) {
-                console.warn("Athlete has no Date of Birth. Age validation cannot be performed.");
-                // if (!bypassAgeValidation) { // Removed bypassAgeValidation
-                const warningDiv = document.getElementById('ageValidationWarning');
-                const messageP = document.getElementById('ageValidationMessage');
-                if (warningDiv && messageP) {
-                    messageP.innerHTML = `
-                                <strong>Warning:</strong> No Date of Birth found for this athlete.<br>
-                                <br>
-                                Age group validation cannot be performed automatically. Please verify the category manually.
-                            `;
-                    warningDiv.classList.remove('hidden');
-                    warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    return;
-                }
-                // } else {
-                //     bypassAgeValidation = false;
-                // }
             }
-        }
 
-        const newRecord = {
-            id: (editingId || editingHistoryId) ? (editingId || editingHistoryId) : Date.now(),
-            event: evtInput ? evtInput.value : '',
-            gender: genderInput ? genderInput.value : '',
-            ageGroup: ageGroupInput ? ageGroupInput.value : '',
-            trackType: trackTypeInput ? trackTypeInput.value : 'Outdoor',
-            athlete: selectedAthlete,
-            isRelay: isRelay,
-            // Approval Logic: Strictly Supervisors ONLY (or local override)
-            // Admins (harryscons) must PROPOSE edits.
-            approved: isSupervisor(currentUser ? currentUser.email : null),
-            relayParticipants: isRelay ? [
-                relayAthlete1.value,
-                relayAthlete2.value,
-                relayAthlete3.value,
-                relayAthlete4.value
-            ].filter(p => p !== '') : [],
-            raceName: raceName,
-            idr: idr,
-            notes: notesInput ? notesInput.value.trim() : '',
-            mark: markInput ? markInput.value : '',
-            wind: windInput ? windInput.value : '',
-            date: dateInput ? dateInput.value : '',
-            town: townInput ? townInput.value : '',
-            country: countryInput ? countryInput.value : '',
-            updatedBy: currentUser ? (currentUser.displayName || currentUser.email || 'Admin') : 'System'
-        };
+            const newRecord = {
+                id: (editingId || editingHistoryId) ? (editingId || editingHistoryId) : Date.now(),
+                event: evtInput ? evtInput.value : '',
+                gender: genderInput ? genderInput.value : '',
+                ageGroup: ageGroupInput ? ageGroupInput.value : '',
+                trackType: trackTypeInput ? trackTypeInput.value : 'Outdoor',
+                athlete: selectedAthlete,
+                isRelay: isRelay,
+                // Approval Logic: Strictly Supervisors ONLY (or local override)
+                // Admins (harryscons) must PROPOSE edits.
+                approved: isSupervisor(currentUser ? currentUser.email : null),
+                relayParticipants: isRelay ? [
+                    relayAthlete1.value,
+                    relayAthlete2.value,
+                    relayAthlete3.value,
+                    relayAthlete4.value
+                ].filter(p => p !== '') : [],
+                raceName: raceName,
+                idr: idr,
+                notes: notesInput ? notesInput.value.trim() : '',
+                mark: markInput ? markInput.value : '',
+                wind: windInput ? windInput.value : '',
+                date: dateInput ? dateInput.value : '',
+                town: townInput ? townInput.value : '',
+                country: countryInput ? countryInput.value : '',
+                updatedBy: currentUser ? (currentUser.displayName || currentUser.email || 'Admin') : 'System'
+            };
 
-        // Calculate WMA stats for new record
-        calculateRecordWMAStats(newRecord);
+            // Calculate WMA stats for new record
+            calculateRecordWMAStats(newRecord);
 
-        if (editingHistoryId) {
-            // Update History Record
-            const index = history.findIndex(r => r.id === editingHistoryId);
-            if (index !== -1) {
-                // Keep original archive timestamp
-                newRecord.archivedAt = history[index].archivedAt;
-                history[index] = newRecord;
-                saveHistory();
-                renderHistoryList();
-            }
-            submitBtn.querySelector('span').textContent = 'History Updated! ✓';
-            setTimeout(() => {
-                cancelEdit();
-                switchTab('history');
-            }, 1000);
-        } else if (editingId) {
-            // Edit Live Record
-            const index = records.findIndex(r => r.id === editingId);
-            if (index !== -1) {
-                const originalRecord = records[index];
-
-                // Logic: 
-                // If Supervisor: Update directly, archive old.
-                // If Non-Supervisor: Create NEW pending record, do NOT touch old yet.
-
-                const isSup = isSupervisor(currentUser ? currentUser.email : null);
-
-                if (isSup) {
-                    // Supervisor Direct Edit -> Archive Old
-                    const oldRecordData = { ...originalRecord };
-                    oldRecordData.archivedAt = new Date().toISOString();
-                    oldRecordData.originalId = oldRecordData.id; // Link to original
-                    if (!oldRecordData.updatedBy) oldRecordData.updatedBy = 'System';
-                    // Unique ID for history
-                    oldRecordData.id = Date.now() + Math.random();
-
-                    history.unshift(oldRecordData);
+            if (editingHistoryId) {
+                // Update History Record
+                const index = history.findIndex(r => r.id === editingHistoryId);
+                if (index !== -1) {
+                    // Keep original archive timestamp
+                    newRecord.archivedAt = history[index].archivedAt;
+                    history[index] = newRecord;
                     saveHistory();
+                    renderHistoryList();
+                }
+                submitBtn.querySelector('span').textContent = 'History Updated! ✓';
+                setTimeout(() => {
+                    cancelEdit();
+                    switchTab('history');
+                }, 1000);
+            } else if (editingId) {
+                // Edit Live Record
+                const index = records.findIndex(r => r.id === editingId);
+                if (index !== -1) {
+                    const originalRecord = records[index];
 
-                    // Update Live Record in place
-                    // Ensure ID remains same to maintain history linkage? 
-                    // Actually, if we keep ID, external links break? No, usually keep ID.
-                    // But newRecord has `editingId` as ID.
-                    records[index] = newRecord;
+                    // Logic: 
+                    // If Supervisor: Update directly, archive old.
+                    // If Non-Supervisor: Create NEW pending record, do NOT touch old yet.
 
-                    submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
-                } else {
-                    // Non-Supervisor -> Propose Edit (New Pending Record)
-                    // Do NOT archive old yet.
-                    // New record ID is already set to `editingId` in code above? 
-                    // Wait, `newRecord.id` uses `editingId` if set.
-                    // We need a NEW ID for the pending record, but we must link to `editingId` as `replacesId`.
+                    const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
-                    newRecord.id = Date.now() + Math.random();
-                    newRecord.replacesId = editingId; // The ID of the record being edited
-                    newRecord.approved = false; // Force false
+                    if (isSup) {
+                        // Supervisor Direct Edit -> Archive Old
+                        const oldRecordData = { ...originalRecord };
+                        oldRecordData.archivedAt = new Date().toISOString();
+                        oldRecordData.originalId = oldRecordData.id; // Link to original
+                        if (!oldRecordData.updatedBy) oldRecordData.updatedBy = 'System';
+                        // Unique ID for history
+                        oldRecordData.id = Date.now() + Math.random();
 
-                    records.unshift(newRecord);
+                        history.unshift(oldRecordData);
+                        saveHistory();
 
-                    submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
-                    alert("Your edit has been submitted for approval. Both the original and your proposed change are now visible.");
+                        // Update Live Record in place
+                        // Ensure ID remains same to maintain history linkage? 
+                        // Actually, if we keep ID, external links break? No, usually keep ID.
+                        // But newRecord has `editingId` as ID.
+                        records[index] = newRecord;
+
+                        submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
+                    } else {
+                        // Non-Supervisor -> Propose Edit (New Pending Record)
+                        // Do NOT archive old yet.
+                        // New record ID is already set to `editingId` in code above? 
+                        // Wait, `newRecord.id` uses `editingId` if set.
+                        // We need a NEW ID for the pending record, but we must link to `editingId` as `replacesId`.
+
+                        newRecord.id = Date.now() + Math.random();
+                        newRecord.replacesId = editingId; // The ID of the record being edited
+                        newRecord.approved = false; // Force false
+
+                        records.unshift(newRecord);
+
+                        submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
+                        alert("Your edit has been submitted for approval. Both the original and your proposed change are now visible.");
+                    }
+                }
+                setTimeout(() => cancelEdit(), 1000);
+            } else {
+                records.unshift(newRecord);
+                submitBtn.querySelector('span').textContent = 'Logged! ✓';
+                setTimeout(() => submitBtn.querySelector('span').textContent = 'Log Record', 1500);
+                recordForm.reset();
+                if (datePicker) {
+                    datePicker.setDate(new Date());
+                } else if (dateInput && dateInput.type === 'date') {
+                    dateInput.valueAsDate = new Date();
+                } else if (dateInput) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
                 }
             }
-            setTimeout(() => cancelEdit(), 1000);
-        } else {
-            records.unshift(newRecord);
-            submitBtn.querySelector('span').textContent = 'Logged! ✓';
-            setTimeout(() => submitBtn.querySelector('span').textContent = 'Log Record', 1500);
-            recordForm.reset();
-            if (datePicker) {
-                datePicker.setDate(new Date());
-            } else if (dateInput && dateInput.type === 'date') {
-                dateInput.valueAsDate = new Date();
-            } else if (dateInput) {
-                dateInput.value = new Date().toISOString().split('T')[0];
+            saveRecords();
+            populateYearDropdown();
+            renderReports();
+            renderAthleteList();
+        } catch (error) {
+            console.error("Form Submit Error:", error);
+            alert("Error saving record: " + error.message);
+        }
+    }
+
+    function renderHistoryList() {
+        const tbody = document.getElementById('historyListBody');
+        const empty = document.getElementById('historyEmptyState');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        if (history.length === 0) {
+            if (empty) empty.classList.remove('hidden');
+            return;
+        }
+        if (empty) empty.classList.add('hidden');
+
+        history.forEach(r => {
+            const tr = document.createElement('tr');
+            // Find immediate successor (The record that replaced this one)
+            // 1. Get all archived versions of this record
+            const versions = history.filter(h => h.originalId === r.originalId).sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
+            const currentIndex = versions.findIndex(v => v.id === r.id);
+
+            let successor = null;
+            let successorLabel = '';
+
+            if (currentIndex !== -1 && currentIndex < versions.length - 1) {
+                // Formatting: Successor is the NEXT history item (intermediate version)
+                successor = versions[currentIndex + 1];
+                successorLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
+            } else {
+                // Successor is the current Live record
+                successor = records.find(curr => curr.id === r.originalId);
+                successorLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
             }
-        }
-        saveRecords();
-        populateYearDropdown();
-        renderReports();
-        renderAthleteList();
-    } catch (error) {
-        console.error("Form Submit Error:", error);
-        alert("Error saving record: " + error.message);
-    }
-}
 
-function renderHistoryList() {
-    const tbody = document.getElementById('historyListBody');
-    const empty = document.getElementById('historyEmptyState');
-    if (!tbody) return;
+            // Note: Local Admin is considered Supervisor based on isSupervisor logic
+            const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
-    tbody.innerHTML = '';
-    if (history.length === 0) {
-        if (empty) empty.classList.remove('hidden');
-        return;
-    }
-    if (empty) empty.classList.add('hidden');
-
-    history.forEach(r => {
-        const tr = document.createElement('tr');
-        // Find immediate successor (The record that replaced this one)
-        // 1. Get all archived versions of this record
-        const versions = history.filter(h => h.originalId === r.originalId).sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
-        const currentIndex = versions.findIndex(v => v.id === r.id);
-
-        let successor = null;
-        let successorLabel = '';
-
-        if (currentIndex !== -1 && currentIndex < versions.length - 1) {
-            // Formatting: Successor is the NEXT history item (intermediate version)
-            successor = versions[currentIndex + 1];
-            successorLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
-        } else {
-            // Successor is the current Live record
-            successor = records.find(curr => curr.id === r.originalId);
-            successorLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
-        }
-
-        // Note: Local Admin is considered Supervisor based on isSupervisor logic
-        const isSup = isSupervisor(currentUser ? currentUser.email : null);
-
-        tr.innerHTML = `
+            tr.innerHTML = `
                 <td style="text-align:center;">
                     ${successor ? `<button class="btn-icon expand-btn" data-id="${r.id}" style="font-weight:bold; color:var(--primary); cursor:pointer;">+</button>` : ''}
                 </td>
@@ -3571,13 +3566,13 @@ function renderHistoryList() {
                     <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>
                 </td>
             `;
-        tbody.appendChild(tr);
+            tbody.appendChild(tr);
 
-        if (successor) {
-            const trDetail = document.createElement('tr');
-            trDetail.className = 'detail-row hidden';
-            trDetail.id = `detail-hist-${r.id}`;
-            trDetail.innerHTML = `
+            if (successor) {
+                const trDetail = document.createElement('tr');
+                trDetail.className = 'detail-row hidden';
+                trDetail.id = `detail-hist-${r.id}`;
+                trDetail.innerHTML = `
                     <td colspan="1" style="border-top:none; background:transparent;"></td>
                     <td colspan="11" style="padding: 8px 10px; border-top:none; background: rgba(16, 185, 129, 0.1);">
                         <div style="display:flex; flex-direction:column; gap:4px;">
@@ -3593,502 +3588,503 @@ function renderHistoryList() {
                         </div>
                     </td>
                 `;
-            tbody.appendChild(trDetail);
+                tbody.appendChild(trDetail);
+            }
+        });
+    }
+
+    function editHistory(id) {
+        if (!isSupervisor(currentUser ? currentUser.email : null)) {
+            alert("Only Supervisors can edit history.");
+            return;
         }
-    });
-}
+        switchTab('log');
+        // Use loose equality to handle potential string/number mismatches from DOM
+        const r = history.find(item => item.id == id);
+        if (!r) return;
 
-function editHistory(id) {
-    if (!isSupervisor(currentUser ? currentUser.email : null)) {
-        alert("Only Supervisors can edit history.");
-        return;
-    }
-    switchTab('log');
-    // Use loose equality to handle potential string/number mismatches from DOM
-    const r = history.find(item => item.id == id);
-    if (!r) return;
-
-    if (evtInput) evtInput.value = r.event;
-    if (athleteInput) athleteInput.value = r.athlete;
-    if (genderInput) genderInput.value = r.gender || '';
-    if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
-    if (raceNameInput) raceNameInput.value = r.raceName || '';
-    if (notesInput) notesInput.value = r.notes || '';
-    if (markInput) markInput.value = r.mark;
-    if (windInput) windInput.value = r.wind || '';
-
-    if (dateInput) {
-        if (datePicker) datePicker.setDate(r.date);
-        else dateInput.value = r.date;
-    }
-
-    if (townInput) townInput.value = r.town || '';
-    if (countryInput) countryInput.value = r.country || '';
-
-    editingHistoryId = id;
-    editingId = null; // Ensure we are not editing a live record
-
-    formTitle.textContent = 'Edit Archived Record';
-    formTitle.style.color = 'var(--text-muted)';
-    submitBtn.querySelector('span').textContent = 'Update Archive';
-    submitBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)'; // Purple for history
-    cancelBtn.classList.remove('hidden');
-    recordForm.scrollIntoView({ behavior: 'smooth' });
-}
-
-function deleteHistory(id) {
-    if (!isSupervisor(currentUser ? currentUser.email : null)) {
-        alert("Only Supervisors can delete history records.");
-        return;
-    }
-    if (!confirm('Permanently delete this archived record?')) return;
-    history = history.filter(h => h.id != id);
-    saveHistory();
-    renderHistoryList();
-}
-
-function handleMixedGenderVisibility(eventName) {
-    const genderSelect = document.getElementById('gender');
-    const optMixed = document.getElementById('optMixed');
-    if (!genderSelect || !optMixed) return;
-
-    // Find event definition
-    const ev = events.find(e => e.name === eventName);
-    const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
-
-    if (isRelay) {
-        optMixed.hidden = false;
-        optMixed.disabled = false;
-    } else {
-        optMixed.hidden = true;
-        optMixed.disabled = true;
-        // Reset if Mixed was selected for non-relay
-        if (genderSelect.value === 'Mixed') {
-            genderSelect.value = '';
-        }
-    }
-}
-
-function toggleRelayFields(isRelay) {
-    const athleteSelect = document.getElementById('athlete');
-    const teamInput = document.getElementById('relayTeamName');
-    const athleteLabel = document.getElementById('athleteLabel');
-    const participantsSection = document.getElementById('relayParticipantsSection');
-
-    if (isRelay) {
-        if (athleteSelect) {
-            athleteSelect.classList.add('hidden');
-            athleteSelect.required = false;
-        }
-        if (teamInput) {
-            teamInput.classList.remove('hidden');
-            teamInput.required = true;
-        }
-        if (athleteLabel) athleteLabel.textContent = 'Team Name';
-        if (participantsSection) participantsSection.classList.remove('hidden');
-
-        // Only populate if genderInput exists
-        if (typeof genderInput !== 'undefined' && genderInput) {
-            populateRelayAthletes(genderInput.value);
-        }
-    } else {
-        if (athleteSelect) {
-            athleteSelect.classList.remove('hidden');
-            athleteSelect.required = true;
-        }
-        if (teamInput) {
-            teamInput.classList.add('hidden');
-            teamInput.required = false;
-        }
-        if (athleteLabel) athleteLabel.textContent = 'Athlete Name';
-        if (participantsSection) participantsSection.classList.add('hidden');
-    }
-}
-
-function editRecord(id) {
-    console.log("✏️ editRecord called for ID:", id);
-
-    // Save the current tab so we can return to it after save/cancel
-    const activeView = document.querySelector('.view-section.active-view');
-    if (activeView) {
-        previousTab = activeView.id.replace('view-', '');
-    }
-
-    switchTab('log');
-    const r = records.find(item => item.id === id);
-
-    if (!r) {
-        console.error("❌ Record not found for ID:", id);
-        alert("Error: Record not found!");
-        return;
-    }
-
-    console.log("✅ Record found:", r);
-
-    // Explicitly select elements to ensure we have them
-    const evtInput = document.getElementById('event');
-    const genderInput = document.getElementById('gender');
-    const athleteInput = document.getElementById('athlete');
-    const ageGroupInput = document.getElementById('ageGroup');
-    const trackTypeInput = document.getElementById('trackType');
-    const raceNameInput = document.getElementById('raceName');
-    const notesInput = document.getElementById('notes');
-    const markInput = document.getElementById('mark');
-    const windInput = document.getElementById('wind');
-    const idrInput = document.getElementById('idr');
-    const dateInput = document.getElementById('date');
-    const townInput = document.getElementById('town');
-    const countryInput = document.getElementById('country');
-
-    const relayTeamNameInput = document.getElementById('relayTeamName');
-    const relayAthlete1 = document.getElementById('relayAthlete1');
-    const relayAthlete2 = document.getElementById('relayAthlete2');
-    const relayAthlete3 = document.getElementById('relayAthlete3');
-    const relayAthlete4 = document.getElementById('relayAthlete4');
-
-    const ev = events.find(e => e.name === r.event);
-    const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
-    toggleRelayFields(isRelay);
-
-    // Populate Fields with Debugging
-    if (evtInput) {
-        evtInput.value = r.event || '';
-        console.log("Set Event:", evtInput.value);
-        // Trigger change event to filter/update other dropdowns if needed
-        evtInput.dispatchEvent(new Event('change'));
-    }
-
-    // Wait a tiny bit for event listeners (like filtering athletes) to run? 
-    // No, assuming synchronous for now, but let's set gender.
-    if (genderInput) {
-        genderInput.value = r.gender || '';
-        populateRelayAthletes(r.gender || '');
-        // Trigger change to update Age Groups
-        genderInput.dispatchEvent(new Event('change'));
-    }
-
-    // Need to wait for Age Groups to populate?
-    // Wait a tiny bit for UI state to settle if needed
-    setTimeout(() => {
+        if (evtInput) evtInput.value = r.event;
+        if (athleteInput) athleteInput.value = r.athlete;
+        if (genderInput) genderInput.value = r.gender || '';
         if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
-    }, 50);
+        if (raceNameInput) raceNameInput.value = r.raceName || '';
+        if (notesInput) notesInput.value = r.notes || '';
+        if (markInput) markInput.value = r.mark;
+        if (windInput) windInput.value = r.wind || '';
 
-    if (isRelay) {
-        if (relayTeamNameInput) relayTeamNameInput.value = r.athlete || '';
-        const p = r.relayParticipants || [];
-        if (relayAthlete1) relayAthlete1.value = p[0] || '';
-        if (relayAthlete2) relayAthlete2.value = p[1] || '';
-        if (relayAthlete3) relayAthlete3.value = p[2] || '';
-        if (relayAthlete4) relayAthlete4.value = p[3] || '';
-    } else {
-        // Delay athlete setting slightly to ensure list is populated if it depends on Event/Gender
+        if (dateInput) {
+            if (datePicker) datePicker.setDate(r.date);
+            else dateInput.value = r.date;
+        }
+
+        if (townInput) townInput.value = r.town || '';
+        if (countryInput) countryInput.value = r.country || '';
+
+        editingHistoryId = id;
+        editingId = null; // Ensure we are not editing a live record
+
+        formTitle.textContent = 'Edit Archived Record';
+        formTitle.style.color = 'var(--text-muted)';
+        submitBtn.querySelector('span').textContent = 'Update Archive';
+        submitBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)'; // Purple for history
+        cancelBtn.classList.remove('hidden');
+        recordForm.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function deleteHistory(id) {
+        if (!isSupervisor(currentUser ? currentUser.email : null)) {
+            alert("Only Supervisors can delete history records.");
+            return;
+        }
+        if (!confirm('Permanently delete this archived record?')) return;
+        history = history.filter(h => h.id != id);
+        saveHistory();
+        renderHistoryList();
+    }
+
+    function handleMixedGenderVisibility(eventName) {
+        const genderSelect = document.getElementById('gender');
+        const optMixed = document.getElementById('optMixed');
+        if (!genderSelect || !optMixed) return;
+
+        // Find event definition
+        const ev = events.find(e => e.name === eventName);
+        const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
+
+        if (isRelay) {
+            optMixed.hidden = false;
+            optMixed.disabled = false;
+        } else {
+            optMixed.hidden = true;
+            optMixed.disabled = true;
+            // Reset if Mixed was selected for non-relay
+            if (genderSelect.value === 'Mixed') {
+                genderSelect.value = '';
+            }
+        }
+    }
+
+    function toggleRelayFields(isRelay) {
+        const athleteSelect = document.getElementById('athlete');
+        const teamInput = document.getElementById('relayTeamName');
+        const athleteLabel = document.getElementById('athleteLabel');
+        const participantsSection = document.getElementById('relayParticipantsSection');
+
+        if (isRelay) {
+            if (athleteSelect) {
+                athleteSelect.classList.add('hidden');
+                athleteSelect.required = false;
+            }
+            if (teamInput) {
+                teamInput.classList.remove('hidden');
+                teamInput.required = true;
+            }
+            if (athleteLabel) athleteLabel.textContent = 'Team Name';
+            if (participantsSection) participantsSection.classList.remove('hidden');
+
+            // Only populate if genderInput exists
+            if (typeof genderInput !== 'undefined' && genderInput) {
+                populateRelayAthletes(genderInput.value);
+            }
+        } else {
+            if (athleteSelect) {
+                athleteSelect.classList.remove('hidden');
+                athleteSelect.required = true;
+            }
+            if (teamInput) {
+                teamInput.classList.add('hidden');
+                teamInput.required = false;
+            }
+            if (athleteLabel) athleteLabel.textContent = 'Athlete Name';
+            if (participantsSection) participantsSection.classList.add('hidden');
+        }
+    }
+
+    function editRecord(id) {
+        console.log("✏️ editRecord called for ID:", id);
+
+        // Save the current tab so we can return to it after save/cancel
+        const activeView = document.querySelector('.view-section.active-view');
+        if (activeView) {
+            previousTab = activeView.id.replace('view-', '');
+        }
+
+        switchTab('log');
+        const r = records.find(item => item.id === id);
+
+        if (!r) {
+            console.error("❌ Record not found for ID:", id);
+            alert("Error: Record not found!");
+            return;
+        }
+
+        console.log("✅ Record found:", r);
+
+        // Explicitly select elements to ensure we have them
+        const evtInput = document.getElementById('event');
+        const genderInput = document.getElementById('gender');
+        const athleteInput = document.getElementById('athlete');
+        const ageGroupInput = document.getElementById('ageGroup');
+        const trackTypeInput = document.getElementById('trackType');
+        const raceNameInput = document.getElementById('raceName');
+        const notesInput = document.getElementById('notes');
+        const markInput = document.getElementById('mark');
+        const windInput = document.getElementById('wind');
+        const idrInput = document.getElementById('idr');
+        const dateInput = document.getElementById('date');
+        const townInput = document.getElementById('town');
+        const countryInput = document.getElementById('country');
+
+        const relayTeamNameInput = document.getElementById('relayTeamName');
+        const relayAthlete1 = document.getElementById('relayAthlete1');
+        const relayAthlete2 = document.getElementById('relayAthlete2');
+        const relayAthlete3 = document.getElementById('relayAthlete3');
+        const relayAthlete4 = document.getElementById('relayAthlete4');
+
+        const ev = events.find(e => e.name === r.event);
+        const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
+        toggleRelayFields(isRelay);
+
+        // Populate Fields with Debugging
+        if (evtInput) {
+            evtInput.value = r.event || '';
+            console.log("Set Event:", evtInput.value);
+            // Trigger change event to filter/update other dropdowns if needed
+            evtInput.dispatchEvent(new Event('change'));
+        }
+
+        // Wait a tiny bit for event listeners (like filtering athletes) to run? 
+        // No, assuming synchronous for now, but let's set gender.
+        if (genderInput) {
+            genderInput.value = r.gender || '';
+            populateRelayAthletes(r.gender || '');
+            // Trigger change to update Age Groups
+            genderInput.dispatchEvent(new Event('change'));
+        }
+
+        // Need to wait for Age Groups to populate?
+        // Wait a tiny bit for UI state to settle if needed
         setTimeout(() => {
-            if (athleteInput && r.athlete) {
-                const athleteName = r.athlete.trim();
-                athleteInput.value = athleteName;
-                if (athleteInput.value !== athleteName) {
-                    console.warn(`Failed to set athlete. Expected: "${athleteName}", Got: "${athleteInput.value}"`);
-                    // Fallback: Check if option exists, if not, maybe add it?
+            if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
+        }, 50);
+
+        if (isRelay) {
+            if (relayTeamNameInput) relayTeamNameInput.value = r.athlete || '';
+            const p = r.relayParticipants || [];
+            if (relayAthlete1) relayAthlete1.value = p[0] || '';
+            if (relayAthlete2) relayAthlete2.value = p[1] || '';
+            if (relayAthlete3) relayAthlete3.value = p[2] || '';
+            if (relayAthlete4) relayAthlete4.value = p[3] || '';
+        } else {
+            // Delay athlete setting slightly to ensure list is populated if it depends on Event/Gender
+            setTimeout(() => {
+                if (athleteInput && r.athlete) {
+                    const athleteName = r.athlete.trim();
+                    athleteInput.value = athleteName;
+                    if (athleteInput.value !== athleteName) {
+                        console.warn(`Failed to set athlete. Expected: "${athleteName}", Got: "${athleteInput.value}"`);
+                        // Fallback: Check if option exists, if not, maybe add it?
+                    }
+                }
+            }, 50);
+        }
+
+        if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
+        if (raceNameInput) raceNameInput.value = r.raceName || '';
+        if (notesInput) notesInput.value = r.notes || '';
+        if (markInput) markInput.value = r.mark;
+        if (windInput) windInput.value = r.wind || '';
+        if (idrInput) idrInput.value = r.idr || '';
+
+        if (dateInput) {
+            if (datePicker) {
+                datePicker.setDate(r.date);
+            } else {
+                dateInput.value = r.date;
+            }
+        }
+
+        if (townInput) townInput.value = r.town || '';
+        if (countryInput) countryInput.value = r.country || '';
+
+        editingId = id;
+        editingHistoryId = null;
+
+        if (formTitle) formTitle.textContent = 'Edit Record (Archives Old)';
+        if (submitBtn) {
+            submitBtn.querySelector('span').textContent = 'Update & Archive';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
+        }
+        if (cancelBtn) cancelBtn.classList.remove('hidden');
+        if (recordForm) recordForm.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+        const wasEditingHistory = !!editingHistoryId;
+        const returnTab = previousTab; // Save before resetting
+
+        editingId = null;
+        editingHistoryId = null;
+        previousTab = null; // Reset
+        recordForm.reset();
+        toggleRelayFields(false); // Reset to individual view
+
+        if (datePicker) {
+            datePicker.setDate(new Date());
+        } else if (dateInput && dateInput.type === 'date') {
+            dateInput.valueAsDate = new Date();
+        } else if (dateInput) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+
+        formTitle.textContent = 'Log New Record';
+        formTitle.style.color = '';
+        submitBtn.querySelector('span').textContent = 'Log Record';
+        submitBtn.style.background = '';
+        cancelBtn.classList.add('hidden');
+
+        // Return to previous tab or history if editing history
+        if (wasEditingHistory) {
+            switchTab('history');
+        } else if (returnTab && returnTab !== 'log') {
+            switchTab(returnTab);
+        }
+    }
+
+    function deleteRecord(id) {
+        if (!isSupervisor(currentUser ? currentUser.email : null)) {
+            alert("Only Supervisors can delete records.");
+            return;
+        }
+        if (!confirm('Delete this record?')) return;
+        const initialCount = records.length;
+
+        // Use loose comparison or string conversion to be safe against type mismatches
+        records = records.filter(r => String(r.id) !== String(id));
+
+        if (records.length === initialCount) {
+            console.warn("No record found with id:", id);
+            return;
+        }
+
+        if (editingId === id) cancelEdit();
+
+        // Inline save for immediate persistence
+        localStorage.setItem('tf_records', JSON.stringify(records));
+
+        saveRecords();
+        populateYearDropdown();
+        renderReports();
+        renderEventList();
+        renderAthleteList();
+        console.log(`Deleted record ${id}. Remaining: ${records.length}`);
+    }
+
+    function clearAllData() {
+        if (confirm('Are you sure you want to clear ALL data?')) {
+            records = [];
+            localStorage.clear();
+            // Set to current SEED_VERSION to prevent re-seeding empty database on reload
+            localStorage.setItem('tf_relays_seed_version', '6');
+            location.reload();
+        }
+    }
+
+    function saveRecords() {
+        // ALWAYS save to LocalStorage first (Synchronous Backup)
+        try {
+            localStorage.setItem('tf_records', JSON.stringify(records));
+        } catch (e) {
+            console.error("Local Save Failed:", e);
+        }
+
+        if (!isDataReady) {
+            console.warn("Cloud Save aborted: System not ready (Synchronization in progress). Local backup saved.");
+            return;
+        }
+
+        if (db) {
+            db.ref('records').set(records).catch(err => console.error("Firebase Save Failed:", err));
+        }
+        populateAthleteFilter();
+    }
+
+    function genderFilterChange() { renderReports(); }
+
+    function getFilteredRecords() {
+        const eVal = filterEvent ? filterEvent.value : 'all';
+        const gVal = filterGender ? filterGender.value : 'all';
+        const aVal = filterAge ? filterAge.value : 'all';
+        const yVal = filterYear ? filterYear.value : 'all';
+        const athleteVal = filterAthlete ? filterAthlete.value : 'all';
+        const nameSearch = filterAthleteName ? filterAthleteName.value.toLowerCase().trim() : '';
+        const mVal = filterAgeMismatch ? filterAgeMismatch.value : 'all';
+        const ttVal = filterTrackType ? filterTrackType.value : 'all';
+
+        const filtered = records.filter(r => {
+            const rTrackType = r.trackType || 'Outdoor';
+            const matchesTrackType = ttVal === 'all' || rTrackType === ttVal;
+            const matchesEvent = eVal === 'all' || r.event === eVal;
+            const matchesGender = gVal === 'all' || r.gender === gVal;
+            const matchesAge = aVal === 'all' || r.ageGroup === aVal;
+            const matchesAthlete = athleteVal === 'all' || r.athlete === athleteVal;
+            const matchesSearch = nameSearch === '' || r.athlete.toLowerCase().includes(nameSearch);
+
+            // Year filter
+            let matchesYear = true;
+            if (yVal !== 'all') {
+                const rYear = r.date ? new Date(r.date).getFullYear().toString() : '';
+                matchesYear = rYear === yVal;
+            }
+
+            // Age Mismatch Filter
+            let matchesMismatch = true;
+            if (mVal !== 'all') {
+                const athlete = findAthleteByNormalizedName(r.athlete);
+                let isMismatch = false;
+                if (r.ageGroup && athlete && athlete.dob && r.date) {
+                    const calculatedGroup = calculateAgeGroup(athlete.dob, r.date);
+                    if (String(r.ageGroup).trim() !== String(calculatedGroup).trim()) {
+                        isMismatch = true;
+                    }
+                }
+
+                if (mVal === 'issue') {
+                    matchesMismatch = isMismatch;
+                } else if (mVal === 'valid') {
+                    matchesMismatch = !isMismatch;
                 }
             }
-        }, 50);
+
+            return matchesTrackType && matchesEvent && matchesGender && matchesAge && matchesYear && matchesMismatch && matchesAthlete && matchesSearch;
+        });
+
+        // Apply Sorting
+        filtered.sort((a, b) => {
+            let valA, valB;
+            const direction = currentSort.direction === 'asc' ? 1 : -1;
+
+            switch (currentSort.column) {
+                case 'date':
+                    return (new Date(a.date) - new Date(b.date)) * direction;
+                case 'athlete':
+                    return a.athlete.localeCompare(b.athlete) * direction;
+                case 'event':
+                    return a.event.localeCompare(b.event) * direction;
+                case 'mark':
+                    // Numeric sort for marks if possible
+                    valA = parseFloat(a.mark.replace(/:/g, '')) || 0;
+                    valB = parseFloat(b.mark.replace(/:/g, '')) || 0;
+                    if (valA !== valB) return (valA - valB) * direction;
+                    return a.mark.localeCompare(b.mark, undefined, { numeric: true }) * direction;
+                case 'ageGroup':
+                    return ((parseInt(a.ageGroup) || 0) - (parseInt(b.ageGroup) || 0)) * direction;
+                case 'gender':
+                    return (a.gender || '').localeCompare(b.gender || '') * direction;
+                case 'town':
+                    return (a.town || '').localeCompare(b.town || '') * direction;
+                case 'raceName':
+                    return (a.raceName || '').localeCompare(b.raceName || '') * direction;
+                case 'wind':
+                    return (parseFloat(a.wind) || 0 - parseFloat(b.wind) || 0) * direction;
+                case 'idr':
+                    return (parseInt(a.idr) || 0 - parseInt(b.idr) || 0) * direction;
+                default:
+                    return (new Date(a.date) - new Date(b.date)) * direction;
+            }
+        });
+
+        return filtered;
     }
 
-    if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
-    if (raceNameInput) raceNameInput.value = r.raceName || '';
-    if (notesInput) notesInput.value = r.notes || '';
-    if (markInput) markInput.value = r.mark;
-    if (windInput) windInput.value = r.wind || '';
-    if (idrInput) idrInput.value = r.idr || '';
+    function setupTableSorting() {
+        const headers = document.querySelectorAll('th.sortable');
+        headers.forEach(th => {
+            th.addEventListener('click', () => {
+                const column = th.dataset.sort;
+                if (currentSort.column === column) {
+                    // Toggle direction
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    // New column, default to asc (except date/mark maybe?)
+                    currentSort.column = column;
+                    currentSort.direction = ['date', 'mark'].includes(column) ? 'desc' : 'asc';
+                }
 
-    if (dateInput) {
-        if (datePicker) {
-            datePicker.setDate(r.date);
-        } else {
-            dateInput.value = r.date;
-        }
+                updateSortUI();
+                renderReports();
+            });
+        });
+        updateSortUI(); // Set initial state
     }
 
-    if (townInput) townInput.value = r.town || '';
-    if (countryInput) countryInput.value = r.country || '';
+    function updateSortUI() {
+        const headers = document.querySelectorAll('th.sortable');
+        headers.forEach(th => {
+            th.classList.remove('asc', 'desc');
+            if (th.dataset.sort === currentSort.column) {
+                th.classList.add(currentSort.direction);
+            }
+        });
 
-    editingId = id;
-    editingHistoryId = null;
-
-    if (formTitle) formTitle.textContent = 'Edit Record (Archives Old)';
-    if (submitBtn) {
-        submitBtn.querySelector('span').textContent = 'Update & Archive';
-        submitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
-    }
-    if (cancelBtn) cancelBtn.classList.remove('hidden');
-    if (recordForm) recordForm.scrollIntoView({ behavior: 'smooth' });
-}
-
-function cancelEdit() {
-    const wasEditingHistory = !!editingHistoryId;
-    const returnTab = previousTab; // Save before resetting
-
-    editingId = null;
-    editingHistoryId = null;
-    previousTab = null; // Reset
-    recordForm.reset();
-    toggleRelayFields(false); // Reset to individual view
-
-    if (datePicker) {
-        datePicker.setDate(new Date());
-    } else if (dateInput && dateInput.type === 'date') {
-        dateInput.valueAsDate = new Date();
-    } else if (dateInput) {
-        dateInput.value = new Date().toISOString().split('T')[0];
     }
 
-    formTitle.textContent = 'Log New Record';
-    formTitle.style.color = '';
-    submitBtn.querySelector('span').textContent = 'Log Record';
-    submitBtn.style.background = '';
-    cancelBtn.classList.add('hidden');
 
-    // Return to previous tab or history if editing history
-    if (wasEditingHistory) {
-        switchTab('history');
-    } else if (returnTab && returnTab !== 'log') {
-        switchTab(returnTab);
-    }
-}
+    // Helper to toggle age in-place temporarily
+    window.showExactAge = function (el, age) {
+        if (el.dataset.isToggled === 'true') return;
 
-function deleteRecord(id) {
-    if (!isSupervisor(currentUser ? currentUser.email : null)) {
-        alert("Only Supervisors can delete records.");
-        return;
-    }
-    if (!confirm('Delete this record?')) return;
-    const initialCount = records.length;
+        const originalText = el.textContent;
 
-    // Use loose comparison or string conversion to be safe against type mismatches
-    records = records.filter(r => String(r.id) !== String(id));
+        // Change to Success State
+        el.dataset.isToggled = 'true';
+        el.textContent = age;
+        el.style.backgroundColor = 'var(--success)'; // Green background
+        el.style.borderColor = 'var(--success)';
+        el.style.color = 'white';
+        el.style.transform = 'scale(1.1)';
+        el.style.transition = 'all 0.2s';
 
-    if (records.length === initialCount) {
-        console.warn("No record found with id:", id);
-        return;
-    }
+        setTimeout(() => {
+            // Revert
+            el.dataset.isToggled = 'false';
+            el.textContent = originalText;
+            el.style.backgroundColor = '';
+            el.style.borderColor = '';
+            el.style.color = '';
+            el.style.transform = '';
+        }, 2000);
+    };
 
-    if (editingId === id) cancelEdit();
+    function renderReports() {
+        if (!reportTableBody) return;
+        console.log("renderReports called");
+        reportTableBody.innerHTML = '';
 
-    // Inline save for immediate persistence
-    localStorage.setItem('tf_records', JSON.stringify(records));
+        const filtered = getFilteredRecords();
+        const isHideNotesChecked = hideNotesSymbol && hideNotesSymbol.checked;
 
-    saveRecords();
-    populateYearDropdown();
-    renderReports();
-    renderEventList();
-    renderAthleteList();
-    console.log(`Deleted record ${id}. Remaining: ${records.length}`);
-}
+        if (filtered.length === 0) return;
+        // Sort applied in getFilteredRecords
 
-function clearAllData() {
-    if (confirm('Are you sure you want to clear ALL data?')) {
-        records = [];
-        localStorage.clear();
-        // Set to current SEED_VERSION to prevent re-seeding empty database on reload
-        localStorage.setItem('tf_relays_seed_version', '6');
-        location.reload();
-    }
-}
+        filtered.forEach(r => {
+            const tr = document.createElement('tr');
+            const hasNotes = r.notes && r.notes.trim().length > 0;
 
-function saveRecords() {
-    // ALWAYS save to LocalStorage first (Synchronous Backup)
-    try {
-        localStorage.setItem('tf_records', JSON.stringify(records));
-    } catch (e) {
-        console.error("Local Save Failed:", e);
-    }
-
-    if (!isDataReady) {
-        console.warn("Cloud Save aborted: System not ready (Synchronization in progress). Local backup saved.");
-        return;
-    }
-
-    if (db) {
-        db.ref('records').set(records).catch(err => console.error("Firebase Save Failed:", err));
-    }
-    populateAthleteFilter();
-}
-
-function genderFilterChange() { renderReports(); }
-
-function getFilteredRecords() {
-    const eVal = filterEvent ? filterEvent.value : 'all';
-    const gVal = filterGender ? filterGender.value : 'all';
-    const aVal = filterAge ? filterAge.value : 'all';
-    const yVal = filterYear ? filterYear.value : 'all';
-    const athleteVal = filterAthlete ? filterAthlete.value : 'all';
-    const nameSearch = filterAthleteName ? filterAthleteName.value.toLowerCase().trim() : '';
-    const mVal = filterAgeMismatch ? filterAgeMismatch.value : 'all';
-    const ttVal = filterTrackType ? filterTrackType.value : 'all';
-
-    const filtered = records.filter(r => {
-        const matchesTrackType = ttVal === 'all' || r.trackType === ttVal;
-        const matchesEvent = eVal === 'all' || r.event === eVal;
-        const matchesGender = gVal === 'all' || r.gender === gVal;
-        const matchesAge = aVal === 'all' || r.ageGroup === aVal;
-        const matchesAthlete = athleteVal === 'all' || r.athlete === athleteVal;
-        const matchesSearch = nameSearch === '' || r.athlete.toLowerCase().includes(nameSearch);
-
-        // Year filter
-        let matchesYear = true;
-        if (yVal !== 'all') {
-            const rYear = r.date ? new Date(r.date).getFullYear().toString() : '';
-            matchesYear = rYear === yVal;
-        }
-
-        // Age Mismatch Filter
-        let matchesMismatch = true;
-        if (mVal !== 'all') {
+            // Find athlete for Age Validation using robust helper
             const athlete = findAthleteByNormalizedName(r.athlete);
-            let isMismatch = false;
+            let ageDisplay = r.ageGroup || '-';
+
             if (r.ageGroup && athlete && athlete.dob && r.date) {
                 const calculatedGroup = calculateAgeGroup(athlete.dob, r.date);
                 if (String(r.ageGroup).trim() !== String(calculatedGroup).trim()) {
-                    isMismatch = true;
+                    const exactAge = getExactAge(athlete.dob, r.date);
+                    ageDisplay = `<span class="age-indicator" title="Click to see exact age" style="cursor:pointer;" onclick="showExactAge(this, '${exactAge}')">${r.ageGroup}</span>`;
                 }
             }
 
-            if (mVal === 'issue') {
-                matchesMismatch = isMismatch;
-            } else if (mVal === 'valid') {
-                matchesMismatch = !isMismatch;
-            }
-        }
-
-        return matchesTrackType && matchesEvent && matchesGender && matchesAge && matchesYear && matchesMismatch && matchesAthlete && matchesSearch;
-    });
-
-    // Apply Sorting
-    filtered.sort((a, b) => {
-        let valA, valB;
-        const direction = currentSort.direction === 'asc' ? 1 : -1;
-
-        switch (currentSort.column) {
-            case 'date':
-                return (new Date(a.date) - new Date(b.date)) * direction;
-            case 'athlete':
-                return a.athlete.localeCompare(b.athlete) * direction;
-            case 'event':
-                return a.event.localeCompare(b.event) * direction;
-            case 'mark':
-                // Numeric sort for marks if possible
-                valA = parseFloat(a.mark.replace(/:/g, '')) || 0;
-                valB = parseFloat(b.mark.replace(/:/g, '')) || 0;
-                if (valA !== valB) return (valA - valB) * direction;
-                return a.mark.localeCompare(b.mark, undefined, { numeric: true }) * direction;
-            case 'ageGroup':
-                return ((parseInt(a.ageGroup) || 0) - (parseInt(b.ageGroup) || 0)) * direction;
-            case 'gender':
-                return (a.gender || '').localeCompare(b.gender || '') * direction;
-            case 'town':
-                return (a.town || '').localeCompare(b.town || '') * direction;
-            case 'raceName':
-                return (a.raceName || '').localeCompare(b.raceName || '') * direction;
-            case 'wind':
-                return (parseFloat(a.wind) || 0 - parseFloat(b.wind) || 0) * direction;
-            case 'idr':
-                return (parseInt(a.idr) || 0 - parseInt(b.idr) || 0) * direction;
-            default:
-                return (new Date(a.date) - new Date(b.date)) * direction;
-        }
-    });
-
-    return filtered;
-}
-
-function setupTableSorting() {
-    const headers = document.querySelectorAll('th.sortable');
-    headers.forEach(th => {
-        th.addEventListener('click', () => {
-            const column = th.dataset.sort;
-            if (currentSort.column === column) {
-                // Toggle direction
-                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-            } else {
-                // New column, default to asc (except date/mark maybe?)
-                currentSort.column = column;
-                currentSort.direction = ['date', 'mark'].includes(column) ? 'desc' : 'asc';
-            }
-
-            updateSortUI();
-            renderReports();
-        });
-    });
-    updateSortUI(); // Set initial state
-}
-
-function updateSortUI() {
-    const headers = document.querySelectorAll('th.sortable');
-    headers.forEach(th => {
-        th.classList.remove('asc', 'desc');
-        if (th.dataset.sort === currentSort.column) {
-            th.classList.add(currentSort.direction);
-        }
-    });
-
-}
-
-
-// Helper to toggle age in-place temporarily
-window.showExactAge = function (el, age) {
-    if (el.dataset.isToggled === 'true') return;
-
-    const originalText = el.textContent;
-
-    // Change to Success State
-    el.dataset.isToggled = 'true';
-    el.textContent = age;
-    el.style.backgroundColor = 'var(--success)'; // Green background
-    el.style.borderColor = 'var(--success)';
-    el.style.color = 'white';
-    el.style.transform = 'scale(1.1)';
-    el.style.transition = 'all 0.2s';
-
-    setTimeout(() => {
-        // Revert
-        el.dataset.isToggled = 'false';
-        el.textContent = originalText;
-        el.style.backgroundColor = '';
-        el.style.borderColor = '';
-        el.style.color = '';
-        el.style.transform = '';
-    }, 2000);
-};
-
-function renderReports() {
-    if (!reportTableBody) return;
-    console.log("renderReports called");
-    reportTableBody.innerHTML = '';
-
-    const filtered = getFilteredRecords();
-    const isHideNotesChecked = hideNotesSymbol && hideNotesSymbol.checked;
-
-    if (filtered.length === 0) return;
-    // Sort applied in getFilteredRecords
-
-    filtered.forEach(r => {
-        const tr = document.createElement('tr');
-        const hasNotes = r.notes && r.notes.trim().length > 0;
-
-        // Find athlete for Age Validation using robust helper
-        const athlete = findAthleteByNormalizedName(r.athlete);
-        let ageDisplay = r.ageGroup || '-';
-
-        if (r.ageGroup && athlete && athlete.dob && r.date) {
-            const calculatedGroup = calculateAgeGroup(athlete.dob, r.date);
-            if (String(r.ageGroup).trim() !== String(calculatedGroup).trim()) {
-                const exactAge = getExactAge(athlete.dob, r.date);
-                ageDisplay = `<span class="age-indicator" title="Click to see exact age" style="cursor:pointer;" onclick="showExactAge(this, '${exactAge}')">${r.ageGroup}</span>`;
-            }
-        }
-
-        // Create main row content
-        tr.innerHTML = `
+            // Create main row content
+            tr.innerHTML = `
                     <td class="expand-col" style="text-align:center;">
                         ${(isHideNotesChecked && hasNotes) ? `<button class="toggle-notes-btn" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1.2rem; font-weight:bold; padding:0; width:24px; height:24px; line-height:24px;">+</button>` : ''}
                     </td>
@@ -4111,160 +4107,160 @@ function renderReports() {
                     <td>${r.raceName || ''}</td>
                     <td class="actions-col" style="white-space:nowrap;">
                         ${(r.approved === false && isSupervisor(currentUser ? currentUser.email : null)) ?
-                `<button class="btn-icon approve-btn" onclick="approveRecord(${r.id})" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>` : ''}
+                    `<button class="btn-icon approve-btn" onclick="approveRecord(${r.id})" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>` : ''}
                         <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit">✏️</button>
                         <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete">🗑️</button>
                     </td>
                 `;
 
-        // Add event listener to the toggle button (if present)
-        const btn = tr.querySelector('.toggle-notes-btn');
-        const notesDiv = tr.querySelector('.record-notes');
-        if (btn && notesDiv) {
-            btn.addEventListener('click', () => {
-                const isHidden = notesDiv.classList.contains('hidden');
-                if (isHidden) {
-                    notesDiv.classList.remove('hidden');
-                    btn.textContent = '−';
-                    btn.style.color = 'var(--danger)';
-                } else {
-                    notesDiv.classList.add('hidden');
-                    btn.textContent = '+';
-                    btn.style.color = 'var(--primary)';
+            // Add event listener to the toggle button (if present)
+            const btn = tr.querySelector('.toggle-notes-btn');
+            const notesDiv = tr.querySelector('.record-notes');
+            if (btn && notesDiv) {
+                btn.addEventListener('click', () => {
+                    const isHidden = notesDiv.classList.contains('hidden');
+                    if (isHidden) {
+                        notesDiv.classList.remove('hidden');
+                        btn.textContent = '−';
+                        btn.style.color = 'var(--danger)';
+                    } else {
+                        notesDiv.classList.add('hidden');
+                        btn.textContent = '+';
+                        btn.style.color = 'var(--primary)';
+                    }
+                });
+            }
+
+            reportTableBody.appendChild(tr);
+        });
+    }
+
+    function getExportData() {
+        // Filter out unapproved records from exports
+        const rawData = getFilteredRecords().filter(r => r.approved !== false);
+        const categoryOrder = ['Track', 'Road', 'Field', 'Combined', 'Relay'];
+
+        const sortedData = rawData.sort((a, b) => {
+            const evA = events.find(e => e.name === a.event);
+            const evB = events.find(e => e.name === b.event);
+
+            const catA = evA ? (evA.eventType || evA.type || 'Track') : 'Track';
+            const catB = evB ? (evB.eventType || evB.type || 'Track') : 'Track';
+
+            const indexA = categoryOrder.indexOf(catA);
+            const indexB = categoryOrder.indexOf(catB);
+
+            if (indexA !== indexB) {
+                return indexA - indexB;
+            }
+
+            // If both are same category and it's Track, sort by length (User requirement)
+            if (catA === 'Track') {
+                if (a.event.length !== b.event.length) {
+                    return a.event.length - b.event.length;
                 }
+            }
+
+            // Secondary sort: Event Name
+            // (Track events are already prioritized by length above, others handled here)
+            const eventSort = a.event.localeCompare(b.event);
+            if (eventSort !== 0) return eventSort;
+
+            // Tertiary sort: Gender (Male first)
+            if (a.gender !== b.gender) {
+                if (a.gender === 'Male') return -1;
+                if (b.gender === 'Male') return 1;
+                return a.gender.localeCompare(b.gender);
+            }
+
+            // Quaternary sort: Age Group (starting from newest/youngest)
+            const ageA = parseInt(a.ageGroup) || 0;
+            const ageB = parseInt(b.ageGroup) || 0;
+            if (ageA !== ageB) return ageA - ageB;
+
+            return b.date.localeCompare(a.date);
+        });
+
+        return sortedData.map(r => {
+            const athlete = findAthleteByNormalizedName(r.athlete);
+            let dobDisplay = '-';
+            if (athlete && athlete.dob) {
+                // Return YYYY-MM-DD as is or format carefully
+                try {
+                    const d = new Date(athlete.dob);
+                    if (!isNaN(d)) {
+                        // Use Intl.DateTimeFormat for consistent DD/MM/YYYY
+                        dobDisplay = d.toLocaleDateString('en-GB');
+                    }
+                } catch (e) {
+                    dobDisplay = athlete.dob; // fallback to raw string
+                }
+            }
+            return {
+                ...r,
+                formattedDate: new Date(r.date).toLocaleDateString('en-GB'),
+                dob: dobDisplay
+            };
+        });
+    }
+
+    function exportToExcel() {
+        // Enforce STRICT approval check (must be explicitly true)
+        const data = getFilteredRecords().filter(r => r.approved === true);
+        if (!data.length) return alert('No approved data to export!');
+
+        const timestamp = new Date().toLocaleString('el-GR');
+        let csv = `Ημερομηνία Εξαγωγής: ${timestamp}\n\n`;
+
+        const menMixed = data.filter(r => r.gender === 'Male' || r.gender === 'Mixed');
+        const women = data.filter(r => r.gender === 'Female');
+
+        if (menMixed.length) {
+            csv += 'Ανδρες - Ανοικτός Στίβος\n';
+            csv += 'Αγώνισμα,Κατηγ.,Αθλητής/τρια,Ημ. Γεν.,Επίδοση,IDR,Άνεμος,Ημερομηνία,Πόλη,Διοργάνωση,Σημειώσεις\n';
+            menMixed.forEach(r => {
+                csv += `"${r.event}","${r.ageGroup || ''}","${r.athlete}","${r.dob}","${r.mark}","${r.idr || ''}","${r.wind || ''}","${r.formattedDate}","${r.town || ''}","${r.raceName || ''}","${r.notes || ''}"\n`;
+            });
+            csv += '\n';
+        }
+
+        if (women.length) {
+            csv += 'Γυναίκες - Ανοικτός Στίβος\n';
+            csv += 'Αγώνισμα,Κατηγ.,Αθλητής/τρια,Ημ. Γεν.,Επίδοση,IDR,Άνεμος,Ημερομηνία,Πόλη,Διοργάνωση,Σημειώσεις\n';
+            women.forEach(r => {
+                csv += `"${r.event}","${r.ageGroup || ''}","${r.athlete}","${r.dob}","${r.mark}","${r.idr || ''}","${r.wind || ''}","${r.formattedDate}","${r.town || ''}","${r.raceName || ''}","${r.notes || ''}"\n`;
             });
         }
-
-        reportTableBody.appendChild(tr);
-    });
-}
-
-function getExportData() {
-    // Filter out unapproved records from exports
-    const rawData = getFilteredRecords().filter(r => r.approved !== false);
-    const categoryOrder = ['Track', 'Road', 'Field', 'Combined', 'Relay'];
-
-    const sortedData = rawData.sort((a, b) => {
-        const evA = events.find(e => e.name === a.event);
-        const evB = events.find(e => e.name === b.event);
-
-        const catA = evA ? (evA.eventType || evA.type || 'Track') : 'Track';
-        const catB = evB ? (evB.eventType || evB.type || 'Track') : 'Track';
-
-        const indexA = categoryOrder.indexOf(catA);
-        const indexB = categoryOrder.indexOf(catB);
-
-        if (indexA !== indexB) {
-            return indexA - indexB;
-        }
-
-        // If both are same category and it's Track, sort by length (User requirement)
-        if (catA === 'Track') {
-            if (a.event.length !== b.event.length) {
-                return a.event.length - b.event.length;
-            }
-        }
-
-        // Secondary sort: Event Name
-        // (Track events are already prioritized by length above, others handled here)
-        const eventSort = a.event.localeCompare(b.event);
-        if (eventSort !== 0) return eventSort;
-
-        // Tertiary sort: Gender (Male first)
-        if (a.gender !== b.gender) {
-            if (a.gender === 'Male') return -1;
-            if (b.gender === 'Male') return 1;
-            return a.gender.localeCompare(b.gender);
-        }
-
-        // Quaternary sort: Age Group (starting from newest/youngest)
-        const ageA = parseInt(a.ageGroup) || 0;
-        const ageB = parseInt(b.ageGroup) || 0;
-        if (ageA !== ageB) return ageA - ageB;
-
-        return b.date.localeCompare(a.date);
-    });
-
-    return sortedData.map(r => {
-        const athlete = findAthleteByNormalizedName(r.athlete);
-        let dobDisplay = '-';
-        if (athlete && athlete.dob) {
-            // Return YYYY-MM-DD as is or format carefully
-            try {
-                const d = new Date(athlete.dob);
-                if (!isNaN(d)) {
-                    // Use Intl.DateTimeFormat for consistent DD/MM/YYYY
-                    dobDisplay = d.toLocaleDateString('en-GB');
-                }
-            } catch (e) {
-                dobDisplay = athlete.dob; // fallback to raw string
-            }
-        }
-        return {
-            ...r,
-            formattedDate: new Date(r.date).toLocaleDateString('en-GB'),
-            dob: dobDisplay
-        };
-    });
-}
-
-function exportToExcel() {
-    // Enforce STRICT approval check (must be explicitly true)
-    const data = getFilteredRecords().filter(r => r.approved === true);
-    if (!data.length) return alert('No approved data to export!');
-
-    const timestamp = new Date().toLocaleString('el-GR');
-    let csv = `Ημερομηνία Εξαγωγής: ${timestamp}\n\n`;
-
-    const menMixed = data.filter(r => r.gender === 'Male' || r.gender === 'Mixed');
-    const women = data.filter(r => r.gender === 'Female');
-
-    if (menMixed.length) {
-        csv += 'Ανδρες - Ανοικτός Στίβος\n';
-        csv += 'Αγώνισμα,Κατηγ.,Αθλητής/τρια,Ημ. Γεν.,Επίδοση,IDR,Άνεμος,Ημερομηνία,Πόλη,Διοργάνωση,Σημειώσεις\n';
-        menMixed.forEach(r => {
-            csv += `"${r.event}","${r.ageGroup || ''}","${r.athlete}","${r.dob}","${r.mark}","${r.idr || ''}","${r.wind || ''}","${r.formattedDate}","${r.town || ''}","${r.raceName || ''}","${r.notes || ''}"\n`;
-        });
-        csv += '\n';
+        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `track_records.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
     }
 
-    if (women.length) {
-        csv += 'Γυναίκες - Ανοικτός Στίβος\n';
-        csv += 'Αγώνισμα,Κατηγ.,Αθλητής/τρια,Ημ. Γεν.,Επίδοση,IDR,Άνεμος,Ημερομηνία,Πόλη,Διοργάνωση,Σημειώσεις\n';
-        women.forEach(r => {
-            csv += `"${r.event}","${r.ageGroup || ''}","${r.athlete}","${r.dob}","${r.mark}","${r.idr || ''}","${r.wind || ''}","${r.formattedDate}","${r.town || ''}","${r.raceName || ''}","${r.notes || ''}"\n`;
-        });
-    }
-    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `track_records.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-}
+    function exportToHTML() {
+        // Enforce STRICT approval check (must be explicitly true)
+        // getExportData() already filters approved !== false, but we want strict === true for safety as per request
+        // Actually getExportData used to filter !== false. Let's make it strict inside getExportData OR here.
+        // User said: "not approved records ... are not exporting"
+        // Let's rely on getExportData but refined.
 
-function exportToHTML() {
-    // Enforce STRICT approval check (must be explicitly true)
-    // getExportData() already filters approved !== false, but we want strict === true for safety as per request
-    // Actually getExportData used to filter !== false. Let's make it strict inside getExportData OR here.
-    // User said: "not approved records ... are not exporting"
-    // Let's rely on getExportData but refined.
+        const data = getFilteredRecords().filter(r => r.approved === true);
+        if (!data.length) return alert('No approved data to export!');
 
-    const data = getFilteredRecords().filter(r => r.approved === true);
-    if (!data.length) return alert('No approved data to export!');
+        const timestamp = new Date().toLocaleString('el-GR');
 
-    const timestamp = new Date().toLocaleString('el-GR');
+        const menMixed = data.filter(r => r.gender === 'Male' || r.gender === 'Mixed');
+        const women = data.filter(r => r.gender === 'Female');
 
-    const menMixed = data.filter(r => r.gender === 'Male' || r.gender === 'Mixed');
-    const women = data.filter(r => r.gender === 'Female');
-
-    const renderTable = (records, title) => {
-        if (!records.length) return '';
-        let rows = '';
-        records.forEach(r => {
-            const hasNotes = r.notes && r.notes.trim().length > 0;
-            rows += `
+        const renderTable = (records, title) => {
+            if (!records.length) return '';
+            let rows = '';
+            records.forEach(r => {
+                const hasNotes = r.notes && r.notes.trim().length > 0;
+                rows += `
                     <tr>
                         <td style="font-weight:600;">${r.event}</td>
                         <td>${r.ageGroup || '-'}</td>
@@ -4284,9 +4280,9 @@ function exportToHTML() {
                         <td>${r.raceName || ''}</td>
                     </tr>
                 `;
-        });
+            });
 
-        return `
+            return `
                 <h2 style="text-align:center; color:#5b21b6; margin-top:40px;">${title}</h2>
                 <table>
                     <thead>
@@ -4308,9 +4304,9 @@ function exportToHTML() {
                     </tbody>
                 </table>
             `;
-    };
+        };
 
-    const html = `
+        const html = `
             <html>
             <head>
                 <meta charset="UTF-8">
@@ -4337,395 +4333,395 @@ function exportToHTML() {
             </html>
         `;
 
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'report.html';
-    link.click();
-}
-
-async function exportToPDF() {
-    if (!window.jspdf) return alert('PDF library not loaded.');
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // Switch to Landscape for better fit
-
-    // Use embedded Base64 Font (Reliable "Nuclear Option")
-    if (typeof ROBOTO_BASE64 !== 'undefined') {
-        const fontName = 'Roboto-Regular.ttf';
-        doc.addFileToVFS(fontName, ROBOTO_BASE64);
-        doc.addFont(fontName, 'Roboto', 'normal');
-        doc.setFont('Roboto');
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'report.html';
+        link.click();
     }
 
-    const timestamp = new Date().toLocaleString('el-GR');
-    // Enforce STRICT approval check
-    const data = getFilteredRecords().filter(r => r.approved === true);
+    async function exportToPDF() {
+        if (!window.jspdf) return alert('PDF library not loaded.');
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4'); // Switch to Landscape for better fit
 
-
-    const mapper = r => [
-        r.event,
-        r.ageGroup || '-',
-        r.notes ? `${r.athlete}\n(Σημ: ${r.notes})` : r.athlete,
-        r.dob,
-        r.mark,
-        r.idr || '-',
-        r.wind || '-',
-        r.formattedDate,
-        r.town || '-',
-        r.raceName || '-'
-    ];
-
-    const menMixedData = data.filter(r => r.gender === 'Male' || r.gender === 'Mixed').map(mapper);
-    const womenData = data.filter(r => r.gender === 'Female').map(mapper);
-
-    doc.setFontSize(16);
-    doc.text("🇬🇷 Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου", 14, 15);
-
-    doc.setFontSize(10);
-    doc.text(`Ημερομηνία Εξαγωγής: ${timestamp}`, doc.internal.pageSize.getWidth() - 15, 15, { align: 'right' });
-
-    const headers = [['Αγώνισμα', 'Κατηγ.', 'Αθλητής/τρια', 'Ημ. Γεν.', 'Επίδοση', 'IDR', 'Άνεμος', 'Ημερομηνία', 'Πόλη', 'Διοργάνωση']];
-    let finalY = 20;
-
-    if (menMixedData.length) {
-        doc.setFontSize(14);
-        doc.text("Ανδρες - Ανοικτός Στίβος", doc.internal.pageSize.getWidth() / 2, finalY + 5, { align: 'center' });
-        doc.autoTable({
-            head: headers,
-            body: menMixedData,
-            startY: finalY + 10,
-            theme: 'grid',
-            headStyles: { fillColor: [139, 92, 246] },
-            styles: { font: 'Roboto', fontStyle: 'normal', fontSize: 8 }
-        });
-        finalY = doc.lastAutoTable.finalY + 10;
-    }
-
-    if (womenData.length) {
-        if (finalY > doc.internal.pageSize.getHeight() - 40) {
-            doc.addPage();
-            finalY = 15;
+        // Use embedded Base64 Font (Reliable "Nuclear Option")
+        if (typeof ROBOTO_BASE64 !== 'undefined') {
+            const fontName = 'Roboto-Regular.ttf';
+            doc.addFileToVFS(fontName, ROBOTO_BASE64);
+            doc.addFont(fontName, 'Roboto', 'normal');
+            doc.setFont('Roboto');
         }
-        doc.setFontSize(14);
-        doc.text("Γυναίκες - Ανοικτός Στίβος", doc.internal.pageSize.getWidth() / 2, finalY + 5, { align: 'center' });
-        doc.autoTable({
-            head: headers,
-            body: womenData,
-            startY: finalY + 10,
-            theme: 'grid',
-            headStyles: { fillColor: [139, 92, 246] },
-            styles: { font: 'Roboto', fontStyle: 'normal', fontSize: 8 }
-        });
-    }
-    doc.save('track_report.pdf');
-}
 
-function exportDatabase() {
-    const db = {
-        version: 5,
-        exportedAt: new Date().toISOString(),
-        events: events,
-        records: records,
-        athletes: athletes,
-        countries: countries,
-        history: history,
-        users: appUsers,
-        wma_data: wmaData,
-        iaaf_updates: iaafUpdates,
-        theme: localStorage.getItem('tf_theme') || 'theme-default',
-        seed_version: localStorage.getItem('tf_relays_seed_version') || '0',
-        seeded: localStorage.getItem('tf_relays_seeded') || 'false'
-    };
-    const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'track_data.json';
-    link.click();
-    URL.revokeObjectURL(url);
-}
+        const timestamp = new Date().toLocaleString('el-GR');
+        // Enforce STRICT approval check
+        const data = getFilteredRecords().filter(r => r.approved === true);
 
-function handleAthleteImport(e) {
-    const file = e.target.files[0];
-    if (!file) return;
 
-    const reader = new FileReader();
+        const mapper = r => [
+            r.event,
+            r.ageGroup || '-',
+            r.notes ? `${r.athlete}\n(Σημ: ${r.notes})` : r.athlete,
+            r.dob,
+            r.mark,
+            r.idr || '-',
+            r.wind || '-',
+            r.formattedDate,
+            r.town || '-',
+            r.raceName || '-'
+        ];
 
-    if (file.name.endsWith('.json')) {
-        reader.onload = function (e) {
-            try {
-                const jsonData = JSON.parse(e.target.result);
-                processAthleteData(jsonData);
-            } catch (err) {
-                alert('Error parsing JSON file: ' + err.message);
+        const menMixedData = data.filter(r => r.gender === 'Male' || r.gender === 'Mixed').map(mapper);
+        const womenData = data.filter(r => r.gender === 'Female').map(mapper);
+
+        doc.setFontSize(16);
+        doc.text("🇬🇷 Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου", 14, 15);
+
+        doc.setFontSize(10);
+        doc.text(`Ημερομηνία Εξαγωγής: ${timestamp}`, doc.internal.pageSize.getWidth() - 15, 15, { align: 'right' });
+
+        const headers = [['Αγώνισμα', 'Κατηγ.', 'Αθλητής/τρια', 'Ημ. Γεν.', 'Επίδοση', 'IDR', 'Άνεμος', 'Ημερομηνία', 'Πόλη', 'Διοργάνωση']];
+        let finalY = 20;
+
+        if (menMixedData.length) {
+            doc.setFontSize(14);
+            doc.text("Ανδρες - Ανοικτός Στίβος", doc.internal.pageSize.getWidth() / 2, finalY + 5, { align: 'center' });
+            doc.autoTable({
+                head: headers,
+                body: menMixedData,
+                startY: finalY + 10,
+                theme: 'grid',
+                headStyles: { fillColor: [139, 92, 246] },
+                styles: { font: 'Roboto', fontStyle: 'normal', fontSize: 8 }
+            });
+            finalY = doc.lastAutoTable.finalY + 10;
+        }
+
+        if (womenData.length) {
+            if (finalY > doc.internal.pageSize.getHeight() - 40) {
+                doc.addPage();
+                finalY = 15;
             }
+            doc.setFontSize(14);
+            doc.text("Γυναίκες - Ανοικτός Στίβος", doc.internal.pageSize.getWidth() / 2, finalY + 5, { align: 'center' });
+            doc.autoTable({
+                head: headers,
+                body: womenData,
+                startY: finalY + 10,
+                theme: 'grid',
+                headStyles: { fillColor: [139, 92, 246] },
+                styles: { font: 'Roboto', fontStyle: 'normal', fontSize: 8 }
+            });
+        }
+        doc.save('track_report.pdf');
+    }
+
+    function exportDatabase() {
+        const db = {
+            version: 5,
+            exportedAt: new Date().toISOString(),
+            events: events,
+            records: records,
+            athletes: athletes,
+            countries: countries,
+            history: history,
+            users: appUsers,
+            wma_data: wmaData,
+            iaaf_updates: iaafUpdates,
+            theme: localStorage.getItem('tf_theme') || 'theme-default',
+            seed_version: localStorage.getItem('tf_relays_seed_version') || '0',
+            seeded: localStorage.getItem('tf_relays_seeded') || 'false'
         };
-        reader.readAsText(file);
-    } else {
-        reader.onload = function (e) {
+        const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'track_data.json';
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function handleAthleteImport(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        if (file.name.endsWith('.json')) {
+            reader.onload = function (e) {
+                try {
+                    const jsonData = JSON.parse(e.target.result);
+                    processAthleteData(jsonData);
+                } catch (err) {
+                    alert('Error parsing JSON file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            reader.onload = function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    processAthleteData(jsonData);
+                } catch (err) {
+                    console.error(err);
+                    alert('Error processing Excel file: ' + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Reset input
+        athleteImportFile.value = '';
+    }
+
+    function processAthleteData(jsonData) {
+        try {
+            let importedCount = 0;
+            jsonData.forEach(row => {
+                // Normalize keys to lowercase for flexible matching
+                const normalizedRow = {};
+                Object.keys(row).forEach(key => {
+                    normalizedRow[key.toString().toLowerCase().trim().replace(/\s+/g, '')] = row[key];
+                });
+
+                // Map fields
+                // Expected: First Name, Last Name, Gender, DOB, Club/Team
+                const firstName = normalizedRow['firstname'] || normalizedRow['name'] || normalizedRow['fname'];
+                const lastName = normalizedRow['lastname'] || normalizedRow['surname'] || normalizedRow['lname'];
+                const genderVal = normalizedRow['gender'] || normalizedRow['sex'];
+                const dobVal = normalizedRow['dob'] || normalizedRow['dateofbirth'] || normalizedRow['birthdate'];
+                const idVal = normalizedRow['id'] || normalizedRow['code'];
+
+                if (!firstName || !lastName) return; // Skip if no name
+
+                // Parse Gender
+                let gender = '';
+                if (genderVal) {
+                    const g = genderVal.toString().toLowerCase();
+                    if (g.startsWith('m') || g === 'andr') gender = 'Male';
+                    if (g.startsWith('f') || g === 'gyn') gender = 'Female';
+                }
+
+                // Parse DOB (Excel dates are often numbers)
+                let dob = '';
+                if (dobVal) {
+                    if (typeof dobVal === 'number') {
+                        // Excel serial date to JS Date
+                        const date = new Date(Math.round((dobVal - 25569) * 864e5));
+                        dob = date.toISOString().split('T')[0];
+                    } else {
+                        // Try to parse string
+                        const date = new Date(dobVal);
+                        if (!isNaN(date)) dob = date.toISOString().split('T')[0];
+                    }
+                }
+
+                // Check duplicates (by Name + DOB or ID)
+                const exists = athletes.some(a =>
+                    (idVal && a.id == idVal) ||
+                    (a.firstName.toLowerCase() === firstName.toString().toLowerCase() &&
+                        a.lastName.toLowerCase() === lastName.toString().toLowerCase() &&
+                        (!dob || a.dob === dob))
+                );
+
+                if (!exists) {
+                    const newAthlete = {
+                        id: idVal ? idVal.toString() : Date.now() + Math.floor(Math.random() * 100000),
+                        firstName: firstName.toString(),
+                        lastName: lastName.toString(),
+                        gender: gender,
+                        dob: dob,
+                        club: normalizedRow['club'] || normalizedRow['team'] || ''
+                    };
+                    athletes.push(newAthlete);
+                    importedCount++;
+                }
+            });
+
+            if (importedCount > 0) {
+                saveAthletes();
+                renderAthleteList();
+                populateAthleteDropdown();
+                alert(`Successfully imported ${importedCount} athletes!`);
+            } else {
+                alert('No new athletes found or file format not recognized.');
+            }
+        } catch (err) {
+            console.error('Error in processAthleteData:', err);
+            alert('Error processing athlete data: ' + err.message);
+        }
+    }
+    function importRecordsFromFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
             try {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                processAthleteData(jsonData);
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+
+                if (jsonData.length === 0) {
+                    alert('File appears to be empty.');
+                    return;
+                }
+
+                if (!confirm(`Found ${jsonData.length} rows. Import records?`)) return;
+
+                let importedCount = 0;
+                jsonData.forEach(row => {
+                    // Normalization
+                    let r = {};
+                    Object.keys(row).forEach(k => {
+                        r[k.trim().toLowerCase().replace(/[^a-z0-9]/g, '')] = row[k];
+                    });
+
+                    // Mapping
+                    const event = row['Event'] || row['event'] || r['event'] || '';
+                    // Expanded Athlete Check:
+                    // Checks: "Athlete", "Athlete Name", "Athletes Name", "Full Name", "Name" and their normalized versions.
+                    let rawName = row['Athlete'] || row['Athlete Name'] || row['Athletes Name'] || row['Full Name'] ||
+                        r['athlete'] || r['athletename'] || r['athletesname'] || r['fullname'] ||
+                        row['Name'] || '';
+
+                    let finalAthleteName = rawName.trim();
+
+                    // Smart Link to Existing Athletes
+                    if (finalAthleteName) {
+                        const cleanImport = finalAthleteName.toLowerCase().replace(/,/g, '').replace(/\s+/g, ' ').trim();
+
+                        // Try to find a match in the existing athletes list
+                        const match = athletes.find(a => {
+                            const first = (a.firstName || '').toLowerCase().trim();
+                            const last = (a.lastName || '').toLowerCase().trim();
+
+                            const fl = `${first} ${last}`;
+                            const lf = `${last} ${first}`;
+                            const l_f = `${last} ${first}`; // Comma removed in cleanImport check
+
+                            // Check against "First Last", "Last First", etc.
+                            return cleanImport === fl || cleanImport === lf || cleanImport === l_f;
+                        });
+
+                        if (match) {
+                            // If found, use the system canonical name: "Last, First"
+                            finalAthleteName = `${match.lastName}, ${match.firstName}`;
+                        } else {
+                            // If not found, try to normalize "First Last" to "Last, First" heuristically
+                            if (!finalAthleteName.includes(',')) {
+                                const parts = finalAthleteName.split(' ');
+                                if (parts.length >= 2) {
+                                    // Conservative guess: Last element is Last Name? 
+                                    // Or First element is First Name?
+                                    // Let's assume input is "First Last" which is standard Excel, so we flip to "Last, First"
+                                    // ONLY if we didn't find a direct match.
+                                    // actually, let's look for partial matches? No, unsafe.
+                                    // Let's just flip it and hope, OR keep as is. 
+                                    // User said "names are almost same".
+                                    // If we swap blindly we might mess up "Van Der Sar".
+                                    // Let's just keep as is if no match found, BUT we can try one swap attempt to match.
+
+                                    // Actually, if we didn't match an existing athlete, we can't be sure.
+                                    // But to "connect" them, they MUST match the string value in the option list.
+                                    // The option list is "Last, First".
+                                }
+                            }
+                        }
+                    }
+
+                    const gender = row['Gender'] || row['gender'] || r['gender'] || row['Sex'] || '';
+                    const ageGroup = row['Age Group'] || row['Age'] || r['agegroup'] || r['age'] || '';
+                    const mark = row['Mark'] || row['Result'] || row['Time'] || r['mark'] || r['result'] || '';
+                    const wind = row['Wind'] || r['wind'] || '';
+                    const idr = row['IDR'] || row['idr'] || r['idr'] || '';
+                    const dateRaw = row['Date'] || r['date'];
+                    const country = row['Country'] || r['country'] || '';
+                    const town = row['Town'] || row['City'] || r['town'] || '';
+                    const raceName = row['Race Name'] || row['Meeting'] || r['racename'] || '';
+
+                    if (!event || !mark) return; // Skip if no event or mark
+
+                    // Date Parsing (Excel Date or String)
+                    let finalDate = '';
+                    if (dateRaw && !isNaN(dateRaw) && typeof dateRaw === 'number') {
+                        // Excel serial date
+                        const dateObj = new Date(Math.round((dateRaw - 25569) * 86400 * 1000));
+                        finalDate = dateObj.toISOString().split('T')[0];
+                    } else if (dateRaw) {
+                        // Try string parse
+                        const d = new Date(dateRaw);
+                        if (!isNaN(d)) finalDate = d.toISOString().split('T')[0];
+                        else finalDate = dateRaw; // Keep as string if needed
+                    } else {
+                        finalDate = new Date().toISOString().split('T')[0];
+                    }
+
+                    records.unshift({
+                        id: Date.now() + Math.random(),
+                        event: event.trim(),
+                        athlete: finalAthleteName,
+                        gender: gender.trim(),
+                        ageGroup: ageGroup.toString().trim(),
+                        mark: mark.toString().trim(),
+                        wind: wind.toString().trim(),
+                        idr: idr.toString().trim(),
+                        date: finalDate,
+                        country: country.trim(),
+                        town: town.trim(),
+                        raceName: raceName.trim(),
+                        notes: (row['Note'] || row['note'] || r['note'] || row['Notes'] || r['notes'] || '').toString().trim()
+                    });
+                    importedCount++;
+                });
+
+                if (importedCount > 0) {
+                    saveRecords();
+                    saveAthletes();
+                    saveCountries();
+
+                    // Reset Filters to ensure visibility
+                    if (filterEvent) filterEvent.value = 'all';
+                    if (filterGender) filterGender.value = 'all';
+                    if (filterAge) filterAge.value = 'all';
+                    if (filterYear) filterYear.value = 'all';
+
+                    populateYearDropdown();
+                    renderReports();
+                    renderEventList();
+                    renderAthleteList();
+
+                    alert(`Imported ${importedCount} records successfully.`);
+                } else {
+                    alert('No valid records found in file.');
+                }
+
             } catch (err) {
                 console.error(err);
-                alert('Error processing Excel file: ' + err.message);
+                alert('Error processing file: ' + err.message);
             }
+            // Reset input
+            recordImportFile.value = '';
         };
         reader.readAsArrayBuffer(file);
     }
 
-    // Reset input
-    athleteImportFile.value = '';
-}
+    function importDatabase() {
+        const file = fileRestore.files[0];
+        if (!file) return alert('Please select a JSON file first.');
 
-function processAthleteData(jsonData) {
-    try {
-        let importedCount = 0;
-        jsonData.forEach(row => {
-            // Normalize keys to lowercase for flexible matching
-            const normalizedRow = {};
-            Object.keys(row).forEach(key => {
-                normalizedRow[key.toString().toLowerCase().trim().replace(/\s+/g, '')] = row[key];
-            });
-
-            // Map fields
-            // Expected: First Name, Last Name, Gender, DOB, Club/Team
-            const firstName = normalizedRow['firstname'] || normalizedRow['name'] || normalizedRow['fname'];
-            const lastName = normalizedRow['lastname'] || normalizedRow['surname'] || normalizedRow['lname'];
-            const genderVal = normalizedRow['gender'] || normalizedRow['sex'];
-            const dobVal = normalizedRow['dob'] || normalizedRow['dateofbirth'] || normalizedRow['birthdate'];
-            const idVal = normalizedRow['id'] || normalizedRow['code'];
-
-            if (!firstName || !lastName) return; // Skip if no name
-
-            // Parse Gender
-            let gender = '';
-            if (genderVal) {
-                const g = genderVal.toString().toLowerCase();
-                if (g.startsWith('m') || g === 'andr') gender = 'Male';
-                if (g.startsWith('f') || g === 'gyn') gender = 'Female';
-            }
-
-            // Parse DOB (Excel dates are often numbers)
-            let dob = '';
-            if (dobVal) {
-                if (typeof dobVal === 'number') {
-                    // Excel serial date to JS Date
-                    const date = new Date(Math.round((dobVal - 25569) * 864e5));
-                    dob = date.toISOString().split('T')[0];
-                } else {
-                    // Try to parse string
-                    const date = new Date(dobVal);
-                    if (!isNaN(date)) dob = date.toISOString().split('T')[0];
-                }
-            }
-
-            // Check duplicates (by Name + DOB or ID)
-            const exists = athletes.some(a =>
-                (idVal && a.id == idVal) ||
-                (a.firstName.toLowerCase() === firstName.toString().toLowerCase() &&
-                    a.lastName.toLowerCase() === lastName.toString().toLowerCase() &&
-                    (!dob || a.dob === dob))
-            );
-
-            if (!exists) {
-                const newAthlete = {
-                    id: idVal ? idVal.toString() : Date.now() + Math.floor(Math.random() * 100000),
-                    firstName: firstName.toString(),
-                    lastName: lastName.toString(),
-                    gender: gender,
-                    dob: dob,
-                    club: normalizedRow['club'] || normalizedRow['team'] || ''
-                };
-                athletes.push(newAthlete);
-                importedCount++;
-            }
-        });
-
-        if (importedCount > 0) {
-            saveAthletes();
-            renderAthleteList();
-            populateAthleteDropdown();
-            alert(`Successfully imported ${importedCount} athletes!`);
-        } else {
-            alert('No new athletes found or file format not recognized.');
-        }
-    } catch (err) {
-        console.error('Error in processAthleteData:', err);
-        alert('Error processing athlete data: ' + err.message);
-    }
-}
-function importRecordsFromFile(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
-
-            if (jsonData.length === 0) {
-                alert('File appears to be empty.');
-                return;
-            }
-
-            if (!confirm(`Found ${jsonData.length} rows. Import records?`)) return;
-
-            let importedCount = 0;
-            jsonData.forEach(row => {
-                // Normalization
-                let r = {};
-                Object.keys(row).forEach(k => {
-                    r[k.trim().toLowerCase().replace(/[^a-z0-9]/g, '')] = row[k];
-                });
-
-                // Mapping
-                const event = row['Event'] || row['event'] || r['event'] || '';
-                // Expanded Athlete Check:
-                // Checks: "Athlete", "Athlete Name", "Athletes Name", "Full Name", "Name" and their normalized versions.
-                let rawName = row['Athlete'] || row['Athlete Name'] || row['Athletes Name'] || row['Full Name'] ||
-                    r['athlete'] || r['athletename'] || r['athletesname'] || r['fullname'] ||
-                    row['Name'] || '';
-
-                let finalAthleteName = rawName.trim();
-
-                // Smart Link to Existing Athletes
-                if (finalAthleteName) {
-                    const cleanImport = finalAthleteName.toLowerCase().replace(/,/g, '').replace(/\s+/g, ' ').trim();
-
-                    // Try to find a match in the existing athletes list
-                    const match = athletes.find(a => {
-                        const first = (a.firstName || '').toLowerCase().trim();
-                        const last = (a.lastName || '').toLowerCase().trim();
-
-                        const fl = `${first} ${last}`;
-                        const lf = `${last} ${first}`;
-                        const l_f = `${last} ${first}`; // Comma removed in cleanImport check
-
-                        // Check against "First Last", "Last First", etc.
-                        return cleanImport === fl || cleanImport === lf || cleanImport === l_f;
-                    });
-
-                    if (match) {
-                        // If found, use the system canonical name: "Last, First"
-                        finalAthleteName = `${match.lastName}, ${match.firstName}`;
-                    } else {
-                        // If not found, try to normalize "First Last" to "Last, First" heuristically
-                        if (!finalAthleteName.includes(',')) {
-                            const parts = finalAthleteName.split(' ');
-                            if (parts.length >= 2) {
-                                // Conservative guess: Last element is Last Name? 
-                                // Or First element is First Name?
-                                // Let's assume input is "First Last" which is standard Excel, so we flip to "Last, First"
-                                // ONLY if we didn't find a direct match.
-                                // actually, let's look for partial matches? No, unsafe.
-                                // Let's just flip it and hope, OR keep as is. 
-                                // User said "names are almost same".
-                                // If we swap blindly we might mess up "Van Der Sar".
-                                // Let's just keep as is if no match found, BUT we can try one swap attempt to match.
-
-                                // Actually, if we didn't match an existing athlete, we can't be sure.
-                                // But to "connect" them, they MUST match the string value in the option list.
-                                // The option list is "Last, First".
-                            }
-                        }
-                    }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const db = JSON.parse(e.target.result);
+                if (!Array.isArray(db.events) || !Array.isArray(db.records)) {
+                    throw new Error('Invalid file format. Basic tables missing.');
                 }
 
-                const gender = row['Gender'] || row['gender'] || r['gender'] || row['Sex'] || '';
-                const ageGroup = row['Age Group'] || row['Age'] || r['agegroup'] || r['age'] || '';
-                const mark = row['Mark'] || row['Result'] || row['Time'] || r['mark'] || r['result'] || '';
-                const wind = row['Wind'] || r['wind'] || '';
-                const idr = row['IDR'] || row['idr'] || r['idr'] || '';
-                const dateRaw = row['Date'] || r['date'];
-                const country = row['Country'] || r['country'] || '';
-                const town = row['Town'] || row['City'] || r['town'] || '';
-                const raceName = row['Race Name'] || row['Meeting'] || r['racename'] || '';
-
-                if (!event || !mark) return; // Skip if no event or mark
-
-                // Date Parsing (Excel Date or String)
-                let finalDate = '';
-                if (dateRaw && !isNaN(dateRaw) && typeof dateRaw === 'number') {
-                    // Excel serial date
-                    const dateObj = new Date(Math.round((dateRaw - 25569) * 86400 * 1000));
-                    finalDate = dateObj.toISOString().split('T')[0];
-                } else if (dateRaw) {
-                    // Try string parse
-                    const d = new Date(dateRaw);
-                    if (!isNaN(d)) finalDate = d.toISOString().split('T')[0];
-                    else finalDate = dateRaw; // Keep as string if needed
-                } else {
-                    finalDate = new Date().toISOString().split('T')[0];
-                }
-
-                records.unshift({
-                    id: Date.now() + Math.random(),
-                    event: event.trim(),
-                    athlete: finalAthleteName,
-                    gender: gender.trim(),
-                    ageGroup: ageGroup.toString().trim(),
-                    mark: mark.toString().trim(),
-                    wind: wind.toString().trim(),
-                    idr: idr.toString().trim(),
-                    date: finalDate,
-                    country: country.trim(),
-                    town: town.trim(),
-                    raceName: raceName.trim(),
-                    notes: (row['Note'] || row['note'] || r['note'] || row['Notes'] || r['notes'] || '').toString().trim()
-                });
-                importedCount++;
-            });
-
-            if (importedCount > 0) {
-                saveRecords();
-                saveAthletes();
-                saveCountries();
-
-                // Reset Filters to ensure visibility
-                if (filterEvent) filterEvent.value = 'all';
-                if (filterGender) filterGender.value = 'all';
-                if (filterAge) filterAge.value = 'all';
-                if (filterYear) filterYear.value = 'all';
-
-                populateYearDropdown();
-                renderReports();
-                renderEventList();
-                renderAthleteList();
-
-                alert(`Imported ${importedCount} records successfully.`);
-            } else {
-                alert('No valid records found in file.');
-            }
-
-        } catch (err) {
-            console.error(err);
-            alert('Error processing file: ' + err.message);
-        }
-        // Reset input
-        recordImportFile.value = '';
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-function importDatabase() {
-    const file = fileRestore.files[0];
-    if (!file) return alert('Please select a JSON file first.');
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const db = JSON.parse(e.target.result);
-            if (!Array.isArray(db.events) || !Array.isArray(db.records)) {
-                throw new Error('Invalid file format. Basic tables missing.');
-            }
-
-            const msg = `Found:
+                const msg = `Found:
 - ${db.records.length} records
 - ${db.athletes ? db.athletes.length : 0} athletes
 - ${db.events.length} events
@@ -4734,284 +4730,284 @@ function importDatabase() {
 
 Replace ALL current data with this backup?`;
 
-            if (!confirm(msg)) return;
+                if (!confirm(msg)) return;
 
-            // Core Tables
-            localStorage.setItem('tf_records', JSON.stringify(db.records));
-            localStorage.setItem('tf_events', JSON.stringify(db.events));
-            localStorage.setItem('tf_athletes', JSON.stringify(db.athletes || []));
-            localStorage.setItem('tf_countries', JSON.stringify(db.countries || []));
-            localStorage.setItem('tf_history', JSON.stringify(db.history || []));
-            localStorage.setItem('tf_users', JSON.stringify(db.users || []));
+                // Core Tables
+                localStorage.setItem('tf_records', JSON.stringify(db.records));
+                localStorage.setItem('tf_events', JSON.stringify(db.events));
+                localStorage.setItem('tf_athletes', JSON.stringify(db.athletes || []));
+                localStorage.setItem('tf_countries', JSON.stringify(db.countries || []));
+                localStorage.setItem('tf_history', JSON.stringify(db.history || []));
+                localStorage.setItem('tf_users', JSON.stringify(db.users || []));
 
-            // Scoring Tables
-            if (db.wma_data) localStorage.setItem('tf_wma_data', JSON.stringify(db.wma_data));
-            if (db.iaaf_updates) localStorage.setItem('tf_iaaf_updates', JSON.stringify(db.iaaf_updates));
+                // Scoring Tables
+                if (db.wma_data) localStorage.setItem('tf_wma_data', JSON.stringify(db.wma_data));
+                if (db.iaaf_updates) localStorage.setItem('tf_iaaf_updates', JSON.stringify(db.iaaf_updates));
 
-            // Settings
-            if (db.theme) localStorage.setItem('tf_theme', db.theme);
-            if (db.seed_version) localStorage.setItem('tf_relays_seed_version', db.seed_version);
-            if (db.seeded) localStorage.setItem('tf_relays_seeded', db.seeded);
+                // Settings
+                if (db.theme) localStorage.setItem('tf_theme', db.theme);
+                if (db.seed_version) localStorage.setItem('tf_relays_seed_version', db.seed_version);
+                if (db.seeded) localStorage.setItem('tf_relays_seeded', db.seeded);
 
-            alert('Database restored successfully! The page will now reload.');
-            location.reload();
-        } catch (err) {
-            console.error(err);
-            alert('Error parsing database file: ' + err.message);
-        }
-    };
-    reader.readAsText(file);
-}
-
-
-// --- Stats Logic ---
-let statsSortField = 'count';
-let statsSortOrder = 'desc';
-
-window.sortStats = function (field) {
-    if (statsSortField === field) {
-        statsSortOrder = statsSortOrder === 'asc' ? 'desc' : 'asc';
-    } else {
-        statsSortField = field;
-        statsSortOrder = field === 'count' ? 'desc' : 'asc';
-    }
-    renderStats();
-};
-
-// Expose renderStats globally for HTML attributes
-window.renderStats = renderStats;
-
-function renderStats() {
-    if (!statsTableBody) return;
-    statsTableBody.innerHTML = '';
-
-    // Aggregate
-    const agg = {};
-    records.forEach(r => {
-        const ev = events.find(e => e.name === r.event);
-        const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
-        if (isRelay) return;
-
-        // --- Approval Logic: Exclude Unapproved Records from Medal Stats ---
-        // STRICT check: must be true. Undefined is NOT enough for stats as per "newly migrated" logic?
-        // Actually, migration sets undefined -> true. So this is safe.
-        if (r.approved !== true) return;
-
-        if (r.athlete) {
-            if (!agg[r.athlete]) agg[r.athlete] = { count: 0, minYear: null, maxYear: null };
-            agg[r.athlete].count++;
-            if (r.date) {
-                const y = new Date(r.date).getFullYear();
-                const currentMin = agg[r.athlete].minYear;
-                const currentMax = agg[r.athlete].maxYear;
-                if (currentMin === null || y < currentMin) agg[r.athlete].minYear = y;
-                if (currentMax === null || y > currentMax) agg[r.athlete].maxYear = y;
+                alert('Database restored successfully! The page will now reload.');
+                location.reload();
+            } catch (err) {
+                console.error(err);
+                alert('Error parsing database file: ' + err.message);
             }
-        }
-    });
-
-    // Populate Name Filter Dropdown
-    const nameSelect = document.getElementById('statsFilterName');
-    if (nameSelect && nameSelect.options.length <= 1) {
-        const allNames = Object.keys(agg).sort();
-        allNames.forEach(n => {
-            const op = document.createElement('option');
-            op.value = n;
-            op.textContent = n;
-            nameSelect.appendChild(op);
-        });
+        };
+        reader.readAsText(file);
     }
 
-    // Populate Age Category Dropdown (Unique Categories from all data)
-    const catSelect = document.getElementById('statsFilterCategory');
-    if (catSelect && catSelect.options.length <= 1) {
-        const categories = new Set();
-        Object.keys(agg).forEach(name => {
-            const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === name);
-            if (athlete && athlete.dob) {
-                const age = getExactAge(athlete.dob, new Date());
-                if (age !== null && age >= 35) {
-                    const cat = (Math.floor(age / 5) * 5).toString(); // No Gender Prefix
-                    categories.add(cat);
+
+    // --- Stats Logic ---
+    let statsSortField = 'count';
+    let statsSortOrder = 'desc';
+
+    window.sortStats = function (field) {
+        if (statsSortField === field) {
+            statsSortOrder = statsSortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            statsSortField = field;
+            statsSortOrder = field === 'count' ? 'desc' : 'asc';
+        }
+        renderStats();
+    };
+
+    // Expose renderStats globally for HTML attributes
+    window.renderStats = renderStats;
+
+    function renderStats() {
+        if (!statsTableBody) return;
+        statsTableBody.innerHTML = '';
+
+        // Aggregate
+        const agg = {};
+        records.forEach(r => {
+            const ev = events.find(e => e.name === r.event);
+            const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
+            if (isRelay) return;
+
+            // --- Approval Logic: Exclude Unapproved Records from Medal Stats ---
+            // STRICT check: must be true. Undefined is NOT enough for stats as per "newly migrated" logic?
+            // Actually, migration sets undefined -> true. So this is safe.
+            if (r.approved !== true) return;
+
+            if (r.athlete) {
+                if (!agg[r.athlete]) agg[r.athlete] = { count: 0, minYear: null, maxYear: null };
+                agg[r.athlete].count++;
+                if (r.date) {
+                    const y = new Date(r.date).getFullYear();
+                    const currentMin = agg[r.athlete].minYear;
+                    const currentMax = agg[r.athlete].maxYear;
+                    if (currentMin === null || y < currentMin) agg[r.athlete].minYear = y;
+                    if (currentMax === null || y > currentMax) agg[r.athlete].maxYear = y;
                 }
             }
         });
-        // Sort numeric
-        Array.from(categories).sort((a, b) => {
-            return parseInt(a) - parseInt(b);
-        }).forEach(c => {
-            const op = document.createElement('option');
-            op.value = c;
-            op.textContent = c;
-            catSelect.appendChild(op);
-        });
-    }
 
-    // Filter values (Read once)
-    const genderFilterEl = document.getElementById('statsFilterGender');
-    const nameFilterEl = document.getElementById('statsFilterName');
-    const catFilterEl = document.getElementById('statsFilterCategory');
-    const genderFilter = genderFilterEl ? genderFilterEl.value : 'all';
-    const nameFilter = nameFilterEl ? nameFilterEl.value : 'all';
-    const catFilter = catFilterEl ? catFilterEl.value : 'all';
+        // Populate Name Filter Dropdown
+        const nameSelect = document.getElementById('statsFilterName');
+        if (nameSelect && nameSelect.options.length <= 1) {
+            const allNames = Object.keys(agg).sort();
+            allNames.forEach(n => {
+                const op = document.createElement('option');
+                op.value = n;
+                op.textContent = n;
+                nameSelect.appendChild(op);
+            });
+        }
 
-    // console.log(`Stats Filter - Name: "${nameFilter}", Gender: "${genderFilter}"`);
+        // Populate Age Category Dropdown (Unique Categories from all data)
+        const catSelect = document.getElementById('statsFilterCategory');
+        if (catSelect && catSelect.options.length <= 1) {
+            const categories = new Set();
+            Object.keys(agg).forEach(name => {
+                const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === name);
+                if (athlete && athlete.dob) {
+                    const age = getExactAge(athlete.dob, new Date());
+                    if (age !== null && age >= 35) {
+                        const cat = (Math.floor(age / 5) * 5).toString(); // No Gender Prefix
+                        categories.add(cat);
+                    }
+                }
+            });
+            // Sort numeric
+            Array.from(categories).sort((a, b) => {
+                return parseInt(a) - parseInt(b);
+            }).forEach(c => {
+                const op = document.createElement('option');
+                op.value = c;
+                op.textContent = c;
+                catSelect.appendChild(op);
+            });
+        }
 
-    // Convert to Array & Enrich
-    let statsData = Object.keys(agg).reduce((acc, name) => {
-        const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === name);
+        // Filter values (Read once)
+        const genderFilterEl = document.getElementById('statsFilterGender');
+        const nameFilterEl = document.getElementById('statsFilterName');
+        const catFilterEl = document.getElementById('statsFilterCategory');
+        const genderFilter = genderFilterEl ? genderFilterEl.value : 'all';
+        const nameFilter = nameFilterEl ? nameFilterEl.value : 'all';
+        const catFilter = catFilterEl ? catFilterEl.value : 'all';
 
-        // Name Filter (Exact) - If Name is selected, it overrides Gender filter
-        if (nameFilter !== 'all') {
-            if (name !== nameFilter) return acc;
-        } else {
-            // Gender Filter (Only check if Name not selected)
-            if (genderFilter !== 'all') {
-                if (!athlete || athlete.gender !== genderFilter) return acc;
+        // console.log(`Stats Filter - Name: "${nameFilter}", Gender: "${genderFilter}"`);
+
+        // Convert to Array & Enrich
+        let statsData = Object.keys(agg).reduce((acc, name) => {
+            const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === name);
+
+            // Name Filter (Exact) - If Name is selected, it overrides Gender filter
+            if (nameFilter !== 'all') {
+                if (name !== nameFilter) return acc;
+            } else {
+                // Gender Filter (Only check if Name not selected)
+                if (genderFilter !== 'all') {
+                    if (!athlete || athlete.gender !== genderFilter) return acc;
+                }
             }
-        }
 
-        const data = agg[name];
-        let ratioVal = 0;
-        if (data.minYear !== null && data.maxYear !== null && data.count > 0) {
-            const diff = data.maxYear - data.minYear;
-            if (diff > 0) {
-                // Formula: RecordCount / (MaxYear - MinYear)
-                ratioVal = (data.count / diff) * 100;
+            const data = agg[name];
+            let ratioVal = 0;
+            if (data.minYear !== null && data.maxYear !== null && data.count > 0) {
+                const diff = data.maxYear - data.minYear;
+                if (diff > 0) {
+                    // Formula: RecordCount / (MaxYear - MinYear)
+                    ratioVal = (data.count / diff) * 100;
+                }
             }
-        }
 
-        const item = {
-            name: name,
-            count: data.count,
-            ratio: ratioVal.toFixed(2) + '%',
-            age: null,
-            ageCategory: null,
-            generalRank: null,
-            ageRank: null,
-            ageMedal: '',
-            gender: athlete ? athlete.gender : ''
-        };
+            const item = {
+                name: name,
+                count: data.count,
+                ratio: ratioVal.toFixed(2) + '%',
+                age: null,
+                ageCategory: null,
+                generalRank: null,
+                ageRank: null,
+                ageMedal: '',
+                gender: athlete ? athlete.gender : ''
+            };
 
-        // Enrich with Age & Category
-        if (athlete && athlete.dob) {
-            const age = getExactAge(athlete.dob, new Date());
-            item.age = age;
-            if (age !== null && age >= 35) {
-                // Category Logic: >=35 = 5-year bucket
-                // Prefix: M or W or X based on gender
-                const g = normalizeGenderLookups(item.gender);
-                let prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
-                item.ageCategory = prefix + (Math.floor(age / 5) * 5).toString();
+            // Enrich with Age & Category
+            if (athlete && athlete.dob) {
+                const age = getExactAge(athlete.dob, new Date());
+                item.age = age;
+                if (age !== null && age >= 35) {
+                    // Category Logic: >=35 = 5-year bucket
+                    // Prefix: M or W or X based on gender
+                    const g = normalizeGenderLookups(item.gender);
+                    let prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
+                    item.ageCategory = prefix + (Math.floor(age / 5) * 5).toString();
+                }
             }
+
+            // Category Filter (Overrides if Name not selected)
+            if (catFilter !== 'all' && nameFilter === 'all') {
+                if (!item.ageCategory) return acc;
+                let itemCat = item.ageCategory.replace(/^[MW]/, '');
+                if (itemCat !== catFilter) return acc;
+            }
+
+            acc.push(item);
+            return acc;
+        }, []);
+
+        if (statsData.length === 0) {
+            statsTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No records found for selected filters.</td></tr>';
+            return;
         }
 
-        // Category Filter (Overrides if Name not selected)
-        if (catFilter !== 'all' && nameFilter === 'all') {
-            if (!item.ageCategory) return acc;
-            let itemCat = item.ageCategory.replace(/^[MW]/, '');
-            if (itemCat !== catFilter) return acc;
-        }
-
-        acc.push(item);
-        return acc;
-    }, []);
-
-    if (statsData.length === 0) {
-        statsTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No records found for selected filters.</td></tr>';
-        return;
-    }
-
-    // --- Calculate Rankings ---
+        // --- Calculate Rankings ---
 
 
-    // 2. General Rank
-    // Sort temp array by count desc
-    const sortedByCount = [...statsData].sort((a, b) => b.count - a.count);
-    sortedByCount.forEach((item, index) => {
-        item.generalRank = index + 1;
-        if (item.generalRank === 1) item.generalRank += ' 🥇';
-        else if (item.generalRank === 2) item.generalRank += ' 🥈';
-        else if (item.generalRank === 3) item.generalRank += ' 🥉';
-    });
-
-    // 3. Age Category Rank
-    // Group by category
-    const contentByAge = {};
-    statsData.forEach(item => {
-        const cat = item.ageCategory || 'Unknown';
-        if (!contentByAge[cat]) contentByAge[cat] = [];
-        contentByAge[cat].push(item);
-    });
-
-    // Rank within groups
-    Object.keys(contentByAge).forEach(cat => {
-        const group = contentByAge[cat];
-        group.sort((a, b) => b.count - a.count);
-        group.forEach((item, index) => {
-            item.ageRank = index + 1;
-            if (item.ageRank === 1) item.ageMedal = '🥇';
-            else if (item.ageRank === 2) item.ageMedal = '🥈';
-            else if (item.ageRank === 3) item.ageMedal = '🥉';
+        // 2. General Rank
+        // Sort temp array by count desc
+        const sortedByCount = [...statsData].sort((a, b) => b.count - a.count);
+        sortedByCount.forEach((item, index) => {
+            item.generalRank = index + 1;
+            if (item.generalRank === 1) item.generalRank += ' 🥇';
+            else if (item.generalRank === 2) item.generalRank += ' 🥈';
+            else if (item.generalRank === 3) item.generalRank += ' 🥉';
         });
-    });
 
-
-    // --- Filter by Medal (Post-Ranking) ---
-    const medalFilter = document.getElementById('statsFilterMedal') ? document.getElementById('statsFilterMedal').value : 'all';
-    // Only apply Medal Filter if Name Filter is NOT active
-    if (medalFilter !== 'all' && nameFilter === 'all') {
-        statsData = statsData.filter(item => {
-            if (medalFilter === 'gold') return item.ageMedal === '🥇';
-            if (medalFilter === 'silver') return item.ageMedal === '🥈';
-            if (medalFilter === 'bronze') return item.ageMedal === '🥉';
-            if (medalFilter === 'any') return item.ageMedal !== '';
-            return true;
+        // 3. Age Category Rank
+        // Group by category
+        const contentByAge = {};
+        statsData.forEach(item => {
+            const cat = item.ageCategory || 'Unknown';
+            if (!contentByAge[cat]) contentByAge[cat] = [];
+            contentByAge[cat].push(item);
         });
-    }
 
-    if (statsData.length === 0) {
-        let msg = 'No athletes found with selected filters.';
-        if (nameFilter !== 'all') msg += ` (Name: "${nameFilter}")`;
-        statsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${msg}</td></tr>`;
-        return;
-    }
+        // Rank within groups
+        Object.keys(contentByAge).forEach(cat => {
+            const group = contentByAge[cat];
+            group.sort((a, b) => b.count - a.count);
+            group.forEach((item, index) => {
+                item.ageRank = index + 1;
+                if (item.ageRank === 1) item.ageMedal = '🥇';
+                else if (item.ageRank === 2) item.ageMedal = '🥈';
+                else if (item.ageRank === 3) item.ageMedal = '🥉';
+            });
+        });
 
 
-    // --- User Display Sort ---
-    statsData.sort((a, b) => {
-        let valA = a[statsSortField];
-        let valB = b[statsSortField];
-
-        if (statsSortField === 'ratio') {
-            valA = parseFloat(valA.replace('%', ''));
-            valB = parseFloat(valB.replace('%', ''));
-        } else if (statsSortField === 'generalRank' || statsSortField === 'ageRank') {
-            // Clean strings (remove medals/whitespace) and parse int
-            // If value is just number, parseInt works.
-            // If "1 🥇", parseInt("1 🥇") -> 1.
-            valA = parseInt(valA.toString());
-            valB = parseInt(valB.toString());
+        // --- Filter by Medal (Post-Ranking) ---
+        const medalFilter = document.getElementById('statsFilterMedal') ? document.getElementById('statsFilterMedal').value : 'all';
+        // Only apply Medal Filter if Name Filter is NOT active
+        if (medalFilter !== 'all' && nameFilter === 'all') {
+            statsData = statsData.filter(item => {
+                if (medalFilter === 'gold') return item.ageMedal === '🥇';
+                if (medalFilter === 'silver') return item.ageMedal === '🥈';
+                if (medalFilter === 'bronze') return item.ageMedal === '🥉';
+                if (medalFilter === 'any') return item.ageMedal !== '';
+                return true;
+            });
         }
 
-        // Case insensitive for names
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
+        if (statsData.length === 0) {
+            let msg = 'No athletes found with selected filters.';
+            if (nameFilter !== 'all') msg += ` (Name: "${nameFilter}")`;
+            statsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${msg}</td></tr>`;
+            return;
+        }
 
-        if (valA < valB) return statsSortOrder === 'asc' ? -1 : 1;
-        if (valA > valB) return statsSortOrder === 'asc' ? 1 : -1;
-        return 0;
-    });
 
-    // Render
-    statsData.forEach((item, index) => {
-        const uniqueId = `stats-detail-${index}`;
+        // --- User Display Sort ---
+        statsData.sort((a, b) => {
+            let valA = a[statsSortField];
+            let valB = b[statsSortField];
 
-        // Age Badge (Existing Logic reused/adjusted)
-        let ageDisplay = '';
-        if (item.age !== null) {
-            // Badge Style
-            ageDisplay = `<span style="
+            if (statsSortField === 'ratio') {
+                valA = parseFloat(valA.replace('%', ''));
+                valB = parseFloat(valB.replace('%', ''));
+            } else if (statsSortField === 'generalRank' || statsSortField === 'ageRank') {
+                // Clean strings (remove medals/whitespace) and parse int
+                // If value is just number, parseInt works.
+                // If "1 🥇", parseInt("1 🥇") -> 1.
+                valA = parseInt(valA.toString());
+                valB = parseInt(valB.toString());
+            }
+
+            // Case insensitive for names
+            if (typeof valA === 'string') valA = valA.toLowerCase();
+            if (typeof valB === 'string') valB = valB.toLowerCase();
+
+            if (valA < valB) return statsSortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return statsSortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Render
+        statsData.forEach((item, index) => {
+            const uniqueId = `stats-detail-${index}`;
+
+            // Age Badge (Existing Logic reused/adjusted)
+            let ageDisplay = '';
+            if (item.age !== null) {
+                // Badge Style
+                ageDisplay = `<span style="
                     background-color: var(--success);
                     color: white;
                     padding: 3px 10px;
@@ -5021,29 +5017,29 @@ function renderStats() {
                     margin-left: 10px;
                     margin-right: 15px;
                  ">Age: ${item.age}</span>`;
-        }
-
-        // Calculate Year Badges
-        // 1. Get records for athlete
-        // (Note: redundant filter here, optimize later if slow, strict validation says no redeclaring 'athleteRecords')
-        const athleteRecords = records.filter(r => r.athlete === item.name);
-
-        // 2. Group by Year
-        const years = {};
-        athleteRecords.forEach(r => {
-            if (r.date) {
-                const y = new Date(r.date).getFullYear();
-                years[y] = (years[y] || 0) + 1;
             }
-        });
 
-        // 3. Sort Years Descending
-        const sortedYears = Object.keys(years).sort((a, b) => b - a);
+            // Calculate Year Badges
+            // 1. Get records for athlete
+            // (Note: redundant filter here, optimize later if slow, strict validation says no redeclaring 'athleteRecords')
+            const athleteRecords = records.filter(r => r.athlete === item.name);
 
-        // 4. Build HTML
-        let yearBadgesHtml = '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:5px;">';
-        sortedYears.forEach(year => {
-            yearBadgesHtml += `
+            // 2. Group by Year
+            const years = {};
+            athleteRecords.forEach(r => {
+                if (r.date) {
+                    const y = new Date(r.date).getFullYear();
+                    years[y] = (years[y] || 0) + 1;
+                }
+            });
+
+            // 3. Sort Years Descending
+            const sortedYears = Object.keys(years).sort((a, b) => b - a);
+
+            // 4. Build HTML
+            let yearBadgesHtml = '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:5px;">';
+            sortedYears.forEach(year => {
+                yearBadgesHtml += `
                     <div style="
                         position: relative;
                         background-color: var(--primary); /* Blue */
@@ -5076,32 +5072,32 @@ function renderStats() {
                         ">${years[year]}</div>
                     </div>
                 `;
-        });
-        yearBadgesHtml += '</div>';
+            });
+            yearBadgesHtml += '</div>';
 
-        // Age Rank Display
-        let ageRankDisplay = '-';
-        if (item.ageCategory) {
-            ageRankDisplay = `<div style="display:flex; align-items:center; justify-content:flex-end;">
+            // Age Rank Display
+            let ageRankDisplay = '-';
+            if (item.ageCategory) {
+                ageRankDisplay = `<div style="display:flex; align-items:center; justify-content:flex-end;">
                     <span style="font-weight:bold; margin-right:5px;">${item.ageRank}</span>
                     <span style="font-size:2.5em; margin-right:5px;">${item.ageMedal}</span>
                     <span style="font-size:0.8em; opacity:0.6;">(${item.ageCategory})</span>
                 </div>`;
-        }
+            }
 
-        // General Rank Display with large medal
-        let genRankDisplay = item.generalRank;
-        if (typeof item.generalRank === 'string' && item.generalRank.includes('🥇')) {
-            genRankDisplay = item.generalRank.replace('🥇', '<span style="font-size:2.5em;">🥇</span>');
-        } else if (typeof item.generalRank === 'string' && item.generalRank.includes('🥈')) {
-            genRankDisplay = item.generalRank.replace('🥈', '<span style="font-size:2.5em;">🥈</span>');
-        } else if (typeof item.generalRank === 'string' && item.generalRank.includes('🥉')) {
-            genRankDisplay = item.generalRank.replace('🥉', '<span style="font-size:2.5em;">🥉</span>');
-        }
+            // General Rank Display with large medal
+            let genRankDisplay = item.generalRank;
+            if (typeof item.generalRank === 'string' && item.generalRank.includes('🥇')) {
+                genRankDisplay = item.generalRank.replace('🥇', '<span style="font-size:2.5em;">🥇</span>');
+            } else if (typeof item.generalRank === 'string' && item.generalRank.includes('🥈')) {
+                genRankDisplay = item.generalRank.replace('🥈', '<span style="font-size:2.5em;">🥈</span>');
+            } else if (typeof item.generalRank === 'string' && item.generalRank.includes('🥉')) {
+                genRankDisplay = item.generalRank.replace('🥉', '<span style="font-size:2.5em;">🥉</span>');
+            }
 
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
                 <td style="text-align:center; font-weight:bold; color:var(--text-muted);">${genRankDisplay}</td>
                 <td style="font-weight:600; cursor:pointer; color:white;" onclick="toggleStatsDetail('${uniqueId}')">
                     <div style="display:flex; align-items:center;">
@@ -5114,20 +5110,20 @@ function renderStats() {
                 <td style="text-align:right;">${ageRankDisplay}</td>
                 <td style="text-align:right; padding-right:15px;">${item.count}</td>
             `;
-        statsTableBody.appendChild(tr);
+            statsTableBody.appendChild(tr);
 
-        // Detail Row
-        const trDetail = document.createElement('tr');
-        trDetail.id = uniqueId;
-        trDetail.className = 'hidden';
-        // Light blue background for details (using accent color with low opacity)
-        trDetail.style.backgroundColor = 'rgba(6, 182, 212, 0.1)';
+            // Detail Row
+            const trDetail = document.createElement('tr');
+            trDetail.id = uniqueId;
+            trDetail.className = 'hidden';
+            // Light blue background for details (using accent color with low opacity)
+            trDetail.style.backgroundColor = 'rgba(6, 182, 212, 0.1)';
 
-        // Get records for this athlete (Already fetched above in athleteRecords)
-        // Sort by date desc
-        athleteRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Get records for this athlete (Already fetched above in athleteRecords)
+            // Sort by date desc
+            athleteRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        let detailsHtml = `
+            let detailsHtml = `
                 <div style="padding: 10px; margin-left: 20px;">
                     <table style="width:100%; font-size: 0.9em; border-collapse: collapse;">
                         <thead style="background: rgba(6, 182, 212, 0.2);">
@@ -5143,8 +5139,8 @@ function renderStats() {
                         <tbody>
             `;
 
-        athleteRecords.forEach(r => {
-            detailsHtml += `
+            athleteRecords.forEach(r => {
+                detailsHtml += `
                     <tr>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.event}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.ageGroup || '-'}</td>
@@ -5154,191 +5150,191 @@ function renderStats() {
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.town || r.location || '-'}</td>
                     </tr>
                 `;
-        });
+            });
 
-        detailsHtml += `
+            detailsHtml += `
                         </tbody>
                     </table>
                 </div>
             `;
 
-        trDetail.innerHTML = `
+            trDetail.innerHTML = `
                 <td colspan="2" style="padding:0;">${detailsHtml}</td>
             `;
-        statsTableBody.appendChild(trDetail);
-    });
-}
-
-window.toggleStatsDetail = function (id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('hidden');
-};
-
-// Fallback if needed
-window.addEventListener('load', () => {
-    setTimeout(populateYearDropdown, 500);
-});
-
-// --- IAAF Scoring Tables Logic ---
-
-// Populate IAAF Event dropdown in Event Creation form
-function populateIAAFEventDropdown() {
-    if (!newEventIAAF || !iaafData || iaafData.length === 0) return;
-
-    // Get unique event names from IAAF data
-    const uniqueEvents = [...new Set(iaafData.map(d => d.event))].sort();
-
-    // Keep the "None" option
-    newEventIAAF.innerHTML = '<option value="">None (No IAAF link)</option>';
-
-    // Add each unique event
-    uniqueEvents.forEach(eventName => {
-        const option = document.createElement('option');
-        option.value = eventName;
-        option.textContent = eventName;
-        newEventIAAF.appendChild(option);
-    });
-}
-
-function populateWMAEventDropdown() {
-    if (!newEventWMA || !wmaData || wmaData.length === 0) return;
-
-    // Get unique event names from WMA data
-    const uniqueEvents = [...new Set(wmaData.map(d => d.event))].sort();
-
-    // Keep the "None" option
-    newEventWMA.innerHTML = '<option value="">None (No WMA link)</option>';
-
-    // Add each unique event
-    uniqueEvents.forEach(eventName => {
-        const option = document.createElement('option');
-        option.value = eventName;
-        option.textContent = eventName;
-        newEventWMA.appendChild(option);
-    });
-}
-
-async function loadIAAFData() {
-    if (isIAAFDataLoaded) {
-        renderIAAFFilters();
-        return;
+            statsTableBody.appendChild(trDetail);
+        });
     }
 
-    const loadingIndicator = document.getElementById('iaafLoading');
-    const container = document.getElementById('iaafTableContainer');
-    // const emptyState = document.querySelector('#setting-iaaf .empty-state'); 
+    window.toggleStatsDetail = function (id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('hidden');
+    };
 
-    if (loadingIndicator) loadingIndicator.classList.remove('hidden');
-    if (container) container.classList.add('hidden');
+    // Fallback if needed
+    window.addEventListener('load', () => {
+        setTimeout(populateYearDropdown, 500);
+    });
 
-    // Check if data is already global (from previous load or pre-load)
-    if (window.IAAF_SCORING_DATA) {
-        iaafData = window.IAAF_SCORING_DATA;
-        isIAAFDataLoaded = true;
-        rebuildPerformanceIndexes();
-        renderIAAFFilters();
-        populateIAAFEventDropdown();  // Populate event creation dropdown
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
-        if (container) container.classList.remove('hidden');
-        return;
+    // --- IAAF Scoring Tables Logic ---
+
+    // Populate IAAF Event dropdown in Event Creation form
+    function populateIAAFEventDropdown() {
+        if (!newEventIAAF || !iaafData || iaafData.length === 0) return;
+
+        // Get unique event names from IAAF data
+        const uniqueEvents = [...new Set(iaafData.map(d => d.event))].sort();
+
+        // Keep the "None" option
+        newEventIAAF.innerHTML = '<option value="">None (No IAAF link)</option>';
+
+        // Add each unique event
+        uniqueEvents.forEach(eventName => {
+            const option = document.createElement('option');
+            option.value = eventName;
+            option.textContent = eventName;
+            newEventIAAF.appendChild(option);
+        });
     }
 
-    // Dynamic Script Injection (Bypasses CORS on local file://)
-    const script = document.createElement('script');
-    script.src = 'data/iaaf_data.js';
+    function populateWMAEventDropdown() {
+        if (!newEventWMA || !wmaData || wmaData.length === 0) return;
 
-    script.onload = () => {
+        // Get unique event names from WMA data
+        const uniqueEvents = [...new Set(wmaData.map(d => d.event))].sort();
+
+        // Keep the "None" option
+        newEventWMA.innerHTML = '<option value="">None (No WMA link)</option>';
+
+        // Add each unique event
+        uniqueEvents.forEach(eventName => {
+            const option = document.createElement('option');
+            option.value = eventName;
+            option.textContent = eventName;
+            newEventWMA.appendChild(option);
+        });
+    }
+
+    async function loadIAAFData() {
+        if (isIAAFDataLoaded) {
+            renderIAAFFilters();
+            return;
+        }
+
+        const loadingIndicator = document.getElementById('iaafLoading');
+        const container = document.getElementById('iaafTableContainer');
+        // const emptyState = document.querySelector('#setting-iaaf .empty-state'); 
+
+        if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+        if (container) container.classList.add('hidden');
+
+        // Check if data is already global (from previous load or pre-load)
         if (window.IAAF_SCORING_DATA) {
             iaafData = window.IAAF_SCORING_DATA;
             isIAAFDataLoaded = true;
             rebuildPerformanceIndexes();
             renderIAAFFilters();
             populateIAAFEventDropdown();  // Populate event creation dropdown
-        } else {
-            alert('Error: Data loaded but variable not found.');
+            if (loadingIndicator) loadingIndicator.classList.add('hidden');
+            if (container) container.classList.remove('hidden');
+            return;
         }
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
-        if (container) container.classList.remove('hidden');
-    };
 
-    script.onerror = (e) => {
-        console.error('Script load error:', e);
-        // Fallback or error message
-        // Maybe try fetch as backup if script fails? Unlikely if file missing.
-        alert('Failed to load IAAF Scoring Tables (data/iaaf_data.js). Please ensure the file exists.');
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
-    };
+        // Dynamic Script Injection (Bypasses CORS on local file://)
+        const script = document.createElement('script');
+        script.src = 'data/iaaf_data.js';
 
-    document.body.appendChild(script);
-}
+        script.onload = () => {
+            if (window.IAAF_SCORING_DATA) {
+                iaafData = window.IAAF_SCORING_DATA;
+                isIAAFDataLoaded = true;
+                rebuildPerformanceIndexes();
+                renderIAAFFilters();
+                populateIAAFEventDropdown();  // Populate event creation dropdown
+            } else {
+                alert('Error: Data loaded but variable not found.');
+            }
+            if (loadingIndicator) loadingIndicator.classList.add('hidden');
+            if (container) container.classList.remove('hidden');
+        };
 
-// Assign to window for HTML access (or keep local if only called from JS)
-// Actually, onchange="renderIAAFFilters()" in HTML needs it to be global OR attached to window.
-// If inside closure, HTML can't see it unless we explicitly attach to window.
-window.renderIAAFFilters = function () {
-    if (!isIAAFDataLoaded) return;
+        script.onerror = (e) => {
+            console.error('Script load error:', e);
+            // Fallback or error message
+            // Maybe try fetch as backup if script fails? Unlikely if file missing.
+            alert('Failed to load IAAF Scoring Tables (data/iaaf_data.js). Please ensure the file exists.');
+            if (loadingIndicator) loadingIndicator.classList.add('hidden');
+        };
 
-    const gender = document.getElementById('iaafFilterGender').value; // men, women
-    const eventSelect = document.getElementById('iaafFilterEvent');
-
-    const availableEvents = [...new Set(iaafData
-        .filter(d => d.gender === gender)
-        .map(d => d.event)
-    )].sort();
-
-    // Save current selection if still valid
-    const currentEvent = eventSelect.value;
-    eventSelect.innerHTML = '<option value="" disabled selected>Select Event...</option>';
-
-    availableEvents.forEach(evt => {
-        const option = document.createElement('option');
-        option.value = evt;
-        option.textContent = evt;
-        eventSelect.appendChild(option);
-    });
-
-    if (availableEvents.includes(currentEvent)) {
-        eventSelect.value = currentEvent;
-    } else {
-        document.getElementById('iaafTableBody').innerHTML = '';
+        document.body.appendChild(script);
     }
 
-    renderIAAFTable();
-};
+    // Assign to window for HTML access (or keep local if only called from JS)
+    // Actually, onchange="renderIAAFFilters()" in HTML needs it to be global OR attached to window.
+    // If inside closure, HTML can't see it unless we explicitly attach to window.
+    window.renderIAAFFilters = function () {
+        if (!isIAAFDataLoaded) return;
 
-window.renderIAAFTable = function () {
-    // const category = document.getElementById('iaafFilterCategory').value;
-    const gender = document.getElementById('iaafFilterGender').value;
-    const eventName = document.getElementById('iaafFilterEvent').value;
-    const tbody = document.getElementById('iaafTableBody');
-    tbody.innerHTML = '';
+        const gender = document.getElementById('iaafFilterGender').value; // men, women
+        const eventSelect = document.getElementById('iaafFilterEvent');
 
-    if (!eventName) return;
+        const availableEvents = [...new Set(iaafData
+            .filter(d => d.gender === gender)
+            .map(d => d.event)
+        )].sort();
 
-    const records = iaafData
-        .filter(d => d.gender === gender && d.event === eventName)
-        .sort((a, b) => b.points - a.points); // Sort by points high to low
+        // Save current selection if still valid
+        const currentEvent = eventSelect.value;
+        eventSelect.innerHTML = '<option value="" disabled selected>Select Event...</option>';
 
-    const fragment = document.createDocumentFragment();
+        availableEvents.forEach(evt => {
+            const option = document.createElement('option');
+            option.value = evt;
+            option.textContent = evt;
+            eventSelect.appendChild(option);
+        });
 
-    records.forEach(r => {
-        let mark = r.mark;
-        let points = r.points;
-
-        if (iaafUpdates[r.id]) {
-            mark = iaafUpdates[r.id].mark !== undefined ? iaafUpdates[r.id].mark : mark;
-            points = iaafUpdates[r.id].points !== undefined ? iaafUpdates[r.id].points : points;
+        if (availableEvents.includes(currentEvent)) {
+            eventSelect.value = currentEvent;
+        } else {
+            document.getElementById('iaafTableBody').innerHTML = '';
         }
 
-        // Round numeric values to 2 decimal places
-        if (typeof mark === 'number') mark = Math.round(mark * 100) / 100;
-        if (typeof points === 'number') points = Math.round(points * 100) / 100;
+        renderIAAFTable();
+    };
 
-        if (iaafUpdates[r.id] && iaafUpdates[r.id].deleted) return; // Skip deleted rows
+    window.renderIAAFTable = function () {
+        // const category = document.getElementById('iaafFilterCategory').value;
+        const gender = document.getElementById('iaafFilterGender').value;
+        const eventName = document.getElementById('iaafFilterEvent').value;
+        const tbody = document.getElementById('iaafTableBody');
+        tbody.innerHTML = '';
 
-        const tr = document.createElement('tr');
-        tr.dataset.rowId = r.id;
-        tr.innerHTML = `
+        if (!eventName) return;
+
+        const records = iaafData
+            .filter(d => d.gender === gender && d.event === eventName)
+            .sort((a, b) => b.points - a.points); // Sort by points high to low
+
+        const fragment = document.createDocumentFragment();
+
+        records.forEach(r => {
+            let mark = r.mark;
+            let points = r.points;
+
+            if (iaafUpdates[r.id]) {
+                mark = iaafUpdates[r.id].mark !== undefined ? iaafUpdates[r.id].mark : mark;
+                points = iaafUpdates[r.id].points !== undefined ? iaafUpdates[r.id].points : points;
+            }
+
+            // Round numeric values to 2 decimal places
+            if (typeof mark === 'number') mark = Math.round(mark * 100) / 100;
+            if (typeof points === 'number') points = Math.round(points * 100) / 100;
+
+            if (iaafUpdates[r.id] && iaafUpdates[r.id].deleted) return; // Skip deleted rows
+
+            const tr = document.createElement('tr');
+            tr.dataset.rowId = r.id;
+            tr.innerHTML = `
             <td class="iaaf-mark" data-original="${mark}">${mark}</td>
             <td class="iaaf-points" data-original="${points}">${points}</td>
             <td style="text-align:center;" class="iaaf-actions">
@@ -5347,174 +5343,174 @@ window.renderIAAFTable = function () {
                 ${iaafUpdates[r.id] && !iaafUpdates[r.id].deleted ? `<button class="btn-icon" onclick="window.revertIAAFEdit(${r.id})" title="Revert Changes" style="color:var(--text-muted);">↺</button>` : ''}
             </td>
         `;
-        fragment.appendChild(tr);
-    });
+            fragment.appendChild(tr);
+        });
 
-    tbody.appendChild(fragment);
-};
+        tbody.appendChild(fragment);
+    };
 
-window.handleIAAFEdit = function (id, field, value) {
-    if (!iaafUpdates[id]) iaafUpdates[id] = {};
-    iaafUpdates[id][field] = value;
-    saveIAAFUpdates();
-    // Don't re-render entire table to keep focus
-    // Maybe show Revert button? 
-    // We can find the row and update the actions cell?
-    // For now, simplicity: Revert button appears on next render or refresh. 
-    // Or we can manually append it.
-    const btn = document.querySelector(`button[onclick="window.revertIAAFEdit(${id})"]`);
-    if (!btn) {
-        // force re-render or just let user refresh?
-        // Since "Actions" column is updated, we SHOULD re-render row actions.
-        // But simpler to just let it save.
-        renderIAAFTable();
-    }
-};
+    window.handleIAAFEdit = function (id, field, value) {
+        if (!iaafUpdates[id]) iaafUpdates[id] = {};
+        iaafUpdates[id][field] = value;
+        saveIAAFUpdates();
+        // Don't re-render entire table to keep focus
+        // Maybe show Revert button? 
+        // We can find the row and update the actions cell?
+        // For now, simplicity: Revert button appears on next render or refresh. 
+        // Or we can manually append it.
+        const btn = document.querySelector(`button[onclick="window.revertIAAFEdit(${id})"]`);
+        if (!btn) {
+            // force re-render or just let user refresh?
+            // Since "Actions" column is updated, we SHOULD re-render row actions.
+            // But simpler to just let it save.
+            renderIAAFTable();
+        }
+    };
 
-// Start editing a row - make cells editable and show Save/Cancel buttons
-window.startIAAFEdit = function (id) {
-    const row = document.querySelector(`tr[data-row-id="${id}"]`);
-    if (!row) return;
+    // Start editing a row - make cells editable and show Save/Cancel buttons
+    window.startIAAFEdit = function (id) {
+        const row = document.querySelector(`tr[data-row-id="${id}"]`);
+        if (!row) return;
 
-    const markCell = row.querySelector('.iaaf-mark');
-    const pointsCell = row.querySelector('.iaaf-points');
-    const actionsCell = row.querySelector('.iaaf-actions');
+        const markCell = row.querySelector('.iaaf-mark');
+        const pointsCell = row.querySelector('.iaaf-points');
+        const actionsCell = row.querySelector('.iaaf-actions');
 
-    // Make cells editable
-    markCell.contentEditable = 'true';
-    pointsCell.contentEditable = 'true';
-    markCell.classList.add('editing');
-    pointsCell.classList.add('editing');
+        // Make cells editable
+        markCell.contentEditable = 'true';
+        pointsCell.contentEditable = 'true';
+        markCell.classList.add('editing');
+        pointsCell.classList.add('editing');
 
-    // Store original values
-    markCell.dataset.editing = markCell.textContent;
-    pointsCell.dataset.editing = pointsCell.textContent;
+        // Store original values
+        markCell.dataset.editing = markCell.textContent;
+        pointsCell.dataset.editing = pointsCell.textContent;
 
-    // Replace action buttons with Save/Cancel
-    actionsCell.innerHTML = `
+        // Replace action buttons with Save/Cancel
+        actionsCell.innerHTML = `
             <button class="btn-icon save" onclick="window.saveIAAFEdit(${id})" title="Save" style="color:var(--success);">✓</button>
             <button class="btn-icon cancel" onclick="window.cancelIAAFEdit(${id})" title="Cancel" style="color:var(--danger);">✗</button>
         `;
 
-    // Focus first cell
-    markCell.focus();
-};
+        // Focus first cell
+        markCell.focus();
+    };
 
-// Save edited values
-window.saveIAAFEdit = function (id) {
-    const row = document.querySelector(`tr[data-row-id="${id}"]`);
-    if (!row) return;
+    // Save edited values
+    window.saveIAAFEdit = function (id) {
+        const row = document.querySelector(`tr[data-row-id="${id}"]`);
+        if (!row) return;
 
-    const markCell = row.querySelector('.iaaf-mark');
-    const pointsCell = row.querySelector('.iaaf-points');
+        const markCell = row.querySelector('.iaaf-mark');
+        const pointsCell = row.querySelector('.iaaf-points');
 
-    // Get values and parse as numbers if possible
-    let markValue = markCell.textContent.trim();
-    let pointsValue = pointsCell.textContent.trim();
+        // Get values and parse as numbers if possible
+        let markValue = markCell.textContent.trim();
+        let pointsValue = pointsCell.textContent.trim();
 
-    // Try to parse as numbers and round to 2 decimals
-    const markNum = parseFloat(markValue);
-    const pointsNum = parseFloat(pointsValue);
+        // Try to parse as numbers and round to 2 decimals
+        const markNum = parseFloat(markValue);
+        const pointsNum = parseFloat(pointsValue);
 
-    if (!isNaN(markNum)) markValue = Math.round(markNum * 100) / 100;
-    if (!isNaN(pointsNum)) pointsValue = Math.round(pointsNum * 100) / 100;
+        if (!isNaN(markNum)) markValue = Math.round(markNum * 100) / 100;
+        if (!isNaN(pointsNum)) pointsValue = Math.round(pointsNum * 100) / 100;
 
-    // Save to iaafUpdates
-    if (!iaafUpdates[id]) iaafUpdates[id] = {};
-    iaafUpdates[id].mark = markValue;
-    iaafUpdates[id].points = pointsValue;
-    saveIAAFUpdates();
-
-    // Re-render table to show updated values and restore buttons
-    renderIAAFTable();
-};
-
-// Cancel editing - revert to original values
-window.cancelIAAFEdit = function (id) {
-    // Just re-render to restore original state
-    renderIAAFTable();
-};
-
-// Delete a row (mark as deleted)
-window.deleteIAAFRow = function (id) {
-    if (confirm('Are you sure you want to delete this row?')) {
+        // Save to iaafUpdates
         if (!iaafUpdates[id]) iaafUpdates[id] = {};
-        iaafUpdates[id].deleted = true;
+        iaafUpdates[id].mark = markValue;
+        iaafUpdates[id].points = pointsValue;
         saveIAAFUpdates();
+
+        // Re-render table to show updated values and restore buttons
         renderIAAFTable();
-    }
-};
+    };
 
-window.revertIAAFEdit = function (id) {
-    if (confirm('Revert this record to original values?')) {
-        delete iaafUpdates[id];
-        saveIAAFUpdates();
+    // Cancel editing - revert to original values
+    window.cancelIAAFEdit = function (id) {
+        // Just re-render to restore original state
         renderIAAFTable();
-    }
-};
+    };
 
-// --- WMA 2023 Conversion Tables Logic ---
+    // Delete a row (mark as deleted)
+    window.deleteIAAFRow = function (id) {
+        if (confirm('Are you sure you want to delete this row?')) {
+            if (!iaafUpdates[id]) iaafUpdates[id] = {};
+            iaafUpdates[id].deleted = true;
+            saveIAAFUpdates();
+            renderIAAFTable();
+        }
+    };
 
-window.renderWMAFilters = function () {
-    if (!wmaFilterGender || !wmaFilterAgeGroup || !wmaFilterEvent) return;
+    window.revertIAAFEdit = function (id) {
+        if (confirm('Revert this record to original values?')) {
+            delete iaafUpdates[id];
+            saveIAAFUpdates();
+            renderIAAFTable();
+        }
+    };
 
-    const gender = wmaFilterGender.value;
+    // --- WMA 2023 Conversion Tables Logic ---
 
-    // Get unique age groups for this gender
-    const ageGroups = [...new Set(wmaData
-        .filter(d => d.gender === gender)
-        .map(d => d.ageGroup))].sort();
+    window.renderWMAFilters = function () {
+        if (!wmaFilterGender || !wmaFilterAgeGroup || !wmaFilterEvent) return;
 
-    const currentAgeGroup = wmaFilterAgeGroup.value;
-    wmaFilterAgeGroup.innerHTML = '<option value="" disabled selected>Select Age Group...</option>';
-    ageGroups.forEach(ag => {
-        const opt = document.createElement('option');
-        opt.value = ag;
-        opt.textContent = ag;
-        if (ag === currentAgeGroup) opt.selected = true;
-        wmaFilterAgeGroup.appendChild(opt);
-    });
+        const gender = wmaFilterGender.value;
 
-    // Get unique events for this gender
-    const wmaEvents = [...new Set(wmaData
-        .filter(d => d.gender === gender)
-        .map(d => d.event))].sort();
+        // Get unique age groups for this gender
+        const ageGroups = [...new Set(wmaData
+            .filter(d => d.gender === gender)
+            .map(d => d.ageGroup))].sort();
 
-    const currentEvent = wmaFilterEvent.value;
-    wmaFilterEvent.innerHTML = '<option value="" disabled selected>Select Event...</option>';
-    wmaEvents.forEach(e => {
-        const opt = document.createElement('option');
-        opt.value = e;
-        opt.textContent = e;
-        if (e === currentEvent) opt.selected = true;
-        wmaFilterEvent.appendChild(opt);
-    });
+        const currentAgeGroup = wmaFilterAgeGroup.value;
+        wmaFilterAgeGroup.innerHTML = '<option value="" disabled selected>Select Age Group...</option>';
+        ageGroups.forEach(ag => {
+            const opt = document.createElement('option');
+            opt.value = ag;
+            opt.textContent = ag;
+            if (ag === currentAgeGroup) opt.selected = true;
+            wmaFilterAgeGroup.appendChild(opt);
+        });
 
-    renderWMATable();
-};
+        // Get unique events for this gender
+        const wmaEvents = [...new Set(wmaData
+            .filter(d => d.gender === gender)
+            .map(d => d.event))].sort();
 
-window.renderWMATable = function () {
-    if (!wmaTableBody) return;
-    wmaTableBody.innerHTML = '';
+        const currentEvent = wmaFilterEvent.value;
+        wmaFilterEvent.innerHTML = '<option value="" disabled selected>Select Event...</option>';
+        wmaEvents.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e;
+            opt.textContent = e;
+            if (e === currentEvent) opt.selected = true;
+            wmaFilterEvent.appendChild(opt);
+        });
 
-    const gender = wmaFilterGender.value;
-    const ageGroup = wmaFilterAgeGroup.value;
-    const event = wmaFilterEvent.value;
+        renderWMATable();
+    };
 
-    if (!ageGroup || !event) return;
+    window.renderWMATable = function () {
+        if (!wmaTableBody) return;
+        wmaTableBody.innerHTML = '';
 
-    const filtered = wmaData.filter(d =>
-        d.gender === gender && d.ageGroup === ageGroup && d.event === event
-    ).sort((a, b) => a.age - b.age);
+        const gender = wmaFilterGender.value;
+        const ageGroup = wmaFilterAgeGroup.value;
+        const event = wmaFilterEvent.value;
 
-    filtered.forEach(d => {
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-wma-id', d.id);
+        if (!ageGroup || !event) return;
 
-        const isEditing = editingWMAId === d.id;
+        const filtered = wmaData.filter(d =>
+            d.gender === gender && d.ageGroup === ageGroup && d.event === event
+        ).sort((a, b) => a.age - b.age);
 
-        if (isEditing) {
-            tr.innerHTML = `
+        filtered.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.setAttribute('data-wma-id', d.id);
+
+            const isEditing = editingWMAId === d.id;
+
+            if (isEditing) {
+                tr.innerHTML = `
                     <td><input type="number" value="${d.age}" class="edit-age" style="width:60px;"></td>
                     <td><input type="number" value="${d.factor}" step="0.00001" class="edit-factor" style="width:100px;"></td>
                     <td style="text-align:center;">
@@ -5522,8 +5518,8 @@ window.renderWMATable = function () {
                         <button class="btn-icon cancel" onclick="window.cancelWMAEdit(${d.id})" title="Cancel">❌</button>
                     </td>
                 `;
-        } else {
-            tr.innerHTML = `
+            } else {
+                tr.innerHTML = `
                     <td>${d.age}</td>
                     <td>${d.factor.toFixed(5)}</td>
                     <td style="text-align:center;">
@@ -5531,309 +5527,309 @@ window.renderWMATable = function () {
                         <button class="btn-icon delete" onclick="window.deleteWMARow(${d.id})" title="Delete">🗑️</button>
                     </td>
                 `;
-        }
-        wmaTableBody.appendChild(tr);
-    });
-};
+            }
+            wmaTableBody.appendChild(tr);
+        });
+    };
 
-window.startWMAEdit = function (id) {
-    editingWMAId = id;
-    renderWMATable();
-};
+    window.startWMAEdit = function (id) {
+        editingWMAId = id;
+        renderWMATable();
+    };
 
-window.cancelWMAEdit = function () {
-    editingWMAId = null;
-    renderWMATable();
-};
+    window.cancelWMAEdit = function () {
+        editingWMAId = null;
+        renderWMATable();
+    };
 
-window.saveWMAEdit = function (id) {
-    const tr = document.querySelector(`tr[data-wma-id="${id}"]`);
-    if (!tr) return;
+    window.saveWMAEdit = function (id) {
+        const tr = document.querySelector(`tr[data-wma-id="${id}"]`);
+        if (!tr) return;
 
-    const newAge = parseInt(tr.querySelector('.edit-age').value);
-    const newFactor = parseFloat(tr.querySelector('.edit-factor').value);
+        const newAge = parseInt(tr.querySelector('.edit-age').value);
+        const newFactor = parseFloat(tr.querySelector('.edit-factor').value);
 
-    if (isNaN(newAge) || isNaN(newFactor)) {
-        alert('Please enter valid numbers');
-        return;
-    }
-
-    const idx = wmaData.findIndex(d => d.id === id);
-    if (idx !== -1) {
-        wmaData[idx].age = newAge;
-        wmaData[idx].factor = Math.round(newFactor * 100000) / 100000;
-        localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
-        rebuildPerformanceIndexes();
-    }
-
-    editingWMAId = null;
-    renderWMATable();
-};
-
-window.deleteWMARow = function (id) {
-    if (!confirm('Are you sure you want to delete this factor?')) return;
-    wmaData = wmaData.filter(d => d.id !== id);
-    localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
-    rebuildPerformanceIndexes();
-    renderWMATable();
-};
-
-if (wmaAddForm) {
-    wmaAddForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const age = parseInt(newWMAAge.value);
-        const factor = parseFloat(newWMAFactor.value);
-        const gender = wmaFilterGender.value;
-        const ageGroup = wmaFilterAgeGroup.value;
-        const event = wmaFilterEvent.value;
-
-        if (!ageGroup || !event) {
-            alert('Please select Age Group and Event filters first');
+        if (isNaN(newAge) || isNaN(newFactor)) {
+            alert('Please enter valid numbers');
             return;
         }
 
-        wmaData.push({
-            id: Date.now(),
-            gender,
-            ageGroup,
-            event,
-            age,
-            factor: Math.round(factor * 100000) / 100000
-        });
-
-        localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
-        rebuildPerformanceIndexes();
-        newWMAAge.value = '';
-        newWMAAge.value = '';
-        newWMAFactor.value = '';
-        renderWMATable();
-    });
-}
-
-// --- Official WMA 2023 Import Logic ---
-function loadWMAOfficialData() {
-    if (window.WMA_2023_DATA) {
-        if (confirm('This will replace your current WMA factors with the official WMA 2023 data. Continue?')) {
-            wmaData = window.WMA_2023_DATA;
-            localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
-            renderWMAFilters();
-            populateWMAEventDropdown();
-            alert('Official WMA 2023 Tables loaded successfully!');
-        }
-        return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'data/wma_data_2023.js';
-    script.onload = () => {
-        if (window.WMA_2023_DATA) {
-            wmaData = window.WMA_2023_DATA;
+        const idx = wmaData.findIndex(d => d.id === id);
+        if (idx !== -1) {
+            wmaData[idx].age = newAge;
+            wmaData[idx].factor = Math.round(newFactor * 100000) / 100000;
             localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
             rebuildPerformanceIndexes();
-            renderWMAFilters();
-            populateWMAEventDropdown();
+        }
+
+        editingWMAId = null;
+        renderWMATable();
+    };
+
+    window.deleteWMARow = function (id) {
+        if (!confirm('Are you sure you want to delete this factor?')) return;
+        wmaData = wmaData.filter(d => d.id !== id);
+        localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+        rebuildPerformanceIndexes();
+        renderWMATable();
+    };
+
+    if (wmaAddForm) {
+        wmaAddForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const age = parseInt(newWMAAge.value);
+            const factor = parseFloat(newWMAFactor.value);
+            const gender = wmaFilterGender.value;
+            const ageGroup = wmaFilterAgeGroup.value;
+            const event = wmaFilterEvent.value;
+
+            if (!ageGroup || !event) {
+                alert('Please select Age Group and Event filters first');
+                return;
+            }
+
+            wmaData.push({
+                id: Date.now(),
+                gender,
+                ageGroup,
+                event,
+                age,
+                factor: Math.round(factor * 100000) / 100000
+            });
+
+            localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+            rebuildPerformanceIndexes();
+            newWMAAge.value = '';
+            newWMAAge.value = '';
+            newWMAFactor.value = '';
+            renderWMATable();
+        });
+    }
+
+    // --- Official WMA 2023 Import Logic ---
+    function loadWMAOfficialData() {
+        if (window.WMA_2023_DATA) {
+            if (confirm('This will replace your current WMA factors with the official WMA 2023 data. Continue?')) {
+                wmaData = window.WMA_2023_DATA;
+                localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+                renderWMAFilters();
+                populateWMAEventDropdown();
+                alert('Official WMA 2023 Tables loaded successfully!');
+            }
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'data/wma_data_2023.js';
+        script.onload = () => {
+            if (window.WMA_2023_DATA) {
+                wmaData = window.WMA_2023_DATA;
+                localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+                rebuildPerformanceIndexes();
+                renderWMAFilters();
+                populateWMAEventDropdown();
+            }
+        };
+        script.onerror = () => alert('Failed to load official WMA 2023 data (data/wma_data_2023.js).');
+        document.body.appendChild(script);
+    }
+
+    if (btnLoadOfficialWMA) {
+        btnLoadOfficialWMA.addEventListener('click', loadWMAOfficialData);
+    }
+
+    // Export function to trigger initial load if empty or sample data detected
+    window.initWMAOfficialData = function () {
+        if (wmaData.length < 10) {
+            // Silently try to load if empty
+            if (window.WMA_2023_DATA) {
+                wmaData = window.WMA_2023_DATA;
+                localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+                renderWMAFilters();
+                populateWMAEventDropdown();
+            } else {
+                const script = document.createElement('script');
+                script.src = 'data/wma_data_2023.js';
+                script.onload = () => {
+                    if (window.WMA_2023_DATA) {
+                        wmaData = window.WMA_2023_DATA;
+                        localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
+                        rebuildPerformanceIndexes();
+                        renderWMAFilters();
+                        populateWMAEventDropdown();
+                    }
+                };
+                document.body.appendChild(script);
+            }
         }
     };
-    script.onerror = () => alert('Failed to load official WMA 2023 data (data/wma_data_2023.js).');
-    document.body.appendChild(script);
-}
 
-if (btnLoadOfficialWMA) {
-    btnLoadOfficialWMA.addEventListener('click', loadWMAOfficialData);
-}
+    function setTheme(themeName) {
+        // Apply theme class directly to body
+        document.body.className = themeName;
 
-// Export function to trigger initial load if empty or sample data detected
-window.initWMAOfficialData = function () {
-    if (wmaData.length < 10) {
-        // Silently try to load if empty
-        if (window.WMA_2023_DATA) {
-            wmaData = window.WMA_2023_DATA;
-            localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
-            renderWMAFilters();
-            populateWMAEventDropdown();
-        } else {
-            const script = document.createElement('script');
-            script.src = 'data/wma_data_2023.js';
-            script.onload = () => {
-                if (window.WMA_2023_DATA) {
-                    wmaData = window.WMA_2023_DATA;
-                    localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
-                    rebuildPerformanceIndexes();
-                    renderWMAFilters();
-                    populateWMAEventDropdown();
+        // Save to localStorage
+        localStorage.setItem('tf_theme', themeName);
+
+        // Update selector value if it differs
+        if (themeSelect && themeSelect.value !== themeName) {
+            themeSelect.value = themeName;
+        }
+    }
+
+    function runPostLoadMaintenance() {
+        console.log("🛠️ Running Post-Load Maintenance (Migrations & Seeding)...");
+        let recordsUpdated = false;
+
+        // 1. Core Data Prep
+        rebuildPerformanceIndexes();
+        if (typeof repairEventMetadata === 'function') repairEventMetadata();
+
+        // 2. Seeding
+        if (typeof seedEvents === 'function') seedEvents();
+        if (typeof seedCountries === 'function') seedCountries();
+        if (typeof seedRecords === 'function') seedRecords();
+
+        // 3. Migrations
+        if (typeof migrateAthletes === 'function') migrateAthletes();
+        if (typeof migrateAthleteNames === 'function') migrateAthleteNames();
+        if (typeof migrateEvents === 'function') migrateEvents();
+        if (typeof migrateRecordFormat === 'function') migrateRecordFormat();
+        if (typeof migrateAgeGroupsToStartAge === 'function') migrateAgeGroupsToStartAge();
+        if (typeof migrateEventDescriptions === 'function') migrateEventDescriptions();
+        if (typeof migrateApprovalStatus === 'function') migrateApprovalStatus();
+
+        // Specific Migration: Normalize age groups (e.g. "50-54" -> "50")
+        records.forEach(r => {
+            if (r.ageGroup && typeof r.ageGroup === 'string' && r.ageGroup.includes('-') && r.ageGroup !== '100+') {
+                const parts = r.ageGroup.split('-');
+                const ageNum = parseInt(parts[0]);
+                if (!isNaN(ageNum)) {
+                    r.ageGroup = ageNum.toString();
+                    recordsUpdated = true;
                 }
-            };
-            document.body.appendChild(script);
-        }
-    }
-};
-
-function setTheme(themeName) {
-    // Apply theme class directly to body
-    document.body.className = themeName;
-
-    // Save to localStorage
-    localStorage.setItem('tf_theme', themeName);
-
-    // Update selector value if it differs
-    if (themeSelect && themeSelect.value !== themeName) {
-        themeSelect.value = themeName;
-    }
-}
-
-function runPostLoadMaintenance() {
-    console.log("🛠️ Running Post-Load Maintenance (Migrations & Seeding)...");
-    let recordsUpdated = false;
-
-    // 1. Core Data Prep
-    rebuildPerformanceIndexes();
-    if (typeof repairEventMetadata === 'function') repairEventMetadata();
-
-    // 2. Seeding
-    if (typeof seedEvents === 'function') seedEvents();
-    if (typeof seedCountries === 'function') seedCountries();
-    if (typeof seedRecords === 'function') seedRecords();
-
-    // 3. Migrations
-    if (typeof migrateAthletes === 'function') migrateAthletes();
-    if (typeof migrateAthleteNames === 'function') migrateAthleteNames();
-    if (typeof migrateEvents === 'function') migrateEvents();
-    if (typeof migrateRecordFormat === 'function') migrateRecordFormat();
-    if (typeof migrateAgeGroupsToStartAge === 'function') migrateAgeGroupsToStartAge();
-    if (typeof migrateEventDescriptions === 'function') migrateEventDescriptions();
-    if (typeof migrateApprovalStatus === 'function') migrateApprovalStatus();
-
-    // Specific Migration: Normalize age groups (e.g. "50-54" -> "50")
-    records.forEach(r => {
-        if (r.ageGroup && typeof r.ageGroup === 'string' && r.ageGroup.includes('-') && r.ageGroup !== '100+') {
-            const parts = r.ageGroup.split('-');
-            const ageNum = parseInt(parts[0]);
-            if (!isNaN(ageNum)) {
-                r.ageGroup = ageNum.toString();
-                recordsUpdated = true;
             }
+        });
+
+        // 4. Cleanup
+        if (typeof cleanupDuplicateAthletes === 'function') cleanupDuplicateAthletes();
+
+        // 5. Rendering & UI Population
+        renderAll();
+
+        if (recordsUpdated) {
+            console.log("💾 Post-Load Maintenance complete. Changes persisted.");
+            saveRecords();
         }
-    });
 
-    // 4. Cleanup
-    if (typeof cleanupDuplicateAthletes === 'function') cleanupDuplicateAthletes();
-
-    // 5. Rendering & UI Population
-    renderAll();
-
-    if (recordsUpdated) {
-        console.log("💾 Post-Load Maintenance complete. Changes persisted.");
-        saveRecords();
+        console.log("🚀 System verified and ready for interaction.");
     }
 
-    console.log("🚀 System verified and ready for interaction.");
-}
+    function initThemes() {
+        const savedTheme = localStorage.getItem('tf_theme') || 'theme-default';
+        setTheme(savedTheme);
+    }
 
-function initThemes() {
-    const savedTheme = localStorage.getItem('tf_theme') || 'theme-default';
-    setTheme(savedTheme);
-}
+    window.runDiagnostics = async function () {
+        console.log("--- Application Diagnostics ---");
+        console.log("Protocol:", window.location.protocol);
 
-window.runDiagnostics = async function () {
-    console.log("--- Application Diagnostics ---");
-    console.log("Protocol:", window.location.protocol);
-
-    const nodes = ['records', 'athletes', 'events', 'countries'];
-    nodes.forEach(n => {
-        try {
-            const local = JSON.parse(localStorage.getItem(`tf_${n}`)) || [];
-            console.log(`LocalStorage ${n}:`, local.length);
-        } catch (e) {
-            console.log(`LocalStorage ${n}: ERROR PARSING`);
-        }
-    });
-
-    if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
-        console.log("Firebase App initialized.");
-        try {
-            const sn = await db.ref('records').once('value');
-            console.log("Cloud Access: SUCCESS. Records:", sn.exists() ? Object.keys(sn.val()).length : 0);
-        } catch (e) {
-            console.error("Cloud Access: FAILED.", e.code, e.message);
-            if (e.code === 'PERMISSION_DENIED') {
-                alert("Firebase Permission Denied! Please update your Firebase Realtime Database rules to 'Public' or 'Test Mode' in the Firebase Console.");
+        const nodes = ['records', 'athletes', 'events', 'countries'];
+        nodes.forEach(n => {
+            try {
+                const local = JSON.parse(localStorage.getItem(`tf_${n}`)) || [];
+                console.log(`LocalStorage ${n}:`, local.length);
+            } catch (e) {
+                console.log(`LocalStorage ${n}: ERROR PARSING`);
             }
+        });
+
+        if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
+            console.log("Firebase App initialized.");
+            try {
+                const sn = await db.ref('records').once('value');
+                console.log("Cloud Access: SUCCESS. Records:", sn.exists() ? Object.keys(sn.val()).length : 0);
+            } catch (e) {
+                console.error("Cloud Access: FAILED.", e.code, e.message);
+                if (e.code === 'PERMISSION_DENIED') {
+                    alert("Firebase Permission Denied! Please update your Firebase Realtime Database rules to 'Public' or 'Test Mode' in the Firebase Console.");
+                }
+            }
+        } else {
+            console.log("Firebase/Database not initialized or configured.");
         }
-    } else {
-        console.log("Firebase/Database not initialized or configured.");
+
+        try {
+            const res = await fetch('track_data.json');
+            console.log("track_data.json access:", res.ok ? "SUCCESS" : "FAILED (" + res.status + ")");
+        } catch (e) {
+            console.log("track_data.json access: FAILED (Likely restricted by local file protocol).");
+            console.log("Tip: If running locally without a server, use the 'Restore' button to manually select track_data.json.");
+        }
+    };
+
+
+    function migrateApprovalStatus() {
+        let changed = false;
+        records.forEach(r => {
+            // Only migrate if the field is completely MISSING (undefined).
+            // Do NOT touch records that are explicitly false (pending).
+            if (typeof r.approved === 'undefined') {
+                // For legacy records, we assume they are approved.
+                r.approved = true;
+                changed = true;
+            }
+        });
+        if (changed) {
+            saveRecords();
+            console.log("Migrated Approval Status: All legacy records set to approved.");
+        }
     }
 
-    try {
-        const res = await fetch('track_data.json');
-        console.log("track_data.json access:", res.ok ? "SUCCESS" : "FAILED (" + res.status + ")");
-    } catch (e) {
-        console.log("track_data.json access: FAILED (Likely restricted by local file protocol).");
-        console.log("Tip: If running locally without a server, use the 'Restore' button to manually select track_data.json.");
-    }
-};
+    window.approveRecord = function (id) {
+        if (!confirm('Are you sure you want to approve this record?')) return;
+        const pendingRecord = records.find(r => r.id === id);
+        if (!pendingRecord) return;
 
+        // Check if this record replaces another one
+        if (pendingRecord.replacesId) {
+            const originalIndex = records.findIndex(r => r.id === pendingRecord.replacesId);
+            if (originalIndex !== -1) {
+                const originalRecord = records[originalIndex];
 
-function migrateApprovalStatus() {
-    let changed = false;
-    records.forEach(r => {
-        // Only migrate if the field is completely MISSING (undefined).
-        // Do NOT touch records that are explicitly false (pending).
-        if (typeof r.approved === 'undefined') {
-            // For legacy records, we assume they are approved.
-            r.approved = true;
-            changed = true;
+                // Archive Original
+                const historyRecord = { ...originalRecord };
+                historyRecord.archivedAt = new Date().toISOString();
+                historyRecord.originalId = originalRecord.id;
+                historyRecord.id = Date.now() + Math.random(); // New ID for history
+                if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
+
+                history.unshift(historyRecord);
+                saveHistory();
+
+                // Remove Original from Live Records
+                // We splice it out. 
+                // Note: pendingRecord is already in `records`. We just keep it and update it.
+                records.splice(originalIndex, 1);
+            }
+            // Clear the linkage
+            pendingRecord.replacesId = undefined; // or delete
+            delete pendingRecord.replacesId;
         }
-    });
-    if (changed) {
+
+        // Approve
+        pendingRecord.approved = true;
+        // pendingRecord.updatedBy = currentUser... (Optional, keep original editor?)
+
         saveRecords();
-        console.log("Migrated Approval Status: All legacy records set to approved.");
+        renderReports();
+        calculateRecordWMAStats(pendingRecord);
+    };
+
+
+    function saveIAAFUpdates() {
+        localStorage.setItem('tf_iaaf_updates', JSON.stringify(iaafUpdates));
     }
-}
-
-window.approveRecord = function (id) {
-    if (!confirm('Are you sure you want to approve this record?')) return;
-    const pendingRecord = records.find(r => r.id === id);
-    if (!pendingRecord) return;
-
-    // Check if this record replaces another one
-    if (pendingRecord.replacesId) {
-        const originalIndex = records.findIndex(r => r.id === pendingRecord.replacesId);
-        if (originalIndex !== -1) {
-            const originalRecord = records[originalIndex];
-
-            // Archive Original
-            const historyRecord = { ...originalRecord };
-            historyRecord.archivedAt = new Date().toISOString();
-            historyRecord.originalId = originalRecord.id;
-            historyRecord.id = Date.now() + Math.random(); // New ID for history
-            if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
-
-            history.unshift(historyRecord);
-            saveHistory();
-
-            // Remove Original from Live Records
-            // We splice it out. 
-            // Note: pendingRecord is already in `records`. We just keep it and update it.
-            records.splice(originalIndex, 1);
-        }
-        // Clear the linkage
-        pendingRecord.replacesId = undefined; // or delete
-        delete pendingRecord.replacesId;
-    }
-
-    // Approve
-    pendingRecord.approved = true;
-    // pendingRecord.updatedBy = currentUser... (Optional, keep original editor?)
-
-    saveRecords();
-    renderReports();
-    calculateRecordWMAStats(pendingRecord);
-};
-
-
-function saveIAAFUpdates() {
-    localStorage.setItem('tf_iaaf_updates', JSON.stringify(iaafUpdates));
-}
 
     // Connect to Tab System
     // We need to trigger loadIAAFData when the tab is shown.
