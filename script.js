@@ -3992,9 +3992,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // ARCHIVE & REJECT PROTECTION
             if (archivedIds.has(rIdStr) || recentlyRejected.has(rIdStr)) return false;
 
-            // ROLE-BASED VISIBILITY: Only Supervisors see unapproved or pending-delete records
+            // ROLE-BASED VISIBILITY: Only Supervisors see unapproved/pending-delete records
+            // FIX: Also allow the author to see their own pending records
             if (!isSup) {
-                if (r.approved === false || r.pendingDelete === true) return false;
+                const currentActor = currentUser ? (currentUser.displayName || currentUser.email) : null;
+                const isAuthor = currentActor && r.updatedBy === currentActor;
+
+                if (!isAuthor) {
+                    if (r.approved === false || r.pendingDelete === true) return false;
+                }
             }
 
             const rTrackType = r.trackType || 'Outdoor';
