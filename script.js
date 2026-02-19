@@ -290,38 +290,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 const serverRecords = valToArray(snapshot.val());
                 const localRecords = JSON.parse(localStorage.getItem('tf_records')) || [];
 
-                // Empty Server Protection: If server returns empty but local has data, prefer local (assume offline/error)
-                if (serverRecords.length === 0 && localRecords.length > 0) {
-                    console.warn("⚠️ Server returned 0 records, but Local Storage has " + localRecords.length + ". Using Local Data to prevent data loss.");
-                    records = localRecords;
-                } else {
+                // ARCHIVE PROTECTION: Identify records that should no longer be live
+                // (Records that have been replaced and moved to history)
+                const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
 
-                    // "Pending Rescue": Find records that are pending approvals (not approved: true) locally but MISSING from server
-                    // These would be lost if we blindly overwrite.
-                    const pendingRescue = localRecords.filter(l =>
-                        (l.approved === false) &&
-                        !serverRecords.some(s => s.id === l.id)
-                    );
+                // SMART MERGE: Combine server and local, prioritizing "advanced" local states
+                const uniqueMap = new Map();
 
-                    if (pendingRescue.length > 0) {
-                        console.warn(`🔄 Rescued ${pendingRescue.length} pending records from LocalStorage override.`);
-                        // Merge them into the live list (Server + Pending Local)
-                        // Use a Set for unique IDs to prevent duplicates during merge if server actually had some
-                        const merged = [...serverRecords, ...pendingRescue];
-                        // Remove duplicates based on ID, favoring the last one added (which should be the rescue one)
-                        const uniqueMap = new Map();
-                        merged.forEach(item => uniqueMap.set(item.id, item));
-                        records = Array.from(uniqueMap.values());
-
-                        // Force a resync to server to persist them
-                        setTimeout(() => saveRecords(), 2000);
-                    } else if (serverRecords.length > 0) {
-                        // Normal case: Server has data, no pending rescue needed
-                        records = serverRecords;
+                // 1. Start with Server Records (Base Truth)
+                serverRecords.forEach(r => {
+                    if (!archivedIds.has(r.id)) {
+                        uniqueMap.set(r.id, r);
                     }
-                } // End of Empty Server Protection Block
+                });
 
-                console.log("Records updated from Firebase:", records.length);
+                // 2. Blend in Local Records (Update state if local is "ahead")
+                localRecords.forEach(l => {
+                    if (archivedIds.has(l.id)) return; // Skip if archived
+
+                    const existing = uniqueMap.get(l.id);
+                    if (!existing) {
+                        // "Local Only" record - likely a new submission not yet in cloud
+                        uniqueMap.set(l.id, l);
+                    } else if (l.approved === true && existing.approved === false) {
+                        // "Local Approval" - Local state is the definitive supervisor action
+                        console.log(`🛡️ Smart Merge: Favoring local approval for record ${l.id}`);
+                        uniqueMap.set(l.id, l);
+                    } else if ((l.updatedAt || 0) > (existing.updatedAt || 0)) {
+                        // Standard timestamp-based merge (if we had proper timestamps)
+                        // uniqueMap.set(l.id, l);
+                    }
+                });
+
+                const finalRecords = Array.from(uniqueMap.values());
+
+                // Empty Server Protection (fallback if server is blank but local isn't)
+                if (finalRecords.length === 0 && localRecords.length > 0 && serverRecords.length === 0) {
+                    console.warn("⚠️ Empty snapshot received. Preserving local state.");
+                    records = localRecords.filter(l => !archivedIds.has(l.id));
+                } else {
+                    records = finalRecords;
+                }
+
+                // If we rescued local-only records or approvals, trigger a sync to settle the cloud
+                const hasLocalOnly = records.some(r => !serverRecords.some(s => s.id === r.id));
+                const hasLocalApproval = records.some(r => r.approved === true && serverRecords.some(s => s.id === r.id && s.approved === false));
+
+                if (hasLocalOnly || hasLocalApproval) {
+                    console.log("🔄 Triggering resync to settle cloud with local state...");
+                    setTimeout(() => saveRecords(), 2000);
+                }
+
+                console.log("Records updated (Smart Merge):", records.length);
                 loadedNodes.add('records');
                 checkReady();
                 renderAll();
@@ -3929,7 +3949,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const mVal = filterAgeMismatch ? filterAgeMismatch.value : 'all';
         const ttVal = filterTrackType ? filterTrackType.value : 'all';
 
+        const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
+
         const filtered = records.filter(r => {
+            // ARCHIVE PROTECTION: Never show a record that exists in history as an "original"
+            if (archivedIds.has(r.id)) return false;
+
             const rTrackType = r.trackType || 'Outdoor';
             const matchesTrackType = ttVal === 'all' || rTrackType === ttVal;
             const matchesEvent = eVal === 'all' || r.event === eVal;
