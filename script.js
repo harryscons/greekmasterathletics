@@ -986,12 +986,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const local = isLocalEnvironment();
 
-        // 1. Try Firebase Login if available and NOT local
-        if (typeof firebase !== 'undefined' && firebase.auth && !local) {
+        // 1. Try Firebase Login if available
+        if (typeof firebase !== 'undefined' && firebase.auth) {
             const provider = new firebase.auth.GoogleAuthProvider();
+            // Force account selection to prevent automatic login as previous user
+            provider.setCustomParameters({ prompt: 'select_account' });
+
             firebase.auth().signInWithPopup(provider).catch((error) => {
                 console.error("Cloud Login Failed:", error);
-                alert("Cloud Login Failed: " + error.message);
+                // Only alert if it's a real error (not user closed popup)
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    alert("Cloud Login Failed: " + error.message);
+                }
             });
         } else if (local) {
             // 2. Local / Offline Fallback
@@ -1045,9 +1051,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.log("User logged out (Auth Check)");
 
-                // --- LOCAL ADMIN BYPASS RESTORED ---
-                if (attemptLocalAdminLogin()) return;
-                // ---------------------------
+                // --- LOCAL ADMIN BYPASS ---
+                // ONLY trigger if not a manual logout and in local environment
+                if (localStorage.getItem('tf_manual_logout') !== 'true' && isLocalEnvironment()) {
+                    if (attemptLocalAdminLogin()) return;
+                }
 
                 currentUser = null;
                 updateUIForAuth(null);
