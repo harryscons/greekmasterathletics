@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDataReady = false; // Flag to prevent saving over cloud until sync is verified
     const loadedNodes = new Set();
     const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
+    let isSuppressingAutoFill = false; // Prevents change events from overwriting edit form data
 
     function checkReady() {
         if (isDataReady) return;
@@ -606,6 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Define globally on window for Flatpickr access
     window.updateCalculatedAgeGroup = function () {
+        if (isSuppressingAutoFill) return;
         if (!athleteInput || !dateInput) return;
         const rawName = athleteInput.value || "";
         const selectedDate = (dateInput.value || "").trim();
@@ -1559,6 +1561,7 @@ document.addEventListener('DOMContentLoaded', () => {
         groups.push('100+');
 
         if (ageGroupInput) {
+            const currentVal = ageGroupInput.value;
             ageGroupInput.innerHTML = '<option value="">Select Age Group</option>';
             groups.forEach(g => {
                 const opt = document.createElement('option');
@@ -1566,9 +1569,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.textContent = g;
                 ageGroupInput.appendChild(opt);
             });
+            if (currentVal) ageGroupInput.value = currentVal;
         }
 
         if (filterAge) {
+            const currentVal = filterAge.value;
             filterAge.innerHTML = '<option value="all">All Age Groups</option>';
             groups.forEach(g => {
                 const opt = document.createElement('option');
@@ -1576,6 +1581,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.textContent = g;
                 filterAge.appendChild(opt);
             });
+            if (currentVal) filterAge.value = currentVal;
         }
     }
 
@@ -1620,6 +1626,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateEventDropdowns() {
         if (evtInput) {
+            const currentVal = evtInput.value;
             evtInput.innerHTML = '<option value="" disabled selected>Select Event</option>';
             events.forEach(ev => {
                 const opt = document.createElement('option');
@@ -1627,9 +1634,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.textContent = ev.name;
                 evtInput.appendChild(opt);
             });
+            if (currentVal) evtInput.value = currentVal;
         }
 
         if (filterEvent) {
+            const currentVal = filterEvent.value;
             filterEvent.innerHTML = '<option value="all">All Events</option>';
             events.forEach(ev => {
                 const opt = document.createElement('option');
@@ -1637,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.textContent = ev.name;
                 filterEvent.appendChild(opt);
             });
+            if (currentVal) filterEvent.value = currentVal;
         }
     }
 
@@ -1652,6 +1662,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (athleteInput) {
+            const currentVal = athleteInput.value;
             athleteInput.innerHTML = '<option value="" disabled selected>Select Athlete</option>';
             athletes.forEach(a => {
                 const opt = document.createElement('option');
@@ -1661,6 +1672,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.dataset.id = a.id;
                 athleteInput.appendChild(opt);
             });
+            if (currentVal) athleteInput.value = currentVal;
         }
 
         // Also populate relay participant dropdowns with default state
@@ -3757,7 +3769,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function editRecord(id) {
         console.log("✏️ editRecord called for ID:", id);
 
-        // Save the current tab so we can return to it after save/cancel
         const activeView = document.querySelector('.view-section.active-view');
         if (activeView) {
             previousTab = activeView.id.replace('view-', '');
@@ -3775,16 +3786,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log("✅ Record found:", r);
 
-        // Reset form first to clear any old state
+        isSuppressingAutoFill = true; // SILENCE Auto-Calculations
+
         if (recordForm) recordForm.reset();
 
         // Helper to set select value more robustly
         const setSelectValue = (el, val) => {
-            if (!el || !val) return;
-            const target = String(val).trim();
-            el.value = target; // Try direct value match
+            if (!el) return;
+            const target = String(val || '').trim();
+            el.value = target;
 
-            // Fallback: If value didn't stick, try matching by option text
             if (el.value !== target) {
                 const options = Array.from(el.options);
                 const matchingOpt = options.find(o => o.text.trim() === target || o.value.trim() === target);
@@ -3792,16 +3803,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // Standard Fields
+        // 1. SET ALL BASIC FIELDS FIRST
         setSelectValue(evtInput, r.event);
-        if (evtInput) evtInput.dispatchEvent(new Event('change'));
-
         setSelectValue(genderInput, r.gender);
-        if (genderInput) {
-            populateRelayAthletes(r.gender || '');
-            genderInput.dispatchEvent(new Event('change'));
-        }
-
         if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
         if (raceNameInput) raceNameInput.value = r.raceName || '';
         if (notesInput) notesInput.value = r.notes || '';
@@ -3812,18 +3816,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (countryInput) countryInput.value = r.country || '';
 
         if (dateInput) {
-            if (datePicker) {
-                datePicker.setDate(r.date);
-            } else {
-                dateInput.value = r.date;
-            }
+            if (datePicker) datePicker.setDate(r.date);
+            else dateInput.value = r.date;
         }
 
         const ev = events.find(e => e.name === r.event);
         const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
         toggleRelayFields(isRelay);
 
-        // Dependent Fields (Waiting for UI updates potentially triggered by change events)
+        // 2. DISPATCH CHANGE EVENTS ONLY AFTER VALUES ARE SET
+        if (evtInput) evtInput.dispatchEvent(new Event('change'));
+        if (genderInput) {
+            populateRelayAthletes(r.gender || '');
+            genderInput.dispatchEvent(new Event('change'));
+        }
+
+        // 3. SET DEPENDENT FIELDS (Athlete, Age Group)
         setTimeout(() => {
             setSelectValue(ageGroupInput, r.ageGroup);
 
@@ -3837,7 +3845,15 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 setSelectValue(athleteInput, r.athlete);
             }
-        }, 150); // Increased timeout for stability
+
+            // final sync for age calculation just in case
+            if (typeof updateCalculatedAgeGroup === 'function') {
+                // We keep it suppressed until the very end
+            }
+
+            console.log("Edit form population complete.");
+            isSuppressingAutoFill = false; // RE-ENABLE Auto-Calculations
+        }, 300); // Increased to 300ms for heavy sync environments
 
         editingId = id;
         editingHistoryId = null;
