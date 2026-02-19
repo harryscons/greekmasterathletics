@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let countries = [];
     let history = [];
     let appUsers = [];
+    let pendingrecs = []; // NEW: Staging area for Admin submissions
     const recentlyRejected = new Set(JSON.parse(localStorage.getItem('tf_tombstones') || '[]'));
 
     function saveTombstones() {
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         countries = JSON.parse(localStorage.getItem('tf_countries')) || [];
         history = JSON.parse(localStorage.getItem('tf_history')) || [];
         appUsers = JSON.parse(localStorage.getItem('tf_users')) || [];
+        pendingrecs = JSON.parse(localStorage.getItem('tf_pendingrecs')) || []; // NEW: Load staging area
         console.log("⚡ Fast Pass: Core state initialized from LocalStorage");
     } catch (e) {
         console.error("❌ Fast Pass failed:", e);
@@ -430,6 +432,15 @@ document.addEventListener('DOMContentLoaded', () => {
             checkReady();
 
             renderHistoryList();
+        });
+
+        // Listen for Pending Records
+        db.ref('pendingrecs').on('value', (snapshot) => {
+            pendingrecs = valToArray(snapshot.val());
+            console.log("Pending Records updated from Firebase:", pendingrecs.length);
+            loadedNodes.add('pendingrecs');
+            checkReady();
+            renderReports(); // Re-render main report to show pending changes
         });
 
         // Listen for Users
@@ -3400,6 +3411,12 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('tf_history', JSON.stringify(history));
     }
 
+    function savePendingRecs() {
+        if (!isDataReady) return;
+        if (db) db.ref('pendingrecs').set(pendingrecs);
+        localStorage.setItem('tf_pendingrecs', JSON.stringify(pendingrecs));
+    }
+
     // --- Records ---
 
 
@@ -3473,15 +3490,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const newRecord = {
-                id: (editingId || editingHistoryId) ? (editingId || editingHistoryId) : Date.now(),
+                id: (editingId || editingHistoryId) ? (editingId || editingHistoryId) : String(Date.now() + '-' + Math.floor(Math.random() * 10000)),
                 event: evtInput ? evtInput.value : '',
                 gender: genderInput ? genderInput.value : '',
                 ageGroup: ageGroupInput ? ageGroupInput.value : '',
                 trackType: trackTypeInput ? trackTypeInput.value : 'Outdoor',
                 athlete: selectedAthlete,
                 isRelay: isRelay,
-                // Approval Logic: Strictly Supervisors ONLY (or local override)
-                // Admins (harryscons) must PROPOSE edits.
+                // In new architecture, approved flag is largely obsolete for main records, but we keep true for Sup.
                 approved: isSupervisor(currentUser ? currentUser.email : null),
                 relayParticipants: isRelay ? [
                     relayAthlete1.value,
@@ -3523,11 +3539,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const index = records.findIndex(r => r.id === editingId);
                 if (index !== -1) {
                     const originalRecord = records[index];
-
-                    // Logic: 
-                    // If Supervisor: Update directly, archive old.
-                    // If Non-Supervisor: Create NEW pending record, do NOT touch old yet.
-
                     const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
                     if (isSup) {
@@ -3536,37 +3547,45 @@ document.addEventListener('DOMContentLoaded', () => {
                         oldRecordData.archivedAt = new Date().toISOString();
                         oldRecordData.originalId = String(oldRecordData.id); // Link to original
                         if (!oldRecordData.updatedBy) oldRecordData.updatedBy = 'System';
-                        // Unique ID for history
                         oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
 
                         history.unshift(oldRecordData);
                         saveHistory();
 
                         // Update Live Record in place
-                        // Ensure ID remains same to maintain history linkage? 
-                        // Actually, if we keep ID, external links break? No, usually keep ID.
-                        // But newRecord has `editingId` as ID.
                         records[index] = newRecord;
+                        saveRecords();
 
                         submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
-                    } else if (!isSup) {
-                        // Non-supervisor proposing an edit
-                        if (editingId) {
-                            newRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
-                            newRecord.replacesId = editingId; // The ID of the record being edited
-                            newRecord.approved = false; // Force false
+                    } else {
+                        // Admin proposing an edit -> Send to Staging (pendingrecs)
+                        newRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000)); // Generate unique staging ID
+                        newRecord.replacesId = editingId; // Track which original record this targets
+                        newRecord.isPending = true;
 
-                            records.unshift(newRecord);
+                        pendingrecs.unshift(newRecord);
+                        savePendingRecs();
 
-                            submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
-                            alert("Your edit has been submitted for approval. Both the original and your proposed change are now visible.");
-                        }
+                        submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
+                        alert("Your edit has been submitted for Supervisor approval.");
                     }
                 }
                 setTimeout(() => cancelEdit(), 1000);
             } else {
-                records.unshift(newRecord);
-                submitBtn.querySelector('span').textContent = 'Logged! ✓';
+                // Log New Record
+                const isSup = isSupervisor(currentUser ? currentUser.email : null);
+                if (isSup) {
+                    records.unshift(newRecord);
+                    saveRecords();
+                    submitBtn.querySelector('span').textContent = 'Logged! ✓';
+                } else {
+                    newRecord.isPending = true;
+                    pendingrecs.unshift(newRecord);
+                    savePendingRecs();
+                    submitBtn.querySelector('span').textContent = 'Proposed! ✓';
+                    alert("Your new record has been submitted for Supervisor approval.");
+                }
+
                 setTimeout(() => submitBtn.querySelector('span').textContent = 'Log Record', 1500);
                 recordForm.reset();
                 if (datePicker) {
@@ -3577,7 +3596,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     dateInput.value = new Date().toISOString().split('T')[0];
                 }
             }
-            saveRecords();
             populateYearDropdown();
             renderReports();
             renderAthleteList();
@@ -3938,11 +3956,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const record = records.find(r => String(r.id) === String(id));
             if (!record) return;
 
-            record.approved = false;
-            record.pendingDelete = true;
-            record.updatedBy = (currentUser?.displayName || currentUser?.email || 'Admin');
+            const pendingDeleteRecord = { ...record };
+            pendingDeleteRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+            pendingDeleteRecord.replacesId = record.id; // Track which record we want to delete
+            pendingDeleteRecord.isPending = true;
+            pendingDeleteRecord.isPendingDelete = true;
+            pendingDeleteRecord.updatedBy = (currentUser?.displayName || currentUser?.email || 'Admin');
 
-            saveRecords();
+            pendingrecs.unshift(pendingDeleteRecord);
+            savePendingRecs();
             alert("Deletion proposed. A Supervisor must approve this removal.");
         }
 
@@ -3995,28 +4017,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
 
-        const filtered = records.filter(r => {
+        // Merge records and pendingrecs for unified display
+        const mergedRecords = [...records, ...(pendingrecs || [])];
+
+        const filtered = mergedRecords.filter(r => {
             const rIdStr = String(r.id);
             const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
             // ARCHIVE & REJECT PROTECTION
             if (archivedIds.has(rIdStr) || recentlyRejected.has(rIdStr)) return false;
 
-            // ROLE-BASED VISIBILITY
-            const isAdmin = isAdminUser(currentUser ? currentUser.email : null);
-            if (!isSup && !isAdmin) {
-                // If not Sup or Admin, they must be the author to see unapproved records
-                let isAuthor = false;
-                if (currentUser && r.updatedBy) {
-                    const ub = String(r.updatedBy).trim().toLowerCase();
-                    if (currentUser.email && ub === String(currentUser.email).trim().toLowerCase()) isAuthor = true;
-                    if (currentUser.displayName && ub === String(currentUser.displayName).trim().toLowerCase()) isAuthor = true;
-                }
-
-                if (!isAuthor) {
-                    if (r.approved === false || r.pendingDelete === true) return false;
-                }
-            }
+            // Visibility: Under new architecture, ALL users can see BOTH live records and pending proposals.
+            // (No role-based hiding of pending items here).
 
             const rTrackType = r.trackType || 'Outdoor';
             const matchesTrackType = ttVal === 'all' || rTrackType === ttVal;
@@ -4197,9 +4209,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
                     <td style="font-weight:700; color:var(--accent);">${r.mark}</td>
                     <td>
-                        ${r.pendingDelete ?
+                        ${r.isPendingDelete ?
                     `<span class="badge-pending" style="background:var(--danger); color:white;">⚠️ Προς Διαγραφή</span>` :
-                    (r.approved === false ? `<span class="badge-pending">Προς Εγκριση</span>` : (r.idr || '-'))
+                    (r.isPending ? `<span class="badge-pending">Προς Εγκριση</span>` : (r.idr || '-'))
                 }
                     </td>
                     <td>${r.wind || '-'}</td>
@@ -4207,13 +4219,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${r.town || ''}</td>
                     <td>${r.raceName || ''}</td>
                     <td class="actions-col" style="white-space:nowrap;">
-                        ${(r.approved === false && isSupervisor(currentUser ? currentUser.email : null)) ?
-                    `
-                        <button class="btn-icon approve-btn" onclick="approveRecord(${r.id})" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>
-                        <button class="btn-icon reject-btn" onclick="rejectRecord(${r.id})" title="Reject Record" style="color:var(--danger); margin-right:5px;">❌</button>
-                    ` : ''}
-                        <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit">✏️</button>
-                        <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete">🗑️</button>
+                        ${(() => {
+                    if (r.isPending || r.isPendingDelete) {
+                        // Pending Record Logic
+                        if (isSupervisor(currentUser ? currentUser.email : null)) {
+                            return `
+                                        <button class="btn-icon approve-btn" onclick="approveRecord('${r.id}')" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>
+                                        <button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="Reject/Cancel Proposal" style="color:var(--danger); margin-right:5px;">❌</button>
+                                    `;
+                        } else {
+                            // Admins can ONLY cancel their own proposals
+                            const cEmail = currentUser ? String(currentUser.email).toLowerCase() : '';
+                            const ub = r.updatedBy ? String(r.updatedBy).toLowerCase() : '';
+                            if (ub === cEmail || ub === 'admin' || (currentUser && ub === String(currentUser.displayName).toLowerCase())) {
+                                return `<button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="Cancel Proposal" style="color:var(--danger);">❌</button>`;
+                            }
+                            return ''; // Simple users see nothing
+                        }
+                    } else {
+                        // Normal Record Logic (CSS handles visibility conditionally, but we structure it cleanly)
+                        return `
+                                    <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit">✏️</button>
+                                    <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete">🗑️</button>
+                                `;
+                    }
+                })()}
                     </td>
                 `;
 
@@ -4240,8 +4270,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getExportData() {
-        // Filter out unapproved records from exports
-        const rawData = getFilteredRecords().filter(r => r.approved !== false);
+        // Filter out unapproved staging records from exports
+        const rawData = getFilteredRecords().filter(r => !r.isPending && !r.isPendingDelete);
         const categoryOrder = ['Track', 'Road', 'Field', 'Combined', 'Relay'];
 
         const sortedData = rawData.sort((a, b) => {
@@ -4351,8 +4381,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // User said: "not approved records ... are not exporting"
         // Let's rely on getExportData but refined.
 
-        const data = getFilteredRecords().filter(r => r.approved === true);
-        if (!data.length) return alert('No approved data to export!');
+        // HTML Print Export: Strictly filter out staging proposals
+        const data = getFilteredRecords().filter(r => !r.isPending && !r.isPendingDelete && r.approved !== false);
+        if (!data.length) return alert('No officially approved data to export!');
 
         const timestamp = new Date().toLocaleString('el-GR');
 
@@ -5893,15 +5924,38 @@ Replace ALL current data with this backup?`;
     window.approveRecord = function (id) {
         const idStr = String(id);
         if (!confirm('Are you sure you want to approve this action?')) return;
-        const pendingRecord = records.find(r => String(r.id) === idStr);
-        if (!pendingRecord) return;
+
+        // Find in pending staging area
+        const pendingIndex = pendingrecs.findIndex(r => String(r.id) === idStr);
+        if (pendingIndex === -1) return;
+
+        const pendingRecord = pendingrecs[pendingIndex];
 
         // CASE 1: Approval of a DELETION
-        if (pendingRecord.pendingDelete) {
-            records = records.filter(r => String(r.id) !== idStr);
-            recentlyRejected.add(idStr); // Tombstone
-            saveTombstones();
-            saveRecords();
+        if (pendingRecord.isPendingDelete) {
+            const targetId = String(pendingRecord.replacesId);
+
+            // Move target to history
+            const targetIndex = records.findIndex(r => String(r.id) === targetId);
+            if (targetIndex !== -1) {
+                const historyRecord = { ...records[targetIndex] };
+                historyRecord.archivedAt = new Date().toISOString();
+                historyRecord.originalId = String(historyRecord.id);
+                historyRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
+
+                history.unshift(historyRecord);
+                saveHistory();
+
+                records.splice(targetIndex, 1);
+                recentlyRejected.add(targetId);
+                saveTombstones();
+                saveRecords();
+            }
+
+            // Remove from pendingrecs
+            pendingrecs.splice(pendingIndex, 1);
+            savePendingRecs();
             renderReports();
             return;
         }
@@ -5910,32 +5964,49 @@ Replace ALL current data with this backup?`;
         if (pendingRecord.replacesId) {
             const replIdStr = String(pendingRecord.replacesId);
             const originalIndex = records.findIndex(r => String(r.id) === replIdStr);
+
             if (originalIndex !== -1) {
                 const originalRecord = records[originalIndex];
 
                 // Archive Original to History
                 const historyRecord = { ...originalRecord };
                 historyRecord.archivedAt = new Date().toISOString();
-                historyRecord.originalId = originalRecord.id;
-                historyRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000)); // Replaced fractional ID with string ID
+                historyRecord.originalId = String(originalRecord.id);
+                historyRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
                 if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
 
                 history.unshift(historyRecord);
                 saveHistory();
 
-                // Remove Original from Live Records & Tombstone it
-                records.splice(originalIndex, 1);
+                // Tombstone old ID so it doesn't reappear
                 recentlyRejected.add(replIdStr);
                 saveTombstones();
+
+                // Clean the pending record
+                delete pendingRecord.replacesId;
+                delete pendingRecord.isPending;
+
+                pendingRecord.approvedBy = currentUser?.email || 'Supervisor';
+
+                // Swap in the live records array
+                records[originalIndex] = pendingRecord;
+            } else {
+                // Failsafe: original record missing, treat as new
+                delete pendingRecord.replacesId;
+                delete pendingRecord.isPending;
+                pendingRecord.approvedBy = currentUser?.email || 'Supervisor';
+                records.unshift(pendingRecord);
             }
-            // Clear the linkage
-            delete pendingRecord.replacesId;
+        } else {
+            // CASE 3: Standard Approval (New Record)
+            delete pendingRecord.isPending;
+            pendingRecord.approvedBy = currentUser?.email || 'Supervisor';
+            records.unshift(pendingRecord);
         }
 
-        // CASE 3: Standard Approval (New Record or Finished Edit)
-        pendingRecord.approved = true;
-        pendingRecord.approvedBy = currentUser?.email || 'Supervisor';
-
+        // Finalize
+        pendingrecs.splice(pendingIndex, 1);
+        savePendingRecs();
         saveRecords();
         renderReports();
         calculateRecordWMAStats(pendingRecord);
@@ -5943,17 +6014,16 @@ Replace ALL current data with this backup?`;
 
     window.rejectRecord = function (id) {
         const idStr = String(id);
-        if (!confirm('Are you sure you want to REJECT and PERMANENTLY ERASE this proposal?')) return;
-        const initialCount = records.length;
-        records = records.filter(r => String(r.id) !== idStr);
+        if (!confirm('Are you sure you want to discard this proposal?')) return;
 
-        if (records.length === initialCount) return;
+        const initialCount = pendingrecs.length;
+        pendingrecs = pendingrecs.filter(r => String(r.id) !== idStr);
 
-        recentlyRejected.add(idStr); // Tombstone
-        saveTombstones(); // Persist
-        saveRecords();
+        if (pendingrecs.length === initialCount) return;
+
+        savePendingRecs();
         renderReports();
-        console.log(`Supervisor rejected record ${idStr}.`);
+        console.log(`Discarded pending record ${idStr}.`);
     };
 
 
