@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let countries = [];
     let history = [];
     let appUsers = [];
+    const recentlyRejected = new Set(); // Session-based tombstones for transient deletions
 
     // --- Data Protection ---
     let isDataReady = false; // Flag to prevent saving over cloud until sync is verified
@@ -302,28 +303,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 1. Start with Server Records (Base Truth)
                 serverRecords.forEach(r => {
-                    if (!archivedIds.has(r.id)) {
+                    const rIdStr = String(r.id);
+                    if (!archivedIds.has(rIdStr) && !recentlyRejected.has(rIdStr)) {
                         uniqueMap.set(r.id, r);
                     }
                 });
 
                 // 2. Blend in Local Records (Update state if local is "ahead")
                 localRecords.forEach(l => {
-                    if (archivedIds.has(l.id)) return; // Skip if archived
+                    const lIdStr = String(l.id);
+                    if (archivedIds.has(lIdStr) || recentlyRejected.has(lIdStr)) return;
 
                     const existing = uniqueMap.get(l.id);
                     if (!existing) {
-                        // "Local Only" record
-                        // IMPORTANT: Only rescue if it is NOT yet approved (a proposal).
-                        // If it's approved:true but missing from server, it means it was deleted on the server.
-                        if (l.approved === false) {
-                            console.log(`🛡️ Smart Merge: Rescuing pending proposal ${l.id}`);
+                        // "Local Only" record (likely a proposal from this device)
+                        // STABILITY FIX: Only rescue if it's very recent (e.g., < 2 hours old) or specifically unapproved.
+                        // If it's old and missing from server, it was likely deleted elsewhere.
+                        const ageInMs = Date.now() - (Number(l.id) || 0);
+                        const isRecent = ageInMs < (2 * 60 * 60 * 1000);
+
+                        if (l.approved === false && isRecent) {
+                            console.log(`🛡️ Smart Merge: Rescuing recent proposal ${l.id}`);
                             uniqueMap.set(l.id, l);
-                        } else {
-                            // It was likely deleted on another device. Do not rescue.
                         }
                     } else if (l.approved === true && existing.approved === false) {
-                        // "Local Approval" - Local state is the definitive supervisor action
                         console.log(`🛡️ Smart Merge: Favoring local approval for record ${l.id}`);
                         uniqueMap.set(l.id, l);
                     }
@@ -969,6 +972,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isLocalEnvironment()) return true;
         const role = getUserRole(email);
         return role === 'Admin' || role === 'Supervisor';
+    }
+
+    function isAdminUser(email) {
+        if (isLocalEnvironment()) return true;
+        return getUserRole(email) === 'Admin';
     }
 
     function attemptLocalAdminLogin() {
@@ -1928,8 +1936,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
                     }
                 }
-                if (editBtn) editRecord(Number(editBtn.dataset.id));
-                if (delBtn) deleteRecord(Number(delBtn.dataset.id));
+                if (editBtn) editRecord(editBtn.dataset.id);
+                if (delBtn) deleteRecord(delBtn.dataset.id);
             });
         }
 
@@ -3752,7 +3760,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         switchTab('log');
-        const r = records.find(item => item.id === id);
+        const idStr = String(id);
+        const r = records.find(item => String(item.id) === idStr);
 
         if (!r) {
             console.error("❌ Record not found for ID:", id);
@@ -3905,13 +3914,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isSup) {
             if (!confirm('Are you sure you want to PERMANENTLY delete this record?')) return;
             const initialCount = records.length;
-            records = records.filter(r => String(r.id) !== String(id));
+            const idStr = String(id);
+            records = records.filter(r => String(r.id) !== idStr);
+            recentlyRejected.add(idStr); // Tombstone
 
             if (records.length === initialCount) {
                 console.warn("No record found with id:", id);
                 return;
             }
-            if (editingId === id) cancelEdit();
+            if (editingId && String(editingId) === idStr) cancelEdit();
 
             // Explicitly sync to cloud
             saveRecords();
@@ -3980,8 +3991,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
 
         const filtered = records.filter(r => {
-            // ARCHIVE PROTECTION: Never show a record that exists in history as an "original"
-            if (archivedIds.has(r.id)) return false;
+            const rIdStr = String(r.id);
+            // ARCHIVE & REJECT PROTECTION
+            if (archivedIds.has(rIdStr) || recentlyRejected.has(rIdStr)) return false;
 
             const rTrackType = r.trackType || 'Outdoor';
             const matchesTrackType = ttVal === 'all' || rTrackType === ttVal;
@@ -4173,7 +4185,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${r.raceName || ''}</td>
                     <td class="actions-col" style="white-space:nowrap;">
                         ${(r.approved === false && isSupervisor(currentUser ? currentUser.email : null)) ?
-                    `<button class="btn-icon approve-btn" onclick="approveRecord(${r.id})" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>` : ''}
+                    `
+                        <button class="btn-icon approve-btn" onclick="approveRecord(${r.id})" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>
+                        <button class="btn-icon reject-btn" onclick="rejectRecord(${r.id})" title="Reject Record" style="color:var(--danger); margin-right:5px;">❌</button>
+                    ` : ''}
                         <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit">✏️</button>
                         <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete">🗑️</button>
                     </td>
@@ -5853,15 +5868,15 @@ Replace ALL current data with this backup?`;
     }
 
     window.approveRecord = function (id) {
+        const idStr = String(id);
         if (!confirm('Are you sure you want to approve this action?')) return;
-        const pendingRecord = records.find(r => r.id === id);
+        const pendingRecord = records.find(r => String(r.id) === idStr);
         if (!pendingRecord) return;
 
         // CASE 1: Approval of a DELETION
         if (pendingRecord.pendingDelete) {
-            // If it replaced another one, we need to find if there's a link or if we just delete this.
-            // (Usually delete proposals are on existing approved records or existing pending ones)
-            records = records.filter(r => r.id !== id);
+            records = records.filter(r => String(r.id) !== idStr);
+            recentlyRejected.add(idStr); // Tombstone
             saveRecords();
             renderReports();
             return;
@@ -5869,7 +5884,8 @@ Replace ALL current data with this backup?`;
 
         // CASE 2: Approval of an EDIT (Replacement)
         if (pendingRecord.replacesId) {
-            const originalIndex = records.findIndex(r => r.id === pendingRecord.replacesId);
+            const replIdStr = String(pendingRecord.replacesId);
+            const originalIndex = records.findIndex(r => String(r.id) === replIdStr);
             if (originalIndex !== -1) {
                 const originalRecord = records[originalIndex];
 
@@ -5883,8 +5899,9 @@ Replace ALL current data with this backup?`;
                 history.unshift(historyRecord);
                 saveHistory();
 
-                // Remove Original from Live Records
+                // Remove Original from Live Records & Tombstone it
                 records.splice(originalIndex, 1);
+                recentlyRejected.add(replIdStr);
             }
             // Clear the linkage
             delete pendingRecord.replacesId;
@@ -5897,6 +5914,20 @@ Replace ALL current data with this backup?`;
         saveRecords();
         renderReports();
         calculateRecordWMAStats(pendingRecord);
+    };
+
+    window.rejectRecord = function (id) {
+        const idStr = String(id);
+        if (!confirm('Are you sure you want to REJECT and PERMANENTLY ERASE this proposal?')) return;
+        const initialCount = records.length;
+        records = records.filter(r => String(r.id) !== idStr);
+
+        if (records.length === initialCount) return;
+
+        recentlyRejected.add(idStr); // Tombstone
+        saveRecords();
+        renderReports();
+        console.log(`Supervisor rejected record ${idStr}.`);
     };
 
 
