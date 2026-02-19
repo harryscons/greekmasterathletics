@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celestial Plasma - Track & Field Manager</title>
+    <title>Powered By Celestial Plasma - Track & Field Manager</title>
     <!-- Robust Global Error Handler -->
     <script>
         window.onerror = function (msg, url, line, col, error) {
@@ -25,30 +25,38 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <!-- Theme initialization script moved to body to avoid TypeError -->
+</head>
+
+<body>
     <script>
         // Immediate Theme Application to prevent flicker
         (function () {
             const savedTheme = localStorage.getItem('tf_theme') || 'theme-default';
-            document.body.className = savedTheme;
+            if (document.body) {
+                document.body.className = savedTheme;
+            } else {
+                // Fallback for extremely early execution
+                window.addEventListener('DOMContentLoaded', () => {
+                    document.body.className = savedTheme;
+                });
+            }
         })();
     </script>
-</head>
-
-<body>
     <div class="background-glow"></div>
 
     <div class="app-container">
         <header>
             <div class="logo-container">
                 <div class="logo-icon">
-                    <svg width="48" height="32" viewBox="0 0 27 18" xmlns="http://www.w3.org/2000/svg"
-                        style="border-radius: 4px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">
-                        <rect width="27" height="18" fill="#005BAE" />
+                    <svg width="40" height="40" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"
+                        style="border-radius: 50%; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); transform: translateY(4px); overflow: hidden;">
+                        <rect width="18" height="18" fill="#005BAE" />
                         <g stroke="#fff" stroke-width="2">
-                            <line x1="0" y1="3" x2="27" y2="3" />
-                            <line x1="0" y1="7" x2="27" y2="7" />
-                            <line x1="0" y1="11" x2="27" y2="11" />
-                            <line x1="0" y1="15" x2="27" y2="15" />
+                            <line x1="0" y1="3" x2="18" y2="3" />
+                            <line x1="0" y1="7" x2="18" y2="7" />
+                            <line x1="0" y1="11" x2="18" y2="11" />
+                            <line x1="0" y1="15" x2="18" y2="15" />
                         </g>
                         <rect width="10" height="10" fill="#005BAE" />
                         <g stroke="#fff" stroke-width="2">
@@ -57,11 +65,11 @@
                         </g>
                     </svg>
                 </div>
-                <h1>Greek Master Athletics Statistics</h1>
+                <h1>Powered By Greek Master Athletics Statistics</h1>
             </div>
             <p class="subtitle"
                 style="font-size: 1.05rem; font-weight: 500; letter-spacing: 1px; margin-top: 0.25rem; color: var(--accent); transition: color 0.3s ease;">
-                Powered by Team of GreekAthletics.gr</p>
+                Powered By Team Of GreekAthletics.gr</p>
 
             <!-- Navigation Tabs Moved Higher -->
             <nav class="nav-tabs">
