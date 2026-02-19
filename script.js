@@ -268,6 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 athleteLookupMap[`${a.lastName}, ${a.firstName}`] = a;
             });
         }
+
+        // 4. Statistics Cache Audit: Ensure stats calculations only use approved data
+        // (This is redundant if getters are filtered, but good for O(1) suggested marks)
     }
 
     // --- State for Sorting ---
@@ -310,15 +313,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const existing = uniqueMap.get(l.id);
                     if (!existing) {
-                        // "Local Only" record - likely a new submission not yet in cloud
-                        uniqueMap.set(l.id, l);
+                        // "Local Only" record
+                        // IMPORTANT: Only rescue if it is NOT yet approved (a proposal).
+                        // If it's approved:true but missing from server, it means it was deleted on the server.
+                        if (l.approved === false) {
+                            console.log(`🛡️ Smart Merge: Rescuing pending proposal ${l.id}`);
+                            uniqueMap.set(l.id, l);
+                        } else {
+                            // It was likely deleted on another device. Do not rescue.
+                        }
                     } else if (l.approved === true && existing.approved === false) {
                         // "Local Approval" - Local state is the definitive supervisor action
                         console.log(`🛡️ Smart Merge: Favoring local approval for record ${l.id}`);
                         uniqueMap.set(l.id, l);
-                    } else if ((l.updatedAt || 0) > (existing.updatedAt || 0)) {
-                        // Standard timestamp-based merge (if we had proper timestamps)
-                        // uniqueMap.set(l.id, l);
                     }
                 });
 
@@ -2371,7 +2378,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const fAgeGroup = document.getElementById('wmaReportFilterAgeGroup')?.value || 'all';
         const fYear = document.getElementById('wmaReportFilterYear')?.value || 'all';
 
+        const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
+
         let filtered = records.filter(r => {
+            // ARCHIVE PROTECTION
+            if (archivedIds.has(r.id)) return false;
+
+            // STRICT APPROVAL: Only include approved records in statistics
+            if (r.approved !== true) return false;
             if (!r.athlete || !r.mark || r.athlete.trim() === '' || r.mark.trim() === '') return false;
 
             if (fEvent !== 'all' && r.event !== fEvent) return false;
@@ -3880,32 +3894,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deleteRecord(id) {
-        if (!isSupervisor(currentUser ? currentUser.email : null)) {
-            alert("Only Supervisors can delete records.");
-            return;
-        }
-        if (!confirm('Delete this record?')) return;
-        const initialCount = records.length;
+        const isSup = isSupervisor(currentUser ? currentUser.email : null);
+        const isAdmin = isAdminUser(currentUser ? currentUser.email : null);
 
-        // Use loose comparison or string conversion to be safe against type mismatches
-        records = records.filter(r => String(r.id) !== String(id));
-
-        if (records.length === initialCount) {
-            console.warn("No record found with id:", id);
+        if (!isSup && !isAdmin) {
+            alert("Only Supervisors or Admins can delete records.");
             return;
         }
 
-        if (editingId === id) cancelEdit();
+        if (isSup) {
+            if (!confirm('Are you sure you want to PERMANENTLY delete this record?')) return;
+            const initialCount = records.length;
+            records = records.filter(r => String(r.id) !== String(id));
 
-        // Inline save for immediate persistence
-        localStorage.setItem('tf_records', JSON.stringify(records));
+            if (records.length === initialCount) {
+                console.warn("No record found with id:", id);
+                return;
+            }
+            if (editingId === id) cancelEdit();
 
-        saveRecords();
+            // Explicitly sync to cloud
+            saveRecords();
+            console.log(`Supervisor deleted record ${id}.`);
+        } else {
+            // Admin -> Propose Delete
+            if (!confirm('Propose this record for DELETION?')) return;
+            const record = records.find(r => String(r.id) === String(id));
+            if (!record) return;
+
+            record.approved = false;
+            record.pendingDelete = true;
+            record.updatedBy = (currentUser?.displayName || currentUser?.email || 'Admin');
+
+            saveRecords();
+            alert("Deletion proposed. A Supervisor must approve this removal.");
+        }
+
         populateYearDropdown();
         renderReports();
         renderEventList();
         renderAthleteList();
-        console.log(`Deleted record ${id}. Remaining: ${records.length}`);
     }
 
     function clearAllData() {
@@ -4133,7 +4161,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     <td>${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
                     <td style="font-weight:700; color:var(--accent);">${r.mark}</td>
-                    <td>${r.approved === false ? `<span class="badge-pending">Προς Εγκριση</span>` : (r.idr || '-')}</td>
+                    <td>
+                        ${r.pendingDelete ?
+                    `<span class="badge-pending" style="background:var(--danger); color:white;">⚠️ Προς Διαγραφή</span>` :
+                    (r.approved === false ? `<span class="badge-pending">Προς Εγκριση</span>` : (r.idr || '-'))
+                }
+                    </td>
                     <td>${r.wind || '-'}</td>
                     <td style="white-space:nowrap;">${new Date(r.date).toLocaleDateString('en-GB')}</td>
                     <td>${r.town || ''}</td>
@@ -5820,39 +5853,46 @@ Replace ALL current data with this backup?`;
     }
 
     window.approveRecord = function (id) {
-        if (!confirm('Are you sure you want to approve this record?')) return;
+        if (!confirm('Are you sure you want to approve this action?')) return;
         const pendingRecord = records.find(r => r.id === id);
         if (!pendingRecord) return;
 
-        // Check if this record replaces another one
+        // CASE 1: Approval of a DELETION
+        if (pendingRecord.pendingDelete) {
+            // If it replaced another one, we need to find if there's a link or if we just delete this.
+            // (Usually delete proposals are on existing approved records or existing pending ones)
+            records = records.filter(r => r.id !== id);
+            saveRecords();
+            renderReports();
+            return;
+        }
+
+        // CASE 2: Approval of an EDIT (Replacement)
         if (pendingRecord.replacesId) {
             const originalIndex = records.findIndex(r => r.id === pendingRecord.replacesId);
             if (originalIndex !== -1) {
                 const originalRecord = records[originalIndex];
 
-                // Archive Original
+                // Archive Original to History
                 const historyRecord = { ...originalRecord };
                 historyRecord.archivedAt = new Date().toISOString();
                 historyRecord.originalId = originalRecord.id;
-                historyRecord.id = Date.now() + Math.random(); // New ID for history
+                historyRecord.id = Date.now() + Math.random();
                 if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
 
                 history.unshift(historyRecord);
                 saveHistory();
 
                 // Remove Original from Live Records
-                // We splice it out. 
-                // Note: pendingRecord is already in `records`. We just keep it and update it.
                 records.splice(originalIndex, 1);
             }
             // Clear the linkage
-            pendingRecord.replacesId = undefined; // or delete
             delete pendingRecord.replacesId;
         }
 
-        // Approve
+        // CASE 3: Standard Approval (New Record or Finished Edit)
         pendingRecord.approved = true;
-        // pendingRecord.updatedBy = currentUser... (Optional, keep original editor?)
+        pendingRecord.approvedBy = currentUser?.email || 'Supervisor';
 
         saveRecords();
         renderReports();
