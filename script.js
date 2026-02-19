@@ -3993,8 +3993,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const filtered = records.filter(r => {
             const rIdStr = String(r.id);
+            const isSup = isSupervisor(currentUser ? currentUser.email : null);
+
             // ARCHIVE & REJECT PROTECTION
             if (archivedIds.has(rIdStr) || recentlyRejected.has(rIdStr)) return false;
+
+            // ROLE-BASED VISIBILITY: Only Supervisors see unapproved or pending-delete records
+            if (!isSup) {
+                if (r.approved === false || r.pendingDelete === true) return false;
+            }
 
             const rTrackType = r.trackType || 'Outdoor';
             const matchesTrackType = ttVal === 'all' || rTrackType === ttVal;
