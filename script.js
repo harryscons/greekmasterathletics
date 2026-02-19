@@ -5925,15 +5925,35 @@ Replace ALL current data with this backup?`;
         const idStr = String(id);
         if (!confirm('Are you sure you want to approve this action?')) return;
 
-        // Find in pending staging area
-        const pendingIndex = pendingrecs.findIndex(r => String(r.id) === idStr);
-        if (pendingIndex === -1) return;
+        let pendingIndex = pendingrecs.findIndex(r => String(r.id) === idStr);
+        let pendingRecord = null;
+        let isLegacy = false;
 
-        const pendingRecord = pendingrecs[pendingIndex];
+        if (pendingIndex !== -1) {
+            pendingRecord = pendingrecs[pendingIndex];
+        } else {
+            // BACKWARD COMPATIBILITY: Look for legacy pending records stuck in the main `records` table
+            const legacyIndex = records.findIndex(r => String(r.id) === idStr && (r.approved === false || r.pendingDelete === true));
+            if (legacyIndex !== -1) {
+                pendingRecord = { ...records[legacyIndex] };
+                pendingIndex = legacyIndex;
+                isLegacy = true;
+
+                // Map legacy architecture flags to new architecture staging flags
+                if (pendingRecord.pendingDelete) {
+                    pendingRecord.isPendingDelete = true;
+                } else {
+                    pendingRecord.isPending = true;
+                }
+            } else {
+                alert("Error: Record not found. It may have already been processed.");
+                return;
+            }
+        }
 
         // CASE 1: Approval of a DELETION
         if (pendingRecord.isPendingDelete) {
-            const targetId = String(pendingRecord.replacesId);
+            const targetId = isLegacy ? String(pendingRecord.id) : String(pendingRecord.replacesId);
 
             // Move target to history
             const targetIndex = records.findIndex(r => String(r.id) === targetId);
@@ -5953,15 +5973,17 @@ Replace ALL current data with this backup?`;
                 saveRecords();
             }
 
-            // Remove from pendingrecs
-            pendingrecs.splice(pendingIndex, 1);
-            savePendingRecs();
+            // Remove from staging
+            if (!isLegacy) {
+                pendingrecs.splice(pendingIndex, 1);
+                savePendingRecs();
+            }
             renderReports();
             return;
         }
 
         // CASE 2: Approval of an EDIT (Replacement)
-        if (pendingRecord.replacesId) {
+        if (pendingRecord.replacesId && !isLegacy) {
             const replIdStr = String(pendingRecord.replacesId);
             const originalIndex = records.findIndex(r => String(r.id) === replIdStr);
 
@@ -5998,15 +6020,24 @@ Replace ALL current data with this backup?`;
                 records.unshift(pendingRecord);
             }
         } else {
-            // CASE 3: Standard Approval (New Record)
+            // CASE 3: Standard Approval (New Record or Legacy Record)
             delete pendingRecord.isPending;
+            pendingRecord.approved = true; // For legacy
+            delete pendingRecord.pendingDelete; // For legacy
             pendingRecord.approvedBy = currentUser?.email || 'Supervisor';
-            records.unshift(pendingRecord);
+
+            if (isLegacy) {
+                records[pendingIndex] = pendingRecord; // Update in place
+            } else {
+                records.unshift(pendingRecord); // Unshift new record
+            }
         }
 
         // Finalize
-        pendingrecs.splice(pendingIndex, 1);
-        savePendingRecs();
+        if (!isLegacy) {
+            pendingrecs.splice(pendingIndex, 1);
+            savePendingRecs();
+        }
         saveRecords();
         renderReports();
         calculateRecordWMAStats(pendingRecord);
@@ -6016,12 +6047,31 @@ Replace ALL current data with this backup?`;
         const idStr = String(id);
         if (!confirm('Are you sure you want to discard this proposal?')) return;
 
+        let removed = false;
+
+        // Check new architecture
         const initialCount = pendingrecs.length;
         pendingrecs = pendingrecs.filter(r => String(r.id) !== idStr);
+        if (pendingrecs.length !== initialCount) {
+            savePendingRecs();
+            removed = true;
+        }
 
-        if (pendingrecs.length === initialCount) return;
+        // Check legacy architecture
+        const legacyIndex = records.findIndex(r => String(r.id) === idStr && (r.approved === false || r.pendingDelete === true));
+        if (legacyIndex !== -1) {
+            records.splice(legacyIndex, 1);
+            recentlyRejected.add(idStr); // Tombstone legacy cancel
+            saveTombstones();
+            saveRecords();
+            removed = true;
+        }
 
-        savePendingRecs();
+        if (!removed) {
+            alert("Error: Record not found. It may have already been processed.");
+            return;
+        }
+
         renderReports();
         console.log(`Discarded pending record ${idStr}.`);
     };
