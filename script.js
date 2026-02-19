@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Global Error Handler for UI Freezes
+    window.onerror = function (msg, url, line, col, error) {
+        console.error("🔥 CRITICAL UI ERROR:", msg, "\nLocation:", url, ":", line, ":", col, "\nStack:", error);
+        alert("CRITICAL ERROR: " + msg + "\nSee console for details.");
+        return false;
+    };
+    console.log("🚀 Script loaded. Global error handler attached.");
+
     // --- Sorting State ---
     let athleteSortField = 'lastName';
     let athleteSortOrder = 'asc';
@@ -278,44 +286,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listen for Records
         db.ref('records').on('value', (snapshot) => {
-            const serverRecords = valToArray(snapshot.val());
-            const localRecords = JSON.parse(localStorage.getItem('tf_records')) || [];
+            try {
+                const serverRecords = valToArray(snapshot.val());
+                const localRecords = JSON.parse(localStorage.getItem('tf_records')) || [];
 
-            // Empty Server Protection: If server returns empty but local has data, prefer local (assume offline/error)
-            if (serverRecords.length === 0 && localRecords.length > 0) {
-                console.warn("⚠️ Server returned 0 records, but Local Storage has " + localRecords.length + ". Using Local Data to prevent data loss.");
-                records = localRecords;
-            } else {
+                // Empty Server Protection: If server returns empty but local has data, prefer local (assume offline/error)
+                if (serverRecords.length === 0 && localRecords.length > 0) {
+                    console.warn("⚠️ Server returned 0 records, but Local Storage has " + localRecords.length + ". Using Local Data to prevent data loss.");
+                    records = localRecords;
+                } else {
 
-                // "Pending Rescue": Find records that are pending approvals (not approved: true) locally but MISSING from server
-                // These would be lost if we blindly overwrite.
-                const pendingRescue = localRecords.filter(l =>
-                    (l.approved === false) &&
-                    !serverRecords.some(s => s.id === l.id)
-                );
+                    // "Pending Rescue": Find records that are pending approvals (not approved: true) locally but MISSING from server
+                    // These would be lost if we blindly overwrite.
+                    const pendingRescue = localRecords.filter(l =>
+                        (l.approved === false) &&
+                        !serverRecords.some(s => s.id === l.id)
+                    );
 
-                if (pendingRescue.length > 0) {
-                    console.warn(`🔄 Rescued ${pendingRescue.length} pending records from LocalStorage override.`);
-                    // Merge them into the live list (Server + Pending Local)
-                    // Use a Set for unique IDs to prevent duplicates during merge if server actually had some
-                    const merged = [...serverRecords, ...pendingRescue];
-                    // Remove duplicates based on ID, favoring the last one added (which should be the rescue one)
-                    const uniqueMap = new Map();
-                    merged.forEach(item => uniqueMap.set(item.id, item));
-                    records = Array.from(uniqueMap.values());
+                    if (pendingRescue.length > 0) {
+                        console.warn(`🔄 Rescued ${pendingRescue.length} pending records from LocalStorage override.`);
+                        // Merge them into the live list (Server + Pending Local)
+                        // Use a Set for unique IDs to prevent duplicates during merge if server actually had some
+                        const merged = [...serverRecords, ...pendingRescue];
+                        // Remove duplicates based on ID, favoring the last one added (which should be the rescue one)
+                        const uniqueMap = new Map();
+                        merged.forEach(item => uniqueMap.set(item.id, item));
+                        records = Array.from(uniqueMap.values());
 
-                    // Force a resync to server to persist them
-                    setTimeout(() => saveRecords(), 2000);
-                } else if (serverRecords.length > 0) {
-                    // Normal case: Server has data, no pending rescue needed
-                    records = serverRecords;
-                }
-            } // End of Empty Server Protection Block
+                        // Force a resync to server to persist them
+                        setTimeout(() => saveRecords(), 2000);
+                    } else if (serverRecords.length > 0) {
+                        // Normal case: Server has data, no pending rescue needed
+                        records = serverRecords;
+                    }
+                } // End of Empty Server Protection Block
 
-            console.log("Records updated from Firebase:", records.length);
-            loadedNodes.add('records');
-            checkReady();
-            renderAll();
+                console.log("Records updated from Firebase:", records.length);
+                loadedNodes.add('records');
+                checkReady();
+                renderAll();
+            } catch (e) {
+                console.error("🔥 Error in Validating/Loading Records:", e);
+                alert("Data Sync Error: " + e.message);
+            }
         });
 
         // Listen for Athletes
@@ -1149,7 +1162,14 @@ if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY" && firebas
     loadLocalDataOnly();
 }
 
-init();
+try {
+    console.log("🚀 Starting System Initialization...");
+    init();
+    console.log("✅ System Initialization Complete.");
+} catch (e) {
+    console.error("🔥 CRITICAL INIT ERROR:", e);
+    alert("System Initialization Failed: " + e.message);
+}
 
 function init() {
     initThemes();
