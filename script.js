@@ -14,7 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let countries = [];
     let history = [];
     let appUsers = [];
-    const recentlyRejected = new Set(); // Session-based tombstones for transient deletions
+    const recentlyRejected = new Set(JSON.parse(localStorage.getItem('tf_tombstones') || '[]'));
+
+    function saveTombstones() {
+        localStorage.setItem('tf_tombstones', JSON.stringify(Array.from(recentlyRejected)));
+    }
 
     // --- Data Protection ---
     let isDataReady = false; // Flag to prevent saving over cloud until sync is verified
@@ -304,8 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 1. Start with Server Records (Base Truth)
                 serverRecords.forEach(r => {
                     const rIdStr = String(r.id);
+                    // Use rIdStr for BOTH sets to ensure type match
                     if (!archivedIds.has(rIdStr) && !recentlyRejected.has(rIdStr)) {
-                        uniqueMap.set(r.id, r);
+                        uniqueMap.set(rIdStr, r);
                     }
                 });
 
@@ -314,21 +319,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     const lIdStr = String(l.id);
                     if (archivedIds.has(lIdStr) || recentlyRejected.has(lIdStr)) return;
 
-                    const existing = uniqueMap.get(l.id);
+                    const existing = uniqueMap.get(lIdStr);
                     if (!existing) {
                         // "Local Only" record (likely a proposal from this device)
                         // STABILITY FIX: Only rescue if it's very recent (e.g., < 2 hours old) or specifically unapproved.
-                        // If it's old and missing from server, it was likely deleted elsewhere.
                         const ageInMs = Date.now() - (Number(l.id) || 0);
                         const isRecent = ageInMs < (2 * 60 * 60 * 1000);
 
                         if (l.approved === false && isRecent) {
-                            console.log(`🛡️ Smart Merge: Rescuing recent proposal ${l.id}`);
-                            uniqueMap.set(l.id, l);
+                            console.log(`🛡️ Smart Merge: Rescuing recent proposal ${lIdStr}`);
+                            uniqueMap.set(lIdStr, l);
                         }
                     } else if (l.approved === true && existing.approved === false) {
-                        console.log(`🛡️ Smart Merge: Favoring local approval for record ${l.id}`);
-                        uniqueMap.set(l.id, l);
+                        console.log(`🛡️ Smart Merge: Favoring local approval for record ${lIdStr}`);
+                        uniqueMap.set(lIdStr, l);
                     }
                 });
 
@@ -3917,16 +3921,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const idStr = String(id);
             records = records.filter(r => String(r.id) !== idStr);
             recentlyRejected.add(idStr); // Tombstone
+            saveTombstones(); // Persist
 
-            if (records.length === initialCount) {
-                console.warn("No record found with id:", id);
-                return;
-            }
+            if (records.length === initialCount) return;
             if (editingId && String(editingId) === idStr) cancelEdit();
 
-            // Explicitly sync to cloud
             saveRecords();
-            console.log(`Supervisor deleted record ${id}.`);
+            console.log(`Supervisor deleted record ${idStr}.`);
         } else {
             // Admin -> Propose Delete
             if (!confirm('Propose this record for DELETION?')) return;
@@ -5877,6 +5878,7 @@ Replace ALL current data with this backup?`;
         if (pendingRecord.pendingDelete) {
             records = records.filter(r => String(r.id) !== idStr);
             recentlyRejected.add(idStr); // Tombstone
+            saveTombstones();
             saveRecords();
             renderReports();
             return;
@@ -5902,6 +5904,7 @@ Replace ALL current data with this backup?`;
                 // Remove Original from Live Records & Tombstone it
                 records.splice(originalIndex, 1);
                 recentlyRejected.add(replIdStr);
+                saveTombstones();
             }
             // Clear the linkage
             delete pendingRecord.replacesId;
@@ -5925,6 +5928,7 @@ Replace ALL current data with this backup?`;
         if (records.length === initialCount) return;
 
         recentlyRejected.add(idStr); // Tombstone
+        saveTombstones(); // Persist
         saveRecords();
         renderReports();
         console.log(`Supervisor rejected record ${idStr}.`);
