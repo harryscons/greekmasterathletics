@@ -281,23 +281,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const serverRecords = valToArray(snapshot.val());
             const localRecords = JSON.parse(localStorage.getItem('tf_records')) || [];
 
-            // "Pending Rescue": Find records that are pending approvals (not approved: true) locally but MISSING from server
-            // These would be lost if we blindly overwrite.
-            const pendingRescue = localRecords.filter(l =>
-                (l.approved === false) &&
-                !serverRecords.some(s => s.id === l.id)
-            );
-
-            if (pendingRescue.length > 0) {
-                console.warn(`🔄 Rescued ${pendingRescue.length} pending records from LocalStorage override.`);
-                // Merge them into the live list (Server + Pending Local)
-                records = [...serverRecords, ...pendingRescue];
-                // Force a resync to server to persist them
-                // We delay slightly to avoid race conditions with initial load
-                setTimeout(() => saveRecords(), 2000);
+            // Empty Server Protection: If server returns empty but local has data, prefer local (assume offline/error)
+            if (serverRecords.length === 0 && localRecords.length > 0) {
+                console.warn("⚠️ Server returned 0 records, but Local Storage has " + localRecords.length + ". Using Local Data to prevent data loss.");
+                records = localRecords;
             } else {
-                records = serverRecords;
-            }
+
+                // "Pending Rescue": Find records that are pending approvals (not approved: true) locally but MISSING from server
+                // These would be lost if we blindly overwrite.
+                const pendingRescue = localRecords.filter(l =>
+                    (l.approved === false) &&
+                    !serverRecords.some(s => s.id === l.id)
+                );
+
+                if (pendingRescue.length > 0) {
+                    console.warn(`🔄 Rescued ${pendingRescue.length} pending records from LocalStorage override.`);
+                    // Merge them into the live list (Server + Pending Local)
+                    // Use a Set for unique IDs to prevent duplicates during merge if server actually had some
+                    const merged = [...serverRecords, ...pendingRescue];
+                    // Remove duplicates based on ID, favoring the last one added (which should be the rescue one)
+                    const uniqueMap = new Map();
+                    merged.forEach(item => uniqueMap.set(item.id, item));
+                    records = Array.from(uniqueMap.values());
+
+                    // Force a resync to server to persist them
+                    setTimeout(() => saveRecords(), 2000);
+                } else if (serverRecords.length > 0) {
+                    // Normal case: Server has data, no pending rescue needed
+                    records = serverRecords;
+                }
+            } // End of Empty Server Protection Block
 
             console.log("Records updated from Firebase:", records.length);
             loadedNodes.add('records');
@@ -1900,6 +1913,7 @@ function setupEventListeners() {
 }
 
 function switchTab(tabId) {
+    console.log("Switching tab to:", tabId);
     // Hide all views by removing active class
     document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
 
@@ -4028,6 +4042,7 @@ window.showExactAge = function (el, age) {
 
 function renderReports() {
     if (!reportTableBody) return;
+    console.log("renderReports called");
     reportTableBody.innerHTML = '';
 
     const filtered = getFilteredRecords();
