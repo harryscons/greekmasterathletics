@@ -3992,11 +3992,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // ARCHIVE & REJECT PROTECTION
             if (archivedIds.has(rIdStr) || recentlyRejected.has(rIdStr)) return false;
 
-            // ROLE-BASED VISIBILITY: Only Supervisors see unapproved/pending-delete records
-            // FIX: Also allow the author to see their own pending records
-            if (!isSup) {
-                const currentActor = currentUser ? (currentUser.displayName || currentUser.email) : null;
-                const isAuthor = currentActor && r.updatedBy === currentActor;
+            // ROLE-BASED VISIBILITY
+            const isAdmin = isAdminUser(currentUser ? currentUser.email : null);
+            if (!isSup && !isAdmin) {
+                // If not Sup or Admin, they must be the author to see unapproved records
+                let isAuthor = false;
+                if (currentUser && r.updatedBy) {
+                    const ub = String(r.updatedBy).trim().toLowerCase();
+                    if (currentUser.email && ub === String(currentUser.email).trim().toLowerCase()) isAuthor = true;
+                    if (currentUser.displayName && ub === String(currentUser.displayName).trim().toLowerCase()) isAuthor = true;
+                }
 
                 if (!isAuthor) {
                     if (r.approved === false || r.pendingDelete === true) return false;
