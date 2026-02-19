@@ -290,7 +290,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const valToArray = (val) => {
             if (!val) return [];
-            return Array.isArray(val) ? val : Object.values(val);
+            if (Array.isArray(val)) return val;
+
+            // Convert object to array but PRESERVE existing IDs if present
+            return Object.keys(val).map(key => {
+                const item = val[key];
+                if (typeof item === 'object' && item !== null) {
+                    // If the object already has an id, keep it. Otherwise, use the firebase key if it looks like a UUID, or generate one.
+                    if (!item.id) {
+                        item.id = key.length > 10 ? key : String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                    }
+                    return item;
+                }
+                return item;
+            });
         };
 
         // Listen for Records
@@ -3521,10 +3534,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Supervisor Direct Edit -> Archive Old
                         const oldRecordData = { ...originalRecord };
                         oldRecordData.archivedAt = new Date().toISOString();
-                        oldRecordData.originalId = oldRecordData.id; // Link to original
+                        oldRecordData.originalId = String(oldRecordData.id); // Link to original
                         if (!oldRecordData.updatedBy) oldRecordData.updatedBy = 'System';
                         // Unique ID for history
-                        oldRecordData.id = Date.now() + Math.random();
+                        oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
 
                         history.unshift(oldRecordData);
                         saveHistory();
@@ -3536,21 +3549,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         records[index] = newRecord;
 
                         submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
-                    } else {
-                        // Non-Supervisor -> Propose Edit (New Pending Record)
-                        // Do NOT archive old yet.
-                        // New record ID is already set to `editingId` in code above? 
-                        // Wait, `newRecord.id` uses `editingId` if set.
-                        // We need a NEW ID for the pending record, but we must link to `editingId` as `replacesId`.
+                    } else if (!isSup) {
+                        // Non-supervisor proposing an edit
+                        if (editingId) {
+                            newRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                            newRecord.replacesId = editingId; // The ID of the record being edited
+                            newRecord.approved = false; // Force false
 
-                        newRecord.id = Date.now() + Math.random();
-                        newRecord.replacesId = editingId; // The ID of the record being edited
-                        newRecord.approved = false; // Force false
+                            records.unshift(newRecord);
 
-                        records.unshift(newRecord);
-
-                        submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
-                        alert("Your edit has been submitted for approval. Both the original and your proposed change are now visible.");
+                            submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
+                            alert("Your edit has been submitted for approval. Both the original and your proposed change are now visible.");
+                        }
                     }
                 }
                 setTimeout(() => cancelEdit(), 1000);
@@ -5907,7 +5917,7 @@ Replace ALL current data with this backup?`;
                 const historyRecord = { ...originalRecord };
                 historyRecord.archivedAt = new Date().toISOString();
                 historyRecord.originalId = originalRecord.id;
-                historyRecord.id = Date.now() + Math.random();
+                historyRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000)); // Replaced fractional ID with string ID
                 if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
 
                 history.unshift(historyRecord);
