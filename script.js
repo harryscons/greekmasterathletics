@@ -3775,81 +3775,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log("✅ Record found:", r);
 
-        // Explicitly select elements to ensure we have them
-        const evtInput = document.getElementById('event');
-        const genderInput = document.getElementById('gender');
-        const athleteInput = document.getElementById('athlete');
-        const ageGroupInput = document.getElementById('ageGroup');
-        const trackTypeInput = document.getElementById('trackType');
-        const raceNameInput = document.getElementById('raceName');
-        const notesInput = document.getElementById('notes');
-        const markInput = document.getElementById('mark');
-        const windInput = document.getElementById('wind');
-        const idrInput = document.getElementById('idr');
-        const dateInput = document.getElementById('date');
-        const townInput = document.getElementById('town');
-        const countryInput = document.getElementById('country');
+        // Reset form first to clear any old state
+        if (recordForm) recordForm.reset();
 
-        const relayTeamNameInput = document.getElementById('relayTeamName');
-        const relayAthlete1 = document.getElementById('relayAthlete1');
-        const relayAthlete2 = document.getElementById('relayAthlete2');
-        const relayAthlete3 = document.getElementById('relayAthlete3');
-        const relayAthlete4 = document.getElementById('relayAthlete4');
+        // Helper to set select value more robustly
+        const setSelectValue = (el, val) => {
+            if (!el || !val) return;
+            const target = String(val).trim();
+            el.value = target; // Try direct value match
 
-        const ev = events.find(e => e.name === r.event);
-        const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
-        toggleRelayFields(isRelay);
+            // Fallback: If value didn't stick, try matching by option text
+            if (el.value !== target) {
+                const options = Array.from(el.options);
+                const matchingOpt = options.find(o => o.text.trim() === target || o.value.trim() === target);
+                if (matchingOpt) el.value = matchingOpt.value;
+            }
+        };
 
-        // Populate Fields with Debugging
-        if (evtInput) {
-            evtInput.value = r.event || '';
-            console.log("Set Event:", evtInput.value);
-            // Trigger change event to filter/update other dropdowns if needed
-            evtInput.dispatchEvent(new Event('change'));
-        }
+        // Standard Fields
+        setSelectValue(evtInput, r.event);
+        if (evtInput) evtInput.dispatchEvent(new Event('change'));
 
-        // Wait a tiny bit for event listeners (like filtering athletes) to run? 
-        // No, assuming synchronous for now, but let's set gender.
+        setSelectValue(genderInput, r.gender);
         if (genderInput) {
-            genderInput.value = r.gender || '';
             populateRelayAthletes(r.gender || '');
-            // Trigger change to update Age Groups
             genderInput.dispatchEvent(new Event('change'));
-        }
-
-        // Need to wait for Age Groups to populate?
-        // Wait a tiny bit for UI state to settle if needed
-        setTimeout(() => {
-            if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
-        }, 50);
-
-        if (isRelay) {
-            if (relayTeamNameInput) relayTeamNameInput.value = r.athlete || '';
-            const p = r.relayParticipants || [];
-            if (relayAthlete1) relayAthlete1.value = p[0] || '';
-            if (relayAthlete2) relayAthlete2.value = p[1] || '';
-            if (relayAthlete3) relayAthlete3.value = p[2] || '';
-            if (relayAthlete4) relayAthlete4.value = p[3] || '';
-        } else {
-            // Delay athlete setting slightly to ensure list is populated if it depends on Event/Gender
-            setTimeout(() => {
-                if (athleteInput && r.athlete) {
-                    const athleteName = r.athlete.trim();
-                    athleteInput.value = athleteName;
-                    if (athleteInput.value !== athleteName) {
-                        console.warn(`Failed to set athlete. Expected: "${athleteName}", Got: "${athleteInput.value}"`);
-                        // Fallback: Check if option exists, if not, maybe add it?
-                    }
-                }
-            }, 50);
         }
 
         if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
         if (raceNameInput) raceNameInput.value = r.raceName || '';
         if (notesInput) notesInput.value = r.notes || '';
-        if (markInput) markInput.value = r.mark;
+        if (markInput) markInput.value = r.mark || '';
         if (windInput) windInput.value = r.wind || '';
         if (idrInput) idrInput.value = r.idr || '';
+        if (townInput) townInput.value = r.town || '';
+        if (countryInput) countryInput.value = r.country || '';
 
         if (dateInput) {
             if (datePicker) {
@@ -3859,15 +3819,33 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (townInput) townInput.value = r.town || '';
-        if (countryInput) countryInput.value = r.country || '';
+        const ev = events.find(e => e.name === r.event);
+        const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
+        toggleRelayFields(isRelay);
+
+        // Dependent Fields (Waiting for UI updates potentially triggered by change events)
+        setTimeout(() => {
+            setSelectValue(ageGroupInput, r.ageGroup);
+
+            if (isRelay) {
+                if (relayTeamNameInput) relayTeamNameInput.value = r.athlete || '';
+                const p = r.relayParticipants || [];
+                if (relayAthlete1) relayAthlete1.value = p[0] || '';
+                if (relayAthlete2) relayAthlete2.value = p[1] || '';
+                if (relayAthlete3) relayAthlete3.value = p[2] || '';
+                if (relayAthlete4) relayAthlete4.value = p[3] || '';
+            } else {
+                setSelectValue(athleteInput, r.athlete);
+            }
+        }, 150); // Increased timeout for stability
 
         editingId = id;
         editingHistoryId = null;
 
         if (formTitle) formTitle.textContent = 'Edit Record (Archives Old)';
         if (submitBtn) {
-            submitBtn.querySelector('span').textContent = 'Update & Archive';
+            const span = submitBtn.querySelector('span');
+            if (span) span.textContent = 'Update & Archive';
             submitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
         }
         if (cancelBtn) cancelBtn.classList.remove('hidden');
