@@ -4773,11 +4773,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showExcelMapping(jsonData) {
-        const previewWindow = window.open('', '_blank', 'width=1200,height=900');
-        if (!previewWindow) {
-            alert("Pop-up blocked! Please allow pop-ups to see the import preview.");
-            return;
-        }
+        const modal = document.getElementById('excelMappingModal');
+        const content = document.getElementById('excelMappingContent');
+        if (!modal || !content) { alert('Modal not found.'); return; }
 
         const allKeys = new Set();
         jsonData.forEach(row => Object.keys(row).forEach(k => allKeys.add(k)));
@@ -4802,90 +4800,39 @@ document.addEventListener('DOMContentLoaded', () => {
             let options = `<option value="">-- Skip Field --</option>`;
             headers.forEach(h => {
                 const hNorm = h.trim().toLowerCase();
-                const lNorm = field.label.toLowerCase();
-                const idNorm = field.id.toLowerCase();
-                const selected = hNorm === lNorm || hNorm === idNorm ? 'selected' : '';
+                const selected = hNorm === field.label.toLowerCase() || hNorm === field.id.toLowerCase() ? 'selected' : '';
                 options += `<option value="${h}" ${selected}>${h}</option>`;
             });
-
             mappingHtml += `
-                <div class="mapping-row" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; background: #fff; padding: 0.75rem 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb;">
-                    <span style="flex: 1; font-weight: 600; color: #4338ca;">${field.label}</span>
-                    <i style="color: #9ca3af;">→</i>
-                    <select id="map_${field.id}" style="flex: 2; padding: 0.5rem; border-radius: 6px; border: 1px solid #d1d5db; outline: none; font-family: inherit;">
+                <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem; background:#fff; padding:0.75rem 1.25rem; border-radius:8px; border:1px solid #e5e7eb;">
+                    <span style="flex:1; font-weight:600; color:#4338ca;">${field.label}</span>
+                    <i style="color:#9ca3af;">→</i>
+                    <select id="map_${field.id}" style="flex:2; padding:0.5rem; border-radius:6px; border:1px solid #d1d5db; font-family:inherit;">
                         ${options}
                     </select>
-                </div>
-            `;
+                </div>`;
         });
 
-        const jsonString = JSON.stringify(jsonData).replace(/'/g, "\\'");
+        content.innerHTML = mappingHtml;
+        modal.style.display = 'block';
 
-        previewWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Excel Import Wizard - Step 1: Mapping</title>
-                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-                <style>
-                    body { font-family: 'Outfit', sans-serif; padding: 0; margin: 0; background: #f8fafc; color: #1e293b; line-height: 1.5; }
-                    .header { background: #fff; border-bottom: 2px solid #e2e8f0; padding: 1.5rem 2.5rem; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-                    .container { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; }
-                    .card { background: #fff; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 2.5rem; border: 1px solid #f1f5f9; }
-                    h2 { margin: 0; color: #1e1b4b; font-size: 1.75rem; }
-                    .subtitle { color: #64748b; font-size: 1rem; margin-top: 0.5rem; }
-                    .btn { padding: 0.75rem 1.75rem; border-radius: 10px; cursor: pointer; font-weight: 700; border: none; transition: all 0.2s; font-family: inherit; font-size: 0.95rem; }
-                    .btn-primary { background: #6366f1; color: #fff; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4); }
-                    .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
-                    .btn-secondary { background: #94a3b8; color: #fff; margin-right: 0.75rem; }
-                    .btn-secondary:hover { background: #64748b; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div>
-                        <h2>Step 1: Column Mapping</h2>
-                        <div class="subtitle">Select which Excel columns correspond to each record field.</div>
-                    </div>
-                    <div style="display: flex;">
-                        <button class="btn btn-secondary" onclick="window.close()">Cancel</button>
-                        <button id="proceedBtn" class="btn btn-primary">Proceed to Validation →</button>
-                    </div>
-                </div>
-                <div class="container">
-                    <div class="card">
-                        ${mappingHtml}
-                    </div>
-                </div>
-                <script>
-                    document.getElementById('proceedBtn').onclick = function() {
-                        const fields = ${JSON.stringify(targetFields.map(f => f.id))};
-                        const mapping = {};
-                        fields.forEach(fid => {
-                            mapping[fid] = document.getElementById('map_' + fid).value;
-                        });
-                        
-                        const data = JSON.parse('${jsonString}');
-                        if (window.opener && !window.opener.closed) {
-                            window.opener.showExcelValidation(data, mapping);
-                            window.close();
-                        } else {
-                            alert('Main window connection lost. Please restart import.');
-                        }
-                    };
-                <\/script>
-            </body>
-            </html>
-        `);
-        previewWindow.document.close();
+        // Wire the Proceed button
+        const proceedBtn = document.getElementById('proceedToValidationBtn');
+        proceedBtn.onclick = function () {
+            const mapping = {};
+            targetFields.forEach(f => {
+                mapping[f.id] = document.getElementById('map_' + f.id).value;
+            });
+            modal.style.display = 'none';
+            showExcelValidation(jsonData, mapping);
+        };
     }
 
     window.showExcelValidation = function (jsonData, mapping) {
-        const previewWindow = window.open('', '_blank', 'width=1500,height=950');
-        if (!previewWindow) {
-            alert("Pop-up blocked! Please allow pop-ups to see the validation preview.");
-            return;
-        }
+        const modal = document.getElementById('excelValidationModal');
+        const content = document.getElementById('excelValidationContent');
+        const counter = document.getElementById('valRecordCount');
+        if (!modal || !content) { alert('Validation modal not found.'); return; }
 
         const targetFields = [
             { id: 'event', label: 'Event' },
@@ -4903,14 +4850,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mappedFields = targetFields.filter(f => mapping[f.id]);
 
-        // Build table header — with Athlete dropdown column last
-        let tableHeaderHtml = '';
-        mappedFields.forEach(f => {
-            tableHeaderHtml += `<th style="padding: 12px; border: 1px solid #e2e8f0; text-align: left;">${f.label}</th>`;
-        });
-        tableHeaderHtml += `<th style="padding: 12px; border: 1px solid #e2e8f0; text-align: left; background:#eef2ff; color:#4338ca;">&#9998; Athlete</th>`;
+        // Update record count label
+        if (counter) counter.textContent = `Found ${jsonData.length} records.`;
 
-        let tableRowsHtml = '';
+        // Reset filter checkbox
+        const chk = document.getElementById('chkUnmatched');
+        if (chk) chk.checked = false;
+
+        // Build table header
+        let theadHtml = '<tr>';
+        mappedFields.forEach(f => {
+            theadHtml += `<th style="padding:10px 12px; border:1px solid #e2e8f0; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; background:#f8fafc; color:#475569; font-weight:700;">${f.label}</th>`;
+        });
+        theadHtml += `<th style="padding:10px 12px; border:1px solid #e2e8f0; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; background:#eef2ff; color:#4338ca; font-weight:700;">&#9998; Athlete</th>`;
+        theadHtml += '</tr>';
+
+        // Build rows
+        let tbodyHtml = '';
         jsonData.forEach((row, idx) => {
             const evVal = (row[mapping['event']] || '').toString().trim();
             const athVal = (row[mapping['athlete']] || '').toString().trim();
@@ -4932,144 +4888,91 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const hasRed = Object.keys(fieldMatch).some(k => fieldMatch[k] === false);
-            tableRowsHtml += `<tr data-has-red="${hasRed}">`;
+
+            tbodyHtml += `<tr data-has-red="${hasRed}">`;
             mappedFields.forEach(f => {
                 const val = (row[mapping[f.id]] || '').toString().trim();
-                let cellBg = '#ffffff';
+                let bg = '#ffffff';
                 if (f.id in fieldMatch && fieldMatch[f.id] !== null) {
-                    cellBg = fieldMatch[f.id] ? '#dcfce7' : '#fee2e2';
+                    bg = fieldMatch[f.id] ? '#dcfce7' : '#fee2e2';
                 }
-                tableRowsHtml += `<td style="padding: 8px 12px; border: 1px solid #e2e8f0; color: #334155; background: ${cellBg};">${val}</td>`;
+                tbodyHtml += `<td style="padding:8px 12px; border:1px solid #e2e8f0; color:#334155; background:${bg};">${val}</td>`;
             });
 
-            // Build athlete dropdown options
-            let athOptions = `<option value="">-- Skip --</option>`;
+            // Athlete dropdown
+            let athOpts = `<option value="">-- Skip --</option>`;
             athletes.forEach(a => {
                 const sel = (matchedAthlete && String(a.id) === String(matchedAthlete.id)) ? 'selected' : '';
-                athOptions += `<option value="${a.id}" ${sel}>${a.lastName}, ${a.firstName}</option>`;
+                athOpts += `<option value="${a.id}" ${sel}>${a.lastName}, ${a.firstName}</option>`;
             });
             const showNew = !matchedAthlete && athVal;
-            athOptions += `<option value="__new__" ${showNew ? 'selected' : ''}>+ Add New Athlete</option>`;
+            athOpts += `<option value="__new__" ${showNew ? 'selected' : ''}>+ Add New Athlete</option>`;
 
-            tableRowsHtml += `<td style="padding: 6px 10px; border: 1px solid #e2e8f0; background:#f5f3ff; min-width:230px;">
-                <select id="ath_sel_${idx}" onchange="toggleNew(${idx},this.value)" style="width:100%;padding:5px 8px;border-radius:6px;border:1px solid #c7d2fe;font-family:inherit;font-size:0.85rem;">
-                    ${athOptions}
+            tbodyHtml += `<td style="padding:6px 10px; border:1px solid #e2e8f0; background:#f5f3ff; min-width:230px;">
+                <select id="ath_sel_${idx}" onchange="toggleNew(${idx}, this.value)" style="width:100%;padding:5px 8px;border-radius:6px;border:1px solid #c7d2fe;font-family:inherit;font-size:0.85rem;">
+                    ${athOpts}
                 </select>
                 <div id="new_form_${idx}" style="display:${showNew ? 'block' : 'none'};margin-top:6px;background:#f0f9ff;padding:8px;border-radius:6px;border:1px solid #bae6fd;">
-                    <input id="fn_${idx}" placeholder="First Name" value="" style="padding:4px 6px;margin:2px;width:88px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
-                    <input id="ln_${idx}" placeholder="Last Name" value="" style="padding:4px 6px;margin:2px;width:88px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
-                    <input id="dob_${idx}" placeholder="DOB YYYY-MM-DD" style="padding:4px 6px;margin:2px;width:115px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                    <input id="fn_${idx}"  placeholder="First Name"      style="padding:4px 6px;margin:2px;width:88px; border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                    <input id="ln_${idx}"  placeholder="Last Name"       style="padding:4px 6px;margin:2px;width:88px; border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                    <input id="dob_${idx}" placeholder="DOB YYYY-MM-DD"  style="padding:4px 6px;margin:2px;width:115px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
                     <select id="gen_${idx}" style="padding:4px 6px;margin:2px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
                         <option value="Male">Male</option><option value="Female">Female</option>
                     </select>
                 </div>
             </td>`;
-
-            tableRowsHtml += '</tr>';
+            tbodyHtml += '</tr>';
         });
 
-        const jsonString = JSON.stringify(jsonData).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        const mappingString = JSON.stringify(mapping).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        content.innerHTML = `<table style="width:100%; border-collapse:collapse;">
+            <thead>${theadHtml}</thead>
+            <tbody>${tbodyHtml}</tbody>
+        </table>`;
 
-        previewWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Excel Import Wizard - Step 2: Validation</title>
-                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-                <style>
-                    body { font-family: 'Outfit', sans-serif; padding: 0; margin: 0; background: #fff; color: #1e293b; }
-                    .header { position: sticky; top: 0; background: #fff; border-bottom: 2px solid #e2e8f0; padding: 1.25rem 2.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 100; }
-                    .content { padding: 2.5rem; }
-                    .btn { padding: 0.75rem 1.75rem; border-radius: 10px; cursor: pointer; font-weight: 700; border: none; transition: all 0.2s; font-family: inherit; font-size: 0.95rem; }
-                    .btn-import { background: #10b981; color: #fff; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4); }
-                    .btn-import:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4); }
-                    .btn-secondary { background: #94a3b8; color: #fff; margin-right: 0.75rem; }
-                    h2 { margin: 0; color: #1e1b4b; font-size: 1.5rem; }
-                    .stats { font-size: 0.95rem; color: #64748b; margin-top: 0.25rem; }
-                    table { width: 100%; border-collapse: collapse; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
-                    th { font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; background: #f8fafc; color: #475569; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div>
-                        <h2>Step 2: Validation Preview</h2>
-                        <div class="stats">&#x203B; Displaying mapped columns. Found ${jsonData.length} records. &nbsp;
-                            <label style="cursor:pointer;font-weight:600;color:#dc2626;font-size:0.9rem;">
-                                <input type="checkbox" id="chkUnmatched" onchange="filterRows()" style="margin-right:4px;cursor:pointer;"> Show only unmatched
-                            </label>
-                        </div>
-                    </div>
-                    <div>
-                        <button class="btn btn-secondary" onclick="window.close()">Cancel</button>
-                        <button id="importBtn" class="btn btn-import">📥 Complete Import</button>
-                    </div>
-                </div>
-                <div class="content">
-                    <table>
-                        <thead>
-                            <tr>${tableHeaderHtml}</tr>
-                        </thead>
-                        <tbody>
-                            ${tableRowsHtml}
-                        </tbody>
-                    </table>
-                </div>
-                <script>
-                    const rowCount = ${jsonData.length};
+        modal.style.display = 'block';
 
-                    function filterRows() {
-                        const onlyUnmatched = document.getElementById('chkUnmatched').checked;
-                        document.querySelectorAll('tbody tr').forEach(tr => {
-                            if (onlyUnmatched) {
-                                // Show only rows that have at least one red cell (unmatched)
-                                tr.style.display = tr.dataset.hasRed === 'true' ? '' : 'none';
-                            } else {
-                                tr.style.display = '';
-                            }
-                        });
+        // Wire Complete Import button
+        const importBtn = document.getElementById('completeImportBtn');
+        importBtn.onclick = function () {
+            if (!confirm(`Confirm import of ${jsonData.length} records?`)) return;
+
+            const athleteOverrides = {};
+            for (let i = 0; i < jsonData.length; i++) {
+                const sel = document.getElementById('ath_sel_' + i);
+                if (!sel) continue;
+                if (sel.value === '__new__') {
+                    const fn = (document.getElementById('fn_' + i) || {}).value || '';
+                    const ln = (document.getElementById('ln_' + i) || {}).value || '';
+                    const dob = (document.getElementById('dob_' + i) || {}).value || '';
+                    const gen = (document.getElementById('gen_' + i) || {}).value || 'Male';
+                    if (fn.trim() || ln.trim()) {
+                        athleteOverrides[i] = { type: 'new', firstName: fn.trim(), lastName: ln.trim(), dob: dob.trim(), gender: gen };
                     }
+                } else if (sel.value) {
+                    athleteOverrides[i] = { type: 'existing', id: sel.value };
+                }
+            }
 
-                    function toggleNew(idx, val) {
-                        document.getElementById('new_form_' + idx).style.display = val === '__new__' ? 'block' : 'none';
-                    }
+            modal.style.display = 'none';
+            handleMappedImport(jsonData, mapping, athleteOverrides);
+        };
+    };
 
-                    document.getElementById('importBtn').onclick = function() {
-                        if (!confirm('Confirm import of ${jsonData.length} records?')) return;
+    // Global helpers for the validation modal (called from inline onchange/onclick)
+    window.filterValidationRows = function () {
+        const chk = document.getElementById('chkUnmatched');
+        if (!chk) return;
+        const onlyUnmatched = chk.checked;
+        document.querySelectorAll('#excelValidationContent tbody tr').forEach(tr => {
+            tr.style.display = (onlyUnmatched && tr.dataset.hasRed !== 'true') ? 'none' : '';
+        });
+    };
 
-                        const athleteOverrides = {};
-                        for (let i = 0; i < rowCount; i++) {
-                            const sel = document.getElementById('ath_sel_' + i);
-                            if (!sel) continue;
-                            if (sel.value === '__new__') {
-                                const fn = (document.getElementById('fn_' + i) || {}).value || '';
-                                const ln = (document.getElementById('ln_' + i) || {}).value || '';
-                                const dob = (document.getElementById('dob_' + i) || {}).value || '';
-                                const gen = (document.getElementById('gen_' + i) || {}).value || 'Male';
-                                if (fn.trim() || ln.trim()) {
-                                    athleteOverrides[i] = { type: 'new', firstName: fn.trim(), lastName: ln.trim(), dob: dob.trim(), gender: gen };
-                                }
-                            } else if (sel.value) {
-                                athleteOverrides[i] = { type: 'existing', id: sel.value };
-                            }
-                        }
+    window.toggleNew = function (idx, val) {
+        const el = document.getElementById('new_form_' + idx);
+        if (el) el.style.display = val === '__new__' ? 'block' : 'none';
+    };
 
-                        const data = JSON.parse('${jsonString}');
-                        const mapping = JSON.parse('${mappingString}');
-                        if (window.opener && !window.opener.closed) {
-                            window.opener.handleMappedImport(data, mapping, athleteOverrides);
-                            window.close();
-                        } else {
-                            alert('Main window connection lost.');
-                        }
-                    };
-                <\/script>
-            </body>
-            </html>
-        `);
-        previewWindow.document.close();
-    }
 
     window.handleMappedImport = function (jsonData, mapping, athleteOverrides) {
         athleteOverrides = athleteOverrides || {};
