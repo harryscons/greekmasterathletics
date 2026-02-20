@@ -4095,8 +4095,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const rIdStr = String(r.id);
             const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
-            // ARCHIVE & REJECT PROTECTION
-            if (archivedIds.has(rIdStr) || recentlyRejected.has(rIdStr)) return false;
+            // REJECT PROTECTION (Tombstones)
+            if (recentlyRejected.has(rIdStr)) return false;
 
             // Visibility: Under new architecture, ALL users can see BOTH live records and pending proposals.
             // (No role-based hiding of pending items here).
