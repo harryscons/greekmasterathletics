@@ -4698,15 +4698,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Parse DOB (Excel dates are often numbers)
                 let dob = '';
+                const fmtddmmyyyy = d => {
+                    const dd = String(d.getUTCDate()).padStart(2, '0');
+                    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+                    return `${dd}/${mm}/${d.getUTCFullYear()}`;
+                };
                 if (dobVal) {
                     if (typeof dobVal === 'number') {
-                        // Excel serial date to JS Date
-                        const date = new Date(Math.round((dobVal - 25569) * 864e5));
-                        dob = date.toISOString().split('T')[0];
+                        dob = fmtddmmyyyy(new Date(Math.round((dobVal - 25569) * 864e5)));
                     } else {
-                        // Try to parse string
-                        const date = new Date(dobVal);
-                        if (!isNaN(date)) dob = date.toISOString().split('T')[0];
+                        const s = dobVal.toString().trim();
+                        if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+                            const [y, mo, d2] = s.split('T')[0].split('-');
+                            dob = `${d2}/${mo}/${y}`;
+                        } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+                            dob = s;
+                        } else {
+                            const parsed = new Date(s);
+                            dob = isNaN(parsed) ? s : fmtddmmyyyy(parsed);
+                        }
                     }
                 }
 
@@ -5063,15 +5073,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const dateRaw = row[mapping['date']];
                 let finalDate = '';
+                const toddmmyyyy = d => {
+                    const dd = String(d.getUTCDate()).padStart(2, '0');
+                    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+                    return `${dd}/${mm}/${d.getUTCFullYear()}`;
+                };
                 if (dateRaw && !isNaN(dateRaw) && typeof dateRaw === 'number') {
-                    const dateObj = new Date(Math.round((dateRaw - 25569) * 86400 * 1000));
-                    finalDate = dateObj.toISOString().split('T')[0];
+                    // Excel serial number
+                    finalDate = toddmmyyyy(new Date(Math.round((dateRaw - 25569) * 86400 * 1000)));
                 } else if (dateRaw) {
-                    const d = new Date(dateRaw);
-                    if (!isNaN(d)) finalDate = d.toISOString().split('T')[0];
-                    else finalDate = dateRaw;
+                    const s = dateRaw.toString().trim();
+                    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+                        // YYYY-MM-DD → dd/mm/yyyy
+                        const [y, mo, d2] = s.split('T')[0].split('-');
+                        finalDate = `${d2}/${mo}/${y}`;
+                    } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+                        // Already dd/mm/yyyy – use as-is
+                        finalDate = s;
+                    } else {
+                        const parsed = new Date(s);
+                        finalDate = isNaN(parsed) ? s : toddmmyyyy(parsed);
+                    }
                 } else {
-                    finalDate = new Date().toISOString().split('T')[0];
+                    finalDate = toddmmyyyy(new Date());
                 }
 
                 records.unshift({
