@@ -27,6 +27,28 @@
 
 /* Themes */
 /* Themes */
+body.theme-clean-white {
+    --bg-dark: #f8f9fa;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f1f3f5;
+    --primary: #3b82f6;
+    --primary-glow: rgba(59, 130, 246, 0.1);
+    --accent: #2563eb;
+    --text-main: #111827;
+    --text-muted: #4b5563;
+    --border: #e5e7eb;
+    --h1-gradient: linear-gradient(to right, #111827, #374151);
+
+    /* Graph Overrides for Clean White */
+    --chart-grid-color: rgba(0, 0, 0, 0.1);
+    --chart-text-color: #4b5563;
+    --chart-line-color: #3b82f6;
+    --chart-fill-color: rgba(59, 130, 246, 0.2);
+    --chart-point-bg: #fff;
+    --chart-point-border: #3b82f6;
+}
+
+
 body.theme-mint-pale {
     --bg-dark: #f0fdf4;
     --bg-card: #fafffb;
