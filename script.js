@@ -4761,9 +4761,9 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onload = (e) => {
             try {
                 const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
+                const workbook = XLSX.read(data, { type: 'array', cellDates: false, cellNF: false, cellText: false });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "", raw: true, cellDates: false });
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "", raw: true });
 
                 if (jsonData.length === 0) {
                     alert('File appears to be empty.');
@@ -4905,9 +4905,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const hasRed = Object.keys(fieldMatch).some(k => fieldMatch[k] === false);
 
+            // Helper: format a raw cell value as dd/mm/yyyy for date fields
+            const serialToDdMmYyyy = n => {
+                const d = new Date(Math.round((n - 25569) * 86400 * 1000));
+                return `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`;
+            };
+            const fmtCell = (fieldId, rawVal) => {
+                if (['date', 'dob'].includes(fieldId)) {
+                    if (rawVal !== '' && !isNaN(rawVal) && typeof rawVal === 'number') return serialToDdMmYyyy(rawVal);
+                    const s = rawVal.toString().trim();
+                    if (/^\d{4}-\d{2}-\d{2}/.test(s)) { const [y, mo, d2] = s.split('T')[0].split('-'); return `${d2}/${mo}/${y}`; }
+                    return s; // already dd/mm/yyyy or any other text
+                }
+                return rawVal.toString().trim();
+            };
+
             tbodyHtml += `<tr data-has-red="${hasRed}">`;
             mappedFields.forEach(f => {
-                const val = (row[mapping[f.id]] || '').toString().trim();
+                const val = fmtCell(f.id, row[mapping[f.id]] !== undefined ? row[mapping[f.id]] : '');
                 let bg = '#ffffff';
                 if (f.id in fieldMatch && fieldMatch[f.id] !== null) {
                     bg = fieldMatch[f.id] ? '#dcfce7' : '#fee2e2';
