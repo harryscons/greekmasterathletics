@@ -616,8 +616,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getExactAge(dobStr, eventDateStr) {
-        const dob = new Date(dobStr);
-        const evt = new Date(eventDateStr);
+        if (!dobStr || !eventDateStr) return null;
+
+        const parseDate = (s) => {
+            if (!s) return new Date(NaN);
+            const str = s.toString().trim();
+            // Try YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}/.test(str)) return new Date(str);
+            // Try dd/mm/yyyy
+            if (/^(\d{1,2})\/(\d{1,2})\/(\d{4})/.test(str)) {
+                const [, d, m, y] = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                return new Date(y, m - 1, d);
+            }
+            return new Date(str);
+        };
+
+        const dob = parseDate(dobStr);
+        const evt = parseDate(eventDateStr);
         if (isNaN(dob) || isNaN(evt)) return null;
         let age = evt.getFullYear() - dob.getFullYear();
         const m = evt.getMonth() - dob.getMonth();
@@ -3469,59 +3484,59 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedDate = dateInput ? dateInput.value : '';
 
             if (!isRelay && selectedAthlete && selectedDate) {
-                const athlete = findAthleteByNormalizedName(selectedAthlete);
-                console.log(`Validation: Athlete="${selectedAthlete}", Found=${!!athlete}, DoB="${athlete?.dob}", Date="${selectedDate}"`);
+                try {
+                    const athlete = findAthleteByNormalizedName(selectedAthlete);
+                    if (athlete && athlete.dob) {
+                        const getYear = (s) => {
+                            if (!s) return 0;
+                            const str = s.toString().trim();
+                            if (str.includes('-')) return parseInt(str.split('-')[0]);
+                            if (str.includes('/')) return parseInt(str.split('/').pop());
+                            return 0;
+                        };
+                        const dobYear = getYear(athlete.dob);
+                        const eventYear = getYear(selectedDate);
+                        const rawAge = eventYear - dobYear;
 
-                if (athlete && athlete.dob) {
-                    const dobYear = parseInt(athlete.dob.split('-')[0]);
-                    const eventYear = parseInt(selectedDate.split('-')[0]);
-                    const rawAge = eventYear - dobYear;
+                        const calculatedGroup = calculateAgeGroup(athlete.dob, selectedDate);
+                        const normalizedSelected = String(selectedAgeGroup || "").trim();
+                        const normalizedCalculated = String(calculatedGroup || "").trim();
 
-                    const calculatedGroup = calculateAgeGroup(athlete.dob, selectedDate);
-                    const normalizedSelected = selectedAgeGroup || "";
-                    const normalizedCalculated = calculatedGroup || "";
-                    console.log(`Validation Check: AthleteAge=${rawAge}, Selected="${normalizedSelected}", Calculated="${normalizedCalculated}"`);
-
-                    if (normalizedSelected !== normalizedCalculated) {
-                        // if (!bypassAgeValidation) { // Removed bypassAgeValidation
-                        console.log("Validation Failed: Showing warning.");
+                        if (normalizedSelected !== normalizedCalculated) {
+                            console.log("Validation Failed: Showing warning.");
+                            const warningDiv = document.getElementById('ageValidationWarning');
+                            const messageP = document.getElementById('ageValidationMessage');
+                            if (warningDiv && messageP) {
+                                messageP.innerHTML = `
+                                        <strong>Athlete Age:</strong> ${rawAge}<br>
+                                        <strong>Calculated Category:</strong> ${normalizedCalculated || 'None (Under 35)'}<br>
+                                        <strong>Selected Category:</strong> ${normalizedSelected || 'None'}<br>
+                                        <br>
+                                        The selected category does not match the athlete's age (${rawAge}).
+                                    `;
+                                warningDiv.classList.remove('hidden');
+                                warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                return;
+                            }
+                        }
+                    } else if (athlete && !athlete.dob) {
+                        console.warn("Athlete has no Date of Birth. Age validation cannot be performed.");
                         const warningDiv = document.getElementById('ageValidationWarning');
                         const messageP = document.getElementById('ageValidationMessage');
                         if (warningDiv && messageP) {
                             messageP.innerHTML = `
-                                    <strong>Athlete Age:</strong> ${rawAge}<br>
-                                    <strong>Calculated Category:</strong> ${normalizedCalculated || 'None (Under 35)'}<br>
-                                    <strong>Selected Category:</strong> ${normalizedSelected || 'None'}<br>
+                                    <strong>Warning:</strong> No Date of Birth found for this athlete.<br>
                                     <br>
-                                    The selected category does not match the athlete's age (${rawAge}).
+                                    Age group validation cannot be performed automatically. Please verify the category manually.
                                 `;
                             warningDiv.classList.remove('hidden');
                             warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             return;
                         }
-                        // } else {
-                        //     console.log("Validation Bypassed by user.");
-                        //     bypassAgeValidation = false;
-                        // }
                     }
-                } else if (athlete && !athlete.dob) {
-                    console.warn("Athlete has no Date of Birth. Age validation cannot be performed.");
-                    // if (!bypassAgeValidation) { // Removed bypassAgeValidation
-                    const warningDiv = document.getElementById('ageValidationWarning');
-                    const messageP = document.getElementById('ageValidationMessage');
-                    if (warningDiv && messageP) {
-                        messageP.innerHTML = `
-                                <strong>Warning:</strong> No Date of Birth found for this athlete.<br>
-                                <br>
-                                Age group validation cannot be performed automatically. Please verify the category manually.
-                            `;
-                        warningDiv.classList.remove('hidden');
-                        warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        return;
-                    }
-                    // } else {
-                    //     bypassAgeValidation = false;
-                    // }
+                } catch (err) {
+                    console.error("Critical error in age validation check:", err);
+                    // We don't return early here, so the update can still proceed if the validation logic specifically failed.
                 }
             }
 
