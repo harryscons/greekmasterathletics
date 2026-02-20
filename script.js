@@ -4881,7 +4881,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.showExcelValidation = function (jsonData, mapping) {
-        const previewWindow = window.open('', '_blank', 'width=1300,height=950');
+        const previewWindow = window.open('', '_blank', 'width=1500,height=950');
         if (!previewWindow) {
             alert("Pop-up blocked! Please allow pop-ups to see the validation preview.");
             return;
@@ -4903,28 +4903,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mappedFields = targetFields.filter(f => mapping[f.id]);
 
-        // Build table header — no Status column
+        // Build table header — with Athlete dropdown column last
         let tableHeaderHtml = '';
         mappedFields.forEach(f => {
             tableHeaderHtml += `<th style="padding: 12px; border: 1px solid #e2e8f0; text-align: left;">${f.label}</th>`;
         });
+        tableHeaderHtml += `<th style="padding: 12px; border: 1px solid #e2e8f0; text-align: left; background:#eef2ff; color:#4338ca;">&#9998; Athlete</th>`;
 
         let tableRowsHtml = '';
-        jsonData.forEach((row) => {
+        jsonData.forEach((row, idx) => {
             const evVal = (row[mapping['event']] || '').toString().trim();
             const athVal = (row[mapping['athlete']] || '').toString().trim();
             const genVal = (row[mapping['gender']] || '').toString().trim();
             const ttVal = (row[mapping['trackType']] || '').toString().trim();
 
-            // Per-field match results (only for validated fields)
+            const matchedAthlete = mapping['athlete'] && athVal ? athletes.find(a => {
+                const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
+                const lf = `${a.lastName} ${a.firstName}`.toLowerCase();
+                const clean = athVal.toLowerCase().replace(/,/g, '');
+                return clean === fl || clean === lf;
+            }) : null;
+
             const fieldMatch = {
                 event: mapping['event'] ? (evVal && events.some(e => e.name.toLowerCase() === evVal.toLowerCase())) : null,
-                athlete: mapping['athlete'] ? (athVal && !!athletes.find(a => {
-                    const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
-                    const lf = `${a.lastName} ${a.firstName}`.toLowerCase();
-                    const clean = athVal.toLowerCase().replace(/,/g, '');
-                    return clean === fl || clean === lf;
-                })) : null,
+                athlete: mapping['athlete'] ? (!!matchedAthlete) : null,
                 gender: mapping['gender'] ? (genVal && ['male', 'female', 'ανδρων', 'γυναικων'].includes(genVal.toLowerCase())) : null,
                 trackType: mapping['trackType'] ? (ttVal && ['outdoor', 'indoor'].includes(ttVal.toLowerCase())) : null,
             };
@@ -4932,21 +4934,41 @@ document.addEventListener('DOMContentLoaded', () => {
             tableRowsHtml += `<tr>`;
             mappedFields.forEach(f => {
                 const val = (row[mapping[f.id]] || '').toString().trim();
-                let cellBg = '#ffffff'; // default white
-
+                let cellBg = '#ffffff';
                 if (f.id in fieldMatch && fieldMatch[f.id] !== null) {
-                    // Validated field: green = match, red = no match
                     cellBg = fieldMatch[f.id] ? '#dcfce7' : '#fee2e2';
                 }
-                // Non-validated fields and empty cells stay white
-
                 tableRowsHtml += `<td style="padding: 8px 12px; border: 1px solid #e2e8f0; color: #334155; background: ${cellBg};">${val}</td>`;
             });
+
+            // Build athlete dropdown options
+            let athOptions = `<option value="">-- Skip --</option>`;
+            athletes.forEach(a => {
+                const sel = (matchedAthlete && String(a.id) === String(matchedAthlete.id)) ? 'selected' : '';
+                athOptions += `<option value="${a.id}" ${sel}>${a.lastName}, ${a.firstName}</option>`;
+            });
+            const showNew = !matchedAthlete && athVal;
+            athOptions += `<option value="__new__" ${showNew ? 'selected' : ''}>+ Add New Athlete</option>`;
+
+            tableRowsHtml += `<td style="padding: 6px 10px; border: 1px solid #e2e8f0; background:#f5f3ff; min-width:230px;">
+                <select id="ath_sel_${idx}" onchange="toggleNew(${idx},this.value)" style="width:100%;padding:5px 8px;border-radius:6px;border:1px solid #c7d2fe;font-family:inherit;font-size:0.85rem;">
+                    ${athOptions}
+                </select>
+                <div id="new_form_${idx}" style="display:${showNew ? 'block' : 'none'};margin-top:6px;background:#f0f9ff;padding:8px;border-radius:6px;border:1px solid #bae6fd;">
+                    <input id="fn_${idx}" placeholder="First Name" value="" style="padding:4px 6px;margin:2px;width:88px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                    <input id="ln_${idx}" placeholder="Last Name" value="" style="padding:4px 6px;margin:2px;width:88px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                    <input id="dob_${idx}" placeholder="DOB YYYY-MM-DD" style="padding:4px 6px;margin:2px;width:115px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                    <select id="gen_${idx}" style="padding:4px 6px;margin:2px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                        <option value="Male">Male</option><option value="Female">Female</option>
+                    </select>
+                </div>
+            </td>`;
+
             tableRowsHtml += '</tr>';
         });
 
-        const jsonString = JSON.stringify(jsonData).replace(/'/g, "\\'");
-        const mappingString = JSON.stringify(mapping).replace(/'/g, "\\'");
+        const jsonString = JSON.stringify(jsonData).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const mappingString = JSON.stringify(mapping).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
         previewWindow.document.write(`
             <!DOCTYPE html>
@@ -4990,16 +5012,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     </table>
                 </div>
                 <script>
+                    const rowCount = ${jsonData.length};
+
+                    function toggleNew(idx, val) {
+                        document.getElementById('new_form_' + idx).style.display = val === '__new__' ? 'block' : 'none';
+                    }
+
                     document.getElementById('importBtn').onclick = function() {
-                        if (confirm('Confirm import of ${jsonData.length} records?')) {
-                            const data = JSON.parse('${jsonString}');
-                            const mapping = JSON.parse('${mappingString}');
-                            if (window.opener && !window.opener.closed) {
-                                window.opener.handleMappedImport(data, mapping);
-                                window.close();
-                            } else {
-                                alert('Main window connection lost.');
+                        if (!confirm('Confirm import of ${jsonData.length} records?')) return;
+
+                        const athleteOverrides = {};
+                        for (let i = 0; i < rowCount; i++) {
+                            const sel = document.getElementById('ath_sel_' + i);
+                            if (!sel) continue;
+                            if (sel.value === '__new__') {
+                                const fn = (document.getElementById('fn_' + i) || {}).value || '';
+                                const ln = (document.getElementById('ln_' + i) || {}).value || '';
+                                const dob = (document.getElementById('dob_' + i) || {}).value || '';
+                                const gen = (document.getElementById('gen_' + i) || {}).value || 'Male';
+                                if (fn.trim() || ln.trim()) {
+                                    athleteOverrides[i] = { type: 'new', firstName: fn.trim(), lastName: ln.trim(), dob: dob.trim(), gender: gen };
+                                }
+                            } else if (sel.value) {
+                                athleteOverrides[i] = { type: 'existing', id: sel.value };
                             }
+                        }
+
+                        const data = JSON.parse('${jsonString}');
+                        const mapping = JSON.parse('${mappingString}');
+                        if (window.opener && !window.opener.closed) {
+                            window.opener.handleMappedImport(data, mapping, athleteOverrides);
+                            window.close();
+                        } else {
+                            alert('Main window connection lost.');
                         }
                     };
                 <\/script>
@@ -5009,28 +5054,50 @@ document.addEventListener('DOMContentLoaded', () => {
         previewWindow.document.close();
     }
 
-    window.handleMappedImport = function (jsonData, mapping) {
+    window.handleMappedImport = function (jsonData, mapping, athleteOverrides) {
+        athleteOverrides = athleteOverrides || {};
         try {
             let importedCount = 0;
-            jsonData.forEach(row => {
+            jsonData.forEach((row, idx) => {
                 const eventVal = (row[mapping['event']] || '').toString().trim();
                 const markVal = (row[mapping['mark']] || '').toString().trim();
 
                 if (!eventVal || !markVal) return;
 
-                const rawName = (row[mapping['athlete']] || '').toString().trim();
-                let finalAthleteName = rawName;
+                // Resolve athlete from override or smart link
+                let finalAthleteName = '';
+                const override = athleteOverrides[idx];
 
-                // Smart Link logic
-                if (finalAthleteName) {
-                    const match = athletes.find(a => {
-                        const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
-                        const lf = `${a.lastName}, ${a.firstName}`.toLowerCase();
-                        const lf2 = `${a.lastName} ${a.firstName}`.toLowerCase();
-                        const cleanVal = finalAthleteName.toLowerCase().replace(/,/g, '');
-                        return cleanVal === fl || cleanVal === lf.replace(/,/g, '') || cleanVal === lf2;
-                    });
-                    if (match) finalAthleteName = `${match.lastName}, ${match.firstName}`;
+                if (override && override.type === 'existing' && override.id) {
+                    // Use selected existing athlete
+                    const existingAthlete = athletes.find(a => String(a.id) === String(override.id));
+                    if (existingAthlete) {
+                        finalAthleteName = `${existingAthlete.lastName}, ${existingAthlete.firstName}`;
+                    }
+                } else if (override && override.type === 'new' && (override.firstName || override.lastName)) {
+                    // Create new athlete and add to DB
+                    const newAthlete = {
+                        id: 'ath_' + Date.now() + '_' + idx,
+                        firstName: override.firstName,
+                        lastName: override.lastName,
+                        dob: override.dob || '',
+                        gender: override.gender || 'Male'
+                    };
+                    athletes.push(newAthlete);
+                    finalAthleteName = `${newAthlete.lastName}, ${newAthlete.firstName}`;
+                } else {
+                    // Fallback: smart link by name from Excel
+                    const rawName = (row[mapping['athlete']] || '').toString().trim();
+                    finalAthleteName = rawName;
+                    if (rawName) {
+                        const match = athletes.find(a => {
+                            const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
+                            const lf = `${a.lastName} ${a.firstName}`.toLowerCase();
+                            const cleanVal = rawName.toLowerCase().replace(/,/g, '');
+                            return cleanVal === fl || cleanVal === lf;
+                        });
+                        if (match) finalAthleteName = `${match.lastName}, ${match.firstName}`;
+                    }
                 }
 
                 const dateRaw = row[mapping['date']];
