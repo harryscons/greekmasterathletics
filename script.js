@@ -5269,7 +5269,7 @@ Replace ALL current data with this backup?`;
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="text-align:center; font-weight:bold; color:var(--text-muted);">${genRankDisplay}</td>
-                <td style="font-weight:600; cursor:pointer; color:white;" onclick="toggleStatsDetail('${uniqueId}')">
+                <td style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')">
                     <div style="display:flex; align-items:center;">
                         <span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>
                         ${ageDisplay}
