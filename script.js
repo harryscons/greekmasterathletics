@@ -3572,27 +3572,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 1000);
             } else if (editingId) {
                 // Edit Live Record
-                const index = records.findIndex(r => r.id === editingId);
+                const idToFind = String(editingId);
+                const index = records.findIndex(r => String(r.id) === idToFind);
+
                 if (index !== -1) {
                     const originalRecord = records[index];
                     const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
                     if (isSup) {
-                        // Supervisor Direct Edit -> Archive Old
-                        const oldRecordData = { ...originalRecord };
-                        oldRecordData.archivedAt = new Date().toISOString();
-                        oldRecordData.originalId = String(oldRecordData.id); // Link to original
-                        if (!oldRecordData.updatedBy) oldRecordData.updatedBy = 'System';
-                        oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                        try {
+                            // Supervisor Direct Edit -> Archive Old
+                            const oldRecordData = { ...originalRecord };
+                            oldRecordData.archivedAt = new Date().toISOString();
+                            oldRecordData.originalId = String(oldRecordData.id); // Link to original
+                            if (!oldRecordData.updatedBy) oldRecordData.updatedBy = 'System';
+                            oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
 
-                        history.unshift(oldRecordData);
-                        saveHistory();
+                            history.unshift(oldRecordData);
+                            saveHistory();
 
-                        // Update Live Record in place
-                        records[index] = newRecord;
-                        saveRecords();
+                            // Update Live Record in place
+                            records[index] = newRecord;
+                            saveRecords();
 
-                        submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
+                            // REFRESH UI IMMEDIATELY
+                            renderReports();
+                            renderEventList();
+                            renderAthleteList();
+                            populateYearDropdown();
+
+                            submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
+                        } catch (err) {
+                            console.error("Error archiving/updating record:", err);
+                            alert("Failed to update record: " + err.message);
+                        }
                     } else {
                         // Admin proposing an edit -> Send to Staging (pendingrecs)
                         newRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000)); // Generate unique staging ID
@@ -3605,9 +3618,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
                         alert("Your edit has been submitted for Supervisor approval.");
                     }
+                } else {
+                    console.error("Record to edit not found in array:", editingId);
+                    alert("Error: The record you are trying to edit could not be found.");
                 }
                 setTimeout(() => cancelEdit(), 1000);
-            } else {
+            }
+            else {
                 // Log New Record
                 const isSup = isSupervisor(currentUser ? currentUser.email : null);
                 if (isSup) {
