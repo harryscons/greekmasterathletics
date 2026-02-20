@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.12.009</span>
+                        <span class="version-label">v2.12.010</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -898,19 +898,23 @@
                         <p class="subtitle" style="margin-bottom: 1rem;">Bulk upload records. First row must
                             contain
                             headers.</p>
-                        <div
-                            style="display: flex !important; flex-direction: row !important; gap: 0.5rem; align-items: center; margin-top: 1rem; flex-wrap: nowrap !important;">
-                            <label for="recordImportFile" id="btnSelectExcel" class="btn-secondary"
-                                style="background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border); width: auto !important; padding: 0.75rem 1.5rem; flex: 0 0 auto !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; font-weight: 500;">
-                                📁 Select Excel File
-                            </label>
-                            <button id="btnImportRecords" class="btn-primary"
-                                style="white-space: nowrap; width: auto !important; padding: 0.75rem 1.5rem; flex: 0 0 auto !important;">
-                                📥 Import Records (xls)
-                            </button>
-                            <input type="file" id="recordImportFile" accept=".xlsx, .xls" class="hidden">
-                            <span id="recordImportFileName"
-                                style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-left: 5px;"></span>
+                        <div style="margin-top: 1rem;">
+                            <!-- File input: visually hidden but NOT display:none so label can trigger it -->
+                            <input type="file" id="recordImportFile" accept=".xlsx, .xls"
+                                style="opacity: 0; position: absolute; width: 1px; height: 1px; pointer-events: none;">
+                            <div
+                                style="display: flex !important; flex-direction: row !important; gap: 0.5rem; align-items: center; flex-wrap: nowrap !important;">
+                                <label for="recordImportFile"
+                                    style="background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border); padding: 0.75rem 1.5rem; border-radius: 12px; cursor: pointer; font-weight: 500; font-family: var(--font-stack); flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.4rem;">
+                                    📁 Select Excel File
+                                </label>
+                                <button id="btnImportRecords" class="btn-primary"
+                                    style="white-space: nowrap; width: auto !important; padding: 0.75rem 1.5rem; flex: 0 0 auto !important;">
+                                    📥 Import Records (xls)
+                                </button>
+                                <span id="recordImportFileName"
+                                    style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-left: 5px;"></span>
+                            </div>
                         </div>
                     </section>
                     <section class="card" style="margin-top: 2rem; border-color: rgba(239, 68, 68, 0.3);">
