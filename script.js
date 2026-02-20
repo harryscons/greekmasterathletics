@@ -4763,7 +4763,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "", raw: true, cellDates: false });
 
                 if (jsonData.length === 0) {
                     alert('File appears to be empty.');
