@@ -5088,29 +5088,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const dateRaw = row[mapping['date']];
                 let finalDate = '';
-                const toddmmyyyy = d => {
-                    const dd = String(d.getUTCDate()).padStart(2, '0');
+                const toYYYYMMDD = d => {
                     const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-                    return `${dd}/${mm}/${d.getUTCFullYear()}`;
+                    const dd = String(d.getUTCDate()).padStart(2, '0');
+                    return `${d.getUTCFullYear()}-${mm}-${dd}`;
                 };
-                if (dateRaw && !isNaN(dateRaw) && typeof dateRaw === 'number') {
-                    // Excel serial number
-                    finalDate = toddmmyyyy(new Date(Math.round((dateRaw - 25569) * 86400 * 1000)));
+                if (dateRaw && typeof dateRaw === 'number') {
+                    // Excel serial → YYYY-MM-DD
+                    finalDate = toYYYYMMDD(new Date(Math.round((dateRaw - 25569) * 86400 * 1000)));
                 } else if (dateRaw) {
                     const s = dateRaw.toString().trim();
                     if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-                        // YYYY-MM-DD → dd/mm/yyyy
-                        const [y, mo, d2] = s.split('T')[0].split('-');
-                        finalDate = `${d2}/${mo}/${y}`;
-                    } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
-                        // Already dd/mm/yyyy – use as-is
-                        finalDate = s;
+                        // Already YYYY-MM-DD
+                        finalDate = s.split('T')[0];
+                    } else if (/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.test(s)) {
+                        // dd/mm/yyyy → YYYY-MM-DD (manual split, no new Date() to avoid mm/dd swap)
+                        const [, d2, mo, y] = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                        finalDate = `${y}-${mo.padStart(2, '0')}-${d2.padStart(2, '0')}`;
                     } else {
                         const parsed = new Date(s);
-                        finalDate = isNaN(parsed) ? s : toddmmyyyy(parsed);
+                        finalDate = isNaN(parsed) ? new Date().toISOString().split('T')[0] : toYYYYMMDD(parsed);
                     }
                 } else {
-                    finalDate = toddmmyyyy(new Date());
+                    finalDate = toYYYYMMDD(new Date());
                 }
 
                 records.unshift({
