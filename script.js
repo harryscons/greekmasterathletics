@@ -4931,7 +4931,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 trackType: mapping['trackType'] ? (ttVal && ['outdoor', 'indoor'].includes(ttVal.toLowerCase())) : null,
             };
 
-            tableRowsHtml += `<tr>`;
+            const hasRed = Object.keys(fieldMatch).some(k => fieldMatch[k] === false);
+            tableRowsHtml += `<tr data-has-red="${hasRed}">`;
             mappedFields.forEach(f => {
                 const val = (row[mapping[f.id]] || '').toString().trim();
                 let cellBg = '#ffffff';
@@ -4994,7 +4995,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="header">
                     <div>
                         <h2>Step 2: Validation Preview</h2>
-                        <div class="stats">\u203B Displaying mapped columns. Found ${jsonData.length} records.</div>
+                        <div class="stats">&#x203B; Displaying mapped columns. Found ${jsonData.length} records. &nbsp;
+                            <label style="cursor:pointer;font-weight:600;color:#dc2626;font-size:0.9rem;">
+                                <input type="checkbox" id="chkUnmatched" onchange="filterRows()" style="margin-right:4px;cursor:pointer;"> Show only unmatched
+                            </label>
+                        </div>
                     </div>
                     <div>
                         <button class="btn btn-secondary" onclick="window.close()">Cancel</button>
@@ -5013,6 +5018,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <script>
                     const rowCount = ${jsonData.length};
+
+                    function filterRows() {
+                        const onlyUnmatched = document.getElementById('chkUnmatched').checked;
+                        document.querySelectorAll('tbody tr').forEach(tr => {
+                            if (onlyUnmatched) {
+                                // Show only rows that have at least one red cell (unmatched)
+                                tr.style.display = tr.dataset.hasRed === 'true' ? '' : 'none';
+                            } else {
+                                tr.style.display = '';
+                            }
+                        });
+                    }
 
                     function toggleNew(idx, val) {
                         document.getElementById('new_form_' + idx).style.display = val === '__new__' ? 'block' : 'none';
