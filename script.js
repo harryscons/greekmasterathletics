@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 serverRecords.forEach(r => {
                     const rIdStr = String(r.id);
                     // Use rIdStr for BOTH sets to ensure type match
-                    if (!archivedIds.has(rIdStr) && !recentlyRejected.has(rIdStr)) {
+                    if (!recentlyRejected.has(rIdStr)) {
                         uniqueMap.set(rIdStr, r);
                     }
                 });
@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 2. Blend in Local Records (Update state if local is "ahead")
                 localRecords.forEach(l => {
                     const lIdStr = String(l.id);
-                    if (archivedIds.has(lIdStr) || recentlyRejected.has(lIdStr)) return;
+                    if (recentlyRejected.has(lIdStr)) return;
 
                     const existing = uniqueMap.get(lIdStr);
                     if (!existing) {
