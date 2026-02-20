@@ -896,6 +896,13 @@ select:focus {
 
 /* Actions explicitly managed by JS */
 
+/* When Admin is logged in */
+body.is-admin .nav-tab[data-tab="log"],
+body.is-admin .nav-tab[data-tab="history"],
+body.is-admin .nav-tab[data-tab="settings"] {
+    display: block !important;
+}
+
 /* --- Approval Workflow Styles --- */
 .badge-pending {
     background: var(--bg-hover);
