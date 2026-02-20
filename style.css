@@ -894,30 +894,7 @@ select:focus {
     display: none !important;
 }
 
-/* By default, hide Actions column in reports */
-.actions-col,
-th.actions-col,
-td.actions-col,
-th:nth-child(10),
-/* Fallback for Actions Column index */
-td:nth-child(10) {
-    display: none !important;
-}
-
-/* When Admin is logged in */
-body.is-admin .nav-tab[data-tab="log"],
-body.is-admin .nav-tab[data-tab="history"],
-body.is-admin .nav-tab[data-tab="settings"] {
-    display: block !important;
-}
-
-body.is-admin .actions-col,
-body.is-admin th.actions-col,
-body.is-admin td.actions-col,
-body.is-admin th:nth-child(10),
-body.is-admin td:nth-child(10) {
-    display: table-cell !important;
-}
+/* Actions explicitly managed by JS */
 
 /* --- Approval Workflow Styles --- */
 .badge-pending {

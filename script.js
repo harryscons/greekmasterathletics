@@ -1147,7 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Toggle Visibility of Admin features
         // Toggle Visibility of Admin features (General Admin)
-        const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .edit-btn, .delete-btn, .delete-country-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
+        const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .delete-country-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
 
         adminElements.forEach(el => {
             if (isAdmin) el.classList.remove('hidden');
@@ -3413,7 +3413,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function savePendingRecs() {
         if (!isDataReady) return;
-        if (db) db.ref('pendingrecs').set(pendingrecs);
+        if (db) {
+            db.ref('pendingrecs').set(pendingrecs).catch(err => {
+                console.error("Firebase Save Failed (Pending):", err);
+                alert("Cloud Sync Error: Your proposal was not saved. " + err.message);
+            });
+        }
         localStorage.setItem('tf_pendingrecs', JSON.stringify(pendingrecs));
     }
 
@@ -3998,7 +4003,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (db) {
-            db.ref('records').set(records).catch(err => console.error("Firebase Save Failed:", err));
+            db.ref('records').set(records).catch(err => {
+                console.error("Firebase Save Failed (Records):", err);
+                alert("Cloud Sync Error: Your changes were reverted. " + err.message);
+            });
         }
         populateAthleteFilter();
     }
@@ -4237,11 +4245,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             return ''; // Simple users see nothing
                         }
                     } else {
-                        // Normal Record Logic (CSS handles visibility conditionally, but we structure it cleanly)
-                        return `
-                                    <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit">✏️</button>
-                                    <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete">🗑️</button>
-                                `;
+                        // Normal Record Logic: Conditionally render buttons based on Role & Authorship
+                        const isSup = isSupervisor(currentUser ? currentUser.email : null);
+                        const isAdm = isAdminUser(currentUser ? currentUser.email : null);
+                        let isAuthor = false;
+                        if (currentUser) {
+                            const ub = String(r.updatedBy).toLowerCase();
+                            const cEmail = String(currentUser.email).toLowerCase();
+                            const cName = String(currentUser.displayName).toLowerCase();
+                            if (ub === cEmail || ub === cName || cName === 'local admin') {
+                                isAuthor = true; // User authored this record or is a Local Admin
+                            }
+                        }
+
+                        if (isSup || isAdm || isAuthor) {
+                            return `
+                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">✏️</button>
+                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:5px;">🗑️</button>
+                            `;
+                        } else {
+                            return ''; // Simple users don't see edit/delete on non-authored records
+                        }
                     }
                 })()}
                     </td>
