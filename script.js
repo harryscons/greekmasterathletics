@@ -1012,8 +1012,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const lowerEmail = email.toLowerCase();
         if (lowerEmail === 'cha.kons@gmail.com' || lowerEmail === 'admin@greekmasterathletics.com' || lowerEmail === 'support@greekmasterathletics.com') return 'Supervisor';
         if (lowerEmail === 'harryscons@gmail.com') return 'Admin';
-        const user = appUsers.find(u => u.email.toLowerCase() === lowerEmail);
+        const user = appUsers.find(u => (u.email || '').toLowerCase() === lowerEmail);
         return user ? user.role : 'User';
+    }
+
+    function getCurrentUsername() {
+        if (!currentUser) return 'Guest';
+        const lowerEmail = (currentUser.email || '').toLowerCase();
+        if (!lowerEmail) return currentUser.displayName || 'Guest';
+        // Match by email in the appUsers table to get the intended display name/username
+        const user = appUsers.find(u => (u.email || '').toLowerCase() === lowerEmail);
+        if (user && user.name) return user.name;
+        return currentUser.displayName || currentUser.email || 'Admin';
     }
 
     function isSupervisor(email) {
@@ -3564,7 +3574,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 date: dateInput ? dateInput.value : '',
                 town: townInput ? townInput.value : '',
                 country: countryInput ? countryInput.value : '',
-                updatedBy: currentUser ? (currentUser.displayName || currentUser.email || 'Admin') : 'System'
+                updatedBy: getCurrentUsername()
             };
 
             // Calculate WMA stats for new record
@@ -3600,7 +3610,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             const oldRecordData = { ...originalRecord };
                             oldRecordData.archivedAt = new Date().toISOString();
                             oldRecordData.originalId = String(oldRecordData.id); // Link to original
-                            if (!oldRecordData.updatedBy) oldRecordData.updatedBy = 'System';
+                            // Attribution for the archive entry matches the current session user
+                            oldRecordData.updatedBy = getCurrentUsername();
                             oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
 
                             history.unshift(oldRecordData);
@@ -3721,7 +3732,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${r.wind || '-'}</td>
                 <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
                 <td>${r.raceName || '-'}</td>
-                <td>${r.updatedBy || 'System'}</td>
+                <td>${r.updatedBy || 'N/A'}</td>
                 <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
                  <td class="history-actions-col" style="${isSup ? '' : 'display:none;'}">
                     <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
@@ -3739,7 +3750,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td colspan="11" style="padding: 8px 10px; border-top:none; background: rgba(16, 185, 129, 0.1);">
                         <div style="display:flex; flex-direction:column; gap:4px;">
                             <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:4px;">
-                                <strong>Edited by:</strong> ${r.updatedBy || 'System'}
+                                <strong>Edited by:</strong> ${r.updatedBy || 'N/A'}
                             </div>
                             <div style="display:flex; gap:1rem; align-items:center;">
                                 <span style="font-weight:bold; color:var(--success);">${successor.athlete}</span>
@@ -4031,7 +4042,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pendingDeleteRecord.replacesId = record.id; // Track which record we want to delete
             pendingDeleteRecord.isPending = true;
             pendingDeleteRecord.isPendingDelete = true;
-            pendingDeleteRecord.updatedBy = (currentUser?.displayName || currentUser?.email || 'Admin');
+            pendingDeleteRecord.updatedBy = getCurrentUsername();
 
             pendingrecs.unshift(pendingDeleteRecord);
             savePendingRecs();
@@ -6328,7 +6339,7 @@ Replace ALL current data with this backup ? `;
                     historyRecord.archivedAt = new Date().toISOString();
                     historyRecord.originalId = String(originalRecord.id);
                     historyRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
-                    if (!historyRecord.updatedBy) historyRecord.updatedBy = 'System';
+                    if (!historyRecord.updatedBy) historyRecord.updatedBy = 'Initial Import';
 
                     history.unshift(historyRecord);
                     saveHistory();
@@ -6341,7 +6352,7 @@ Replace ALL current data with this backup ? `;
                     delete pendingRecord.replacesId;
                     delete pendingRecord.isPending;
 
-                    pendingRecord.approvedBy = currentUser?.email || 'Supervisor';
+                    pendingRecord.approvedBy = getCurrentUsername();
 
                     // Swap in the live records array
                     records[originalIndex] = pendingRecord;
@@ -6349,7 +6360,7 @@ Replace ALL current data with this backup ? `;
                     // Failsafe: original record missing, treat as new
                     delete pendingRecord.replacesId;
                     delete pendingRecord.isPending;
-                    pendingRecord.approvedBy = currentUser?.email || 'Supervisor';
+                    pendingRecord.approvedBy = getCurrentUsername();
                     records.unshift(pendingRecord);
                 }
             } else {
