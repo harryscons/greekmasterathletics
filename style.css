@@ -39,6 +39,16 @@ body.theme-clean-white {
     --border: #e5e7eb;
     --h1-gradient: linear-gradient(to right, #111827, #374151);
 
+    --bg-input: #ffffff;
+    --text-input: #111827;
+    --bg-nav: #e5e7eb;
+    --bg-hover: #f3f4f6;
+    --bg-dropdown: #f9fafb;
+    --bg-danger-light: #fef2f2;
+    --text-danger-light: #991b1b;
+    --bg-primary-light: #eff6ff;
+    --bg-modal: rgba(17, 24, 39, 0.5);
+
     /* Graph Overrides for Clean White */
     --chart-grid-color: rgba(0, 0, 0, 0.1);
     --chart-text-color: #4b5563;
@@ -612,7 +622,7 @@ select:focus {
     font-size: 0.85rem;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 50;
     transition: background 0.2s;
     white-space: nowrap;
     box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
