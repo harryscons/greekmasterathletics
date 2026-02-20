@@ -4798,6 +4798,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'lastName', label: 'Last Name' },
             { id: 'dob', label: 'Date of Birth' },
             { id: 'gender', label: 'Gender' },
+            { id: 'ageGroup', label: 'Age Group' },
             { id: 'trackType', label: 'Track Type' },
             { id: 'raceName', label: 'Race Name' },
             { id: 'town', label: 'Town' },
@@ -4854,6 +4855,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'lastName', label: 'Last Name' },
             { id: 'dob', label: 'Date of Birth' },
             { id: 'gender', label: 'Gender' },
+            { id: 'ageGroup', label: 'Age Group' },
             { id: 'trackType', label: 'Track Type' },
             { id: 'raceName', label: 'Race Name' },
             { id: 'town', label: 'Town' },
@@ -4896,11 +4898,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return clean === fl || clean === lf;
             }) : null;
 
+            const agVal = mapping['ageGroup'] ? (row[mapping['ageGroup']] || '').toString().trim() : '';
+
             const fieldMatch = {
                 event: mapping['event'] ? (evVal && events.some(e => e.name.toLowerCase() === evVal.toLowerCase())) : null,
                 athlete: mapping['athlete'] ? (!!matchedAthlete) : null,
                 gender: mapping['gender'] ? (genVal && ['male', 'female', 'ανδρων', 'γυναικων'].includes(genVal.toLowerCase())) : null,
                 trackType: mapping['trackType'] ? (ttVal && ['outdoor', 'indoor'].includes(ttVal.toLowerCase())) : null,
+                ageGroup: mapping['ageGroup'] ? (agVal && /^[MW]?(3[5-9]|[4-9]\d|100)$/.test(agVal.replace(/\+/, ''))) : null,
             };
 
             const hasRed = Object.keys(fieldMatch).some(k => fieldMatch[k] === false);
@@ -5118,7 +5123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     event: eventVal,
                     athlete: finalAthleteName,
                     gender: (row[mapping['gender']] || '').toString().trim(),
-                    ageGroup: '',
+                    ageGroup: mapping['ageGroup'] ? (row[mapping['ageGroup']] || '').toString().trim() : '',
                     trackType: (row[mapping['trackType']] || '').toString().trim(),
                     mark: markVal,
                     wind: (row[mapping['wind']] || '').toString().trim(),
