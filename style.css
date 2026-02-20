@@ -296,7 +296,7 @@ h1 {
     padding: 0.5rem;
     background: var(--bg-nav);
     border-radius: 40px;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     transition: background 0.3s ease;
 }
 
@@ -304,10 +304,11 @@ h1 {
     background: transparent;
     border: 1px solid transparent;
     color: var(--text-muted);
-    padding: 0.8rem 1.5rem;
+    padding: 0.6rem 1.5rem;
     border-radius: 30px;
     cursor: pointer;
     font-family: var(--font-stack);
+    font-size: 1.05rem;
     font-weight: 600;
     transition: all 0.2s ease;
 }
@@ -506,7 +507,7 @@ select:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .version-label {
