@@ -4903,48 +4903,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mappedFields = targetFields.filter(f => mapping[f.id]);
 
-        // Build table
-        let tableHeaderHtml = '<th style="padding: 12px; border: 1px solid #e2e8f0;">Status / Match</th>';
+        // Build table header — no Status column
+        let tableHeaderHtml = '';
         mappedFields.forEach(f => {
             tableHeaderHtml += `<th style="padding: 12px; border: 1px solid #e2e8f0; text-align: left;">${f.label}</th>`;
         });
 
         let tableRowsHtml = '';
         jsonData.forEach((row, idx) => {
-            const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+            // Determine if row has any mapped value at all
+            const hasAnyValue = mappedFields.some(f => (row[mapping[f.id]] || '').toString().trim() !== '');
 
-            // Validation indicators
-            let matches = [];
+            // Check DB matches for key fields
+            let matchCount = 0;
             const evVal = (row[mapping['event']] || '').toString().trim();
             const athVal = (row[mapping['athlete']] || '').toString().trim();
             const genVal = (row[mapping['gender']] || '').toString().trim();
             const ttVal = (row[mapping['trackType']] || '').toString().trim();
 
-            if (mapping['event'] && events.some(e => e.name.toLowerCase() === evVal.toLowerCase())) matches.push('Event');
-            if (mapping['athlete']) {
-                const match = athletes.find(a => {
-                    const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
-                    const lf = `${a.lastName}, ${a.firstName}`.toLowerCase();
-                    const lf2 = `${a.lastName} ${a.firstName}`.toLowerCase();
-                    const cleanVal = athVal.toLowerCase().replace(/,/g, '');
-                    return cleanVal === fl || cleanVal === lf.replace(/,/g, '') || cleanVal === lf2;
-                });
-                if (match) matches.push('Athlete');
-            }
-            if (mapping['gender'] && ['male', 'female', 'ανδρων', 'γυναικων'].includes(genVal.toLowerCase())) matches.push('Gender');
-            if (mapping['trackType'] && ['outdoor', 'indoor'].includes(ttVal.toLowerCase())) matches.push('Track Type');
+            if (mapping['event'] && events.some(e => e.name.toLowerCase() === evVal.toLowerCase())) matchCount++;
+            if (mapping['athlete'] && athletes.find(a => {
+                const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
+                const lf = `${a.lastName} ${a.firstName}`.toLowerCase();
+                const clean = athVal.toLowerCase().replace(/,/g, '');
+                return clean === fl || clean === lf;
+            })) matchCount++;
+            if (mapping['gender'] && ['male', 'female', 'ανδρων', 'γυναικων'].includes(genVal.toLowerCase())) matchCount++;
+            if (mapping['trackType'] && ['outdoor', 'indoor'].includes(ttVal.toLowerCase())) matchCount++;
 
-            let statusHtml = '';
-            if (matches.length > 0) {
-                statusHtml = `<div style="display: flex; flex-wrap: wrap; gap: 4px;">` +
-                    matches.map(m => `<span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 10px;">MATCH: ${m.toUpperCase()}</span>`).join('') +
-                    `</div>`;
+            // Row background: green = match, red = no match, white = ignored (no values)
+            let rowBg;
+            if (!hasAnyValue) {
+                rowBg = '#ffffff'; // ignored / blank row
+            } else if (matchCount > 0) {
+                rowBg = '#dcfce7'; // green — at least one key field matched
             } else {
-                statusHtml = `<span style="color: #94a3b8; font-size: 11px;">No Direct Match</span>`;
+                rowBg = '#fee2e2'; // red — has data but nothing matched
             }
 
             tableRowsHtml += `<tr style="background: ${rowBg};">`;
-            tableRowsHtml += `<td style="padding: 8px 12px; border: 1px solid #e2e8f0;">${statusHtml}</td>`;
             mappedFields.forEach(f => {
                 const val = row[mapping[f.id]] || '';
                 tableRowsHtml += `<td style="padding: 8px 12px; border: 1px solid #e2e8f0; color: #334155;">${val}</td>`;
