@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.12.011</span>
+                        <span class="version-label">v2.12.012</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -1165,7 +1165,13 @@
         </div>
     </div>
 
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="xlsx.full.min.js"></script>
+    <script>
+        // Fallback: load from CDN if local file failed
+        if (typeof XLSX === 'undefined') {
+            document.write('<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"><\/script>');
+        }
+    </script>
     <script src="data/wma_data_2023.js"></script>
     <script src="data/iaaf_data.js"></script>
     <script src="data/event_rules.js"></script>
