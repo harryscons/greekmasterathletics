@@ -4784,6 +4784,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetFields = [
             { id: 'event', label: 'Event' },
             { id: 'athlete', label: 'Athlete Name' },
+            { id: 'firstName', label: 'First Name' },
+            { id: 'lastName', label: 'Last Name' },
             { id: 'dob', label: 'Date of Birth' },
             { id: 'gender', label: 'Gender' },
             { id: 'trackType', label: 'Track Type' },
@@ -4838,6 +4840,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetFields = [
             { id: 'event', label: 'Event' },
             { id: 'athlete', label: 'Athlete Name' },
+            { id: 'firstName', label: 'First Name' },
+            { id: 'lastName', label: 'Last Name' },
             { id: 'dob', label: 'Date of Birth' },
             { id: 'gender', label: 'Gender' },
             { id: 'trackType', label: 'Track Type' },
@@ -4910,23 +4914,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const showNew = !matchedAthlete && athVal;
             athOpts += `<option value="__new__" ${showNew ? 'selected' : ''}>+ Add New Athlete</option>`;
 
-            // Pre-fill new athlete form: parse name + DOB from mapped columns
-            let parsedFn = '', parsedLn = '';
-            if (athVal) {
+            // Pre-fill new athlete form: use dedicated columns first, then parse Athlete Name
+            // --- First Name ---
+            let parsedFn = mapping['firstName'] ? (row[mapping['firstName']] || '').toString().trim() : '';
+            // --- Last Name ---
+            let parsedLn = mapping['lastName'] ? (row[mapping['lastName']] || '').toString().trim() : '';
+            // Fallback: parse combined Athlete Name field
+            if (!parsedFn && !parsedLn && athVal) {
                 if (athVal.includes(',')) {
-                    // "Lastname, Firstname" format
                     const parts = athVal.split(',');
                     parsedLn = (parts[0] || '').trim();
                     parsedFn = (parts[1] || '').trim();
                 } else {
-                    // "Firstname Lastname" format
                     const parts = athVal.split(' ');
                     parsedFn = parts[0] || '';
                     parsedLn = parts.slice(1).join(' ');
                 }
             }
+            // --- DOB ---
             const dobRaw = mapping['dob'] ? (row[mapping['dob']] || '').toString().trim() : '';
-            // Format Excel serial date if numeric
             let parsedDob = dobRaw;
             if (dobRaw && !isNaN(dobRaw) && !dobRaw.includes('-') && !dobRaw.includes('/')) {
                 const d = new Date(Math.round((parseFloat(dobRaw) - 25569) * 86400 * 1000));
