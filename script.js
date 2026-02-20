@@ -1175,7 +1175,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof renderReports === 'function') {
             renderReports();
         }
-
+        if (typeof renderHistoryList === 'function') {
+            renderHistoryList();
+        }
+        if (typeof renderUserList === 'function') {
+            renderUserList();
+        }
         // Hide Save Button if not admin
         const navSave = document.getElementById('btnSaveCloud');
         if (navSave) {
