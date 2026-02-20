@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Global Error Handler ---
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+        console.error("🚫 Global Runtime Error:", { msg, url, lineNo, columnNo, error });
+        return false;
+    };
+
     console.log("🚀 DOMContentLoaded: Starting initialization...");
     // --- Sorting State ---
     let athleteSortField = 'lastName';
@@ -1311,12 +1317,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Default to Reports
-        switchTab('reports');
+        try { switchTab('reports'); } catch (e) { console.error("switchTab failed", e); }
 
         // Initial Import Button State
         if (btnImportRecords) {
-            btnImportRecords.classList.add('btn-disabled-style');
-            btnImportRecords.disabled = true;
+            btnImportRecords.classList.remove('btn-disabled-style');
+            btnImportRecords.disabled = false;
         }
 
 
@@ -1947,34 +1953,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (recordImportFileName && recordImportFile) {
-            const updateButtonState = () => {
+            const updateButtonLabel = () => {
                 const file = recordImportFile.files[0];
                 console.log("📂 Checking Import File:", file ? file.name : "None");
                 if (file) {
                     recordImportFileName.textContent = `Selected: ${file.name}`;
-                    if (btnImportRecords) {
-                        console.log("✅ Enabling Import button (robust)...");
-                        btnImportRecords.disabled = false;
-                        btnImportRecords.classList.remove('btn-disabled-style');
-                    }
                 } else {
                     recordImportFileName.textContent = "";
-                    if (btnImportRecords) {
-                        btnImportRecords.disabled = true;
-                        btnImportRecords.classList.add('btn-disabled-style');
-                    }
                 }
             };
 
-            recordImportFile.addEventListener('change', updateButtonState);
-            recordImportFile.addEventListener('input', updateButtonState);
-
-            // Also check when selecting excel to be safe
-            if (btnSelectExcel) {
-                btnSelectExcel.addEventListener('click', () => {
-                    setTimeout(updateButtonState, 100);
-                });
-            }
+            recordImportFile.addEventListener('change', updateButtonLabel);
+            recordImportFile.addEventListener('input', updateButtonLabel);
         }
 
         if (btnImportAthletes) btnImportAthletes.addEventListener('click', () => athleteImportFile.click());
