@@ -4910,41 +4910,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         let tableRowsHtml = '';
-        jsonData.forEach((row, idx) => {
-            // Determine if row has any mapped value at all
-            const hasAnyValue = mappedFields.some(f => (row[mapping[f.id]] || '').toString().trim() !== '');
-
-            // Check DB matches for key fields
-            let matchCount = 0;
+        jsonData.forEach((row) => {
             const evVal = (row[mapping['event']] || '').toString().trim();
             const athVal = (row[mapping['athlete']] || '').toString().trim();
             const genVal = (row[mapping['gender']] || '').toString().trim();
             const ttVal = (row[mapping['trackType']] || '').toString().trim();
 
-            if (mapping['event'] && events.some(e => e.name.toLowerCase() === evVal.toLowerCase())) matchCount++;
-            if (mapping['athlete'] && athletes.find(a => {
-                const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
-                const lf = `${a.lastName} ${a.firstName}`.toLowerCase();
-                const clean = athVal.toLowerCase().replace(/,/g, '');
-                return clean === fl || clean === lf;
-            })) matchCount++;
-            if (mapping['gender'] && ['male', 'female', 'ανδρων', 'γυναικων'].includes(genVal.toLowerCase())) matchCount++;
-            if (mapping['trackType'] && ['outdoor', 'indoor'].includes(ttVal.toLowerCase())) matchCount++;
+            // Per-field match results (only for validated fields)
+            const fieldMatch = {
+                event: mapping['event'] ? (evVal && events.some(e => e.name.toLowerCase() === evVal.toLowerCase())) : null,
+                athlete: mapping['athlete'] ? (athVal && !!athletes.find(a => {
+                    const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
+                    const lf = `${a.lastName} ${a.firstName}`.toLowerCase();
+                    const clean = athVal.toLowerCase().replace(/,/g, '');
+                    return clean === fl || clean === lf;
+                })) : null,
+                gender: mapping['gender'] ? (genVal && ['male', 'female', 'ανδρων', 'γυναικων'].includes(genVal.toLowerCase())) : null,
+                trackType: mapping['trackType'] ? (ttVal && ['outdoor', 'indoor'].includes(ttVal.toLowerCase())) : null,
+            };
 
-            // Row background: green = match, red = no match, white = ignored (no values)
-            let rowBg;
-            if (!hasAnyValue) {
-                rowBg = '#ffffff'; // ignored / blank row
-            } else if (matchCount > 0) {
-                rowBg = '#dcfce7'; // green — at least one key field matched
-            } else {
-                rowBg = '#fee2e2'; // red — has data but nothing matched
-            }
-
-            tableRowsHtml += `<tr style="background: ${rowBg};">`;
+            tableRowsHtml += `<tr>`;
             mappedFields.forEach(f => {
-                const val = row[mapping[f.id]] || '';
-                tableRowsHtml += `<td style="padding: 8px 12px; border: 1px solid #e2e8f0; color: #334155;">${val}</td>`;
+                const val = (row[mapping[f.id]] || '').toString().trim();
+                let cellBg = '#ffffff'; // default white
+
+                if (f.id in fieldMatch && fieldMatch[f.id] !== null) {
+                    // Validated field: green = match, red = no match
+                    cellBg = fieldMatch[f.id] ? '#dcfce7' : '#fee2e2';
+                }
+                // Non-validated fields and empty cells stay white
+
+                tableRowsHtml += `<td style="padding: 8px 12px; border: 1px solid #e2e8f0; color: #334155; background: ${cellBg};">${val}</td>`;
             });
             tableRowsHtml += '</tr>';
         });
