@@ -2046,8 +2046,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
                     }
                 }
-                if (delBtn) deleteHistory(Number(delBtn.dataset.id));
-                if (editBtn) editHistory(Number(editBtn.dataset.id));
+                if (delBtn) deleteHistory(delBtn.dataset.id);
+                if (editBtn) editHistory(editBtn.dataset.id);
             });
         }
     }
@@ -3761,8 +3761,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         switchTab('log');
-        // Use loose equality to handle potential string/number mismatches from DOM
-        const r = history.find(item => item.id == id);
+        // Use strict string comparison for robust ID matching
+        const idStr = String(id);
+        const r = history.find(item => String(item.id) === idStr);
         if (!r) return;
 
         if (evtInput) evtInput.value = r.event;
@@ -3799,7 +3800,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (!confirm('Permanently delete this archived record?')) return;
-        history = history.filter(h => h.id != id);
+        const idStr = String(id);
+        history = history.filter(h => String(h.id) !== idStr);
         saveHistory();
         renderHistoryList();
     }
