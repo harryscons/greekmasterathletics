@@ -1936,35 +1936,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (btnSelectExcel) {
-            btnSelectExcel.addEventListener('click', () => {
-                if (recordImportFile) recordImportFile.click();
-            });
-        }
-
-        if (btnImportRecords) {
+        // Import Records button: open file picker, then auto-import on selection
+        if (btnImportRecords && recordImportFile) {
             btnImportRecords.addEventListener('click', () => {
-                if (recordImportFile && recordImportFile.files[0]) {
-                    importRecordsFromFile(recordImportFile.files[0]);
-                } else {
-                    alert("Please select an Excel file first.");
+                // Always open file picker when this button is clicked
+                recordImportFile.value = ''; // reset so same file can be re-selected
+                recordImportFile.click();
+            });
+
+            recordImportFile.addEventListener('change', () => {
+                const file = recordImportFile.files[0];
+                if (file) {
+                    if (recordImportFileName) {
+                        recordImportFileName.textContent = `Selected: ${file.name}`;
+                    }
+                    importRecordsFromFile(file);
                 }
             });
-        }
-
-        if (recordImportFileName && recordImportFile) {
-            const updateButtonLabel = () => {
-                const file = recordImportFile.files[0];
-                console.log("📂 Checking Import File:", file ? file.name : "None");
-                if (file) {
-                    recordImportFileName.textContent = `Selected: ${file.name}`;
-                } else {
-                    recordImportFileName.textContent = "";
-                }
-            };
-
-            recordImportFile.addEventListener('change', updateButtonLabel);
-            recordImportFile.addEventListener('input', updateButtonLabel);
         }
 
         if (btnImportAthletes) btnImportAthletes.addEventListener('click', () => athleteImportFile.click());
