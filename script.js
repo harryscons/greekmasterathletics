@@ -1943,19 +1943,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (recordImportFileName && recordImportFile) {
             recordImportFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
+                console.log("📂 File selection change:", file ? file.name : "None");
                 if (file) {
                     recordImportFileName.textContent = `Selected: ${file.name}`;
                     if (btnImportRecords) {
+                        console.log("✅ Enabling Import button...");
                         btnImportRecords.disabled = false;
-                        btnImportRecords.style.opacity = "1";
-                        btnImportRecords.style.cursor = "pointer";
+                        btnImportRecords.style.setProperty('opacity', '1', 'important');
+                        btnImportRecords.style.setProperty('cursor', 'pointer', 'important');
                     }
                 } else {
                     recordImportFileName.textContent = "";
                     if (btnImportRecords) {
                         btnImportRecords.disabled = true;
-                        btnImportRecords.style.opacity = "0.5";
-                        btnImportRecords.style.cursor = "not-allowed";
+                        btnImportRecords.style.setProperty('opacity', '0.5', 'important');
+                        btnImportRecords.style.setProperty('cursor', 'not-allowed', 'important');
                     }
                 }
             });
