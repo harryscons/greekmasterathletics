@@ -2228,6 +2228,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function formatTimeMark(markStr, eventName) {
+        if (!markStr) return markStr;
+        const ev = events.find(e => e.name === eventName);
+        if (ev && !ev.isTime) return markStr; // Field/Points event, unmodified
+
+        let s = markStr.toString().trim();
+        const parts = s.split(':');
+
+        if (parts.length === 2) {
+            let secs = parts[1];
+            let formattedSecs = secs.includes('.') ? secs.replace('.', '".') : secs + '"';
+            return `${parts[0]}'${formattedSecs.startsWith(':') ? '' : ':'}${formattedSecs}`;
+        }
+        if (parts.length === 3) {
+            let secs = parts[2];
+            let formattedSecs = secs.includes('.') ? secs.replace('.', '".') : secs + '"';
+            return `${parts[0]}:${parts[1]}'${formattedSecs.startsWith(':') ? '' : ':'}${formattedSecs}`;
+        }
+        return markStr;
+    }
+
     function calculateRateConv(markStr, eventName) {
         if (!markStr) return 0;
         let s = markStr.toString().trim().replace(/,/g, '.');
@@ -2602,7 +2623,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${athleteName}</td>
                 <td>${gender}</td>
                 <td>${ageAtEvent > 0 ? ageAtEvent : '-'}</td>
-                <td style="text-align:center;">${r.mark}</td>
+                <td style="text-align:center;">${formatTimeMark(r.mark, r.event)}</td>
                 <td>${r.idr || '-'}</td>
                 <td>${rateConv || '-'}</td>
                 <td>${ageMark || '-'}</td>
@@ -3664,7 +3685,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="font-weight:600;">${r.athlete}</td>
                 <td>${r.gender || '-'}</td>
                 <td>${r.ageGroup || '-'}</td>
-                <td style="text-align:center;">${r.mark}</td>
+                <td style="text-align:center;">${formatTimeMark(r.mark, r.event)}</td>
                 <td>${r.idr || '-'}</td>
                 <td>${r.wind || '-'}</td>
                 <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
@@ -3691,7 +3712,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             <div style="display:flex; gap:1rem; align-items:center;">
                                 <span style="font-weight:bold; color:var(--success);">${successor.athlete}</span>
-                                <span>${successor.mark} (${successor.wind || '-'})</span>
+                                <span>${formatTimeMark(successor.mark, r.event)} (${successor.wind || '-'})</span>
                                 <span>| ${new Date(successor.date).toLocaleDateString('en-GB')}</span>
                                 <span>| ${successor.raceName || '-'}</span>
                             </div>
@@ -4226,7 +4247,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ` : ''}
                     </td>
                     <td>${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
-                    <td style="font-weight:700; color:var(--accent); text-align:center;">${r.mark}</td>
+                    <td style="font-weight:700; color:var(--accent); text-align:center;">${formatTimeMark(r.mark, r.event)}</td>
                     <td>
                         ${r.isPendingDelete ?
                     `<span class="badge-pending" style="background:var(--danger); color:white;">⚠️ Προς Διαγραφή</span>` :
@@ -4442,7 +4463,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${hasNotes ? `<div style="font-size:0.85em; color:#666; font-style:italic; margin-top:2px;">${r.notes}</div>` : ''}
                         </td>
                         <td>${r.dob}</td>
-                        <td style="font-weight:700;">${r.mark}</td>
+                        <td style="font-weight:700;">${formatTimeMark(r.mark, r.event)}</td>
                         <td>${r.idr || '-'}</td>
                         <td>${r.wind || '-'}</td>
                         <td>${r.formattedDate}</td>
@@ -5314,7 +5335,7 @@ Replace ALL current data with this backup?`;
                     <tr>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.event}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.ageGroup || '-'}</td>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1); text-align:center;"><b>${r.mark}</b></td>
+                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.date}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.raceName || '-'}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.town || r.location || '-'}</td>
