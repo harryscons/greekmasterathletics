@@ -4784,6 +4784,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetFields = [
             { id: 'event', label: 'Event' },
             { id: 'athlete', label: 'Athlete Name' },
+            { id: 'dob', label: 'Date of Birth' },
             { id: 'gender', label: 'Gender' },
             { id: 'trackType', label: 'Track Type' },
             { id: 'raceName', label: 'Race Name' },
@@ -4837,6 +4838,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetFields = [
             { id: 'event', label: 'Event' },
             { id: 'athlete', label: 'Athlete Name' },
+            { id: 'dob', label: 'Date of Birth' },
             { id: 'gender', label: 'Gender' },
             { id: 'trackType', label: 'Track Type' },
             { id: 'raceName', label: 'Race Name' },
