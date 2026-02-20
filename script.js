@@ -2602,7 +2602,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${athleteName}</td>
                 <td>${gender}</td>
                 <td>${ageAtEvent > 0 ? ageAtEvent : '-'}</td>
-                <td>${r.mark}</td>
+                <td style="text-align:center;">${r.mark}</td>
                 <td>${r.idr || '-'}</td>
                 <td>${rateConv || '-'}</td>
                 <td>${ageMark || '-'}</td>
@@ -3664,7 +3664,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="font-weight:600;">${r.athlete}</td>
                 <td>${r.gender || '-'}</td>
                 <td>${r.ageGroup || '-'}</td>
-                <td>${r.mark}</td>
+                <td style="text-align:center;">${r.mark}</td>
                 <td>${r.idr || '-'}</td>
                 <td>${r.wind || '-'}</td>
                 <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
@@ -4226,7 +4226,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ` : ''}
                     </td>
                     <td>${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
-                    <td style="font-weight:700; color:var(--accent);">${r.mark}</td>
+                    <td style="font-weight:700; color:var(--accent); text-align:center;">${r.mark}</td>
                     <td>
                         ${r.isPendingDelete ?
                     `<span class="badge-pending" style="background:var(--danger); color:white;">⚠️ Προς Διαγραφή</span>` :
@@ -5314,7 +5314,7 @@ Replace ALL current data with this backup?`;
                     <tr>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.event}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.ageGroup || '-'}</td>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);"><b>${r.mark}</b></td>
+                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1); text-align:center;"><b>${r.mark}</b></td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.date}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.raceName || '-'}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.town || r.location || '-'}</td>
