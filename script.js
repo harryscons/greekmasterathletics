@@ -1170,6 +1170,12 @@ document.addEventListener('DOMContentLoaded', () => {
             else userManagementBtn.classList.add('hidden');
         }
 
+        // Re-render data tables now that auth state is explicitly known
+        // (Solves race condition where data loads faster than auth, leaving conditional buttons out)
+        if (typeof renderReports === 'function') {
+            renderReports();
+        }
+
         // Hide Save Button if not admin
         const navSave = document.getElementById('btnSaveCloud');
         if (navSave) {
