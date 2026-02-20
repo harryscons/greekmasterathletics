@@ -2229,38 +2229,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function formatTimeMark(markStr, eventName) {
-        if (!markStr) return markStr;
-        const ev = events.find(e => e.name === eventName);
-
-        // Determine type using the app's established logic
-        const eventType = ev ? (ev.type || (ev.isCombined ? 'Combined' : ev.isRelay ? 'Relay' : 'Track')) : '';
-        const isTimeEvent = (eventType === 'Track' || eventType === 'Relay');
-
-        // If we know it's not a time event (like Long Jump), don't touch it.
-        // If we can't find the event, we only format if it explicitly looks like a time (has colons).
-        if (ev && !isTimeEvent) return markStr;
-        if (!ev && !markStr.toString().includes(':')) return markStr;
-
-        let s = markStr.toString().trim();
-        const parts = s.split(':');
-
-        if (parts.length === 1) {
-            // e.g. "10.50" -> "10".50"
-            return s.includes('.') ? s.replace('.', '".') : s + '"';
-        } else if (parts.length === 2) {
-            // e.g. "1:20.32" -> "1':20".32"
-            let mins = parseInt(parts[0], 10);
-            let secs = parts[1];
-            let formattedSecs = secs.includes('.') ? secs.replace('.', '".') : secs + '"';
-            return `${mins}'${formattedSecs}`;
-        } else if (parts.length === 3) {
-            // e.g. "1:01:32.23" -> "1:1':32".23"
-            let hours = parts[0];
-            let mins = parseInt(parts[1], 10);
-            let secs = parts[2];
-            let formattedSecs = secs.includes('.') ? secs.replace('.', '".') : secs + '"';
-            return `${hours}:${mins}'${formattedSecs}`;
-        }
         return markStr;
     }
 
