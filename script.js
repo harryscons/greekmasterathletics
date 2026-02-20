@@ -103,13 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnBackup = document.getElementById('btnBackup');
     const btnRestore = document.getElementById('btnRestore');
     const fileRestore = document.getElementById('fileRestore');
-    const btnImportXls = document.getElementById('btnImportXls');
-    const fileImportXls = document.getElementById('fileImportXls');
-    const excelModal = document.getElementById('excelModal');
-    const closeExcelModal = document.getElementById('closeExcelModal');
-    const btnCancelImport = document.getElementById('btnCancelImport');
-    const excelTableHead = document.getElementById('excelTableHead');
-    const excelTableBody = document.getElementById('excelTableBody');
 
     // Navigation
     const navTabs = document.querySelectorAll('.nav-tab');
@@ -163,8 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnLoadOfficialWMA = document.getElementById('btnLoadOfficialWMA');
 
     // Record Import
+    const btnSelectExcel = document.getElementById('btnSelectExcel');
     const btnImportRecords = document.getElementById('btnImportRecords');
     const recordImportFile = document.getElementById('recordImportFile');
+    const recordImportFileName = document.getElementById('recordImportFileName');
 
     const clearRecordsBtn = document.getElementById('clearRecords');
     const clearAthletesBtn = document.getElementById('clearAthletes');
@@ -1154,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Toggle Visibility of Admin features
         // Toggle Visibility of Admin features (General Admin)
-        const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .delete-country-btn, .edit-athlete-btn, .delete-athlete-btn, #btnImportRecords, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
+        const adminElements = document.querySelectorAll('.btn-danger, .btn-warning, .delete-country-btn, .edit-athlete-btn, .delete-athlete-btn, #btnSelectExcel, #btnImportRecords, #recordImportFileName, #btnRestore, #btnBackup, #btnImportAthletes, #clearRecords, #clearAthletes, #clearAll');
 
         adminElements.forEach(el => {
             if (isAdmin) el.classList.remove('hidden');
@@ -1929,25 +1924,45 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (btnImportRecords) {
-            console.log("Import Records Button Found");
-            btnImportRecords.addEventListener('click', () => {
-                console.log("Import Button Clicked");
+        if (btnSelectExcel) {
+            btnSelectExcel.addEventListener('click', () => {
                 if (recordImportFile) recordImportFile.click();
-                else alert("File input not found!");
             });
-        } else {
-            console.error("Import Records Button NOT Found");
         }
-        if (btnImportAthletes) btnImportAthletes.addEventListener('click', () => athleteImportFile.click());
-        if (athleteImportFile) athleteImportFile.addEventListener('change', handleAthleteImport);
 
-        if (recordImportFile) {
+        if (btnImportRecords) {
+            btnImportRecords.addEventListener('click', () => {
+                if (recordImportFile && recordImportFile.files[0]) {
+                    importRecordsFromFile(recordImportFile.files[0]);
+                } else {
+                    alert("Please select an Excel file first.");
+                }
+            });
+        }
+
+        if (recordImportFileName && recordImportFile) {
             recordImportFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                if (file) importRecordsFromFile(file);
+                if (file) {
+                    recordImportFileName.textContent = `Selected: ${file.name}`;
+                    if (btnImportRecords) {
+                        btnImportRecords.disabled = false;
+                        btnImportRecords.style.opacity = "1";
+                        btnImportRecords.style.cursor = "pointer";
+                    }
+                } else {
+                    recordImportFileName.textContent = "";
+                    if (btnImportRecords) {
+                        btnImportRecords.disabled = true;
+                        btnImportRecords.style.opacity = "0.5";
+                        btnImportRecords.style.cursor = "not-allowed";
+                    }
+                }
             });
         }
+
+        if (btnImportAthletes) btnImportAthletes.addEventListener('click', () => athleteImportFile.click());
+        if (athleteImportFile) athleteImportFile.addEventListener('change', handleAthleteImport);
 
         if (athleteListBody) {
             athleteListBody.addEventListener('click', (e) => {
@@ -1969,12 +1984,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnBackup) btnBackup.addEventListener('click', exportDatabase);
         if (btnRestore) btnRestore.addEventListener('click', importDatabase);
-
-        // Excel Import listeners
-        if (btnImportXls) btnImportXls.addEventListener('click', () => fileImportXls.click());
-        if (fileImportXls) fileImportXls.addEventListener('change', handleExcelImport);
-        if (closeExcelModal) closeExcelModal.addEventListener('click', () => excelModal.classList.add('hidden'));
-        if (btnCancelImport) btnCancelImport.addEventListener('click', () => excelModal.classList.add('hidden'));
 
         if (userForm) userForm.addEventListener('submit', handleUserSubmit);
         if (userListBody) {
@@ -4757,134 +4766,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                if (!confirm(`Found ${jsonData.length} rows. Import records?`)) return;
-
-                let importedCount = 0;
-                jsonData.forEach(row => {
-                    // Normalization
-                    let r = {};
-                    Object.keys(row).forEach(k => {
-                        r[k.trim().toLowerCase().replace(/[^a-z0-9]/g, '')] = row[k];
-                    });
-
-                    // Mapping
-                    const event = row['Event'] || row['event'] || r['event'] || '';
-                    // Expanded Athlete Check:
-                    // Checks: "Athlete", "Athlete Name", "Athletes Name", "Full Name", "Name" and their normalized versions.
-                    let rawName = row['Athlete'] || row['Athlete Name'] || row['Athletes Name'] || row['Full Name'] ||
-                        r['athlete'] || r['athletename'] || r['athletesname'] || r['fullname'] ||
-                        row['Name'] || '';
-
-                    let finalAthleteName = rawName.trim();
-
-                    // Smart Link to Existing Athletes
-                    if (finalAthleteName) {
-                        const cleanImport = finalAthleteName.toLowerCase().replace(/,/g, '').replace(/\s+/g, ' ').trim();
-
-                        // Try to find a match in the existing athletes list
-                        const match = athletes.find(a => {
-                            const first = (a.firstName || '').toLowerCase().trim();
-                            const last = (a.lastName || '').toLowerCase().trim();
-
-                            const fl = `${first} ${last}`;
-                            const lf = `${last} ${first}`;
-                            const l_f = `${last} ${first}`; // Comma removed in cleanImport check
-
-                            // Check against "First Last", "Last First", etc.
-                            return cleanImport === fl || cleanImport === lf || cleanImport === l_f;
-                        });
-
-                        if (match) {
-                            // If found, use the system canonical name: "Last, First"
-                            finalAthleteName = `${match.lastName}, ${match.firstName}`;
-                        } else {
-                            // If not found, try to normalize "First Last" to "Last, First" heuristically
-                            if (!finalAthleteName.includes(',')) {
-                                const parts = finalAthleteName.split(' ');
-                                if (parts.length >= 2) {
-                                    // Conservative guess: Last element is Last Name? 
-                                    // Or First element is First Name?
-                                    // Let's assume input is "First Last" which is standard Excel, so we flip to "Last, First"
-                                    // ONLY if we didn't find a direct match.
-                                    // actually, let's look for partial matches? No, unsafe.
-                                    // Let's just flip it and hope, OR keep as is. 
-                                    // User said "names are almost same".
-                                    // If we swap blindly we might mess up "Van Der Sar".
-                                    // Let's just keep as is if no match found, BUT we can try one swap attempt to match.
-
-                                    // Actually, if we didn't match an existing athlete, we can't be sure.
-                                    // But to "connect" them, they MUST match the string value in the option list.
-                                    // The option list is "Last, First".
-                                }
-                            }
-                        }
-                    }
-
-                    const gender = row['Gender'] || row['gender'] || r['gender'] || row['Sex'] || '';
-                    const ageGroup = row['Age Group'] || row['Age'] || r['agegroup'] || r['age'] || '';
-                    const mark = row['Mark'] || row['Result'] || row['Time'] || r['mark'] || r['result'] || '';
-                    const wind = row['Wind'] || r['wind'] || '';
-                    const idr = row['IDR'] || row['idr'] || r['idr'] || '';
-                    const dateRaw = row['Date'] || r['date'];
-                    const country = row['Country'] || r['country'] || '';
-                    const town = row['Town'] || row['City'] || r['town'] || '';
-                    const raceName = row['Race Name'] || row['Meeting'] || r['racename'] || '';
-
-                    if (!event || !mark) return; // Skip if no event or mark
-
-                    // Date Parsing (Excel Date or String)
-                    let finalDate = '';
-                    if (dateRaw && !isNaN(dateRaw) && typeof dateRaw === 'number') {
-                        // Excel serial date
-                        const dateObj = new Date(Math.round((dateRaw - 25569) * 86400 * 1000));
-                        finalDate = dateObj.toISOString().split('T')[0];
-                    } else if (dateRaw) {
-                        // Try string parse
-                        const d = new Date(dateRaw);
-                        if (!isNaN(d)) finalDate = d.toISOString().split('T')[0];
-                        else finalDate = dateRaw; // Keep as string if needed
-                    } else {
-                        finalDate = new Date().toISOString().split('T')[0];
-                    }
-
-                    records.unshift({
-                        id: Date.now() + Math.random(),
-                        event: event.trim(),
-                        athlete: finalAthleteName,
-                        gender: gender.trim(),
-                        ageGroup: ageGroup.toString().trim(),
-                        mark: mark.toString().trim(),
-                        wind: wind.toString().trim(),
-                        idr: idr.toString().trim(),
-                        date: finalDate,
-                        country: country.trim(),
-                        town: town.trim(),
-                        raceName: raceName.trim(),
-                        notes: (row['Note'] || row['note'] || r['note'] || row['Notes'] || r['notes'] || '').toString().trim()
-                    });
-                    importedCount++;
-                });
-
-                if (importedCount > 0) {
-                    saveRecords();
-                    saveAthletes();
-                    saveCountries();
-
-                    // Reset Filters to ensure visibility
-                    if (filterEvent) filterEvent.value = 'all';
-                    if (filterGender) filterGender.value = 'all';
-                    if (filterAge) filterAge.value = 'all';
-                    if (filterYear) filterYear.value = 'all';
-
-                    populateYearDropdown();
-                    renderReports();
-                    renderEventList();
-                    renderAthleteList();
-
-                    alert(`Imported ${importedCount} records successfully.`);
-                } else {
-                    alert('No valid records found in file.');
-                }
+                showExcelMapping(jsonData);
 
             } catch (err) {
                 console.error(err);
@@ -4894,6 +4776,332 @@ document.addEventListener('DOMContentLoaded', () => {
             recordImportFile.value = '';
         };
         reader.readAsArrayBuffer(file);
+    }
+
+    function showExcelMapping(jsonData) {
+        const previewWindow = window.open('', '_blank', 'width=1200,height=900');
+        if (!previewWindow) {
+            alert("Pop-up blocked! Please allow pop-ups to see the import preview.");
+            return;
+        }
+
+        const allKeys = new Set();
+        jsonData.forEach(row => Object.keys(row).forEach(k => allKeys.add(k)));
+        const headers = Array.from(allKeys);
+
+        const targetFields = [
+            { id: 'event', label: 'Event' },
+            { id: 'athlete', label: 'Athlete Name' },
+            { id: 'gender', label: 'Gender' },
+            { id: 'trackType', label: 'Track Type' },
+            { id: 'raceName', label: 'Race Name' },
+            { id: 'town', label: 'Town' },
+            { id: 'date', label: 'Date' },
+            { id: 'mark', label: 'Mark' },
+            { id: 'idr', label: 'IDR' },
+            { id: 'wind', label: 'Wind' },
+            { id: 'notes', label: 'Notes' }
+        ];
+
+        let mappingHtml = '';
+        targetFields.forEach(field => {
+            let options = `<option value="">-- Skip Field --</option>`;
+            headers.forEach(h => {
+                const hNorm = h.trim().toLowerCase();
+                const lNorm = field.label.toLowerCase();
+                const idNorm = field.id.toLowerCase();
+                const selected = hNorm === lNorm || hNorm === idNorm ? 'selected' : '';
+                options += `<option value="${h}" ${selected}>${h}</option>`;
+            });
+
+            mappingHtml += `
+                <div class="mapping-row" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; background: #fff; padding: 0.75rem 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <span style="flex: 1; font-weight: 600; color: #4338ca;">${field.label}</span>
+                    <i style="color: #9ca3af;">→</i>
+                    <select id="map_${field.id}" style="flex: 2; padding: 0.5rem; border-radius: 6px; border: 1px solid #d1d5db; outline: none; font-family: inherit;">
+                        ${options}
+                    </select>
+                </div>
+            `;
+        });
+
+        const jsonString = JSON.stringify(jsonData).replace(/'/g, "\\'");
+
+        previewWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Excel Import Wizard - Step 1: Mapping</title>
+                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Outfit', sans-serif; padding: 0; margin: 0; background: #f8fafc; color: #1e293b; line-height: 1.5; }
+                    .header { background: #fff; border-bottom: 2px solid #e2e8f0; padding: 1.5rem 2.5rem; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+                    .container { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; }
+                    .card { background: #fff; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 2.5rem; border: 1px solid #f1f5f9; }
+                    h2 { margin: 0; color: #1e1b4b; font-size: 1.75rem; }
+                    .subtitle { color: #64748b; font-size: 1rem; margin-top: 0.5rem; }
+                    .btn { padding: 0.75rem 1.75rem; border-radius: 10px; cursor: pointer; font-weight: 700; border: none; transition: all 0.2s; font-family: inherit; font-size: 0.95rem; }
+                    .btn-primary { background: #6366f1; color: #fff; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4); }
+                    .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
+                    .btn-secondary { background: #94a3b8; color: #fff; margin-right: 0.75rem; }
+                    .btn-secondary:hover { background: #64748b; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <h2>Step 1: Column Mapping</h2>
+                        <div class="subtitle">Select which Excel columns correspond to each record field.</div>
+                    </div>
+                    <div style="display: flex;">
+                        <button class="btn btn-secondary" onclick="window.close()">Cancel</button>
+                        <button id="proceedBtn" class="btn btn-primary">Proceed to Validation →</button>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="card">
+                        ${mappingHtml}
+                    </div>
+                </div>
+                <script>
+                    document.getElementById('proceedBtn').onclick = function() {
+                        const fields = ${JSON.stringify(targetFields.map(f => f.id))};
+                        const mapping = {};
+                        fields.forEach(fid => {
+                            mapping[fid] = document.getElementById('map_' + fid).value;
+                        });
+                        
+                        const data = JSON.parse('${jsonString}');
+                        if (window.opener && !window.opener.closed) {
+                            window.opener.showExcelValidation(data, mapping);
+                            window.close();
+                        } else {
+                            alert('Main window connection lost. Please restart import.');
+                        }
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+        previewWindow.document.close();
+    }
+
+    window.showExcelValidation = function (jsonData, mapping) {
+        const previewWindow = window.open('', '_blank', 'width=1300,height=950');
+        if (!previewWindow) {
+            alert("Pop-up blocked! Please allow pop-ups to see the validation preview.");
+            return;
+        }
+
+        const targetFields = [
+            { id: 'event', label: 'Event' },
+            { id: 'athlete', label: 'Athlete Name' },
+            { id: 'gender', label: 'Gender' },
+            { id: 'trackType', label: 'Track Type' },
+            { id: 'raceName', label: 'Race Name' },
+            { id: 'town', label: 'Town' },
+            { id: 'date', label: 'Date' },
+            { id: 'mark', label: 'Mark' },
+            { id: 'idr', label: 'IDR' },
+            { id: 'wind', label: 'Wind' },
+            { id: 'notes', label: 'Notes' }
+        ];
+
+        const mappedFields = targetFields.filter(f => mapping[f.id]);
+
+        // Build table
+        let tableHeaderHtml = '<th style="padding: 12px; border: 1px solid #e2e8f0;">Status / Match</th>';
+        mappedFields.forEach(f => {
+            tableHeaderHtml += `<th style="padding: 12px; border: 1px solid #e2e8f0; text-align: left;">${f.label}</th>`;
+        });
+
+        let tableRowsHtml = '';
+        jsonData.forEach((row, idx) => {
+            const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+
+            // Validation indicators
+            let matches = [];
+            const evVal = (row[mapping['event']] || '').toString().trim();
+            const athVal = (row[mapping['athlete']] || '').toString().trim();
+            const genVal = (row[mapping['gender']] || '').toString().trim();
+            const ttVal = (row[mapping['trackType']] || '').toString().trim();
+
+            if (mapping['event'] && events.some(e => e.name.toLowerCase() === evVal.toLowerCase())) matches.push('Event');
+            if (mapping['athlete']) {
+                const match = athletes.find(a => {
+                    const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
+                    const lf = `${a.lastName}, ${a.firstName}`.toLowerCase();
+                    const lf2 = `${a.lastName} ${a.firstName}`.toLowerCase();
+                    const cleanVal = athVal.toLowerCase().replace(/,/g, '');
+                    return cleanVal === fl || cleanVal === lf.replace(/,/g, '') || cleanVal === lf2;
+                });
+                if (match) matches.push('Athlete');
+            }
+            if (mapping['gender'] && ['male', 'female', 'ανδρων', 'γυναικων'].includes(genVal.toLowerCase())) matches.push('Gender');
+            if (mapping['trackType'] && ['outdoor', 'indoor'].includes(ttVal.toLowerCase())) matches.push('Track Type');
+
+            let statusHtml = '';
+            if (matches.length > 0) {
+                statusHtml = `<div style="display: flex; flex-wrap: wrap; gap: 4px;">` +
+                    matches.map(m => `<span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 10px;">MATCH: ${m.toUpperCase()}</span>`).join('') +
+                    `</div>`;
+            } else {
+                statusHtml = `<span style="color: #94a3b8; font-size: 11px;">No Direct Match</span>`;
+            }
+
+            tableRowsHtml += `<tr style="background: ${rowBg};">`;
+            tableRowsHtml += `<td style="padding: 8px 12px; border: 1px solid #e2e8f0;">${statusHtml}</td>`;
+            mappedFields.forEach(f => {
+                const val = row[mapping[f.id]] || '';
+                tableRowsHtml += `<td style="padding: 8px 12px; border: 1px solid #e2e8f0; color: #334155;">${val}</td>`;
+            });
+            tableRowsHtml += '</tr>';
+        });
+
+        const jsonString = JSON.stringify(jsonData).replace(/'/g, "\\'");
+        const mappingString = JSON.stringify(mapping).replace(/'/g, "\\'");
+
+        previewWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Excel Import Wizard - Step 2: Validation</title>
+                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Outfit', sans-serif; padding: 0; margin: 0; background: #fff; color: #1e293b; }
+                    .header { position: sticky; top: 0; background: #fff; border-bottom: 2px solid #e2e8f0; padding: 1.25rem 2.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 100; }
+                    .content { padding: 2.5rem; }
+                    .btn { padding: 0.75rem 1.75rem; border-radius: 10px; cursor: pointer; font-weight: 700; border: none; transition: all 0.2s; font-family: inherit; font-size: 0.95rem; }
+                    .btn-import { background: #10b981; color: #fff; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4); }
+                    .btn-import:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4); }
+                    .btn-secondary { background: #94a3b8; color: #fff; margin-right: 0.75rem; }
+                    h2 { margin: 0; color: #1e1b4b; font-size: 1.5rem; }
+                    .stats { font-size: 0.95rem; color: #64748b; margin-top: 0.25rem; }
+                    table { width: 100%; border-collapse: collapse; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+                    th { font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; background: #f8fafc; color: #475569; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <h2>Step 2: Validation Preview</h2>
+                        <div class="stats">\u203B Displaying mapped columns. Found ${jsonData.length} records.</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" onclick="window.close()">Cancel</button>
+                        <button id="importBtn" class="btn btn-import">📥 Complete Import</button>
+                    </div>
+                </div>
+                <div class="content">
+                    <table>
+                        <thead>
+                            <tr>${tableHeaderHtml}</tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+                <script>
+                    document.getElementById('importBtn').onclick = function() {
+                        if (confirm('Confirm import of ${jsonData.length} records?')) {
+                            const data = JSON.parse('${jsonString}');
+                            const mapping = JSON.parse('${mappingString}');
+                            if (window.opener && !window.opener.closed) {
+                                window.opener.handleMappedImport(data, mapping);
+                                window.close();
+                            } else {
+                                alert('Main window connection lost.');
+                            }
+                        }
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+        previewWindow.document.close();
+    }
+
+    window.handleMappedImport = function (jsonData, mapping) {
+        try {
+            let importedCount = 0;
+            jsonData.forEach(row => {
+                const eventVal = (row[mapping['event']] || '').toString().trim();
+                const markVal = (row[mapping['mark']] || '').toString().trim();
+
+                if (!eventVal || !markVal) return;
+
+                const rawName = (row[mapping['athlete']] || '').toString().trim();
+                let finalAthleteName = rawName;
+
+                // Smart Link logic
+                if (finalAthleteName) {
+                    const match = athletes.find(a => {
+                        const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
+                        const lf = `${a.lastName}, ${a.firstName}`.toLowerCase();
+                        const lf2 = `${a.lastName} ${a.firstName}`.toLowerCase();
+                        const cleanVal = finalAthleteName.toLowerCase().replace(/,/g, '');
+                        return cleanVal === fl || cleanVal === lf.replace(/,/g, '') || cleanVal === lf2;
+                    });
+                    if (match) finalAthleteName = `${match.lastName}, ${match.firstName}`;
+                }
+
+                const dateRaw = row[mapping['date']];
+                let finalDate = '';
+                if (dateRaw && !isNaN(dateRaw) && typeof dateRaw === 'number') {
+                    const dateObj = new Date(Math.round((dateRaw - 25569) * 86400 * 1000));
+                    finalDate = dateObj.toISOString().split('T')[0];
+                } else if (dateRaw) {
+                    const d = new Date(dateRaw);
+                    if (!isNaN(d)) finalDate = d.toISOString().split('T')[0];
+                    else finalDate = dateRaw;
+                } else {
+                    finalDate = new Date().toISOString().split('T')[0];
+                }
+
+                records.unshift({
+                    id: Date.now() + Math.random(),
+                    event: eventVal,
+                    athlete: finalAthleteName,
+                    gender: (row[mapping['gender']] || '').toString().trim(),
+                    ageGroup: '',
+                    trackType: (row[mapping['trackType']] || '').toString().trim(),
+                    mark: markVal,
+                    wind: (row[mapping['wind']] || '').toString().trim(),
+                    idr: (row[mapping['idr']] || '').toString().trim(),
+                    date: finalDate,
+                    country: '',
+                    town: (row[mapping['town']] || '').toString().trim(),
+                    raceName: (row[mapping['raceName']] || '').toString().trim(),
+                    notes: (row[mapping['notes']] || '').toString().trim(),
+                    approved: true
+                });
+                importedCount++;
+            });
+
+            if (importedCount > 0) {
+                saveRecords();
+                saveAthletes();
+                saveCountries();
+
+                if (filterEvent) filterEvent.value = 'all';
+                if (filterGender) filterGender.value = 'all';
+                if (filterAge) filterAge.value = 'all';
+                if (filterYear) filterYear.value = 'all';
+
+                populateYearDropdown();
+                renderReports();
+                renderEventList();
+                renderAthleteList();
+
+                alert(`Successfully imported ${importedCount} records.`);
+            } else {
+                alert('No valid records were imported.');
+            }
+        } catch (err) {
+            console.error('Import processing error:', err);
+            alert('Error during import processing: ' + err.message);
+        }
     }
 
     function importDatabase() {
@@ -4909,13 +5117,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const msg = `Found:
-- ${db.records.length} records
-- ${db.athletes ? db.athletes.length : 0} athletes
-- ${db.events.length} events
-- ${db.history ? db.history.length : 0} history entries
-- ${db.users ? db.users.length : 0} users
+            - ${db.records.length} records
+        - ${db.athletes ? db.athletes.length : 0} athletes
+        - ${db.events.length} events
+        - ${db.history ? db.history.length : 0} history entries
+        - ${db.users ? db.users.length : 0} users
 
-Replace ALL current data with this backup?`;
+Replace ALL current data with this backup ? `;
 
                 if (!confirm(msg)) return;
 
@@ -5010,7 +5218,7 @@ Replace ALL current data with this backup?`;
         if (catSelect && catSelect.options.length <= 1) {
             const categories = new Set();
             Object.keys(agg).forEach(name => {
-                const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === name);
+                const athlete = athletes.find(a => `${a.lastName}, ${a.firstName} ` === name);
                 if (athlete && athlete.dob) {
                     const age = getExactAge(athlete.dob, new Date());
                     if (age !== null && age >= 35) {
@@ -5042,7 +5250,7 @@ Replace ALL current data with this backup?`;
 
         // Convert to Array & Enrich
         let statsData = Object.keys(agg).reduce((acc, name) => {
-            const athlete = athletes.find(a => `${a.lastName}, ${a.firstName}` === name);
+            const athlete = athletes.find(a => `${a.lastName}, ${a.firstName} ` === name);
 
             // Name Filter (Exact) - If Name is selected, it overrides Gender filter
             if (nameFilter !== 'all') {
@@ -5156,7 +5364,7 @@ Replace ALL current data with this backup?`;
         if (statsData.length === 0) {
             let msg = 'No athletes found with selected filters.';
             if (nameFilter !== 'all') msg += ` (Name: "${nameFilter}")`;
-            statsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${msg}</td></tr>`;
+            statsTableBody.innerHTML = `< tr > <td colspan="5" style="text-align:center;">${msg}</td></tr > `;
             return;
         }
 
@@ -5188,22 +5396,12 @@ Replace ALL current data with this backup?`;
 
         // Render
         statsData.forEach((item, index) => {
-            const uniqueId = `stats-detail-${index}`;
+            const uniqueId = `stats - detail - ${index} `;
 
             // Age Badge (Existing Logic reused/adjusted)
             let ageDisplay = '';
             if (item.age !== null) {
-                // Badge Style
-                ageDisplay = `<span style="
-                    background-color: var(--success);
-                    color: white;
-                    padding: 3px 10px;
-                    border-radius: 12px;
-                    font-size: 0.9em;
-                    font-weight: 600;
-                    margin-left: 10px;
-                    margin-right: 15px;
-                 ">Age: ${item.age}</span>`;
+                ageDisplay = `<span style="background-color: var(--success); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9em; font-weight: 600; margin-left: 10px; margin-right: 15px;">Age: ${item.age}</span>`;
             }
 
             // Calculate Year Badges
@@ -6134,66 +6332,8 @@ Replace ALL current data with this backup?`;
         localStorage.setItem('tf_iaaf_updates', JSON.stringify(iaafUpdates));
     }
 
-    // --- Excel Import Functions ---
-    function handleExcelImport(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-
-            // Convert to JSON (array of arrays for preview)
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-            if (jsonData.length === 0) {
-                alert("The selected file appears to be empty.");
-                return;
-            }
-
-            renderExcelPreview(jsonData);
-        };
-        reader.readAsArrayBuffer(file);
-
-        // Reset input value to allow the same file to be selected again
-        event.target.value = '';
-    }
-
-    function renderExcelPreview(data) {
-        if (!excelTableHead || !excelTableBody || !excelModal) return;
-
-        excelTableHead.innerHTML = '';
-        excelTableBody.innerHTML = '';
-
-        if (data.length > 0) {
-            // Headers
-            const headerRow = document.createElement('tr');
-            const headers = data[0];
-            headers.forEach(h => {
-                const th = document.createElement('th');
-                th.textContent = h || '';
-                headerRow.appendChild(th);
-            });
-            excelTableHead.appendChild(headerRow);
-
-            // Body (remaining rows)
-            for (let i = 1; i < data.length; i++) {
-                const rowData = data[i];
-                if (!rowData || rowData.length === 0) continue;
-
-                const tr = document.createElement('tr');
-                rowData.forEach(cell => {
-                    const td = document.createElement('td');
-                    td.textContent = cell || '';
-                    tr.appendChild(td);
-                });
-                excelTableBody.appendChild(tr);
-            }
-        }
-
-        excelModal.classList.remove('hidden');
-    }
+    // Connect to Tab System
+    // We need to trigger loadIAAFData when the tab is shown.
+    // The tab system uses data-subtab="iaaf".
+    // I need to find where tabs are switched.
 });

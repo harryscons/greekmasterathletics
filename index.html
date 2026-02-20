@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.13.000</span>
+                        <span class="version-label">v2.12.004</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -439,7 +439,6 @@
                             </button>
                         </form>
 
-                        <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
                         <div class="table-container">
                             <div
                                 style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
@@ -476,7 +475,8 @@
                 <div id="setting-events" class="setting-section setting-fill hidden">
                     <section class="card">
                         <h2>Manage Events</h2>
-                        <p class="subtitle" style="margin-bottom: 1rem;">Add or remove event types available in the
+                        <p class="subtitle" style="margin-bottom: 1rem;">Add or remove event types available in
+                            the
                             dropdowns.</p>
 
                         <form id="eventForm" style="margin-bottom: 2rem;">
@@ -596,7 +596,8 @@
                 <div id="setting-countries" class="setting-section setting-fill hidden">
                     <section class="card">
                         <h2>Manage Countries</h2>
-                        <p class="subtitle" style="margin-bottom: 1rem;">Add or remove countries available in the
+                        <p class="subtitle" style="margin-bottom: 1rem;">Add or remove countries available in
+                            the
                             dropdown.
                         </p>
 
@@ -809,7 +810,8 @@
                 <div id="setting-general" class="setting-section setting-scroll hidden">
                     <section class="card">
                         <h2>General Settings</h2>
-                        <p class="subtitle" style="margin-bottom: 2rem;">Configure application-wide preferences and
+                        <p class="subtitle" style="margin-bottom: 2rem;">Configure application-wide preferences
+                            and
                             appearance.</p>
 
                         <div class="row">
@@ -825,7 +827,8 @@
                                     <option value="theme-lemon-pale">Lemon Pale (Pastel)</option>
                                 </select>
                                 <p class="help-text"
-                                    style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Select your
+                                    style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                                    Select your
                                     preferred color palette for the application.</p>
                             </div>
                         </div>
@@ -835,7 +838,8 @@
                                 style="flex: 1; flex-direction: row; align-items: center; gap: 0.75rem; margin-bottom: 0;">
                                 <input type="checkbox" id="hideNotesSymbol"
                                     style="width: 20px; height: 20px; cursor: pointer;">
-                                <label for="hideNotesSymbol" style="cursor: pointer; margin-bottom: 0;">Hide Notes
+                                <label for="hideNotesSymbol" style="cursor: pointer; margin-bottom: 0;">Hide
+                                    Notes
                                     Symbol (Return to Plus Symbol Logic)</label>
                             </div>
 
@@ -847,7 +851,8 @@
                                     </button>
                                     <p class="help-text"
                                         style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
-                                        Calculates and saves WMA Age Marks and IAAF Points for all records to speed up
+                                        Calculates and saves WMA Age Marks and IAAF Points for all records to
+                                        speed up
                                         reporting.
                                     </p>
                                 </div>
@@ -860,19 +865,22 @@
                 <div id="setting-data" class="setting-section setting-scroll hidden">
                     <section class="card" style="margin-bottom: 2rem;">
                         <h2>Backup / Save Data</h2>
-                        <p class="subtitle" style="margin-bottom: 1rem;">Save a copy of your database to your program
+                        <p class="subtitle" style="margin-bottom: 1rem;">Save a copy of your database to your
+                            program
                             folder.</p>
                         <button id="btnBackup" class="btn-primary"
                             style="background: linear-gradient(135deg, var(--success), #059669);">
                             <span>⬇️ Download Database (.json)</span>
                         </button>
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
-                            Save this file as <code>track_data.json</code> in your program folder to keep it safe.
+                            Save this file as <code>track_data.json</code> in your program folder to keep it
+                            safe.
                         </p>
                     </section>
                     <section class="card">
                         <h2>Restore / Load Data</h2>
-                        <p class="subtitle" style="margin-bottom: 1rem;">Select your saved file to restore your data.
+                        <p class="subtitle" style="margin-bottom: 1rem;">Select your saved file to restore your
+                            data.
                         </p>
                         <div class="form-group">
                             <label for="fileRestore" style="margin-bottom: 0.5rem;">Select JSON File</label>
@@ -885,18 +893,22 @@
                     </section>
                     <section class="card" style="margin-top: 2rem;">
                         <h2>Import Records from Excel</h2>
-                        <p class="subtitle" style="margin-bottom: 1rem;">Bulk upload records. First row must contain
+                        <p class="subtitle" style="margin-bottom: 1rem;">Bulk upload records. First row must
+                            contain
                             headers.</p>
-                        <div class="form-group">
-                            <div style="display:flex; gap:0.5rem; align-items: center;">
-                                <button id="btnImportRecords" class="btn-secondary"
-                                    style="background: var(--primary); color: white;">
-                                    📁 Select Excel File
-                                </button>
-                                <input type="file" id="recordImportFile" accept=".xlsx, .xls" class="hidden">
-                                <span id="recordImportFileName"
-                                    style="font-size: 0.9rem; color: var(--text-muted); margin-left: 10px;"></span>
-                            </div>
+                        <div
+                            style="display: flex !important; flex-direction: row !important; gap: 0.5rem; align-items: center; margin-top: 1rem; flex-wrap: nowrap !important;">
+                            <button id="btnSelectExcel" class="btn-secondary"
+                                style="background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border); width: auto !important; padding: 0.75rem 1.5rem; flex: 0 0 auto !important;">
+                                📁 Select Excel File
+                            </button>
+                            <button id="btnImportRecords" class="btn-primary" disabled
+                                style="opacity: 0.5; cursor: not-allowed; white-space: nowrap; width: auto !important; padding: 0.75rem 1.5rem; flex: 0 0 auto !important;">
+                                📥 Import Records (xls)
+                            </button>
+                            <input type="file" id="recordImportFile" accept=".xlsx, .xls" class="hidden">
+                            <span id="recordImportFileName"
+                                style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-left: 5px;"></span>
                         </div>
                     </section>
                     <section class="card" style="margin-top: 2rem; border-color: rgba(239, 68, 68, 0.3);">
@@ -915,50 +927,8 @@
                                 ⚠️ Factory Reset (Clear Everything)
                             </button>
                         </div>
-                        <div class="form-group"
-                            style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                            <h3>Bulk Actions</h3>
-                            <button id="btnImportXls" class="btn-primary"
-                                style="background: var(--primary); margin-top: 0.5rem;">
-                                <span>📂 Import Records (xls)</span>
-                            </button>
-                            <input type="file" id="fileImportXls" accept=".xlsx, .xls, .csv" style="display: none;">
-                            <p class="help-text"
-                                style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
-                                Import data from Excel files (.xlsx, .xls) or CSV files.
-                            </p>
-                        </div>
                     </section>
                 </div> <!-- End Setting Data -->
-                <!-- EXCEL PREVIEW MODAL -->
-                <div id="excelModal" class="modal-overlay hidden">
-                    <div class="modal-content"
-                        style="max-width: 90%; max-height: 90vh; display: flex; flex-direction: column;">
-                        <div class="modal-header">
-                            <h2>Excel Import Preview</h2>
-                            <button id="closeExcelModal" class="btn-icon" title="Close">✕</button>
-                        </div>
-                        <div class="modal-body" style="overflow: auto; flex: 1;">
-                            <p class="subtitle" style="margin-bottom: 1rem;">The following data was found in your file:
-                            </p>
-                            <div class="table-container">
-                                <table class="report-table">
-                                    <thead id="excelTableHead">
-                                        <!-- Headers will be injected here -->
-                                    </thead>
-                                    <tbody id="excelTableBody">
-                                        <!-- Data will be injected here -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="modal-footer"
-                            style="padding-top: 1rem; border-top: 1px solid var(--border); margin-top: 1rem;">
-                            <button id="btnCancelImport" class="btn-secondary">Cancel</button>
-                            <!-- <button id="btnConfirmImport" class="btn-primary">Import to Database</button> -->
-                        </div>
-                    </div>
-                </div>
             </div> <!-- End View Settings -->
 
             <!-- JSON VIEWER VIEW -->
@@ -1046,7 +1016,8 @@
                                     <tr>
                                         <th onclick="sortStats('generalRank')"
                                             style="width:7%; text-align:center; cursor:pointer;">Gen Rank ↕</th>
-                                        <th onclick="sortStats('name')" style="cursor:pointer; width:58%;">Athlete Name
+                                        <th onclick="sortStats('name')" style="cursor:pointer; width:58%;">Athlete
+                                            Name
                                             ↕
                                         </th>
                                         <th onclick="sortStats('ratio')"
@@ -1122,11 +1093,13 @@
                                         <th onclick="sortWMAReport('age')" style="cursor:pointer">Age ↕</th>
                                         <th onclick="sortWMAReport('mark')" style="cursor:pointer">Mark ↕</th>
                                         <th onclick="sortWMAReport('idr')" style="cursor:pointer">IDR ↕</th>
-                                        <th onclick="sortWMAReport('rateConv')" style="cursor:pointer">RateConv ↕</th>
+                                        <th onclick="sortWMAReport('rateConv')" style="cursor:pointer">RateConv ↕
+                                        </th>
                                         <th onclick="sortWMAReport('ageMark')" style="cursor:pointer">AgeMark ↕</th>
                                         <th onclick="sortWMAReport('pts')" style="cursor:pointer">Pts ↕</th>
                                         <th onclick="sortWMAReport('date')" style="cursor:pointer">Date ↕</th>
-                                        <th onclick="sortWMAReport('raceName')" style="cursor:pointer">Race Name ↕</th>
+                                        <th onclick="sortWMAReport('raceName')" style="cursor:pointer">Race Name ↕
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody id="wmaReportBody">
@@ -1186,6 +1159,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="data/wma_data_2023.js"></script>
     <script src="data/iaaf_data.js"></script>
     <script src="data/event_rules.js"></script>
