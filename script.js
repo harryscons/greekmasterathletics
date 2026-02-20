@@ -103,6 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnBackup = document.getElementById('btnBackup');
     const btnRestore = document.getElementById('btnRestore');
     const fileRestore = document.getElementById('fileRestore');
+    const btnImportXls = document.getElementById('btnImportXls');
+    const fileImportXls = document.getElementById('fileImportXls');
+    const excelModal = document.getElementById('excelModal');
+    const closeExcelModal = document.getElementById('closeExcelModal');
+    const btnCancelImport = document.getElementById('btnCancelImport');
+    const excelTableHead = document.getElementById('excelTableHead');
+    const excelTableBody = document.getElementById('excelTableBody');
 
     // Navigation
     const navTabs = document.querySelectorAll('.nav-tab');
@@ -1962,6 +1969,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnBackup) btnBackup.addEventListener('click', exportDatabase);
         if (btnRestore) btnRestore.addEventListener('click', importDatabase);
+
+        // Excel Import listeners
+        if (btnImportXls) btnImportXls.addEventListener('click', () => fileImportXls.click());
+        if (fileImportXls) fileImportXls.addEventListener('change', handleExcelImport);
+        if (closeExcelModal) closeExcelModal.addEventListener('click', () => excelModal.classList.add('hidden'));
+        if (btnCancelImport) btnCancelImport.addEventListener('click', () => excelModal.classList.add('hidden'));
 
         if (userForm) userForm.addEventListener('submit', handleUserSubmit);
         if (userListBody) {
@@ -6121,8 +6134,66 @@ Replace ALL current data with this backup?`;
         localStorage.setItem('tf_iaaf_updates', JSON.stringify(iaafUpdates));
     }
 
-    // Connect to Tab System
-    // We need to trigger loadIAAFData when the tab is shown.
-    // The tab system uses data-subtab="iaaf".
-    // I need to find where tabs are switched.
+    // --- Excel Import Functions ---
+    function handleExcelImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+
+            // Convert to JSON (array of arrays for preview)
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+            if (jsonData.length === 0) {
+                alert("The selected file appears to be empty.");
+                return;
+            }
+
+            renderExcelPreview(jsonData);
+        };
+        reader.readAsArrayBuffer(file);
+
+        // Reset input value to allow the same file to be selected again
+        event.target.value = '';
+    }
+
+    function renderExcelPreview(data) {
+        if (!excelTableHead || !excelTableBody || !excelModal) return;
+
+        excelTableHead.innerHTML = '';
+        excelTableBody.innerHTML = '';
+
+        if (data.length > 0) {
+            // Headers
+            const headerRow = document.createElement('tr');
+            const headers = data[0];
+            headers.forEach(h => {
+                const th = document.createElement('th');
+                th.textContent = h || '';
+                headerRow.appendChild(th);
+            });
+            excelTableHead.appendChild(headerRow);
+
+            // Body (remaining rows)
+            for (let i = 1; i < data.length; i++) {
+                const rowData = data[i];
+                if (!rowData || rowData.length === 0) continue;
+
+                const tr = document.createElement('tr');
+                rowData.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell || '';
+                    tr.appendChild(td);
+                });
+                excelTableBody.appendChild(tr);
+            }
+        }
+
+        excelModal.classList.remove('hidden');
+    }
 });

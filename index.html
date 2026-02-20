@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.12.001</span>
+                        <span class="version-label">v2.13.000</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -915,8 +915,50 @@
                                 ⚠️ Factory Reset (Clear Everything)
                             </button>
                         </div>
+                        <div class="form-group"
+                            style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                            <h3>Bulk Actions</h3>
+                            <button id="btnImportXls" class="btn-primary"
+                                style="background: var(--primary); margin-top: 0.5rem;">
+                                <span>📂 Import Records (xls)</span>
+                            </button>
+                            <input type="file" id="fileImportXls" accept=".xlsx, .xls, .csv" style="display: none;">
+                            <p class="help-text"
+                                style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                                Import data from Excel files (.xlsx, .xls) or CSV files.
+                            </p>
+                        </div>
                     </section>
                 </div> <!-- End Setting Data -->
+                <!-- EXCEL PREVIEW MODAL -->
+                <div id="excelModal" class="modal-overlay hidden">
+                    <div class="modal-content"
+                        style="max-width: 90%; max-height: 90vh; display: flex; flex-direction: column;">
+                        <div class="modal-header">
+                            <h2>Excel Import Preview</h2>
+                            <button id="closeExcelModal" class="btn-icon" title="Close">✕</button>
+                        </div>
+                        <div class="modal-body" style="overflow: auto; flex: 1;">
+                            <p class="subtitle" style="margin-bottom: 1rem;">The following data was found in your file:
+                            </p>
+                            <div class="table-container">
+                                <table class="report-table">
+                                    <thead id="excelTableHead">
+                                        <!-- Headers will be injected here -->
+                                    </thead>
+                                    <tbody id="excelTableBody">
+                                        <!-- Data will be injected here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer"
+                            style="padding-top: 1rem; border-top: 1px solid var(--border); margin-top: 1rem;">
+                            <button id="btnCancelImport" class="btn-secondary">Cancel</button>
+                            <!-- <button id="btnConfirmImport" class="btn-primary">Import to Database</button> -->
+                        </div>
+                    </div>
+                </div>
             </div> <!-- End View Settings -->
 
             <!-- JSON VIEWER VIEW -->
