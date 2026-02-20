@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.12.005</span>
+                        <span class="version-label">v2.12.006</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -863,34 +863,36 @@
 
                 <!-- DATA MANAGEMENT SUB-VIEW -->
                 <div id="setting-data" class="setting-section setting-scroll hidden">
-                    <section class="card" style="margin-bottom: 2rem;">
-                        <h2>Backup / Save Data</h2>
-                        <p class="subtitle" style="margin-bottom: 1rem;">Save a copy of your database to your
-                            program
-                            folder.</p>
-                        <button id="btnBackup" class="btn-primary"
-                            style="background: linear-gradient(135deg, var(--success), #059669);">
-                            <span>⬇️ Download Database (.json)</span>
-                        </button>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
-                            Save this file as <code>track_data.json</code> in your program folder to keep it
-                            safe.
-                        </p>
-                    </section>
-                    <section class="card">
-                        <h2>Restore / Load Data</h2>
-                        <p class="subtitle" style="margin-bottom: 1rem;">Select your saved file to restore your
-                            data.
-                        </p>
-                        <div class="form-group">
-                            <label for="fileRestore" style="margin-bottom: 0.5rem;">Select JSON File</label>
-                            <input type="file" id="fileRestore" accept=".json"
-                                style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 8px;">
-                        </div>
-                        <button id="btnRestore" class="btn-secondary" style="width: 100%; margin-top: 1rem;">
-                            <span>⬆️ Restore Database</span>
-                        </button>
-                    </section>
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; align-items: stretch;">
+                        <section class="card" style="flex: 1; margin-bottom: 0;">
+                            <h2>Backup / Save Data</h2>
+                            <p class="subtitle" style="margin-bottom: 1rem;">Save a copy of your database to your
+                                program
+                                folder.</p>
+                            <button id="btnBackup" class="btn-primary"
+                                style="background: linear-gradient(135deg, var(--success), #059669);">
+                                <span>⬇️ Download Database (.json)</span>
+                            </button>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                                Save this file as <code>track_data.json</code> in your program folder to keep it
+                                safe.
+                            </p>
+                        </section>
+                        <section class="card" style="flex: 1; margin-bottom: 0;">
+                            <h2>Restore / Load Data</h2>
+                            <p class="subtitle" style="margin-bottom: 1rem;">Select your saved file to restore your
+                                data.
+                            </p>
+                            <div class="form-group">
+                                <label for="fileRestore" style="margin-bottom: 0.5rem;">Select JSON File</label>
+                                <input type="file" id="fileRestore" accept=".json"
+                                    style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 8px; width: 100%;">
+                            </div>
+                            <button id="btnRestore" class="btn-secondary" style="width: 100%; margin-top: 1rem;">
+                                <span>⬆️ Restore Database</span>
+                            </button>
+                        </section>
+                    </div>
                     <section class="card" style="margin-top: 2rem;">
                         <h2>Import Records from Excel</h2>
                         <p class="subtitle" style="margin-bottom: 1rem;">Bulk upload records. First row must
