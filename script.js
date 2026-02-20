@@ -4908,14 +4908,37 @@ document.addEventListener('DOMContentLoaded', () => {
             const showNew = !matchedAthlete && athVal;
             athOpts += `<option value="__new__" ${showNew ? 'selected' : ''}>+ Add New Athlete</option>`;
 
+            // Pre-fill new athlete form: parse name + DOB from mapped columns
+            let parsedFn = '', parsedLn = '';
+            if (athVal) {
+                if (athVal.includes(',')) {
+                    // "Lastname, Firstname" format
+                    const parts = athVal.split(',');
+                    parsedLn = (parts[0] || '').trim();
+                    parsedFn = (parts[1] || '').trim();
+                } else {
+                    // "Firstname Lastname" format
+                    const parts = athVal.split(' ');
+                    parsedFn = parts[0] || '';
+                    parsedLn = parts.slice(1).join(' ');
+                }
+            }
+            const dobRaw = mapping['dob'] ? (row[mapping['dob']] || '').toString().trim() : '';
+            // Format Excel serial date if numeric
+            let parsedDob = dobRaw;
+            if (dobRaw && !isNaN(dobRaw) && !dobRaw.includes('-') && !dobRaw.includes('/')) {
+                const d = new Date(Math.round((parseFloat(dobRaw) - 25569) * 86400 * 1000));
+                if (!isNaN(d)) parsedDob = d.toISOString().split('T')[0];
+            }
+
             tbodyHtml += `<td style="padding:6px 10px; border:1px solid #e2e8f0; background:#f5f3ff; min-width:230px;">
                 <select id="ath_sel_${idx}" onchange="toggleNew(${idx}, this.value)" style="width:100%;padding:5px 8px;border-radius:6px;border:1px solid #c7d2fe;font-family:inherit;font-size:0.85rem;">
                     ${athOpts}
                 </select>
                 <div id="new_form_${idx}" style="display:${showNew ? 'block' : 'none'};margin-top:6px;background:#f0f9ff;padding:8px;border-radius:6px;border:1px solid #bae6fd;">
-                    <input id="fn_${idx}"  placeholder="First Name"      style="padding:4px 6px;margin:2px;width:88px; border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
-                    <input id="ln_${idx}"  placeholder="Last Name"       style="padding:4px 6px;margin:2px;width:88px; border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
-                    <input id="dob_${idx}" placeholder="DOB YYYY-MM-DD"  style="padding:4px 6px;margin:2px;width:115px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                    <input id="fn_${idx}"  placeholder="First Name"     value="${parsedFn}"  style="padding:4px 6px;margin:2px;width:88px; border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                    <input id="ln_${idx}"  placeholder="Last Name"      value="${parsedLn}"  style="padding:4px 6px;margin:2px;width:88px; border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
+                    <input id="dob_${idx}" placeholder="DOB YYYY-MM-DD" value="${parsedDob}" style="padding:4px 6px;margin:2px;width:115px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
                     <select id="gen_${idx}" style="padding:4px 6px;margin:2px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
                         <option value="Male">Male</option><option value="Female">Female</option>
                     </select>
