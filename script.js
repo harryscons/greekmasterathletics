@@ -1883,10 +1883,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (dobPicker) dobPicker.clear();
                     else newAthleteDOB.value = '';
                     newAthleteGender.value = '';
-                    if (newAthleteIsTeam) {
-                        newAthleteIsTeam.checked = false;
-                        newAthleteIsTeam.dispatchEvent(new Event('change'));
-                    }
+                    // Hide DOB warning when opening form
+                    const dobWarning = document.getElementById('athleteDobWarning');
+                    if (dobWarning) dobWarning.classList.add('hidden');
+
                     if (athleteSubmitBtn) {
                         athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
                         athleteSubmitBtn.style.background = '';
@@ -1902,239 +1902,209 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (filterAthleteGender) filterAthleteGender.addEventListener('change', renderAthleteList);
 
-        if (newAthleteIsTeam) {
-            newAthleteIsTeam.addEventListener('change', () => {
-                const isTeam = newAthleteIsTeam.checked;
-                newAthleteTeamName.disabled = !isTeam;
-                if (isTeam) {
-                    newAthleteTeamName.required = true;
-                    if (dobPicker) dobPicker.clear();
-                    else newAthleteDOB.value = '';
-                    newAthleteDOB.required = false;
-                    newAthleteFirstName.required = false;
-                    newAthleteLastName.required = false;
+        newAthleteDOB.required = true;
+        newAthleteFirstName.required = true;
+        newAthleteLastName.required = true;
+    }
+
+
+    // Event Type Radio Button Handlers
+    const eventTypeRadios = [eventTypeField, eventTypeTrack, eventTypeCombined, eventTypeRelay];
+    eventTypeRadios.forEach(radio => {
+        if (radio) {
+            radio.addEventListener('change', () => {
+                if (eventTypeCombined.checked) {
+                    // Combined event - enable Number of Events field
+                    newEventSubCount.disabled = false;
+                    newEventSubCount.focus();
                 } else {
-                    newAthleteTeamName.required = false;
-                    newAthleteTeamName.value = '';
-                    newAthleteDOB.required = true;
-                    newAthleteFirstName.required = true;
-                    newAthleteLastName.required = true;
+                    // Other types - disable Number of Events field
+                    newEventSubCount.disabled = true;
+                    newEventSubCount.value = '';
+                    subEventsContainer.innerHTML = '';
+                    subEventsContainer.style.display = 'none';
                 }
             });
         }
-        if (athleteListBody) {
-            athleteListBody.addEventListener('click', (e) => {
-                const delBtn = e.target.closest('.delete-athlete-btn');
-                const editBtn = e.target.closest('.edit-athlete-btn');
-                console.log('AthleteList Click:', e.target, 'EditBtn:', editBtn, 'DelBtn:', delBtn);
+    });
 
-                if (delBtn && !delBtn.disabled) deleteAthlete(delBtn.dataset.id);
-                if (editBtn) {
-                    const idToEdit = delBtn ? delBtn.dataset.id : editBtn.dataset.id;
-                    console.log('Editing ID:', idToEdit);
-                    editAthlete(idToEdit);
-                }
-            });
-        }
 
-        // Event Type Radio Button Handlers
-        const eventTypeRadios = [eventTypeField, eventTypeTrack, eventTypeCombined, eventTypeRelay];
-        eventTypeRadios.forEach(radio => {
-            if (radio) {
-                radio.addEventListener('change', () => {
-                    if (eventTypeCombined.checked) {
-                        // Combined event - enable Number of Events field
-                        newEventSubCount.disabled = false;
-                        newEventSubCount.focus();
-                    } else {
-                        // Other types - disable Number of Events field
-                        newEventSubCount.disabled = true;
-                        newEventSubCount.value = '';
-                        subEventsContainer.innerHTML = '';
-                        subEventsContainer.style.display = 'none';
-                    }
+    if (newEventSubCount) {
+        newEventSubCount.addEventListener('input', () => {
+            const count = parseInt(newEventSubCount.value) || 0;
+            subEventsContainer.innerHTML = '';
+
+            if (count > 0) {
+                subEventsContainer.style.display = 'flex';
+
+                // Generate Options
+                let options = '<option value="" disabled selected>Select Event</option>';
+                // Filter out Combined and Relay events
+                const availableEvents = events.filter(e => !e.isCombined && !e.isRelay);
+                availableEvents.sort((a, b) => a.name.localeCompare(b.name));
+
+                availableEvents.forEach(e => {
+                    options += `<option value="${e.name}">${e.name}</option>`;
                 });
-            }
-        });
 
-
-        if (newEventSubCount) {
-            newEventSubCount.addEventListener('input', () => {
-                const count = parseInt(newEventSubCount.value) || 0;
-                subEventsContainer.innerHTML = '';
-
-                if (count > 0) {
-                    subEventsContainer.style.display = 'flex';
-
-                    // Generate Options
-                    let options = '<option value="" disabled selected>Select Event</option>';
-                    // Filter out Combined and Relay events
-                    const availableEvents = events.filter(e => !e.isCombined && !e.isRelay);
-                    availableEvents.sort((a, b) => a.name.localeCompare(b.name));
-
-                    availableEvents.forEach(e => {
-                        options += `<option value="${e.name}">${e.name}</option>`;
-                    });
-
-                    for (let i = 1; i <= count; i++) {
-                        const div = document.createElement('div');
-                        div.className = 'form-group';
-                        div.style.flex = '1 1 45%'; // Responsive-ish
-                        div.style.minWidth = '150px';
-                        div.innerHTML = `
+                for (let i = 1; i <= count; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'form-group';
+                    div.style.flex = '1 1 45%'; // Responsive-ish
+                    div.style.minWidth = '150px';
+                    div.innerHTML = `
                             <label style="font-size:0.75rem;">Event ${i}</label>
                             <select class="sub-event-input" required style="width:100%;">
                                 ${options}
                             </select>
                         `;
-                        subEventsContainer.appendChild(div);
-                    }
-                } else {
-                    subEventsContainer.style.display = 'none';
+                    subEventsContainer.appendChild(div);
                 }
-            });
-        }
+            } else {
+                subEventsContainer.style.display = 'none';
+            }
+        });
+    }
 
-        if (filterTrackType) filterTrackType.addEventListener('change', renderReports);
-        if (filterEvent) filterEvent.addEventListener('change', renderReports);
+    if (filterTrackType) filterTrackType.addEventListener('change', renderReports);
+    if (filterEvent) filterEvent.addEventListener('change', renderReports);
 
-        if (filterGender) filterGender.addEventListener('change', genderFilterChange);
-        if (filterAge) filterAge.addEventListener('change', renderReports);
-        if (filterYear) filterYear.addEventListener('change', renderReports);
-        if (filterAgeMismatch) filterAgeMismatch.addEventListener('change', renderReports);
-        if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
-        if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
+    if (filterGender) filterGender.addEventListener('change', genderFilterChange);
+    if (filterAge) filterAge.addEventListener('change', renderReports);
+    if (filterYear) filterYear.addEventListener('change', renderReports);
+    if (filterAgeMismatch) filterAgeMismatch.addEventListener('change', renderReports);
+    if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
+    if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
 
-        if (themeSelect) {
-            themeSelect.addEventListener('change', () => {
-                setTheme(themeSelect.value);
-            });
-        }
+    if (themeSelect) {
+        themeSelect.addEventListener('change', () => {
+            setTheme(themeSelect.value);
+        });
+    }
 
-        if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllData);
-        if (clearRecordsBtn) {
-            clearRecordsBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to DELETE ALL RECORDS? This cannot be undone.')) {
-                    records = [];
-                    saveRecords();
-                    renderReports();
-                    renderHistoryList();
-                    alert('All records deleted.');
+    if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllData);
+    if (clearRecordsBtn) {
+        clearRecordsBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to DELETE ALL RECORDS? This cannot be undone.')) {
+                records = [];
+                saveRecords();
+                renderReports();
+                renderHistoryList();
+                alert('All records deleted.');
+            }
+        });
+    }
+
+    if (clearAthletesBtn) {
+        clearAthletesBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to DELETE ALL ATHLETES? This cannot be undone.')) {
+                athletes = [];
+                saveAthletes();
+                renderAthleteList();
+                populateAthleteDropdown();
+                alert('All athletes deleted.');
+            }
+        });
+    }
+
+    // Import Records button: open file picker, then auto-import on selection
+    if (btnImportRecords && recordImportFile) {
+        btnImportRecords.addEventListener('click', () => {
+            // Always open file picker when this button is clicked
+            recordImportFile.value = ''; // reset so same file can be re-selected
+            recordImportFile.click();
+        });
+
+        recordImportFile.addEventListener('change', () => {
+            const file = recordImportFile.files[0];
+            if (file) {
+                if (recordImportFileName) {
+                    recordImportFileName.textContent = `Selected: ${file.name}`;
                 }
-            });
-        }
+                importRecordsFromFile(file);
+            }
+        });
+    }
 
-        if (clearAthletesBtn) {
-            clearAthletesBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to DELETE ALL ATHLETES? This cannot be undone.')) {
-                    athletes = [];
-                    saveAthletes();
-                    renderAthleteList();
-                    populateAthleteDropdown();
-                    alert('All athletes deleted.');
+    if (btnImportAthletes) btnImportAthletes.addEventListener('click', () => athleteImportFile.click());
+    if (athleteImportFile) athleteImportFile.addEventListener('change', handleAthleteImport);
+
+    if (athleteListBody) {
+        athleteListBody.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-athlete-btn');
+            const delBtn = e.target.closest('.delete-athlete-btn');
+            if (editBtn) editAthlete(editBtn.dataset.id);
+            if (delBtn) deleteAthlete(delBtn.dataset.id);
+        });
+    }
+
+    const btnExcel = document.getElementById('exportExcel');
+    if (btnExcel) btnExcel.addEventListener('click', exportToExcel);
+
+    const btnHTML = document.getElementById('exportHTML');
+    if (btnHTML) btnHTML.addEventListener('click', exportToHTML);
+
+    const btnPDF = document.getElementById('exportPDF');
+    if (btnPDF) btnPDF.addEventListener('click', exportToPDF);
+
+    if (btnBackup) btnBackup.addEventListener('click', exportDatabase);
+    if (btnRestore) btnRestore.addEventListener('click', importDatabase);
+
+    if (userForm) userForm.addEventListener('submit', handleUserSubmit);
+    if (userListBody) {
+        userListBody.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-user-btn');
+            const delBtn = e.target.closest('.delete-user-btn');
+            if (editBtn) editUser(editBtn.dataset.id);
+            if (delBtn) deleteUser(delBtn.dataset.id);
+        });
+    }
+
+    if (reportTableBody) {
+        reportTableBody.addEventListener('click', (e) => {
+            const expandBtn = e.target.closest('.expand-btn');
+            const editBtn = e.target.closest('.edit-btn');
+            const delBtn = e.target.closest('.delete-btn');
+
+            if (expandBtn) {
+                const id = expandBtn.dataset.id;
+                const detailRow = document.getElementById(`detail-${id}`);
+                if (detailRow) {
+                    detailRow.classList.toggle('hidden');
+                    expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
                 }
-            });
-        }
+            }
+            if (editBtn) editRecord(editBtn.dataset.id);
+            if (delBtn) deleteRecord(delBtn.dataset.id);
+        });
+    }
 
-        // Import Records button: open file picker, then auto-import on selection
-        if (btnImportRecords && recordImportFile) {
-            btnImportRecords.addEventListener('click', () => {
-                // Always open file picker when this button is clicked
-                recordImportFile.value = ''; // reset so same file can be re-selected
-                recordImportFile.click();
-            });
+    if (countryForm) countryForm.addEventListener('submit', handleCountrySubmit);
+    if (countryListBody) {
+        countryListBody.addEventListener('click', (e) => {
+            const delBtn = e.target.closest('.delete-country-btn');
+            if (delBtn) deleteCountry(delBtn.dataset.country);
+        });
+    }
 
-            recordImportFile.addEventListener('change', () => {
-                const file = recordImportFile.files[0];
-                if (file) {
-                    if (recordImportFileName) {
-                        recordImportFileName.textContent = `Selected: ${file.name}`;
-                    }
-                    importRecordsFromFile(file);
+    const historyListBody = document.getElementById('historyListBody');
+    if (historyListBody) {
+        historyListBody.addEventListener('click', (e) => {
+            const expandBtn = e.target.closest('.expand-btn');
+            const delBtn = e.target.closest('.delete-history-btn');
+            const editBtn = e.target.closest('.edit-history-btn');
+
+            if (expandBtn) {
+                const id = expandBtn.dataset.id;
+                const detailRow = document.getElementById(`detail-hist-${id}`);
+                if (detailRow) {
+                    detailRow.classList.toggle('hidden');
+                    expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
                 }
-            });
-        }
-
-        if (btnImportAthletes) btnImportAthletes.addEventListener('click', () => athleteImportFile.click());
-        if (athleteImportFile) athleteImportFile.addEventListener('change', handleAthleteImport);
-
-        if (athleteListBody) {
-            athleteListBody.addEventListener('click', (e) => {
-                const editBtn = e.target.closest('.edit-athlete-btn');
-                const delBtn = e.target.closest('.delete-athlete-btn');
-                if (editBtn) editAthlete(editBtn.dataset.id);
-                if (delBtn) deleteAthlete(delBtn.dataset.id);
-            });
-        }
-
-        const btnExcel = document.getElementById('exportExcel');
-        if (btnExcel) btnExcel.addEventListener('click', exportToExcel);
-
-        const btnHTML = document.getElementById('exportHTML');
-        if (btnHTML) btnHTML.addEventListener('click', exportToHTML);
-
-        const btnPDF = document.getElementById('exportPDF');
-        if (btnPDF) btnPDF.addEventListener('click', exportToPDF);
-
-        if (btnBackup) btnBackup.addEventListener('click', exportDatabase);
-        if (btnRestore) btnRestore.addEventListener('click', importDatabase);
-
-        if (userForm) userForm.addEventListener('submit', handleUserSubmit);
-        if (userListBody) {
-            userListBody.addEventListener('click', (e) => {
-                const editBtn = e.target.closest('.edit-user-btn');
-                const delBtn = e.target.closest('.delete-user-btn');
-                if (editBtn) editUser(editBtn.dataset.id);
-                if (delBtn) deleteUser(delBtn.dataset.id);
-            });
-        }
-
-        if (reportTableBody) {
-            reportTableBody.addEventListener('click', (e) => {
-                const expandBtn = e.target.closest('.expand-btn');
-                const editBtn = e.target.closest('.edit-btn');
-                const delBtn = e.target.closest('.delete-btn');
-
-                if (expandBtn) {
-                    const id = expandBtn.dataset.id;
-                    const detailRow = document.getElementById(`detail-${id}`);
-                    if (detailRow) {
-                        detailRow.classList.toggle('hidden');
-                        expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
-                    }
-                }
-                if (editBtn) editRecord(editBtn.dataset.id);
-                if (delBtn) deleteRecord(delBtn.dataset.id);
-            });
-        }
-
-        if (countryForm) countryForm.addEventListener('submit', handleCountrySubmit);
-        if (countryListBody) {
-            countryListBody.addEventListener('click', (e) => {
-                const delBtn = e.target.closest('.delete-country-btn');
-                if (delBtn) deleteCountry(delBtn.dataset.country);
-            });
-        }
-
-        const historyListBody = document.getElementById('historyListBody');
-        if (historyListBody) {
-            historyListBody.addEventListener('click', (e) => {
-                const expandBtn = e.target.closest('.expand-btn');
-                const delBtn = e.target.closest('.delete-history-btn');
-                const editBtn = e.target.closest('.edit-history-btn');
-
-                if (expandBtn) {
-                    const id = expandBtn.dataset.id;
-                    const detailRow = document.getElementById(`detail-hist-${id}`);
-                    if (detailRow) {
-                        detailRow.classList.toggle('hidden');
-                        expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
-                    }
-                }
-                if (delBtn) deleteHistory(delBtn.dataset.id);
-                if (editBtn) editHistory(editBtn.dataset.id);
-            });
-        }
+            }
+            if (delBtn) deleteHistory(delBtn.dataset.id);
+            if (editBtn) editHistory(editBtn.dataset.id);
+        });
     }
 
     function switchTab(tabId) {
@@ -2891,26 +2861,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const last = newAthleteLastName.value.trim();
         const idNum = newAthleteID.value.trim();
 
-        const isTeam = newAthleteIsTeam ? newAthleteIsTeam.checked : false;
+        if (!first || !last) {
+            alert('First and Last names are required!');
+            if (!first) newAthleteFirstName.focus();
+            else newAthleteLastName.focus();
+            return;
+        }
 
-        if (isTeam) {
-            if (!newAthleteTeamName.value.trim()) {
-                alert('Team Name is required for Teams!');
-                newAthleteTeamName.focus();
-                return;
-            }
-        } else {
-            if (!first || !last) {
-                alert('First and Last names are required for individual athletes!');
-                if (!first) newAthleteFirstName.focus();
-                else newAthleteLastName.focus();
-                return;
-            }
-            if (!newAthleteDOB.value) {
-                alert('Date of Birth is required for individual athletes!');
-                newAthleteDOB.focus();
-                return;
-            }
+        // DOB Confirmation Flow
+        const dob = newAthleteDOB.value;
+        const dobWarning = document.getElementById('athleteDobWarning');
+        if (!dob && dobWarning && dobWarning.classList.contains('hidden')) {
+            dobWarning.classList.remove('hidden');
+            dobWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return; // Wait for user to click Proceed or Cancel
         }
 
         if (editingAthleteId) {
@@ -2924,11 +2888,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 athletes[idx].lastName = last;
                 athletes[idx].dob = newAthleteDOB.value;
                 athletes[idx].gender = newAthleteGender.value;
-                athletes[idx].isTeam = newAthleteIsTeam.checked;
-                athletes[idx].teamName = newAthleteTeamName.value.trim();
 
-                const isTeamUpdate = newAthleteIsTeam.checked;
-                const newNameLF = isTeamUpdate ? newAthleteTeamName.value.trim() : `${last}, ${first}`;
+                const newNameLF = `${last}, ${first}`;
 
                 // Propagate Name Update to Records
                 records.forEach(r => {
@@ -2946,13 +2907,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // If editing, skip the current athlete in the existence check
                 if (editingAthleteId && a.id == editingAthleteId) return false;
 
-                if (isTeam) {
-                    return a.isTeam && a.teamName.toLowerCase() === newAthleteTeamName.value.trim().toLowerCase();
-                } else {
-                    return !a.isTeam &&
-                        a.firstName.toLowerCase() === first.toLowerCase() &&
-                        a.lastName.toLowerCase() === last.toLowerCase();
-                }
+                return a.firstName.toLowerCase() === first.toLowerCase() &&
+                    a.lastName.toLowerCase() === last.toLowerCase();
             }) || (idNum && athletes.some(a => {
                 if (editingAthleteId && a.id == editingAthleteId) return false;
                 return a.idNumber === idNum;
@@ -2966,9 +2922,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 firstName: first,
                 lastName: last,
                 dob: newAthleteDOB.value,
-                gender: newAthleteGender.value,
-                isTeam: newAthleteIsTeam.checked,
-                teamName: newAthleteTeamName.value.trim()
+                gender: newAthleteGender.value
             });
         }
 
@@ -2989,10 +2943,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dobPicker) dobPicker.clear();
         else newAthleteDOB.value = '';
         newAthleteGender.value = '';
-        if (newAthleteIsTeam) {
-            newAthleteIsTeam.checked = false;
-            newAthleteIsTeam.dispatchEvent(new Event('change'));
-        }
+
+        // Hide DOB warning after submit
+        if (dobWarning) dobWarning.classList.add('hidden');
+
         newAthleteFirstName.focus();
     }
 
@@ -3011,16 +2965,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         newAthleteGender.value = athlete.gender;
 
-        if (newAthleteIsTeam) {
-            newAthleteIsTeam.checked = !!athlete.isTeam;
-            newAthleteTeamName.value = athlete.teamName || '';
-            newAthleteIsTeam.dispatchEvent(new Event('change'));
-        }
-
         if (athleteForm) {
             athleteForm.classList.remove('hidden');
             // btnToggleAthleteForm.innerHTML = '<span>➖ Hide Form</span>'; // Removed as per request
         }
+
+        // Hide DOB warning when editing
+        const dobWarning = document.getElementById('athleteDobWarning');
+        if (dobWarning) dobWarning.classList.add('hidden');
 
         editingAthleteId = id;
         athleteSubmitBtn.innerHTML = '<span>Update Athlete</span>';
@@ -3083,6 +3035,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
                 athleteSubmitBtn.style.background = '';
             }
+            // Hide DOB warning on cancel
+            const dobWarning = document.getElementById('athleteDobWarning');
+            if (dobWarning) dobWarning.classList.add('hidden');
+        });
+    }
+
+    // DOB Warning Button listeners
+    const btnProceedAthleteDob = document.getElementById('btnProceedAthleteDob');
+    const btnCancelAthleteDob = document.getElementById('btnCancelAthleteDob');
+    if (btnProceedAthleteDob) {
+        btnProceedAthleteDob.addEventListener('click', () => {
+            const dobWarning = document.getElementById('athleteDobWarning');
+            if (dobWarning) dobWarning.classList.add('hidden');
+            handleAthleteSubmit(new Event('submit')); // Re-run submit, it will skip validation now because warning is hidden
+        });
+    }
+    if (btnCancelAthleteDob) {
+        btnCancelAthleteDob.addEventListener('click', () => {
+            const dobWarning = document.getElementById('athleteDobWarning');
+            if (dobWarning) dobWarning.classList.add('hidden');
+            newAthleteDOB.focus();
         });
     }
 
@@ -3102,57 +3075,52 @@ document.addEventListener('DOMContentLoaded', () => {
         athleteListBody.innerHTML = '';
 
         try {
-            // Apply Filters
-            let filteredAthletes = [...athletes];
-            if (filterAthleteLast && filterAthleteLast.value) {
-                const val = filterAthleteLast.value.toLowerCase();
-                filteredAthletes = filteredAthletes.filter(a => (a.isTeam ? a.teamName : a.lastName).toLowerCase().includes(val));
-            }
-            if (filterAthleteFirst && filterAthleteFirst.value) {
-                const val = filterAthleteFirst.value.toLowerCase();
-                filteredAthletes = filteredAthletes.filter(a => (a.isTeam ? '' : a.firstName).toLowerCase().includes(val));
-            }
-            if (filterAthleteDOB && filterAthleteDOB.value) {
-                const val = filterAthleteDOB.value.toLowerCase();
-                filteredAthletes = filteredAthletes.filter(a => {
-                    const dobStr = a.dob ? new Date(a.dob).toLocaleDateString('en-GB') : '-';
-                    return dobStr.toLowerCase().includes(val);
-                });
-            }
-            if (filterAthleteGender && filterAthleteGender.value !== 'all') {
-                const val = filterAthleteGender.value;
-                filteredAthletes = filteredAthletes.filter(a => a.gender === val);
-            }
+            const lastQ = (filterAthleteLast ? filterAthleteLast.value : '').toLowerCase();
+            const firstQ = (filterAthleteFirst ? filterAthleteFirst.value : '').toLowerCase();
+            const dobQ = (filterAthleteDOB ? filterAthleteDOB.value : '').toLowerCase();
+            const genderQ = filterAthleteGender ? filterAthleteGender.value : 'all';
 
-            // Sorting Logic
-            if (filteredAthletes && filteredAthletes.length > 0) {
-                filteredAthletes.sort((a, b) => {
-                    if (!a || !b) return 0;
-                    let valA = (a[athleteSortField] || '').toString().toLowerCase();
-                    let valB = (b[athleteSortField] || '').toString().toLowerCase();
+            const filtered = athletes.filter(a => {
+                const matchLast = a.lastName.toLowerCase().includes(lastQ);
+                const matchFirst = a.firstName.toLowerCase().includes(firstQ);
+                const matchDOB = (a.dob || '').toLowerCase().includes(dobQ);
+                const matchGender = genderQ === 'all' || a.gender === genderQ;
+                return matchLast && matchFirst && matchDOB && matchGender;
+            });
 
-                    if (athleteSortField === 'dob') {
-                        valA = a.dob ? new Date(a.dob).getTime() : 0;
-                        valB = b.dob ? new Date(b.dob).getTime() : 0;
-                    }
+            const sorted = filtered.sort((a, b) => {
+                let valA = a[athleteSortField] || '';
+                let valB = b[athleteSortField] || '';
 
-                    if (valA < valB) return athleteSortOrder === 'asc' ? -1 : 1;
-                    if (valA > valB) return athleteSortOrder === 'asc' ? 1 : -1;
-                    return 0;
-                });
+                if (athleteSortField === 'dob') {
+                    valA = a.dob ? new Date(a.dob).getTime() : 0;
+                    valB = b.dob ? new Date(b.dob).getTime() : 0;
+                } else {
+                    if (typeof valA === 'string') valA = valA.toLowerCase();
+                    if (typeof valB === 'string') valB = valB.toLowerCase();
+                }
 
-                filteredAthletes.forEach(a => {
-                    if (!a) return;
+                if (valA < valB) return athleteSortOrder === 'asc' ? -1 : 1;
+                if (valA > valB) return athleteSortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            if (sorted && sorted.length > 0) {
+                sorted.forEach(a => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${a.idNumber || '-'}</td>
-                        <td style="font-weight:600;">${a.isTeam ? (a.teamName || 'Team') : a.lastName}</td>
-                        <td>${a.isTeam ? '<span class="badge" style="background:var(--accent); color:white;">TEAM</span>' : a.firstName}</td>
+                        <td style="font-weight:600;">${a.lastName}</td>
+                        <td>${a.firstName}</td>
                         <td>${a.dob ? new Date(a.dob).toLocaleDateString('en-GB') : '-'}</td>
                         <td>${a.gender || '-'}</td>
-                        <td>
-                            <button class="btn-icon edit edit-athlete-btn" data-id="${a.id}" title="Edit">✏️</button>
-                            <button class="btn-icon delete delete-athlete-btn" data-id="${a.id}" title="Delete">🗑️</button>
+                        <td class="actions-col">
+                            <button class="icon-btn edit-athlete-btn" data-id="${a.id}" title="Edit">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="icon-btn delete-athlete-btn" data-id="${a.id}" title="Delete">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
                         </td>
                     `;
                     athleteListBody.appendChild(tr);
@@ -6627,8 +6595,4 @@ Replace ALL current data with this backup ? `;
         localStorage.setItem('tf_iaaf_updates', JSON.stringify(iaafUpdates));
     }
 
-    // Connect to Tab System
-    // We need to trigger loadIAAFData when the tab is shown.
-    // The tab system uses data-subtab="iaaf".
-    // I need to find where tabs are switched.
 });
