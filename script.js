@@ -4771,101 +4771,149 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const timestamp = new Date().toLocaleString('el-GR');
 
-        // Grouping logic for Tables
-        let htmlTables = '';
-        let currentGroupKey = null;
-        let currentRows = '';
-
-        const closeTable = (groupTitle) => {
-            if (!currentRows) return '';
-            return `
-                <h2 style="text-align:center; color:#5b21b6; margin-top:40px;">${groupTitle}</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Αγώνισμα</th>
-                            <th>Κατηγ.</th>
-                            <th>Αθλητής/τρια</th>
-                            <th>Ημ. Γεν.</th>
-                            <th>Επίδοση</th>
-                            <th>IDR</th>
-                            <th>Άνεμος</th>
-                            <th>Ημερομηνία</th>
-                            <th>Πόλη</th>
-                            <th>Διοργάνωση</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${currentRows}
-                    </tbody>
-                </table>
-            `;
-        };
+        // --- Grouping: Track Type → Gender → Rows ---
+        // Build a nested structure: { trackType: { gender: [rows] } }
+        const grouped = {};
+        const trackTypeOrder = [];
+        const genderOrder = {};
 
         data.forEach(r => {
-            const genderTitle = r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || 'Mixed'));
             const trackTypeTitle = (r.trackType || 'Outdoor') === 'Outdoor' ? 'Ανοικτός Στίβος' : 'Κλειστός Στίβος';
-            const groupKey = `${r.ageGroup || '-'} - ${genderTitle} - ${trackTypeTitle}`;
+            const genderTitle = r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || 'Mixed'));
 
-            if (groupKey !== currentGroupKey) {
-                if (currentGroupKey !== null) {
-                    htmlTables += closeTable(currentGroupKey);
-                }
-                currentRows = '';
-                currentGroupKey = groupKey;
+            if (!grouped[trackTypeTitle]) {
+                grouped[trackTypeTitle] = {};
+                trackTypeOrder.push(trackTypeTitle);
+                genderOrder[trackTypeTitle] = [];
             }
-
-            const hasNotes = r.notes && r.notes.trim().length > 0;
-            currentRows += `
-                <tr>
-                    <td style="font-weight:600;">${r.event}</td>
-                    <td>${r.ageGroup || '-'}</td>
-                    <td>
-                        <div style="font-weight:500;">${r.athlete}</div>
-                        ${hasNotes ? `<div style="font-size:0.85em; color:#666; font-style:italic; margin-top:2px;">${r.notes}</div>` : ''}
-                    </td>
-                    <td>${r.dob}</td>
-                    <td style="font-weight:700; color:#5b21b6;">${formatTimeMark(r.mark, r.event)}</td>
-                    <td>${r.idr || '-'}</td>
-                    <td>${r.wind || '-'}</td>
-                    <td>${r.formattedDate}</td>
-                    <td>${r.town || ''}</td>
-                    <td>${r.raceName || ''}</td>
-                </tr>
-            `;
+            if (!grouped[trackTypeTitle][genderTitle]) {
+                grouped[trackTypeTitle][genderTitle] = [];
+                genderOrder[trackTypeTitle].push(genderTitle);
+            }
+            grouped[trackTypeTitle][genderTitle].push(r);
         });
 
-        // Close last table
-        if (currentGroupKey) htmlTables += closeTable(currentGroupKey);
+        const tableHeaders = `
+            <tr>
+                <th>Αγώνισμα</th>
+                <th>Κατηγ.</th>
+                <th>Αθλητής/τρια</th>
+                <th>Ημ. Γεν.</th>
+                <th>Επίδοση</th>
+                <th>IDR</th>
+                <th>Άνεμος</th>
+                <th>Ημερομηνία</th>
+                <th>Πόλη</th>
+                <th>Διοργάνωση</th>
+            </tr>`;
 
-        const htmlLayout = `
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου</title>
-                <style>
-                    body { font-family: sans-serif; padding: 20px; color: #333; }
-                    .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-                    h1 { color: #5b21b6; margin: 0; }
-                    .timestamp { font-size: 0.9em; color: #666; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 10px; page-break-inside: auto; }
-                    tr { page-break-inside:avoid; page-break-after:auto; }
-                    th, td { border: 1px solid #ddd; padding: 10px 8px; text-align: left; font-size: 0.9rem; }
-                    th { background-color: #f3f4f6; font-weight: bold; }
-                    tr:nth-child(even) { background-color: #f9fafb; }
-                    h2 { page-break-before: always; }
-                    h2:first-of-type { page-break-before: avoid; }
-                </style>
-            </head>
-            <body>
-                <div class="header-top">
-                    <h1>🇬🇷 Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου</h1>
-                    <div class="timestamp">Ημερομηνία Εξαγωγής: ${timestamp}</div>
-                </div>
-                ${htmlTables}
-            </body>
-            </html>
-        `;
+        let htmlTables = '';
+        let isFirstSection = true;
+
+        trackTypeOrder.forEach(trackType => {
+            // Track Type = main header (h2)
+            htmlTables += `<h2 class="track-type-header ${isFirstSection ? 'first-header' : ''}">${trackType}</h2>`;
+            isFirstSection = false;
+
+            genderOrder[trackType].forEach(gender => {
+                // Gender = subtitle (h3)
+                const rows = grouped[trackType][gender];
+                let rowsHtml = '';
+                rows.forEach(r => {
+                    const hasNotes = r.notes && r.notes.trim().length > 0;
+                    rowsHtml += `
+                        <tr>
+                            <td style="font-weight:600;">${r.event}</td>
+                            <td>${r.ageGroup || '-'}</td>
+                            <td>
+                                <div style="font-weight:500;">${r.athlete}</div>
+                                ${hasNotes ? `<div style="font-size:0.85em; color:#888; font-style:italic; margin-top:2px;">${r.notes}</div>` : ''}
+                            </td>
+                            <td>${r.dob}</td>
+                            <td style="font-weight:700; color:#5b21b6;">${formatTimeMark(r.mark, r.event)}</td>
+                            <td>${r.idr || '-'}</td>
+                            <td>${r.wind || '-'}</td>
+                            <td>${r.formattedDate}</td>
+                            <td>${r.town || ''}</td>
+                            <td>${r.raceName || ''}</td>
+                        </tr>`;
+                });
+
+                htmlTables += `
+                    <h3 class="gender-subtitle">${gender}</h3>
+                    <table>
+                        <thead>${tableHeaders}</thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>`;
+            });
+        });
+
+        // Greek flag SVG (circular, same as main report header)
+        const greekFlagSVG = `<svg width="52" height="52" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"
+            style="border-radius:50%; box-shadow: 0 2px 8px rgba(0,91,174,0.4); flex-shrink:0;">
+            <rect width="18" height="18" fill="#005BAE"/>
+            <g stroke="#fff" stroke-width="2">
+                <line x1="0" y1="3" x2="18" y2="3"/>
+                <line x1="0" y1="7" x2="18" y2="7"/>
+                <line x1="0" y1="11" x2="18" y2="11"/>
+                <line x1="0" y1="15" x2="18" y2="15"/>
+            </g>
+            <rect width="10" height="10" fill="#005BAE"/>
+            <g stroke="#fff" stroke-width="2">
+                <line x1="5" y1="0" x2="5" y2="10"/>
+                <line x1="0" y1="5" x2="10" y2="5"/>
+            </g>
+        </svg>`;
+
+        const htmlLayout = `<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a2e; background: #fff; }
+        .report-header {
+            display: flex; align-items: center; gap: 18px;
+            border-bottom: 3px solid #005BAE; padding-bottom: 16px; margin-bottom: 8px;
+        }
+        .report-header-text h1 {
+            margin: 0; font-size: 1.4rem; color: #005BAE; font-weight: 700;
+        }
+        .report-header-text .subtitle {
+            font-size: 0.85rem; color: #555; margin-top: 4px;
+        }
+        .timestamp { font-size: 0.8rem; color: #888; margin-top: 2px; }
+        .track-type-header {
+            color: #fff; background: #005BAE;
+            padding: 8px 16px; border-radius: 6px;
+            margin-top: 32px; margin-bottom: 0;
+            font-size: 1.15rem; page-break-before: always;
+        }
+        .track-type-header.first-header { page-break-before: avoid; margin-top: 20px; }
+        .gender-subtitle {
+            color: #005BAE; border-left: 4px solid #005BAE;
+            padding-left: 10px; margin-top: 20px; margin-bottom: 6px;
+            font-size: 1rem;
+        }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; page-break-inside: auto; }
+        tr { page-break-inside: avoid; page-break-after: auto; }
+        th, td { border: 1px solid #dde3ed; padding: 8px 7px; text-align: left; font-size: 0.85rem; }
+        th { background-color: #eef2f8; font-weight: bold; color: #2c3e6b; }
+        tr:nth-child(even) td { background-color: #f7f9fc; }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        ${greekFlagSVG}
+        <div class="report-header-text">
+            <h1>Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου</h1>
+            <div class="subtitle">Greek Master Athletics – Πανελλήνιοι Ρεκόρ</div>
+            <div class="timestamp">Ημερομηνία Εξαγωγής: ${timestamp}</div>
+        </div>
+    </div>
+    ${htmlTables}
+</body>
+</html>`;
 
         const blob = new Blob([htmlLayout], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
@@ -4874,6 +4922,7 @@ document.addEventListener('DOMContentLoaded', () => {
         link.download = 'report.html';
         link.click();
     }
+
 
     async function exportToPDF() {
         if (!window.jspdf) return alert('PDF library not loaded.');
