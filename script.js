@@ -913,22 +913,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     fixSpecificEventFormulas();
 
-    function populateEventDropdowns() {
-        if (!filterEvent) return;
-        const currentFilter = filterEvent.value;
-        const currentReportFilter = document.getElementById('wmaReportFilterEvent')?.value || 'all';
+    function populateAthleteFilter() {
+        if (!filterAthlete) return;
+        const currentVal = filterAthlete.value;
+        filterAthlete.innerHTML = '<option value="all">All Athletes</option>';
 
-        // Sort events alphabetically ONLY for the dropdown if we want, 
-        // but user says "reports and export reports in the order i arrange them".
-        // It's probably better to keep the manual order everywhere for consistency.
-        const sortedEvents = [...events];
-        // sortedEvents.sort((a, b) => a.name.localeCompare(b.name));
-
-        const eventOptionsHTML = '<option value="all">All Events</option>' +
-            sortedEvents.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
-
-        filterEvent.innerHTML = eventOptionsHTML;
-        filterEvent.value = currentFilter;
+        // Get unique names from records
+        const names = [...new Set(records.map(r => r.athlete))].sort();
+        names.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            filterAthlete.appendChild(opt);
+        });
+        filterAthlete.value = currentVal;
     }
 
 
