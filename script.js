@@ -2275,12 +2275,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ath = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete ||
                     `${a.lastName}, ${a.firstName} ` === r.athlete);
                 const g = ath ? ath.gender : (r.gender || '');
-                // Current age group: derive from athlete's DOB and TODAY's date
+                // Current age group: use getExactAge() which handles all DOB formats
                 let ag = '-';
                 if (ath && ath.dob) {
-                    const today = new Date();
-                    const age = Math.floor((today - new Date(ath.dob)) / (1000 * 60 * 60 * 24 * 365.25));
-                    if (age >= 35) ag = (Math.floor(age / 5) * 5).toString();
+                    const age = getExactAge(ath.dob, new Date());
+                    if (age !== null && age >= 35) ag = (Math.floor(age / 5) * 5).toString();
                 }
                 agg[r.athlete] = { name: r.athlete, gender: g, ageGroup: ag, pts: [], count: 0 };
             }
