@@ -3411,7 +3411,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function editEvent(id) {
-        const ev = events.find(e => e.id === id);
+        const ev = events.find(e => e.id == id); // Use == for coercion
         if (!ev) return;
 
         editingEventId = id;
@@ -3603,9 +3603,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // REMOVED: events.sort((a, b) => a.name.localeCompare(b.name));
 
         events.forEach((ev, index) => {
-            const isUsed = records.some(r => r.event === ev.name);
+            const isUsed = records.some(r => r.event === ev.name) || (pendingrecs && pendingrecs.some(r => r.event === ev.name));
             const tr = document.createElement('tr');
             tr.dataset.id = ev.id;
+            tr.draggable = true; // Make row draggable
+            tr.classList.add('draggable-row');
 
             // Determine event type and create badge
             const eventType = ev.type || (ev.isCombined ? 'Combined' : ev.isRelay ? 'Relay' : 'Track');
@@ -3670,8 +3672,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editBtn) editEvent(editBtn.dataset.id);
             if (delBtn) {
                 const id = delBtn.dataset.id;
-                const isUsed = records.some(r => r.event === events.find(ev => ev.id == id)?.name);
-                if (!isUsed && confirm('Delete this event?')) {
+                const evObj = events.find(e => e.id == id);
+                const isUsed = records.some(r => r.event === evObj?.name) || (pendingrecs && pendingrecs.some(r => r.event === evObj?.name));
+                if (!isUsed && confirm(`Delete event "${evObj?.name}"?`)) {
                     events = events.filter(ev => ev.id != id);
                     saveEvents();
                     renderEventList();
@@ -3680,6 +3683,56 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (upBtn) moveEventUp(upBtn.dataset.id);
             if (downBtn) moveEventDown(downBtn.dataset.id);
+        });
+
+        // Drag and Drop implementation
+        let draggedId = null;
+
+        eventListBody.addEventListener('dragstart', (e) => {
+            const row = e.target.closest('tr');
+            if (row) {
+                draggedId = row.dataset.id;
+                row.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        });
+
+        eventListBody.addEventListener('dragend', (e) => {
+            const row = e.target.closest('tr');
+            if (row) row.classList.remove('dragging');
+            const rows = eventListBody.querySelectorAll('tr');
+            rows.forEach(r => r.classList.remove('drag-over'));
+        });
+
+        eventListBody.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const row = e.target.closest('tr');
+            if (row && row.dataset.id !== draggedId) {
+                row.classList.add('drag-over');
+            }
+        });
+
+        eventListBody.addEventListener('dragleave', (e) => {
+            const row = e.target.closest('tr');
+            if (row) row.classList.remove('drag-over');
+        });
+
+        eventListBody.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const targetRow = e.target.closest('tr');
+            if (!targetRow || targetRow.dataset.id === draggedId) return;
+
+            const fromIndex = events.findIndex(ev => ev.id == draggedId);
+            const toIndex = events.findIndex(ev => ev.id == targetRow.dataset.id);
+
+            if (fromIndex !== -1 && toIndex !== -1) {
+                const [movedItem] = events.splice(fromIndex, 1);
+                events.splice(toIndex, 0, movedItem);
+                saveEvents();
+                renderEventList();
+                populateEventDropdowns();
+                renderReports();
+            }
         });
     }
 
