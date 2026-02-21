@@ -1872,6 +1872,26 @@ document.addEventListener('DOMContentLoaded', () => {
             btnToggleAthleteForm.addEventListener('click', () => {
                 const isHidden = athleteForm.classList.toggle('hidden');
                 btnToggleAthleteForm.innerHTML = isHidden ? '<span>➕ Add New Athlete</span>' : '<span>➖ Hide Form</span>';
+
+                // If opening the form, treat it as "Add New" and reset everything
+                if (!isHidden) {
+                    editingAthleteId = null;
+                    newAthleteID.value = '';
+                    newAthleteFirstName.value = '';
+                    newAthleteLastName.value = '';
+                    if (dobPicker) dobPicker.clear();
+                    else newAthleteDOB.value = '';
+                    newAthleteGender.value = '';
+                    if (newAthleteIsTeam) {
+                        newAthleteIsTeam.checked = false;
+                        newAthleteIsTeam.dispatchEvent(new Event('change'));
+                    }
+                    if (athleteSubmitBtn) {
+                        athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+                        athleteSubmitBtn.style.background = '';
+                    }
+                    newAthleteFirstName.focus();
+                }
             });
         }
 
