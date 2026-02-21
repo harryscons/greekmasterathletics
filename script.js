@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Sorting State ---
     let athleteSortField = 'lastName';
     let athleteSortOrder = 'asc';
-    let wmaSortField = 'age';
-    let wmaSortOrder = 'asc';
+    let wmaSortField = 'pts';
+    let wmaSortOrder = 'desc';
     let db = null;
 
     // --- State & Initial Loading ---
@@ -2565,7 +2565,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     h = parseFloat(parts[0]) || 0;
                     m = parseFloat(parts[1]) || 0;
                     sec = parseFloat(parts[2]) || 0;
-                    ms = parseFloat(parts[3]) || 0;
+                    let msStr = parts[3].toString();
+                    if (ev && ev.type === 'Track' && msStr.length === 1) msStr += '0';
+                    ms = parseFloat(msStr) || 0;
                 } else if (parts.length === 3) {
                     h = parseFloat(parts[0]) || 0;
                     m = parseFloat(parts[1]) || 0;
@@ -2582,7 +2584,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (parts.length >= 3) {
                     m = parseFloat(parts[0]) || 0;
                     sec = parseFloat(parts[1]) || 0;
-                    ms = parseFloat(parts[2]) || 0;
+                    let msStr = parts[2].toString();
+                    if (ev && ev.type === 'Track' && msStr.length === 1) msStr += '0';
+                    ms = parseFloat(msStr) || 0;
                 } else if (parts.length === 2) {
                     m = parseFloat(parts[0]) || 0;
                     sec = parseFloat(parts[1]) || 0;
@@ -2590,11 +2594,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     m = parseFloat(parts[0]) || 0;
                 }
                 return (m * 60) + sec + (ms / 100);
-            } else if (lowerF.includes('seconds')) {
+            }
+            if (lowerF.includes('seconds')) {
                 let sec = 0, ms = 0;
                 if (parts.length >= 2) {
                     sec = parseFloat(parts[0]) || 0;
-                    ms = parseFloat(parts[1]) || 0;
+                    let msStr = parts[1].toString();
+                    // Refinement: If it's a Track event and only 1 decimal place, treat it as tenths/hundredths (14.9 -> 14.90)
+                    if (ev && ev.type === 'Track' && msStr.length === 1) {
+                        msStr += '0';
+                    }
+                    ms = parseFloat(msStr) || 0;
                 } else {
                     sec = parseFloat(parts[0]) || 0;
                 }
