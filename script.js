@@ -5621,6 +5621,10 @@ Replace ALL current data with this backup ? `;
         if (!statsTableBody) return;
         statsTableBody.innerHTML = '';
 
+        // Read Track Type filter ONCE up front
+        const trackTypeFilterEl = document.getElementById('statsFilterTrackType');
+        const trackTypeFilter = trackTypeFilterEl ? trackTypeFilterEl.value : 'all';
+
         // Aggregate
         const agg = {};
         records.forEach(r => {
@@ -5629,9 +5633,10 @@ Replace ALL current data with this backup ? `;
             if (isRelay) return;
 
             // --- Approval Logic: Exclude Unapproved Records from Medal Stats ---
-            // STRICT check: must be true. Undefined is NOT enough for stats as per "newly migrated" logic?
-            // Actually, migration sets undefined -> true. So this is safe.
             if (r.approved !== true) return;
+
+            // Track Type filter
+            if (trackTypeFilter !== 'all' && (r.trackType || 'Outdoor') !== trackTypeFilter) return;
 
             if (r.athlete) {
                 if (!agg[r.athlete]) agg[r.athlete] = { count: 0, minYear: null, maxYear: null };
@@ -5950,8 +5955,11 @@ Replace ALL current data with this backup ? `;
             trDetail.style.backgroundColor = 'rgba(6, 182, 212, 0.1)';
 
             // Get records for this athlete (Already fetched above in athleteRecords)
-            // Sort by date desc
-            athleteRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Apply track type filter to detail rows too
+            const athleteRecordsFiltered = athleteRecords.filter(r =>
+                trackTypeFilter === 'all' || (r.trackType || 'Outdoor') === trackTypeFilter
+            );
+            athleteRecordsFiltered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             let detailsHtml = `
                 <div style="padding: 10px; margin-left: 20px;">
@@ -5959,6 +5967,7 @@ Replace ALL current data with this backup ? `;
                         <thead style="background: rgba(6, 182, 212, 0.2);">
                             <tr>
                                 <th style="padding:4px; text-align:left;">Event</th>
+                                <th style="padding:4px; text-align:left;">Track Type</th>
                                 <th style="padding:4px; text-align:left;">Age</th>
                                 <th style="padding:4px; text-align:left;">Mark</th>
                                 <th style="padding:4px; text-align:left;">Date</th>
@@ -5969,13 +5978,16 @@ Replace ALL current data with this backup ? `;
                         <tbody>
             `;
 
-            athleteRecords.forEach(r => {
+            athleteRecordsFiltered.forEach(r => {
+                const ttLabel = (r.trackType || 'Outdoor') === 'Outdoor' ? '🏟️ Outdoor' : '🏠 Indoor';
+                const dateDisplay = r.date ? new Date(r.date).toLocaleDateString('en-GB') : '-';
                 detailsHtml += `
                     <tr>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.event}</td>
+                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1); font-size:0.85em; color:var(--text-muted);">${ttLabel}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.ageGroup || '-'}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.date}</td>
+                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${dateDisplay}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.raceName || '-'}</td>
                         <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.town || r.location || '-'}</td>
                     </tr>

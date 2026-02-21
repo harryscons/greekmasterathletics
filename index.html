@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.12.054</span>
+                        <span class="version-label">v2.12.055</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -1068,6 +1068,12 @@
                                     <option value="silver">🥈 Silver</option>
                                     <option value="bronze">🥉 Bronze</option>
                                     <option value="any">🏅 Any Medal</option>
+                                </select>
+                                <select id="statsFilterTrackType" class="form-control" style="width:auto;"
+                                    onchange="renderStats()">
+                                    <option value="all">All Track Types</option>
+                                    <option value="Outdoor">🏟️ Outdoor</option>
+                                    <option value="Indoor">🏠 Indoor</option>
                                 </select>
                             </div>
                             <table class="report-table">
