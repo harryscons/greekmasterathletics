@@ -1812,7 +1812,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnAgeWarningProceed = document.getElementById('btnAgeWarningProceed');
         if (btnAgeWarningProceed) {
             btnAgeWarningProceed.addEventListener('click', () => {
-                // bypassAgeValidation = true; // Set bypass flag
+                bypassAgeValidation = true; // Set bypass flag
                 document.getElementById('ageValidationWarning').classList.add('hidden');
                 recordForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
             });
@@ -3648,9 +3648,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Records ---
 
-
     function handleFormSubmit(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         try {
             const raceName = raceNameInput ? raceNameInput.value.trim() : '';
             const idr = idrInput ? idrInput.value.trim() : '';
@@ -3680,7 +3679,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const normalizedSelected = String(selectedAgeGroup || "").trim();
                         const normalizedCalculated = String(calculatedGroup || "").trim();
 
-                        if (normalizedSelected !== normalizedCalculated) {
+                        if (normalizedSelected !== normalizedCalculated && !bypassAgeValidation) {
                             console.log("Validation Failed: Showing warning.");
                             const warningDiv = document.getElementById('ageValidationWarning');
                             const messageP = document.getElementById('ageValidationMessage');
@@ -3694,6 +3693,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     `;
                                 warningDiv.classList.remove('hidden');
                                 warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                bypassAgeValidation = false; // Reset before returning
                                 return;
                             }
                         }
@@ -3701,7 +3701,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.warn("Athlete has no Date of Birth. Age validation cannot be performed.");
                         const warningDiv = document.getElementById('ageValidationWarning');
                         const messageP = document.getElementById('ageValidationMessage');
-                        if (warningDiv && messageP) {
+                        if (warningDiv && messageP && !bypassAgeValidation) {
                             messageP.innerHTML = `
                                     <strong>Warning:</strong> No Date of Birth found for this athlete.<br>
                                     <br>
@@ -3709,9 +3709,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 `;
                             warningDiv.classList.remove('hidden');
                             warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            bypassAgeValidation = false; // Reset before returning
                             return;
                         }
                     }
+                    bypassAgeValidation = false; // Reset if it passes or was bypassed
                 } catch (err) {
                     console.error("Critical error in age validation check:", err);
                     // We don't return early here, so the update can still proceed if the validation logic specifically failed.
