@@ -147,6 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let dobPicker; // Flatpickr instance
     const newAthleteGender = document.getElementById('newAthleteGender');
     const newAthleteIsTeam = document.getElementById('newAthleteIsTeam');
+    const btndeleteAthlete = document.getElementById('btndeleteAthlete');
+    const btnToggleAthleteForm = document.getElementById('btnToggleAthleteForm');
     const newAthleteTeamName = document.getElementById('newAthleteTeamName');
     const athleteListBody = document.getElementById('athleteListBody');
     const athleteSubmitBtn = athleteForm.querySelector('button[type="submit"]');
@@ -1861,6 +1863,13 @@ document.addEventListener('DOMContentLoaded', () => {
             newAthleteDOB.required = true;
         }
 
+        if (btnToggleAthleteForm) {
+            btnToggleAthleteForm.addEventListener('click', () => {
+                const isHidden = athleteForm.classList.toggle('hidden');
+                btnToggleAthleteForm.innerHTML = isHidden ? '<span>➕ Add New Athlete</span>' : '<span>➖ Hide Form</span>';
+            });
+        }
+
         if (newAthleteIsTeam) {
             newAthleteIsTeam.addEventListener('change', () => {
                 const isTeam = newAthleteIsTeam.checked;
@@ -2259,7 +2268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const athletesList = [...new Set(baseRecords.filter(r => matches(r, { athlete: true })).map(r => r.athlete))].filter(a => a).sort();
         updateSelect('wmaReportFilterAthlete', athletesList, selAthlete);
 
-        // 3. Years List (filtered by Event, Athlete, Gender, AgeGroup)
+        // 3. Years List (filtered by Event, Athlete, Gender, Year, AgeGroup)
         const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => r.date ? new Date(r.date).getFullYear() : null).filter(y => y))].sort((a, b) => b - a);
         updateSelect('wmaReportFilterYear', yearsList, selYear);
 
@@ -2920,6 +2929,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAthleteList();
         renderReports();
 
+        if (athleteForm) {
+            athleteForm.classList.add('hidden');
+            if (btnToggleAthleteForm) btnToggleAthleteForm.innerHTML = '<span>➕ Add New Athlete</span>';
+        }
+
         newAthleteID.value = '';
         newAthleteFirstName.value = '';
         newAthleteLastName.value = '';
@@ -2953,6 +2967,11 @@ document.addEventListener('DOMContentLoaded', () => {
             newAthleteIsTeam.checked = !!athlete.isTeam;
             newAthleteTeamName.value = athlete.teamName || '';
             newAthleteIsTeam.dispatchEvent(new Event('change'));
+        }
+
+        if (athleteForm) {
+            athleteForm.classList.remove('hidden');
+            if (btnToggleAthleteForm) btnToggleAthleteForm.innerHTML = '<span>➖ Hide Form</span>';
         }
 
         editingAthleteId = id;

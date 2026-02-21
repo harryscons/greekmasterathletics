@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.12.034</span>
+                        <span class="version-label">v2.12.035</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -399,10 +399,20 @@
                 <!-- ATHLETES SUB-VIEW -->
                 <div id="setting-athletes" class="setting-section setting-fill">
                     <section class="card">
-                        <h2>Manage Athletes</h2>
-                        <p class="subtitle" style="margin-bottom: 1rem;">Add and manage athlete profiles.</p>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <div style="display: flex; flex-direction: column;">
+                                <h2 style="margin-bottom: 0;">Manage Athletes</h2>
+                                <p class="subtitle" style="margin-bottom: 0;">Add and manage athlete profiles.</p>
+                            </div>
+                            <button id="btnToggleAthleteForm" class="btn-primary"
+                                style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">
+                                <span>➕ Add New Athlete</span>
+                            </button>
+                        </div>
 
-                        <form id="athleteForm" style="margin-bottom: 2rem;">
+                        <form id="athleteForm" class="hidden"
+                            style="margin-bottom: 2rem; padding: 1.5rem; background: var(--bg-nav); border-radius: 12px; border: 1px solid var(--border);">
                             <div class="row">
                                 <div class="form-group" style="flex: 1;">
                                     <label for="newAthleteFirstName">First Name</label>
@@ -455,17 +465,6 @@
                         </form>
 
                         <div class="table-container">
-                            <div
-                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                                <div style="display:flex; gap:0.5rem;">
-                                    <button id="btnImportAthletes" class="btn-secondary"
-                                        style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">
-                                        📁 Import Athletes
-                                    </button>
-                                    <input type="file" id="athleteImportFile" accept=".xlsx, .xls, .json"
-                                        class="hidden">
-                                </div>
-                            </div>
                             <table class="report-table">
                                 <thead>
                                     <tr>
@@ -927,6 +926,11 @@
                                     style="white-space: nowrap; width: auto !important; padding: 0.75rem 1.5rem; flex: 0 0 auto !important;">
                                     📥 Import Records (xls)
                                 </button>
+                                <button id="btnImportAthletes" class="btn-secondary"
+                                    style="white-space: nowrap; width: auto !important; padding: 0.75rem 1.5rem; flex: 0 0 auto !important;">
+                                    📁 Import Athletes
+                                </button>
+                                <input type="file" id="athleteImportFile" accept=".xlsx, .xls, .json" class="hidden">
                                 <span id="recordImportFileName"
                                     style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-left: 5px;"></span>
                             </div>
