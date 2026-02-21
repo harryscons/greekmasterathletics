@@ -2215,7 +2215,11 @@ document.addEventListener('DOMContentLoaded', () => {
             populateWMAReportFilters();
             renderWMAReport();
         }
-        if (subTabId === 'rankings') renderRankings();
+        if (subTabId === 'rankings') {
+            loadIAAFData();
+            initWMAOfficialData();
+            renderRankings();
+        }
     }
 
     // ─── RANKINGS ───────────────────────────────────────────────────────────────
@@ -2232,9 +2236,22 @@ document.addEventListener('DOMContentLoaded', () => {
         renderRankings();
     };
 
-    window.renderRankings = function () {
+    window.renderRankings = function (retryCount = 0) {
         const tbody = document.getElementById('rankingsTableBody');
         if (!tbody) return;
+
+        // Wait for both WMA and IAAF data to be ready (both load async via script tags)
+        const wmaReady = window.WMA_2023_DATA && window.WMA_2023_DATA.length > 0;
+        const iaafReady = window.IAAF_SCORING_DATA && window.IAAF_SCORING_DATA.length > 0;
+        if ((!wmaReady || !iaafReady) && retryCount < 10) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">⏳ Loading WMA data…</td></tr>';
+            setTimeout(() => renderRankings(retryCount + 1), 500);
+            return;
+        }
+
+        // Ensure WMA official table is initialised before scoring
+        initWMAOfficialData();
+
         tbody.innerHTML = '';
 
         const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
