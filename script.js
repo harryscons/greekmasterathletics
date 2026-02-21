@@ -2914,11 +2914,15 @@ document.addEventListener('DOMContentLoaded', () => {
             athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
             athleteSubmitBtn.style.background = '';
         } else {
-            const exists = athletes.some(a =>
-                (a.firstName.toLowerCase() === first.toLowerCase() &&
-                    a.lastName.toLowerCase() === last.toLowerCase()) ||
-                (idNum && a.idNumber === idNum)
-            );
+            const exists = athletes.some(a => {
+                if (isTeam) {
+                    return a.isTeam && a.teamName.toLowerCase() === newAthleteTeamName.value.trim().toLowerCase();
+                } else {
+                    return !a.isTeam &&
+                        a.firstName.toLowerCase() === first.toLowerCase() &&
+                        a.lastName.toLowerCase() === last.toLowerCase();
+                }
+            }) || (idNum && athletes.some(a => a.idNumber === idNum));
 
             if (exists) return alert('Athlete already exists (Name or ID match)!');
 
