@@ -159,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterAthleteFirst = document.getElementById('filterAthleteFirst');
     const filterAthleteDOB = document.getElementById('filterAthleteDOB');
     const filterAthleteGender = document.getElementById('filterAthleteGender');
+    const filterAthleteID = document.getElementById('filterAthleteID');
 
     // WMA Manager
     const wmaAddForm = document.getElementById('wmaAddForm');
@@ -1898,7 +1899,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Athlete filtering event listeners
-        [filterAthleteLast, filterAthleteFirst, filterAthleteDOB].forEach(el => {
+        [filterAthleteLast, filterAthleteFirst, filterAthleteDOB, filterAthleteID].forEach(el => {
             if (el) el.addEventListener('input', renderAthleteList);
         });
         if (filterAthleteGender) filterAthleteGender.addEventListener('change', renderAthleteList);
@@ -3086,17 +3087,19 @@ document.addEventListener('DOMContentLoaded', () => {
         athleteListBody.innerHTML = '';
 
         try {
+            const idQ = (filterAthleteID ? filterAthleteID.value : '').toLowerCase();
             const lastQ = (filterAthleteLast ? filterAthleteLast.value : '').toLowerCase();
             const firstQ = (filterAthleteFirst ? filterAthleteFirst.value : '').toLowerCase();
             const dobQ = (filterAthleteDOB ? filterAthleteDOB.value : '').toLowerCase();
             const genderQ = filterAthleteGender ? filterAthleteGender.value : 'all';
 
             const filtered = athletes.filter(a => {
+                const matchID = (a.idNumber || '').toLowerCase().includes(idQ);
                 const matchLast = a.lastName.toLowerCase().includes(lastQ);
                 const matchFirst = a.firstName.toLowerCase().includes(firstQ);
                 const matchDOB = (a.dob || '').toLowerCase().includes(dobQ);
                 const matchGender = genderQ === 'all' || a.gender === genderQ;
-                return matchLast && matchFirst && matchDOB && matchGender;
+                return matchID && matchLast && matchFirst && matchDOB && matchGender;
             });
 
             const sorted = filtered.sort((a, b) => {
