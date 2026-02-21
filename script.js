@@ -2856,8 +2856,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Athlete CRUD ---
+    let isBypassingDob = false;
+
     function handleAthleteSubmit(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         const first = newAthleteFirstName.value.trim();
         const last = newAthleteLastName.value.trim();
         const idNum = newAthleteID.value.trim();
@@ -2872,11 +2874,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // DOB Confirmation Flow
         const dob = newAthleteDOB.value;
         const dobWarning = document.getElementById('athleteDobWarning');
-        if (!dob && dobWarning && dobWarning.classList.contains('hidden')) {
-            dobWarning.classList.remove('hidden');
-            dobWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return; // Wait for user to click Proceed or Cancel
+
+        if (!dob && dobWarning && !isBypassingDob) {
+            // Only show warning if it's hidden and we aren't bypassing
+            if (dobWarning.classList.contains('hidden')) {
+                dobWarning.classList.remove('hidden');
+                dobWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return; // Wait for user to click Proceed or Cancel
+            }
         }
+
+        // Reset bypass flag after checking
+        isBypassingDob = false;
 
         if (editingAthleteId) {
             const idx = athletes.findIndex(a => a.id == editingAthleteId);
@@ -3049,7 +3058,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btnProceedAthleteDob.addEventListener('click', () => {
             const dobWarning = document.getElementById('athleteDobWarning');
             if (dobWarning) dobWarning.classList.add('hidden');
-            handleAthleteSubmit(new Event('submit')); // Re-run submit, it will skip validation now because warning is hidden
+            isBypassingDob = true; // Set flag to bypass validation
+            handleAthleteSubmit(); // Re-run submit
         });
     }
     if (btnCancelAthleteDob) {
