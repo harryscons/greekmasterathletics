@@ -5931,48 +5931,24 @@ Replace ALL current data with this backup ? `;
             }
 
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="text-align:center; font-weight:bold; color:var(--text-muted);">${genRankDisplay}</td>
-                <td style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')">
-                    <div style="display:flex; align-items:center;">
-                        <span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>
-                        ${ageDisplay}
-                    </div>
-                    ${yearBadgesHtml}
-                </td>
-                <td style="text-align:right;">${item.ratio}</td>
-                <td style="text-align:right;">${ageRankDisplay}</td>
-                <td style="text-align:right; padding-right:15px;">${item.count}</td>
-            `;
-            statsTableBody.appendChild(tr);
-
-            // Detail Row
-            const trDetail = document.createElement('tr');
-            trDetail.id = uniqueId;
-            trDetail.className = 'hidden';
-            // Light blue background for details (using accent color with low opacity)
-            trDetail.style.backgroundColor = 'rgba(6, 182, 212, 0.1)';
-
-            // Get records for this athlete (Already fetched above in athleteRecords)
-            // Apply track type filter to detail rows too
+            // Build the detail records panel HTML
             const athleteRecordsFiltered = athleteRecords.filter(r =>
                 trackTypeFilter === 'all' || (r.trackType || 'Outdoor') === trackTypeFilter
             );
             athleteRecordsFiltered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             let detailsHtml = `
-                <div style="padding: 10px;">
-                    <table style="width:100%; font-size: 0.9em; border-collapse: collapse;">
-                        <thead style="background: rgba(6, 182, 212, 0.2);">
+                <div id="${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(6,182,212,0.3); padding-top:8px;">
+                    <table style="width:100%; font-size: 0.9em; border-collapse: collapse; background:rgba(6,182,212,0.07); border-radius:8px; overflow:hidden;">
+                        <thead style="background: rgba(6, 182, 212, 0.25);">
                             <tr>
-                                <th style="padding:4px; text-align:left;">Event</th>
-                                <th style="padding:4px; text-align:left;">Track Type</th>
-                                <th style="padding:4px; text-align:left;">Age</th>
-                                <th style="padding:4px; text-align:left;">Mark</th>
-                                <th style="padding:4px; text-align:left;">Date</th>
-                                <th style="padding:4px; text-align:left;">Race</th>
-                                <th style="padding:4px; text-align:left;">Place</th>
+                                <th style="padding:6px 4px; text-align:left;">Event</th>
+                                <th style="padding:6px 4px; text-align:left;">Track Type</th>
+                                <th style="padding:6px 4px; text-align:left;">Age</th>
+                                <th style="padding:6px 4px; text-align:left;">Mark</th>
+                                <th style="padding:6px 4px; text-align:left;">Date</th>
+                                <th style="padding:6px 4px; text-align:left;">Race</th>
+                                <th style="padding:6px 4px; text-align:left;">Place</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -5983,28 +5959,36 @@ Replace ALL current data with this backup ? `;
                 const dateDisplay = r.date ? new Date(r.date).toLocaleDateString('en-GB') : '-';
                 detailsHtml += `
                     <tr>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.event}</td>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1); font-size:0.85em; color:var(--text-muted);">${ttLabel}</td>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.ageGroup || '-'}</td>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${dateDisplay}</td>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.raceName || '-'}</td>
-                        <td style="padding:4px; border-bottom:1px solid rgba(255,255,255,0.1);">${r.town || r.location || '-'}</td>
+                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.event}</td>
+                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.85em; color:var(--text-muted);">${ttLabel}</td>
+                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.ageGroup || '-'}</td>
+                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td>
+                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${dateDisplay}</td>
+                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.raceName || '-'}</td>
+                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.town || r.location || '-'}</td>
                     </tr>
                 `;
             });
 
-            detailsHtml += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
+            detailsHtml += `</tbody></table></div>`;
 
-            trDetail.innerHTML = `
-                <td style="padding:0; border:none;"></td>
-                <td colspan="4" style="padding:0;">${detailsHtml}</td>
+            // Build main row — detail panel is embedded inside the athlete name td
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align:center; font-weight:bold; color:var(--text-muted); vertical-align:top; padding-top:12px;">${genRankDisplay}</td>
+                <td style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')">
+                    <div style="display:flex; align-items:center;">
+                        <span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>
+                        ${ageDisplay}
+                    </div>
+                    ${yearBadgesHtml}
+                    ${detailsHtml}
+                </td>
+                <td style="text-align:right; vertical-align:top; padding-top:12px;">${item.ratio}</td>
+                <td style="text-align:right; vertical-align:top; padding-top:12px;">${ageRankDisplay}</td>
+                <td style="text-align:right; padding-right:15px; vertical-align:top; padding-top:12px;">${item.count}</td>
             `;
-            statsTableBody.appendChild(trDetail);
+            statsTableBody.appendChild(tr);
         });
     }
 
