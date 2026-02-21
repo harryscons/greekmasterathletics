@@ -6004,8 +6004,8 @@ Replace ALL current data with this backup ? `;
         if (parentTr) {
             const tds = parentTr.querySelectorAll('td');
             const cardBg = 'var(--bg-card)';
-            // td[0]=GenRank, td[2]=Ratio%, td[3]=AgeRank get card bg when open
-            [0, 2, 3].forEach(i => {
+            // td[0]=GenRank, td[2]=Ratio%, td[3]=AgeRank, td[4]=Count get card bg when open — only td[1] (name+badges) keeps selection colour
+            [0, 2, 3, 4].forEach(i => {
                 if (tds[i]) tds[i].style.background = isOpen ? cardBg : '';
             });
         }
