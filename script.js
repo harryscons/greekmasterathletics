@@ -5286,14 +5286,27 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.value = ''; // Reset
     };
 
-    function processAthleteData(jsonData) {
+    function processAthleteData(data) {
         try {
+            // Support both raw arrays and full DB export objects
+            let rows = [];
+            if (Array.isArray(data)) {
+                rows = data;
+            } else if (data && typeof data === 'object' && Array.isArray(data.athletes)) {
+                rows = data.athletes;
+                console.log("Detected full DB export, extracting 'athletes' array.");
+            } else {
+                console.warn("processAthleteData: Input is not an array or a DB export with 'athletes' key.");
+                return;
+            }
+
             let importedCount = 0;
-            jsonData.forEach(row => {
+            rows.forEach(row => {
                 // Normalize keys to lowercase for flexible matching
                 const normalizedRow = {};
                 Object.keys(row).forEach(key => {
-                    normalizedRow[key.toString().toLowerCase().trim().replace(/\s+/g, '')] = row[key];
+                    const cleanKey = key.toString().toLowerCase().trim().replace(/\s+/g, '');
+                    normalizedRow[cleanKey] = row[key];
                 });
 
                 // Map fields
