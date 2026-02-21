@@ -2322,6 +2322,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const medals = ['🥇', '🥈', '🥉'];
+
+        // Update column headers with sort indicators
+        const colDefs = [
+            { field: 'rank', label: '#', align: 'center', width: '6%' },
+            { field: 'name', label: 'Athlete', align: 'left', width: '' },
+            { field: 'gender', label: 'Gender', align: 'left', width: '10%' },
+            { field: 'ageGroup', label: 'Age Group', align: 'left', width: '12%' },
+            { field: 'bestPts', label: 'Best WMA Pts', align: 'right', width: '13%' },
+            { field: 'avgPts', label: 'Avg WMA Pts', align: 'right', width: '13%' },
+            { field: 'count', label: 'Records', align: 'right', width: '10%' },
+        ];
+        const thead = tbody.closest('table').querySelector('thead tr');
+        if (thead) {
+            thead.innerHTML = colDefs.map(col => {
+                const active = col.field === rankingsSortField;
+                const arrow = active ? (rankingsSortOrder === 'asc' ? ' ▲' : ' ▼') : ' <span style="opacity:0.35">↕</span>';
+                const alignStyle = col.align === 'right' ? 'text-align:right;' : (col.align === 'center' ? 'text-align:center;' : '');
+                const widthStyle = col.width ? `width:${col.width};` : '';
+                const activeStyle = active ? 'color:var(--accent);' : '';
+                return `<th onclick="sortRankings('${col.field}')" style="cursor:pointer; ${widthStyle} ${alignStyle} ${activeStyle}">${col.label}${arrow}</th>`;
+            }).join('');
+        }
+
         data.forEach((item, idx) => {
             const rank = idx + 1;
             const rankDisplay = rank <= 3 ? `${rank} ${medals[rank - 1]}` : rank;
