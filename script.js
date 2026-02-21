@@ -4678,59 +4678,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getExportData() {
-        // Filter out unapproved staging records from exports
-        const rawData = getFilteredRecords().filter(r => !r.isPending && !r.isPendingDelete);
-        const categoryOrder = ['Track', 'Road', 'Field', 'Combined', 'Relay'];
+        // Enforce STRICT approval check (must be explicitly true)
+        const rawData = getFilteredRecords().filter(r => r.approved === true);
 
-        const sortedData = rawData.sort((a, b) => {
-            const idxA = events.findIndex(e => e.name === a.event);
-            const idxB = events.findIndex(e => e.name === b.event);
-
-            if (idxA !== -1 && idxB !== -1 && idxA !== idxB) {
-                return idxA - idxB;
-            }
-
-            // Fallback to alphabetical if index not found or same event
-            if (idxA === -1 || idxB === -1) {
-                const categoryOrder = ['Track', 'Road', 'Field', 'Combined', 'Relay'];
-                const evA = events[idxA] || events.find(e => e.name === a.event);
-                const evB = events[idxB] || events.find(e => e.name === b.event);
-
-                const catA = evA ? (evA.eventType || evA.type || 'Track') : 'Track';
-                const catB = evB ? (evB.eventType || evB.type || 'Track') : 'Track';
-
-                const indexA = categoryOrder.indexOf(catA);
-                const indexB = categoryOrder.indexOf(catB);
-
-                if (indexA !== indexB) {
-                    return indexA - indexB;
-                }
-            }
-
-            // If both are same category and it's Track, sort by length (User requirement)
-            if (catA === 'Track') {
-                if (a.event.length !== b.event.length) {
-                    return a.event.length - b.event.length;
-                }
-            }
-
-            // Secondary sort: Event Name
-            // (Track events are already prioritized by length above, others handled here)
-            const eventSort = a.event.localeCompare(b.event);
-            if (eventSort !== 0) return eventSort;
-
-            // Tertiary sort: Gender (Male first)
-            if (a.gender !== b.gender) {
-                if (a.gender === 'Male') return -1;
-                if (b.gender === 'Male') return 1;
-                return a.gender.localeCompare(b.gender);
-            }
-
-            // Quaternary sort: Age Group (starting from newest/youngest)
+        const sortedData = [...rawData].sort((a, b) => {
+            // 1. Age Group (Numerical sort)
             const ageA = parseInt(a.ageGroup) || 0;
             const ageB = parseInt(b.ageGroup) || 0;
             if (ageA !== ageB) return ageA - ageB;
 
+            // 2. Gender (Male first, then Female)
+            if (a.gender !== b.gender) {
+                if (a.gender === 'Male') return -1;
+                if (b.gender === 'Male') return 1;
+                return (a.gender || '').localeCompare(b.gender || '');
+            }
+
+            // 3. Track Type (Outdoor first, then Indoor)
+            if ((a.trackType || 'Outdoor') !== (b.trackType || 'Outdoor')) {
+                return (a.trackType || 'Outdoor') === 'Outdoor' ? -1 : 1;
+            }
+
+            // 4. Manual Event Order
+            const idxA = events.findIndex(e => e.name === a.event);
+            const idxB = events.findIndex(e => e.name === b.event);
+            if (idxA !== -1 && idxB !== -1 && idxA !== idxB) {
+                return idxA - idxB;
+            }
+
+            // 5. Date (Recency)
             return b.date.localeCompare(a.date);
         });
 
@@ -4738,15 +4714,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const athlete = findAthleteByNormalizedName(r.athlete);
             let dobDisplay = '-';
             if (athlete && athlete.dob) {
-                // Return YYYY-MM-DD as is or format carefully
                 try {
                     const d = new Date(athlete.dob);
                     if (!isNaN(d)) {
-                        // Use Intl.DateTimeFormat for consistent DD/MM/YYYY
                         dobDisplay = d.toLocaleDateString('en-GB');
                     }
                 } catch (e) {
-                    dobDisplay = athlete.dob; // fallback to raw string
+                    dobDisplay = athlete.dob;
                 }
             }
             return {
@@ -4758,86 +4732,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function exportToExcel() {
-        // Enforce STRICT approval check (must be explicitly true)
-        const data = getFilteredRecords().filter(r => r.approved === true);
+        const data = getExportData();
         if (!data.length) return alert('No approved data to export!');
 
         const timestamp = new Date().toLocaleString('el-GR');
         let csv = `Ημερομηνία Εξαγωγής: ${timestamp}\n\n`;
 
-        const menMixed = data.filter(r => r.gender === 'Male' || r.gender === 'Mixed');
-        const women = data.filter(r => r.gender === 'Female');
+        // Grouping logic
+        let currentGroupKey = null;
 
-        if (menMixed.length) {
-            csv += 'Ανδρες - Ανοικτός Στίβος\n';
-            csv += 'Αγώνισμα,Κατηγ.,Αθλητής/τρια,Ημ. Γεν.,Επίδοση,IDR,Άνεμος,Ημερομηνία,Πόλη,Διοργάνωση,Σημειώσεις\n';
-            menMixed.forEach(r => {
-                csv += `"${r.event}","${r.ageGroup || ''}","${r.athlete}","${r.dob}","${r.mark}","${r.idr || ''}","${r.wind || ''}","${r.formattedDate}","${r.town || ''}","${r.raceName || ''}","${r.notes || ''}"\n`;
-            });
-            csv += '\n';
-        }
+        data.forEach(r => {
+            const genderTitle = r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || 'Mixed'));
+            const trackTypeTitle = (r.trackType || 'Outdoor') === 'Outdoor' ? 'Ανοικτός Στίβος' : 'Κλειστός Στίβος';
+            const groupKey = `${r.ageGroup || '-'} - ${genderTitle} - ${trackTypeTitle}`;
 
-        if (women.length) {
-            csv += 'Γυναίκες - Ανοικτός Στίβος\n';
-            csv += 'Αγώνισμα,Κατηγ.,Αθλητής/τρια,Ημ. Γεν.,Επίδοση,IDR,Άνεμος,Ημερομηνία,Πόλη,Διοργάνωση,Σημειώσεις\n';
-            women.forEach(r => {
-                csv += `"${r.event}","${r.ageGroup || ''}","${r.athlete}","${r.dob}","${r.mark}","${r.idr || ''}","${r.wind || ''}","${r.formattedDate}","${r.town || ''}","${r.raceName || ''}","${r.notes || ''}"\n`;
-            });
-        }
+            if (groupKey !== currentGroupKey) {
+                if (currentGroupKey !== null) csv += '\n'; // Spacer
+                csv += `"${groupKey}"\n`;
+                csv += 'Αγώνισμα,Κατηγ.,Αθλητής/τρια,Ημ. Γεν.,Επίδοση,IDR,Άνεμος,Ημερομηνία,Πόλη,Διοργάνωση,Σημειώσεις\n';
+                currentGroupKey = groupKey;
+            }
+
+            csv += `"${r.event}","${r.ageGroup || ''}","${r.athlete}","${r.dob}","${r.mark}","${r.idr || ''}","${r.wind || ''}","${r.formattedDate}","${r.town || ''}","${r.raceName || ''}","${r.notes || ''}"\n`;
+        });
+
         const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `track_records.csv`;
+        link.download = `report.csv`;
         link.click();
         URL.revokeObjectURL(url);
     }
 
     function exportToHTML() {
-        // Enforce STRICT approval check (must be explicitly true)
-        // getExportData() already filters approved !== false, but we want strict === true for safety as per request
-        // Actually getExportData used to filter !== false. Let's make it strict inside getExportData OR here.
-        // User said: "not approved records ... are not exporting"
-        // Let's rely on getExportData but refined.
-
-        // HTML Print Export: Strictly filter out staging proposals
-        const data = getFilteredRecords().filter(r => !r.isPending && !r.isPendingDelete && r.approved !== false);
+        const data = getExportData();
         if (!data.length) return alert('No officially approved data to export!');
 
         const timestamp = new Date().toLocaleString('el-GR');
 
-        const menMixed = data.filter(r => r.gender === 'Male' || r.gender === 'Mixed');
-        const women = data.filter(r => r.gender === 'Female');
+        // Grouping logic for Tables
+        let htmlTables = '';
+        let currentGroupKey = null;
+        let currentRows = '';
 
-        const renderTable = (records, title) => {
-            if (!records.length) return '';
-            let rows = '';
-            records.forEach(r => {
-                const hasNotes = r.notes && r.notes.trim().length > 0;
-                rows += `
-                    <tr>
-                        <td style="font-weight:600;">${r.event}</td>
-                        <td>${r.ageGroup || '-'}</td>
-                        <td>
-                        <div style="font-weight:500; display:flex; align-items:center; gap:5px;">
-                            ${r.athlete}
-                            ${r.approved === false ? `<span class="badge-pending">Προς Εγκριση</span>` : ''}
-                        </div>
-                        ${hasNotes ? `<div style="font-size:0.85em; color:#666; font-style:italic; margin-top:2px;">${r.notes}</div>` : ''}
-                        </td>
-                        <td>${r.dob}</td>
-                        <td style="font-weight:700;">${formatTimeMark(r.mark, r.event)}</td>
-                        <td>${r.idr || '-'}</td>
-                        <td>${r.wind || '-'}</td>
-                        <td>${r.formattedDate}</td>
-                        <td>${r.town || ''}</td>
-                        <td>${r.raceName || ''}</td>
-                    </tr>
-                `;
-            });
-
+        const closeTable = (groupTitle) => {
+            if (!currentRows) return '';
             return `
-                <h2 style="text-align:center; color:#5b21b6; margin-top:40px;">${title}</h2>
+                <h2 style="text-align:center; color:#5b21b6; margin-top:40px;">${groupTitle}</h2>
                 <table>
                     <thead>
                         <tr>
@@ -4854,13 +4796,49 @@ document.addEventListener('DOMContentLoaded', () => {
                         </tr>
                     </thead>
                     <tbody>
-                        ${rows}
+                        ${currentRows}
                     </tbody>
                 </table>
             `;
         };
 
-        const html = `
+        data.forEach(r => {
+            const genderTitle = r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || 'Mixed'));
+            const trackTypeTitle = (r.trackType || 'Outdoor') === 'Outdoor' ? 'Ανοικτός Στίβος' : 'Κλειστός Στίβος';
+            const groupKey = `${r.ageGroup || '-'} - ${genderTitle} - ${trackTypeTitle}`;
+
+            if (groupKey !== currentGroupKey) {
+                if (currentGroupKey !== null) {
+                    htmlTables += closeTable(currentGroupKey);
+                }
+                currentRows = '';
+                currentGroupKey = groupKey;
+            }
+
+            const hasNotes = r.notes && r.notes.trim().length > 0;
+            currentRows += `
+                <tr>
+                    <td style="font-weight:600;">${r.event}</td>
+                    <td>${r.ageGroup || '-'}</td>
+                    <td>
+                        <div style="font-weight:500;">${r.athlete}</div>
+                        ${hasNotes ? `<div style="font-size:0.85em; color:#666; font-style:italic; margin-top:2px;">${r.notes}</div>` : ''}
+                    </td>
+                    <td>${r.dob}</td>
+                    <td style="font-weight:700; color:#5b21b6;">${formatTimeMark(r.mark, r.event)}</td>
+                    <td>${r.idr || '-'}</td>
+                    <td>${r.wind || '-'}</td>
+                    <td>${r.formattedDate}</td>
+                    <td>${r.town || ''}</td>
+                    <td>${r.raceName || ''}</td>
+                </tr>
+            `;
+        });
+
+        // Close last table
+        if (currentGroupKey) htmlTables += closeTable(currentGroupKey);
+
+        const htmlLayout = `
             <html>
             <head>
                 <meta charset="UTF-8">
@@ -4870,10 +4848,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
                     h1 { color: #5b21b6; margin: 0; }
                     .timestamp { font-size: 0.9em; color: #666; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                    th, td { border: 1px solid #ddd; padding: 10px 8px; text-align: left; font-size: 0.9em; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; page-break-inside: auto; }
+                    tr { page-break-inside:avoid; page-break-after:auto; }
+                    th, td { border: 1px solid #ddd; padding: 10px 8px; text-align: left; font-size: 0.9rem; }
                     th { background-color: #f3f4f6; font-weight: bold; }
                     tr:nth-child(even) { background-color: #f9fafb; }
+                    h2 { page-break-before: always; }
+                    h2:first-of-type { page-break-before: avoid; }
                 </style>
             </head>
             <body>
@@ -4881,13 +4862,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h1>🇬🇷 Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου</h1>
                     <div class="timestamp">Ημερομηνία Εξαγωγής: ${timestamp}</div>
                 </div>
-                ${renderTable(menMixed, 'Ανδρες - Ανοικτός Στίβος')}
-                ${renderTable(women, 'Γυναίκες - Ανοικτός Στίβος')}
+                ${htmlTables}
             </body>
             </html>
         `;
 
-        const blob = new Blob([html], { type: 'text/html' });
+        const blob = new Blob([htmlLayout], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -4898,9 +4878,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function exportToPDF() {
         if (!window.jspdf) return alert('PDF library not loaded.');
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'mm', 'a4'); // Switch to Landscape for better fit
+        const doc = new jsPDF('l', 'mm', 'a4');
 
-        // Use embedded Base64 Font (Reliable "Nuclear Option")
         if (typeof ROBOTO_BASE64 !== 'undefined') {
             const fontName = 'Roboto-Regular.ttf';
             doc.addFileToVFS(fontName, ROBOTO_BASE64);
@@ -4908,67 +4887,61 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.setFont('Roboto');
         }
 
+        const data = getExportData();
+        if (!data.length) return alert('No approved data to export!');
+
         const timestamp = new Date().toLocaleString('el-GR');
-        // Enforce STRICT approval check
-        const data = getFilteredRecords().filter(r => r.approved === true);
-
-
-        const mapper = r => [
-            r.event,
-            r.ageGroup || '-',
-            r.notes ? `${r.athlete}\n(Σημ: ${r.notes})` : r.athlete,
-            r.dob,
-            r.mark,
-            r.idr || '-',
-            r.wind || '-',
-            r.formattedDate,
-            r.town || '-',
-            r.raceName || '-'
-        ];
-
-        const menMixedData = data.filter(r => r.gender === 'Male' || r.gender === 'Mixed').map(mapper);
-        const womenData = data.filter(r => r.gender === 'Female').map(mapper);
 
         doc.setFontSize(16);
         doc.text("🇬🇷 Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου", 14, 15);
-
         doc.setFontSize(10);
         doc.text(`Ημερομηνία Εξαγωγής: ${timestamp}`, doc.internal.pageSize.getWidth() - 15, 15, { align: 'right' });
 
         const headers = [['Αγώνισμα', 'Κατηγ.', 'Αθλητής/τρια', 'Ημ. Γεν.', 'Επίδοση', 'IDR', 'Άνεμος', 'Ημερομηνία', 'Πόλη', 'Διοργάνωση']];
         let finalY = 20;
 
-        if (menMixedData.length) {
-            doc.setFontSize(14);
-            doc.text("Ανδρες - Ανοικτός Στίβος", doc.internal.pageSize.getWidth() / 2, finalY + 5, { align: 'center' });
-            doc.autoTable({
-                head: headers,
-                body: menMixedData,
-                startY: finalY + 10,
-                theme: 'grid',
-                headStyles: { fillColor: [139, 92, 246] },
-                styles: { font: 'Roboto', fontStyle: 'normal', fontSize: 8 }
-            });
-            finalY = doc.lastAutoTable.finalY + 10;
-        }
+        // Grouping logic for PDF
+        const groupedData = {};
+        data.forEach(r => {
+            const genderTitle = r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || 'Mixed'));
+            const trackTypeTitle = (r.trackType || 'Outdoor') === 'Outdoor' ? 'Ανοικτός Στίβος' : 'Κλειστός Στίβος';
+            const groupKey = `${r.ageGroup || '-'} - ${genderTitle} - ${trackTypeTitle}`;
+            if (!groupedData[groupKey]) groupedData[groupKey] = [];
+            groupedData[groupKey].push([
+                r.event,
+                r.ageGroup || '-',
+                r.notes ? `${r.athlete}\n(Σημ: ${r.notes})` : r.athlete,
+                r.dob,
+                formatTimeMark(r.mark, r.event),
+                r.idr || '-',
+                r.wind || '-',
+                r.formattedDate,
+                r.town || '-',
+                r.raceName || '-'
+            ]);
+        });
 
-        if (womenData.length) {
-            if (finalY > doc.internal.pageSize.getHeight() - 40) {
-                doc.addPage();
-                finalY = 15;
-            }
+        Object.keys(groupedData).forEach((groupTitle, index) => {
+            if (index > 0) doc.addPage();
+
             doc.setFontSize(14);
-            doc.text("Γυναίκες - Ανοικτός Στίβος", doc.internal.pageSize.getWidth() / 2, finalY + 5, { align: 'center' });
+            doc.text(groupTitle, doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
+
             doc.autoTable({
                 head: headers,
-                body: womenData,
-                startY: finalY + 10,
+                body: groupedData[groupTitle],
+                startY: 30,
                 theme: 'grid',
                 headStyles: { fillColor: [139, 92, 246] },
-                styles: { font: 'Roboto', fontStyle: 'normal', fontSize: 8 }
+                styles: { font: 'Roboto', fontStyle: 'normal', fontSize: 8 },
+                columnStyles: {
+                    2: { cellWidth: 40 }, // Athlete / Notes
+                    4: { halign: 'center', fontStyle: 'bold' } // Performance
+                }
             });
-        }
-        doc.save('track_report.pdf');
+        });
+
+        doc.save(`report.pdf`);
     }
 
     function exportDatabase() {
