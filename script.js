@@ -4907,7 +4907,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ${greekFlagSVG}
         <div class="report-header-text">
             <h1>Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου</h1>
-            <div class="subtitle">Greek Master Athletics – Πανελλήνιοι Ρεκόρ</div>
+            <div class="subtitle">Greek Master Athletics – Πανελλήνια Ρεκόρ</div>
             <div class="timestamp">Ημερομηνία Εξαγωγής: ${timestamp}</div>
         </div>
     </div>
