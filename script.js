@@ -146,6 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const newAthleteDOB = document.getElementById('newAthleteDOB');
     let dobPicker; // Flatpickr instance
     const newAthleteGender = document.getElementById('newAthleteGender');
+    const newAthleteIsTeam = document.getElementById('newAthleteIsTeam');
+    const newAthleteTeamName = document.getElementById('newAthleteTeamName');
     const athleteListBody = document.getElementById('athleteListBody');
     const athleteSubmitBtn = athleteForm.querySelector('button[type="submit"]');
     const btnImportAthletes = document.getElementById('btnImportAthletes');
@@ -1741,8 +1743,13 @@ document.addEventListener('DOMContentLoaded', () => {
             athletes.forEach(a => {
                 const opt = document.createElement('option');
                 const idText = a.idNumber ? ` (#${a.idNumber})` : '';
-                opt.textContent = `${a.lastName}${a.lastName ? ', ' : ''}${a.firstName}${idText}`;
-                opt.value = `${a.lastName}, ${a.firstName}`;
+                if (a.isTeam) {
+                    opt.textContent = `${a.teamName || 'Unnamed Team'}${idText} [TEAM]`;
+                    opt.value = a.teamName || '';
+                } else {
+                    opt.textContent = `${a.lastName}${a.lastName ? ', ' : ''}${a.firstName}${idText}`;
+                    opt.value = `${a.lastName}, ${a.firstName}`;
+                }
                 opt.dataset.id = a.id;
                 athleteInput.appendChild(opt);
             });
@@ -1847,6 +1854,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (athleteForm) athleteForm.addEventListener('submit', handleAthleteSubmit);
+
+        if (newAthleteIsTeam) {
+            newAthleteIsTeam.addEventListener('change', () => {
+                const isTeam = newAthleteIsTeam.checked;
+                newAthleteTeamName.disabled = !isTeam;
+                if (isTeam) {
+                    newAthleteTeamName.required = true;
+                    if (dobPicker) dobPicker.clear();
+                    else newAthleteDOB.value = '';
+                    newAthleteDOB.required = false;
+                    newAthleteFirstName.required = false;
+                    newAthleteLastName.required = false;
+                } else {
+                    newAthleteTeamName.required = false;
+                    newAthleteTeamName.value = '';
+                    newAthleteDOB.required = true;
+                    newAthleteFirstName.required = true;
+                    newAthleteLastName.required = true;
+                }
+            });
+        }
         if (athleteListBody) {
             athleteListBody.addEventListener('click', (e) => {
                 const delBtn = e.target.closest('.delete-athlete-btn');
@@ -2816,7 +2844,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const last = newAthleteLastName.value.trim();
         const idNum = newAthleteID.value.trim();
 
-        if (!first || !last) return;
+        const isTeam = newAthleteIsTeam ? newAthleteIsTeam.checked : false;
+        if (!isTeam && (!first || !last)) return;
+        if (isTeam && !newAthleteTeamName.value.trim()) return;
 
         if (editingAthleteId) {
             const idx = athletes.findIndex(a => a.id == editingAthleteId);
@@ -2828,8 +2858,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 athletes[idx].lastName = last;
                 athletes[idx].dob = newAthleteDOB.value;
                 athletes[idx].gender = newAthleteGender.value;
+                athletes[idx].isTeam = newAthleteIsTeam.checked;
+                athletes[idx].teamName = newAthleteTeamName.value.trim();
 
-                const newNameLF = `${last}, ${first}`;
+                const isTeam = newAthleteIsTeam.checked;
+                const newNameLF = isTeam ? newAthleteTeamName.value.trim() : `${last}, ${first}`;
 
                 // Propagate Name Update
                 records.forEach(r => {
@@ -2856,7 +2889,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 firstName: first,
                 lastName: last,
                 dob: newAthleteDOB.value,
-                gender: newAthleteGender.value
+                gender: newAthleteGender.value,
+                isTeam: newAthleteIsTeam.checked,
+                teamName: newAthleteTeamName.value.trim()
             });
         }
 
@@ -2873,6 +2908,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dobPicker) dobPicker.clear();
         else newAthleteDOB.value = '';
         newAthleteGender.value = '';
+        if (newAthleteIsTeam) {
+            newAthleteIsTeam.checked = false;
+            newAthleteIsTeam.dispatchEvent(new Event('change'));
+        }
         newAthleteFirstName.focus();
     }
 
@@ -2890,6 +2929,12 @@ document.addEventListener('DOMContentLoaded', () => {
         else newAthleteDOB.value = athlete.dob;
 
         newAthleteGender.value = athlete.gender;
+
+        if (newAthleteIsTeam) {
+            newAthleteIsTeam.checked = !!athlete.isTeam;
+            newAthleteTeamName.value = athlete.teamName || '';
+            newAthleteIsTeam.dispatchEvent(new Event('change'));
+        }
 
         editingAthleteId = id;
         athleteSubmitBtn.innerHTML = '<span>Update Athlete</span>';
@@ -2925,6 +2970,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dobPicker) dobPicker.clear();
             else newAthleteDOB.value = '';
             newAthleteGender.value = '';
+            if (newAthleteIsTeam) {
+                newAthleteIsTeam.checked = false;
+                newAthleteIsTeam.dispatchEvent(new Event('change'));
+            }
             athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
             athleteSubmitBtn.style.background = '';
         }
@@ -2968,8 +3017,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${a.idNumber || '-'}</td>
-                        <td style="font-weight:600;">${a.lastName}</td>
-                        <td>${a.firstName}</td>
+                        <td style="font-weight:600;">${a.isTeam ? (a.teamName || 'Team') : a.lastName}</td>
+                        <td>${a.isTeam ? '<span class="badge" style="background:var(--accent); color:white;">TEAM</span>' : a.firstName}</td>
                         <td>${a.dob ? new Date(a.dob).toLocaleDateString('en-GB') : '-'}</td>
                         <td>${a.gender || '-'}</td>
                         <td>
@@ -4285,6 +4334,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>
                         <div style="font-weight:500; display:flex; align-items:center; gap:5px;">
                             ${r.athlete}
+                            ${(athlete && athlete.isTeam) ? '<span class="badge" style="background:var(--accent); color:white; font-size:0.7rem; padding: 2px 6px;">TEAM</span>' : ''}
                         </div>
                         ${hasNotes ? `
                             <div class="record-notes ${isHideNotesChecked ? 'hidden' : ''}" style="font-size:0.85em; color:var(--text-muted); font-style:italic; margin-top:2px; white-space:pre-wrap;">${r.notes}</div>
