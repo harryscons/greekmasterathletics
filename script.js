@@ -2586,7 +2586,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     m = parseFloat(parts[1]) || 0;
                     sec = parseFloat(parts[2]) || 0;
                     let msStr = parts[3].toString();
-                    if (ev && ev.type === 'Track' && msStr.length === 1) msStr += '0';
+                    if (ev && (ev.type === 'Track' || ev.type === 'Road') && msStr.length === 1) msStr += '0';
                     ms = parseFloat(msStr) || 0;
                 } else if (parts.length === 3) {
                     h = parseFloat(parts[0]) || 0;
@@ -2605,7 +2605,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     m = parseFloat(parts[0]) || 0;
                     sec = parseFloat(parts[1]) || 0;
                     let msStr = parts[2].toString();
-                    if (ev && ev.type === 'Track' && msStr.length === 1) msStr += '0';
+                    if (ev && (ev.type === 'Track' || ev.type === 'Road') && msStr.length === 1) msStr += '0';
                     ms = parseFloat(msStr) || 0;
                 } else if (parts.length === 2) {
                     m = parseFloat(parts[0]) || 0;
@@ -2620,8 +2620,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (parts.length >= 2) {
                     sec = parseFloat(parts[0]) || 0;
                     let msStr = parts[1].toString();
-                    // Refinement: If it's a Track event and only 1 decimal place, treat it as tenths/hundredths (14.9 -> 14.90)
-                    if (ev && ev.type === 'Track' && msStr.length === 1) {
+                    // Refinement: If it's a Track or Road event and only 1 decimal place, treat it as tenths/hundredths (14.9 -> 14.90)
+                    if (ev && (ev.type === 'Track' || ev.type === 'Road') && msStr.length === 1) {
                         msStr += '0';
                     }
                     ms = parseFloat(msStr) || 0;
@@ -2711,8 +2711,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const factor = getWMAFactorVal(r.gender, ageAtEvent, eventDef.wmaEvent);
             if (factor) {
                 const calculatedAgeMark = rawMark * factor;
-                const isTrack = eventDef && eventDef.type === 'Track';
-                r.wmaAgeMark = isTrack ? formatSecondsToTime(calculatedAgeMark) : calculatedAgeMark.toFixed(2);
+                const isTrackOrRoad = eventDef && (eventDef.type === 'Track' || eventDef.type === 'Road');
+                r.wmaAgeMark = isTrackOrRoad ? formatSecondsToTime(calculatedAgeMark) : calculatedAgeMark.toFixed(2);
                 if (eventDef.iaafEvent) {
                     const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, calculatedAgeMark);
                     r.wmaPoints = points !== null ? points.toString() : 'Not Found';
@@ -2896,8 +2896,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const factor = getWMAFactorVal(gender, ageAtEvent, eventDef.wmaEvent);
                         if (factor) {
                             const calculatedAgeMark = rawMark * factor;
-                            const isTrack = eventDef && eventDef.type === 'Track';
-                            ageMark = isTrack ? formatSecondsToTime(calculatedAgeMark) : calculatedAgeMark.toFixed(2);
+                            const isTrackOrRoad = eventDef && (eventDef.type === 'Track' || eventDef.type === 'Road');
+                            ageMark = isTrackOrRoad ? formatSecondsToTime(calculatedAgeMark) : calculatedAgeMark.toFixed(2);
                             if (eventDef.iaafEvent) {
                                 const points = getIAAFPointsVal(gender, eventDef.iaafEvent, calculatedAgeMark);
                                 pts = points !== null ? points : 'Not Found';
