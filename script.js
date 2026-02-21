@@ -3719,7 +3719,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 return;
                             }
                         }
-                    } else if (athlete && !athlete.dob) {
+                    } else if (athlete && !athlete.dob && !athlete.isTeam) {
                         console.warn("Athlete has no Date of Birth. Age validation cannot be performed.");
                         const warningDiv = document.getElementById('ageValidationWarning');
                         const messageP = document.getElementById('ageValidationMessage');
