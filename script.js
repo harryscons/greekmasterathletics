@@ -2275,11 +2275,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ath = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete ||
                     `${a.lastName}, ${a.firstName} ` === r.athlete);
                 const g = ath ? ath.gender : (r.gender || '');
-                // Age group: use ageGroup on record or derive from athlete DOB at record date
-                let ag = r.ageGroup || '';
-                if (!ag && ath && ath.dob && r.date) {
-                    const age = Math.floor((new Date(r.date) - new Date(ath.dob)) / (1000 * 60 * 60 * 24 * 365.25));
-                    ag = (Math.floor(age / 5) * 5).toString();
+                // Current age group: derive from athlete's DOB and TODAY's date
+                let ag = '-';
+                if (ath && ath.dob) {
+                    const today = new Date();
+                    const age = Math.floor((today - new Date(ath.dob)) / (1000 * 60 * 60 * 24 * 365.25));
+                    if (age >= 35) ag = (Math.floor(age / 5) * 5).toString();
                 }
                 agg[r.athlete] = { name: r.athlete, gender: g, ageGroup: ag, pts: [], count: 0 };
             }
@@ -2936,6 +2937,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (modal) modal.classList.add('hidden');
                     alert(`Successfully recalculated and saved WMA stats for ${count} records.`);
                     renderWMAReport();
+                    renderRankings();
                 }, 800);
             } catch (err) {
                 console.error("Firebase save failed:", err);
@@ -2948,6 +2950,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (modal) modal.classList.add('hidden');
                 alert(`Recalculated stats for ${count} records locally.`);
                 renderWMAReport();
+                renderRankings();
             }, 800);
         }
     }
