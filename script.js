@@ -2272,16 +2272,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const pts = parseFloat(r.wmaPoints);
             if (isNaN(pts) || pts <= 0) return;
             if (!agg[r.athlete]) {
-                // Use the same lookup map as calculateRecordWMAStats
                 const ath = athleteLookupMap[r.athlete];
                 const g = ath ? ath.gender : (r.gender || '');
-                // Current age group using the app's own calculateAgeGroup utility
-                const todayISO = new Date().toISOString().slice(0, 10);
-                const ag = (ath && ath.dob) ? (calculateAgeGroup(ath.dob, todayISO) || '-') : '-';
-                agg[r.athlete] = { name: r.athlete, gender: g, ageGroup: ag, pts: [], count: 0 };
+                agg[r.athlete] = { name: r.athlete, gender: g, ageGroup: '-', bestPtsVal: -1, pts: [], count: 0 };
             }
             agg[r.athlete].pts.push(pts);
             agg[r.athlete].count++;
+            // Age group = age group of the record with the highest WMA pts
+            if (pts > agg[r.athlete].bestPtsVal) {
+                agg[r.athlete].bestPtsVal = pts;
+                agg[r.athlete].ageGroup = r.ageGroup || '-';
+            }
         });
 
         let data = Object.values(agg).map(item => ({
