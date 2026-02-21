@@ -2272,15 +2272,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const pts = parseFloat(r.wmaPoints);
             if (isNaN(pts) || pts <= 0) return;
             if (!agg[r.athlete]) {
-                const ath = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete ||
-                    `${a.lastName}, ${a.firstName} ` === r.athlete);
+                // Use the same lookup map as calculateRecordWMAStats
+                const ath = athleteLookupMap[r.athlete];
                 const g = ath ? ath.gender : (r.gender || '');
-                // Current age group: use getExactAge() which handles all DOB formats
-                let ag = '-';
-                if (ath && ath.dob) {
-                    const age = getExactAge(ath.dob, new Date());
-                    if (age !== null && age >= 35) ag = (Math.floor(age / 5) * 5).toString();
-                }
+                // Current age group using the app's own calculateAgeGroup utility
+                const todayISO = new Date().toISOString().slice(0, 10);
+                const ag = (ath && ath.dob) ? (calculateAgeGroup(ath.dob, todayISO) || '-') : '-';
                 agg[r.athlete] = { name: r.athlete, gender: g, ageGroup: ag, pts: [], count: 0 };
             }
             agg[r.athlete].pts.push(pts);
