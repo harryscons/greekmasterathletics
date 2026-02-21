@@ -1853,7 +1853,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (athleteForm) athleteForm.addEventListener('submit', handleAthleteSubmit);
+        if (athleteForm) {
+            athleteForm.addEventListener('submit', handleAthleteSubmit);
+            // Default requirements for individual athletes
+            newAthleteFirstName.required = true;
+            newAthleteLastName.required = true;
+            newAthleteDOB.required = true;
+        }
 
         if (newAthleteIsTeam) {
             newAthleteIsTeam.addEventListener('change', () => {
@@ -2845,8 +2851,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const idNum = newAthleteID.value.trim();
 
         const isTeam = newAthleteIsTeam ? newAthleteIsTeam.checked : false;
-        if (!isTeam && (!first || !last)) return;
-        if (isTeam && !newAthleteTeamName.value.trim()) return;
+
+        if (isTeam) {
+            if (!newAthleteTeamName.value.trim()) {
+                alert('Team Name is required for Teams!');
+                newAthleteTeamName.focus();
+                return;
+            }
+        } else {
+            if (!first || !last) {
+                alert('First and Last names are required for individual athletes!');
+                if (!first) newAthleteFirstName.focus();
+                else newAthleteLastName.focus();
+                return;
+            }
+        }
 
         if (editingAthleteId) {
             const idx = athletes.findIndex(a => a.id == editingAthleteId);
