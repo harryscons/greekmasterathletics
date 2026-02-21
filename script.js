@@ -2497,6 +2497,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return markStr;
     }
 
+    function formatSecondsToTime(seconds) {
+        if (seconds === null || seconds === undefined || isNaN(parseFloat(seconds))) return '-';
+        let totalSeconds = parseFloat(seconds);
+        if (totalSeconds <= 0) return '0.00';
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = Math.floor(totalSeconds % 60);
+        const ms = Math.round((totalSeconds % 1) * 100);
+        let res = "";
+        if (h > 0) {
+            res += h + ":" + m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
+        } else if (m > 0) {
+            res += m + ":" + s.toString().padStart(2, '0');
+        } else {
+            res += s;
+        }
+        res += "." + ms.toString().padStart(2, '0');
+        return res;
+    }
+
     function calculateRateConv(markStr, eventName) {
         if (!markStr) return 0;
         let s = markStr.toString().trim().replace(/,/g, '.');
@@ -2691,7 +2711,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const factor = getWMAFactorVal(r.gender, ageAtEvent, eventDef.wmaEvent);
             if (factor) {
                 const calculatedAgeMark = rawMark * factor;
-                r.wmaAgeMark = calculatedAgeMark.toFixed(2);
+                const isTrack = eventDef && eventDef.type === 'Track';
+                r.wmaAgeMark = isTrack ? formatSecondsToTime(calculatedAgeMark) : calculatedAgeMark.toFixed(2);
                 if (eventDef.iaafEvent) {
                     const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, calculatedAgeMark);
                     r.wmaPoints = points !== null ? points.toString() : 'Not Found';
@@ -2775,6 +2796,19 @@ document.addEventListener('DOMContentLoaded', () => {
             let valA, valB;
 
             const getNumeric = (val) => {
+                if (typeof val === 'number') return val;
+                if (!val || val === '-' || val === 'Not Found') return -1;
+                const v = val.toString().trim();
+                if (v.includes(':')) {
+                    const parts = v.split(':');
+                    let total = 0;
+                    if (parts.length === 3) {
+                        total = parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
+                    } else if (parts.length === 2) {
+                        total = parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
+                    }
+                    return isNaN(total) ? -1 : total;
+                }
                 const n = parseFloat(val);
                 return isNaN(n) ? -1 : n;
             };
@@ -2862,7 +2896,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const factor = getWMAFactorVal(gender, ageAtEvent, eventDef.wmaEvent);
                         if (factor) {
                             const calculatedAgeMark = rawMark * factor;
-                            ageMark = calculatedAgeMark.toFixed(2);
+                            const isTrack = eventDef && eventDef.type === 'Track';
+                            ageMark = isTrack ? formatSecondsToTime(calculatedAgeMark) : calculatedAgeMark.toFixed(2);
                             if (eventDef.iaafEvent) {
                                 const points = getIAAFPointsVal(gender, eventDef.iaafEvent, calculatedAgeMark);
                                 pts = points !== null ? points : 'Not Found';
