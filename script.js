@@ -1606,9 +1606,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 let first = rFirst || 'Unknown';
                 let last = rLast || name;
 
+                const newId = generate6DigitId();
                 athletes.push({
-                    id: Date.now() + Math.random(),
-                    idNumber: '',
+                    id: newId,
+                    idNumber: newId,
                     firstName: first,
                     lastName: last,
                     dob: '',
@@ -1634,6 +1635,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         if (changed) saveAthletes();
+    }
+
+    function generate6DigitId() {
+        let newId;
+        const usedIds = new Set(athletes.map(a => a.id.toString()));
+        const usedNumIds = new Set(athletes.map(a => (a.idNumber || '').toString()));
+
+        do {
+            newId = Math.floor(100000 + Math.random() * 900000).toString();
+        } while (usedIds.has(newId) || usedNumIds.has(newId));
+        return newId;
+    }
+
+    function migrateAthleteIds() {
+        if (localStorage.getItem('tf_ids_standardized_v1') === 'true') return;
+
+        console.log("Starting Athlete ID Standardization (6-digit)...");
+        let migratedCount = 0;
+
+        athletes.forEach(a => {
+            // Check if current ID is already 6 digits
+            const isAlready6Digit = /^\d{6}$/.test(a.id.toString());
+            if (!isAlready6Digit) {
+                const newId = generate6DigitId();
+                a.id = newId;
+                a.idNumber = newId;
+                migratedCount++;
+            } else if (!a.idNumber) {
+                a.idNumber = a.id.toString();
+            }
+        });
+
+        if (migratedCount > 0) {
+            console.log(`Standardized IDs for ${migratedCount} athletes.`);
+            saveAthletes();
+        }
+
+        localStorage.setItem('tf_ids_standardized_v1', 'true');
     }
 
     // --- Logic ---
@@ -3151,9 +3190,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (exists) return alert('Athlete already exists (Name or ID match)!');
 
+            const newId = generate6DigitId();
             athletes.push({
-                id: Date.now(),
-                idNumber: idNum,
+                id: newId,
+                idNumber: newId,
                 firstName: first,
                 lastName: last,
                 dob: newAthleteDOB.value,
@@ -5366,13 +5406,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     let updated = false;
                     const a = athletes[existingIdx];
                     if (!a.dob && dob) { a.dob = dob; updated = true; }
-                    if (!a.idNumber && idVal) { a.idNumber = idVal.toString(); updated = true; }
+                    const idValStr = idVal ? idVal.toString() : '';
+                    if (!a.idNumber && idValStr && /^\d{6}$/.test(idValStr)) {
+                        a.idNumber = idValStr; updated = true;
+                    }
                     if (!a.gender && gender) { a.gender = gender; updated = true; }
                     if (!a.club && normalizedRow['club']) { a.club = normalizedRow['club']; updated = true; }
                     if (updated) importedCount++;
                 } else {
+                    const newId = (idVal && /^\d{6}$/.test(idVal.toString())) ? idVal.toString() : generate6DigitId();
                     const newAthlete = {
-                        id: idVal ? idVal.toString() : Date.now() + Math.floor(Math.random() * 100000),
+                        id: newId,
+                        idNumber: newId,
                         firstName: firstName.toString(),
                         lastName: lastName.toString(),
                         gender: gender,
@@ -6792,6 +6837,7 @@ Replace ALL current data with this backup ? `;
         if (typeof migrateAthleteNames === 'function') migrateAthleteNames();
         if (typeof migrateEvents === 'function') migrateEvents();
         if (typeof migrateRecordFormat === 'function') migrateRecordFormat();
+        if (typeof migrateAthleteIds === 'function') migrateAthleteIds();
         if (typeof migrateAgeGroupsToStartAge === 'function') migrateAgeGroupsToStartAge();
         if (typeof migrateEventDescriptions === 'function') migrateEventDescriptions();
         if (typeof migrateApprovalStatus === 'function') migrateApprovalStatus();
