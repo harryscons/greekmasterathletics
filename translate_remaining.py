@@ -16,7 +16,7 @@ TRANSLATIONS = {
     
     # Statistics sections
     "Athlete Statistics": "Στατιστικά Αθλητών",
-    "Medal Statistics": "Στατιστικά Μεταλλίων",
+    "National Holder Statistics": "Στατιστικά Μεταλλίων",
     "WMA Report": "Αναφορά WMA",
     
     # Settings sub-tabs
