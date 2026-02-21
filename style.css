@@ -1045,3 +1045,230 @@ td>div {
 .approve-btn:hover {
     transform: scale(1.2);
 }
+
+/* =============================================================
+   RESPONSIVE DESIGN — Tablet (≤1024px) & Mobile (≤640px)
+   ============================================================= */
+
+/* ── Tablet ─────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    body {
+        padding: 0.5rem;
+        overflow: auto;
+        /* allow page-level scroll on smaller screens */
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .app-container {
+        width: 100%;
+        height: auto;
+        overflow: visible;
+    }
+
+    main {
+        overflow: visible;
+    }
+
+    .view-section.active-view {
+        overflow: visible;
+        height: auto;
+    }
+
+    .card {
+        overflow: visible;
+        min-height: 0;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .nav-tabs {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        border-radius: 16px;
+        padding: 0.4rem;
+    }
+
+    .nav-tab {
+        font-size: 0.85rem;
+        padding: 0.45rem 0.9rem;
+    }
+
+    .report-toolbar {
+        flex-direction: column;
+        gap: 0.6rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .filters {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .filters select,
+    .filters input {
+        min-width: 0;
+        flex: 1 1 140px;
+        font-size: 0.82rem;
+    }
+
+    .actions-bar {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .report-table th,
+    .report-table td {
+        padding: 0.45rem 0.55rem;
+        font-size: 0.82rem;
+    }
+}
+
+/* ── Mobile ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    body {
+        padding: 0.3rem;
+    }
+
+    header {
+        padding: 0.5rem 0.3rem 0.3rem;
+    }
+
+    /* Collapse the top-bar grid to a simpler column layout */
+    .top-bar {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 0.4rem;
+    }
+
+    h1 {
+        font-size: 1.1rem;
+        text-align: center;
+    }
+
+    .subtitle {
+        display: none;
+        /* hide "Powered by..." line on tiny screens */
+    }
+
+    .logo-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* Shrink nav tabs to icon-like pills */
+    .nav-tabs {
+        gap: 0.25rem;
+        border-radius: 12px;
+        padding: 0.3rem;
+    }
+
+    .nav-tab {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 20px;
+    }
+
+    .card {
+        padding: 0.6rem;
+        border-radius: 12px;
+    }
+
+    /* Section header: title left, version badge right in one line */
+    .section-header {
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+
+    .section-header h2 {
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    /* Filters: full-width stacked dropdowns */
+    .filters {
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .filters select,
+    .filters input[type="text"],
+    .filters input[type="search"] {
+        width: 100%;
+        min-width: 0;
+        flex: none;
+        font-size: 0.9rem;
+    }
+
+    /* Export buttons: shrink text, allow wrap */
+    .actions-bar {
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+
+    .btn-small {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.6rem;
+    }
+
+    /* Report table: horizontal scroll with touch */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+    }
+
+    .report-table {
+        min-width: 620px;
+        /* prevent table from collapsing too narrow */
+    }
+
+    .report-table th,
+    .report-table td {
+        padding: 0.4rem 0.4rem;
+        font-size: 0.78rem;
+        white-space: nowrap;
+    }
+
+    /* Hide less critical table columns on tiny screens */
+    .report-table .col-wind,
+    .report-table td:nth-child(7) {
+        /* wind column */
+        display: none;
+    }
+
+    /* Form rows stack on mobile */
+    .form-row {
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btn-secondary {
+        width: 100%;
+    }
+
+    /* Stats filter row: wrap */
+    .filters[style*="display:flex"] {
+        flex-wrap: wrap;
+    }
+
+    /* Cloud & save controls */
+    #cloudStatus,
+    #btnSaveCloud {
+        font-size: 0.78rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
