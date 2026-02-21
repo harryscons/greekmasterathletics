@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.12.035</span>
+                        <span class="version-label">v2.12.036</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -400,13 +400,17 @@
                 <div id="setting-athletes" class="setting-section setting-fill">
                     <section class="card">
                         <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <div style="display: flex; flex-direction: column;">
-                                <h2 style="margin-bottom: 0;">Manage Athletes</h2>
-                                <p class="subtitle" style="margin-bottom: 0;">Add and manage athlete profiles.</p>
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; gap: 1rem;">
+                            <div style="display: flex; flex-direction: column; min-width: 0;">
+                                <h2
+                                    style="margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    Manage Athletes</h2>
+                                <p class="subtitle"
+                                    style="margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    Add and manage athlete profiles.</p>
                             </div>
                             <button id="btnToggleAthleteForm" class="btn-primary"
-                                style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">
+                                style="padding: 0.5rem 1rem; font-size: 0.85rem; width: auto; flex: 0 0 auto;">
                                 <span>➕ Add New Athlete</span>
                             </button>
                         </div>
@@ -465,16 +469,35 @@
                         </form>
 
                         <div class="table-container">
-                            <table class="report-table">
+                            <table class="report-table compact-table">
                                 <thead>
                                     <tr>
-                                        <th onclick="sortAthletes('idNumber')" style="cursor:pointer;">ID ↕</th>
+                                        <th onclick="sortAthletes('idNumber')" style="cursor:pointer; width: 80px;">ID ↕
+                                        </th>
                                         <th onclick="sortAthletes('lastName')" style="cursor:pointer;">Last Name ↕</th>
                                         <th onclick="sortAthletes('firstName')" style="cursor:pointer;">First Name ↕
                                         </th>
                                         <th onclick="sortAthletes('dob')" style="cursor:pointer;">DOB ↕</th>
                                         <th onclick="sortAthletes('gender')" style="cursor:pointer;">Gender ↕</th>
                                         <th class="actions-col" style="width: 100px;">Actions</th>
+                                    </tr>
+                                    <tr class="filter-row" style="background: var(--bg-nav);">
+                                        <th></th>
+                                        <th><input type="text" id="filterAthleteLast" class="table-filter-input"
+                                                placeholder="Search..." onclick="event.stopPropagation()"></th>
+                                        <th><input type="text" id="filterAthleteFirst" class="table-filter-input"
+                                                placeholder="Search..." onclick="event.stopPropagation()"></th>
+                                        <th><input type="text" id="filterAthleteDOB" class="table-filter-input"
+                                                placeholder="Search..." onclick="event.stopPropagation()"></th>
+                                        <th>
+                                            <select id="filterAthleteGender" class="table-filter-input"
+                                                onclick="event.stopPropagation()">
+                                                <option value="all">All</option>
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                            </select>
+                                        </th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody id="athleteListBody">

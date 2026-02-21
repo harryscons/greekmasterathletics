@@ -151,9 +151,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnToggleAthleteForm = document.getElementById('btnToggleAthleteForm');
     const newAthleteTeamName = document.getElementById('newAthleteTeamName');
     const athleteListBody = document.getElementById('athleteListBody');
-    const athleteSubmitBtn = athleteForm.querySelector('button[type="submit"]');
     const btnImportAthletes = document.getElementById('btnImportAthletes');
     const athleteImportFile = document.getElementById('athleteImportFile');
+
+    // Athlete Page Filters
+    const filterAthleteLast = document.getElementById('filterAthleteLast');
+    const filterAthleteFirst = document.getElementById('filterAthleteFirst');
+    const filterAthleteDOB = document.getElementById('filterAthleteDOB');
+    const filterAthleteGender = document.getElementById('filterAthleteGender');
 
     // WMA Manager
     const wmaAddForm = document.getElementById('wmaAddForm');
@@ -1870,6 +1875,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Athlete filtering event listeners
+        [filterAthleteLast, filterAthleteFirst, filterAthleteDOB].forEach(el => {
+            if (el) el.addEventListener('input', renderAthleteList);
+        });
+        if (filterAthleteGender) filterAthleteGender.addEventListener('change', renderAthleteList);
+
         if (newAthleteIsTeam) {
             newAthleteIsTeam.addEventListener('change', () => {
                 const isTeam = newAthleteIsTeam.checked;
@@ -3033,9 +3044,31 @@ document.addEventListener('DOMContentLoaded', () => {
         athleteListBody.innerHTML = '';
 
         try {
+            // Apply Filters
+            let filteredAthletes = [...athletes];
+            if (filterAthleteLast && filterAthleteLast.value) {
+                const val = filterAthleteLast.value.toLowerCase();
+                filteredAthletes = filteredAthletes.filter(a => (a.isTeam ? a.teamName : a.lastName).toLowerCase().includes(val));
+            }
+            if (filterAthleteFirst && filterAthleteFirst.value) {
+                const val = filterAthleteFirst.value.toLowerCase();
+                filteredAthletes = filteredAthletes.filter(a => (a.isTeam ? '' : a.firstName).toLowerCase().includes(val));
+            }
+            if (filterAthleteDOB && filterAthleteDOB.value) {
+                const val = filterAthleteDOB.value.toLowerCase();
+                filteredAthletes = filteredAthletes.filter(a => {
+                    const dobStr = a.dob ? new Date(a.dob).toLocaleDateString('en-GB') : '-';
+                    return dobStr.toLowerCase().includes(val);
+                });
+            }
+            if (filterAthleteGender && filterAthleteGender.value !== 'all') {
+                const val = filterAthleteGender.value;
+                filteredAthletes = filteredAthletes.filter(a => a.gender === val);
+            }
+
             // Sorting Logic
-            if (athletes && athletes.length > 0) {
-                athletes.sort((a, b) => {
+            if (filteredAthletes && filteredAthletes.length > 0) {
+                filteredAthletes.sort((a, b) => {
                     if (!a || !b) return 0;
                     let valA = (a[athleteSortField] || '').toString().toLowerCase();
                     let valB = (b[athleteSortField] || '').toString().toLowerCase();
@@ -3050,7 +3083,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return 0;
                 });
 
-                athletes.forEach(a => {
+                filteredAthletes.forEach(a => {
                     if (!a) return;
                     const tr = document.createElement('tr');
                     tr.innerHTML = `

@@ -605,6 +605,31 @@ select:focus {
     border-bottom: 1px solid var(--border);
 }
 
+.compact-table th,
+.compact-table td {
+    padding: 0.35rem 0.6rem;
+    line-height: 1.2;
+    font-size: 0.85rem;
+}
+
+.table-filter-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    color: var(--text-main);
+    font-size: 0.75rem;
+    margin-top: 4px;
+    font-family: var(--font-stack);
+}
+
+.table-filter-input:focus {
+    border-color: var(--primary);
+    background: rgba(0, 0, 0, 0.4);
+    outline: none;
+}
+
 .report-table th {
     white-space: nowrap;
 }
