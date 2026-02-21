@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.15.003</span>
+                        <span class="version-label">v2.15.004</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -1035,6 +1035,7 @@
                 <nav class="sub-nav" style="margin-bottom: 0.75rem;">
                     <button class="sub-tab stats-sub-tab active" data-stat-subtab="medals">Medal Statistics</button>
                     <button class="sub-tab stats-sub-tab" data-stat-subtab="wma">WMA Statistics</button>
+                    <button class="sub-tab stats-sub-tab" data-stat-subtab="rankings">🏆 Rankings</button>
                 </nav>
 
                 <!-- MEDAL STATS SUB-VIEW -->
@@ -1175,6 +1176,55 @@
                     </section>
                 </div>
 
+                <!-- RANKINGS SUB-VIEW -->
+                <div id="stats-rankings" class="stats-section">
+                    <section class="card">
+                        <div class="section-header">
+                            <h2>🏆 WMA Points Rankings</h2>
+                        </div>
+                        <div class="table-container">
+                            <div class="filters"
+                                style="display:flex; gap:10px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
+                                <select id="rankingsFilterName" class="form-control" style="width:200px;"
+                                    onchange="renderRankings()">
+                                    <option value="all">All Athletes</option>
+                                </select>
+                                <select id="rankingsFilterGender" class="form-control" style="width:auto;"
+                                    onchange="renderRankings()">
+                                    <option value="all">All Genders</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                                <select id="rankingsFilterAgeGroup" class="form-control" style="width:auto;"
+                                    onchange="renderRankings()">
+                                    <option value="all">All Age Groups</option>
+                                </select>
+                            </div>
+                            <table class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortRankings('rank')"
+                                            style="cursor:pointer; width:6%; text-align:center;"># ↕</th>
+                                        <th onclick="sortRankings('name')" style="cursor:pointer;">Athlete ↕</th>
+                                        <th onclick="sortRankings('gender')" style="cursor:pointer; width:10%;">Gender ↕
+                                        </th>
+                                        <th onclick="sortRankings('ageGroup')" style="cursor:pointer; width:12%;">Age
+                                            Group ↕</th>
+                                        <th onclick="sortRankings('bestPts')"
+                                            style="cursor:pointer; width:13%; text-align:right;">Best WMA Pts ↕</th>
+                                        <th onclick="sortRankings('avgPts')"
+                                            style="cursor:pointer; width:13%; text-align:right;">Avg WMA Pts ↕</th>
+                                        <th onclick="sortRankings('count')"
+                                            style="cursor:pointer; width:10%; text-align:right;">Records ↕</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankingsTableBody">
+                                    <!-- Rankings injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
 
             </div>
     </div>

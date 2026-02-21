@@ -2215,7 +2215,130 @@ document.addEventListener('DOMContentLoaded', () => {
             populateWMAReportFilters();
             renderWMAReport();
         }
+        if (subTabId === 'rankings') renderRankings();
     }
+
+    // ─── RANKINGS ───────────────────────────────────────────────────────────────
+    let rankingsSortField = 'bestPts';
+    let rankingsSortOrder = 'desc';
+
+    window.sortRankings = function (field) {
+        if (rankingsSortField === field) {
+            rankingsSortOrder = rankingsSortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            rankingsSortField = field;
+            rankingsSortOrder = field === 'name' ? 'asc' : 'desc';
+        }
+        renderRankings();
+    };
+
+    window.renderRankings = function () {
+        const tbody = document.getElementById('rankingsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
+
+        // Filter approved, non-relay records with valid WMA points
+        const eligible = records.filter(r => {
+            if (!r.athlete || !r.mark) return false;
+            if (r.approved !== true) return false;
+            if (archivedIds.has(r.id)) return false;
+            const ev = events.find(e => e.name === r.event);
+            const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
+            return !isRelay;
+        }).map(r => calculateRecordWMAStats({ ...r }));
+
+        // Aggregate per athlete
+        const agg = {};
+        eligible.forEach(r => {
+            const pts = parseFloat(r.wmaPoints);
+            if (isNaN(pts) || pts <= 0) return;
+            if (!agg[r.athlete]) {
+                const ath = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete ||
+                    `${a.lastName}, ${a.firstName} ` === r.athlete);
+                const g = ath ? ath.gender : (r.gender || '');
+                // Age group: use ageGroup on record or derive from athlete DOB at record date
+                let ag = r.ageGroup || '';
+                if (!ag && ath && ath.dob && r.date) {
+                    const age = Math.floor((new Date(r.date) - new Date(ath.dob)) / (1000 * 60 * 60 * 24 * 365.25));
+                    ag = (Math.floor(age / 5) * 5).toString();
+                }
+                agg[r.athlete] = { name: r.athlete, gender: g, ageGroup: ag, pts: [], count: 0 };
+            }
+            agg[r.athlete].pts.push(pts);
+            agg[r.athlete].count++;
+        });
+
+        let data = Object.values(agg).map(item => ({
+            ...item,
+            bestPts: Math.max(...item.pts),
+            avgPts: item.pts.reduce((s, v) => s + v, 0) / item.pts.length
+        }));
+
+        // Populate filters
+        const nameEl = document.getElementById('rankingsFilterName');
+        const ageEl = document.getElementById('rankingsFilterAgeGroup');
+        if (nameEl && nameEl.options.length <= 1) {
+            [...new Set(data.map(d => d.name))].sort().forEach(n => {
+                const o = document.createElement('option'); o.value = n; o.textContent = n;
+                nameEl.appendChild(o);
+            });
+        }
+        if (ageEl && ageEl.options.length <= 1) {
+            [...new Set(data.map(d => d.ageGroup).filter(Boolean))]
+                .sort((a, b) => parseInt(a) - parseInt(b))
+                .forEach(ag => {
+                    const o = document.createElement('option'); o.value = ag; o.textContent = ag;
+                    ageEl.appendChild(o);
+                });
+        }
+
+        // Apply filters
+        const fName = nameEl ? nameEl.value : 'all';
+        const fGender = document.getElementById('rankingsFilterGender')?.value || 'all';
+        const fAge = ageEl ? ageEl.value : 'all';
+
+        if (fName !== 'all') data = data.filter(d => d.name === fName);
+        if (fGender !== 'all') data = data.filter(d => d.gender === fGender);
+        if (fAge !== 'all') data = data.filter(d => d.ageGroup === fAge);
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No WMA data found for selected filters.</td></tr>';
+            return;
+        }
+
+        // Sort
+        data.sort((a, b) => {
+            let vA = a[rankingsSortField], vB = b[rankingsSortField];
+            if (rankingsSortField === 'name' || rankingsSortField === 'gender' || rankingsSortField === 'ageGroup') {
+                vA = (vA || '').toLowerCase(); vB = (vB || '').toLowerCase();
+            } else {
+                vA = parseFloat(vA) || 0; vB = parseFloat(vB) || 0;
+            }
+            if (vA < vB) return rankingsSortOrder === 'asc' ? -1 : 1;
+            if (vA > vB) return rankingsSortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        const medals = ['🥇', '🥈', '🥉'];
+        data.forEach((item, idx) => {
+            const rank = idx + 1;
+            const rankDisplay = rank <= 3 ? `${rank} ${medals[rank - 1]}` : rank;
+            const genderLabel = item.gender === 'Male' ? 'Άνδρες' : (item.gender === 'Female' ? 'Γυναίκες' : (item.gender || '-'));
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align:center; font-weight:bold; color:var(--text-muted);">${rankDisplay}</td>
+                <td style="font-weight:600;">${item.name}</td>
+                <td>${genderLabel}</td>
+                <td>${item.ageGroup || '-'}</td>
+                <td style="text-align:right; font-weight:700; color:var(--accent);">${item.bestPts.toFixed(1)}</td>
+                <td style="text-align:right; color:var(--text-muted);">${item.avgPts.toFixed(1)}</td>
+                <td style="text-align:right;">${item.count}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
 
     function populateWMAReportFilters() {
         // Current selections
