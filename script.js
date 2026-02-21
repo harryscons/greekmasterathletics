@@ -1871,7 +1871,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnToggleAthleteForm) {
             btnToggleAthleteForm.addEventListener('click', () => {
                 const isHidden = athleteForm.classList.toggle('hidden');
-                btnToggleAthleteForm.innerHTML = isHidden ? '<span>➕ Add New Athlete</span>' : '<span>➖ Hide Form</span>';
+                // Do not change button text to "Hide Form" as per user request
+                btnToggleAthleteForm.innerHTML = '<span>➕ Add New Athlete</span>';
 
                 // If opening the form, treat it as "Add New" and reset everything
                 if (!isHidden) {
@@ -2905,6 +2906,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 else newAthleteLastName.focus();
                 return;
             }
+            if (!newAthleteDOB.value) {
+                alert('Date of Birth is required for individual athletes!');
+                newAthleteDOB.focus();
+                return;
+            }
         }
 
         if (editingAthleteId) {
@@ -2937,6 +2943,9 @@ document.addEventListener('DOMContentLoaded', () => {
             athleteSubmitBtn.style.background = '';
         } else {
             const exists = athletes.some(a => {
+                // If editing, skip the current athlete in the existence check
+                if (editingAthleteId && a.id == editingAthleteId) return false;
+
                 if (isTeam) {
                     return a.isTeam && a.teamName.toLowerCase() === newAthleteTeamName.value.trim().toLowerCase();
                 } else {
@@ -2944,7 +2953,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         a.firstName.toLowerCase() === first.toLowerCase() &&
                         a.lastName.toLowerCase() === last.toLowerCase();
                 }
-            }) || (idNum && athletes.some(a => a.idNumber === idNum));
+            }) || (idNum && athletes.some(a => {
+                if (editingAthleteId && a.id == editingAthleteId) return false;
+                return a.idNumber === idNum;
+            }));
 
             if (exists) return alert('Athlete already exists (Name or ID match)!');
 
@@ -2973,7 +2985,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         newAthleteID.value = '';
         newAthleteFirstName.value = '';
-        newAthleteLastName.value = '';
         newAthleteLastName.value = '';
         if (dobPicker) dobPicker.clear();
         else newAthleteDOB.value = '';
@@ -3008,7 +3019,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (athleteForm) {
             athleteForm.classList.remove('hidden');
-            if (btnToggleAthleteForm) btnToggleAthleteForm.innerHTML = '<span>➖ Hide Form</span>';
+            // btnToggleAthleteForm.innerHTML = '<span>➖ Hide Form</span>'; // Removed as per request
         }
 
         editingAthleteId = id;
@@ -3037,10 +3048,10 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAthleteList();
 
         if (editingAthleteId == id) {
+            // If the deleted athlete was currently being edited, clear the form
             editingAthleteId = null;
             newAthleteID.value = '';
             newAthleteFirstName.value = '';
-            newAthleteLastName.value = '';
             newAthleteLastName.value = '';
             if (dobPicker) dobPicker.clear();
             else newAthleteDOB.value = '';
@@ -3049,9 +3060,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 newAthleteIsTeam.checked = false;
                 newAthleteIsTeam.dispatchEvent(new Event('change'));
             }
-            athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
-            athleteSubmitBtn.style.background = '';
+            if (athleteSubmitBtn) {
+                athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+                athleteSubmitBtn.style.background = '';
+            }
+            newAthleteFirstName.focus(); // Focus on first name after clearing
         }
+    }
+
+    const btnCancelAthleteForm = document.getElementById('btnCancelAthleteForm');
+    if (btnCancelAthleteForm) {
+        btnCancelAthleteForm.addEventListener('click', () => {
+            if (athleteForm) athleteForm.classList.add('hidden');
+            editingAthleteId = null;
+            if (athleteForm) athleteForm.reset();
+            if (dobPicker) dobPicker.clear();
+            if (newAthleteIsTeam) {
+                newAthleteIsTeam.checked = false;
+                newAthleteIsTeam.dispatchEvent(new Event('change'));
+            }
+            if (athleteSubmitBtn) {
+                athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+                athleteSubmitBtn.style.background = '';
+            }
+        });
     }
 
 

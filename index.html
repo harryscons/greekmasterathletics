@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.12.040</span>
+                        <span class="version-label">v2.12.041</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -463,9 +463,14 @@
                                         autocomplete="off">
                                 </div>
                             </div>
-                            <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">
-                                <span>+ Save Athlete</span>
-                            </button>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                                <button type="submit" id="athleteSubmitBtn" class="btn-primary" style="flex: 1;">
+                                    <span>+ Save Athlete</span>
+                                </button>
+                                <button type="button" id="btnCancelAthleteForm" class="btn-secondary" style="flex: 1;">
+                                    <span>Cancel</span>
+                                </button>
+                            </div>
                         </form>
 
                         <div class="table-container">
