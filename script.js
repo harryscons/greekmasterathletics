@@ -2911,6 +2911,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const idx = athletes.findIndex(a => a.id == editingAthleteId);
             if (idx !== -1) {
                 const oldNameLF = `${athletes[idx].lastName}, ${athletes[idx].firstName}`;
+                const oldNameFL = `${athletes[idx].firstName} ${athletes[idx].lastName}`;
 
                 athletes[idx].idNumber = idNum;
                 athletes[idx].firstName = first;
@@ -2920,13 +2921,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 athletes[idx].isTeam = newAthleteIsTeam.checked;
                 athletes[idx].teamName = newAthleteTeamName.value.trim();
 
-                const isTeam = newAthleteIsTeam.checked;
-                const newNameLF = isTeam ? newAthleteTeamName.value.trim() : `${last}, ${first}`;
+                const isTeamUpdate = newAthleteIsTeam.checked;
+                const newNameLF = isTeamUpdate ? newAthleteTeamName.value.trim() : `${last}, ${first}`;
 
-                // Propagate Name Update
+                // Propagate Name Update to Records
                 records.forEach(r => {
-                    if (r.athlete === oldNameLF) r.athlete = newNameLF;
-                    else if (r.athlete === `${athletes[idx].firstName} ${athletes[idx].lastName}`) r.athlete = newNameLF;
+                    if (r.athlete === oldNameLF || r.athlete === oldNameFL) {
+                        r.athlete = newNameLF;
+                    }
                 });
             }
 
@@ -3133,13 +3135,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveAthletes() {
+        // ALWAYS save to LocalStorage first (Synchronous Backup)
+        localStorage.setItem('tf_athletes', JSON.stringify(athletes));
+        rebuildPerformanceIndexes();
+
         if (!isDataReady) {
-            console.warn("Save aborted: System not ready (Synchronization in progress).");
+            console.warn("Cloud Save aborted: System not ready (Synchronization in progress). Local backup saved.");
             return;
         }
         if (db) db.ref('athletes').set(athletes);
-        localStorage.setItem('tf_athletes', JSON.stringify(athletes));
-        rebuildPerformanceIndexes();
     }
 
 
@@ -3256,11 +3260,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveUsers() {
-        if (!isDataReady) return;
-        console.log("💾 saveUsers: saving to Firebase and LocalStorage...", appUsers);
-        if (db) db.ref('users').set(appUsers);
+        // ALWAYS save to LocalStorage first (Synchronous Backup)
         localStorage.setItem('tf_users', JSON.stringify(appUsers));
         renderUserList();
+
+        if (!isDataReady) return;
+        console.log("💾 saveUsers: saving to Firebase...", appUsers);
+        if (db) db.ref('users').set(appUsers);
     }
 
 
@@ -3489,9 +3495,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveCountries() {
+        // ALWAYS save to LocalStorage first (Synchronous Backup)
+        localStorage.setItem('tf_countries', JSON.stringify(countries));
+
         if (!isDataReady) return;
         if (db) db.ref('countries').set(countries);
-        localStorage.setItem('tf_countries', JSON.stringify(countries));
     }
 
     function populateCountryDropdown() {
@@ -3599,19 +3607,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveEvents() {
+        // ALWAYS save to LocalStorage first (Synchronous Backup)
+        localStorage.setItem('tf_events', JSON.stringify(events));
+
         if (!isDataReady) return;
         if (db) db.ref('events').set(events);
-        localStorage.setItem('tf_events', JSON.stringify(events));
     }
 
     // --- Records ---
     function saveHistory() {
+        // ALWAYS save to LocalStorage first (Synchronous Backup)
+        localStorage.setItem('tf_history', JSON.stringify(history));
+
         if (!isDataReady) return;
         if (db) db.ref('history').set(history);
-        localStorage.setItem('tf_history', JSON.stringify(history));
     }
 
     function savePendingRecs() {
+        // ALWAYS save to LocalStorage first (Synchronous Backup)
+        localStorage.setItem('tf_pendingrecs', JSON.stringify(pendingrecs));
+
         if (!isDataReady) return;
         if (db) {
             db.ref('pendingrecs').set(pendingrecs).catch(err => {
@@ -3619,7 +3634,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Cloud Sync Error: Your proposal was not saved. " + err.message);
             });
         }
-        localStorage.setItem('tf_pendingrecs', JSON.stringify(pendingrecs));
     }
 
     // --- Records ---
