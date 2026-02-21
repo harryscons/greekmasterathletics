@@ -5962,7 +5962,7 @@ Replace ALL current data with this backup ? `;
             athleteRecordsFiltered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             let detailsHtml = `
-                <div style="padding: 10px; margin-left: 20px;">
+                <div style="padding: 10px;">
                     <table style="width:100%; font-size: 0.9em; border-collapse: collapse;">
                         <thead style="background: rgba(6, 182, 212, 0.2);">
                             <tr>
@@ -6001,7 +6001,8 @@ Replace ALL current data with this backup ? `;
             `;
 
             trDetail.innerHTML = `
-                <td colspan="2" style="padding:0;">${detailsHtml}</td>
+                <td style="padding:0; border:none;"></td>
+                <td colspan="4" style="padding:0;">${detailsHtml}</td>
             `;
             statsTableBody.appendChild(trDetail);
         });
