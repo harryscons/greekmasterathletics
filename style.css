@@ -597,6 +597,14 @@ select:focus {
     border-collapse: collapse;
 }
 
+.report-table th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--bg-card);
+    /* Ensure solid background so rows don't show through */
+}
+
 .report-table th,
 .report-table td {
     padding: 0.6rem 0.8rem;
