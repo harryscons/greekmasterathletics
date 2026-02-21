@@ -5938,8 +5938,8 @@ Replace ALL current data with this backup ? `;
             athleteRecordsFiltered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             let detailsHtml = `
-                <div id="${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(6,182,212,0.3); padding-top:8px;">
-                    <table style="width:100%; font-size: 0.9em; border-collapse: collapse;">
+                <div id="${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(6,182,212,0.3); padding-top:8px; background:var(--bg-card); border-radius:8px; padding:10px;">
+                    <table style="width:100%; font-size: 0.9em; border-collapse: collapse; background:var(--bg-card);">
                         <thead>
                             <tr>
                                 <th style="padding:6px 4px; text-align:left;">Event</th>
