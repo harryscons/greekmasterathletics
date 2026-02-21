@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.12.048</span>
+                        <span class="version-label">v2.12.049</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -517,12 +517,16 @@
                 <!-- EVENTS SUB-VIEW -->
                 <div id="setting-events" class="setting-section setting-fill hidden">
                     <section class="card">
-                        <h2>Manage Events</h2>
-                        <p class="subtitle" style="margin-bottom: 1rem;">Add or remove event types available in
-                            the
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <h2 style="margin: 0;">Manage Events</h2>
+                            <button id="btnNewEvent" class="btn-primary"
+                                style="margin: 0; padding: 0.5rem 1rem; border-radius: 8px;">+ New Event</button>
+                        </div>
+                        <p class="subtitle" style="margin-bottom: 1rem;">Add or remove event types available in the
                             dropdowns.</p>
 
-                        <form id="eventForm" style="margin-bottom: 2rem;">
+                        <form id="eventForm" style="margin-bottom: 2rem; display: none;">
                             <div class="row">
                                 <div class="form-group" style="flex: 2;">
                                     <label for="newEventName">Event Name</label>
@@ -610,6 +614,10 @@
                                         style="flex: 1.5; height: 62px; margin: 0; display: flex; align-items: center; justify-content: center; padding: 0;">
                                         <span>+ Add Event</span>
                                     </button>
+                                    <button type="button" class="btn-secondary" id="btnCancelEvent"
+                                        style="flex: 1; height: 62px; margin: 0; display: flex; align-items: center; justify-content: center; padding: 0;">
+                                        <span>Cancel</span>
+                                    </button>
                                 </div>
                             </div>
                         </form>
@@ -618,6 +626,7 @@
                             <table class="report-table">
                                 <thead>
                                     <tr>
+                                        <th style="width: 50px;">Order</th>
                                         <th>Event Name</th>
                                         <th>Formula</th>
                                         <th>Tech Specs</th>
@@ -627,7 +636,7 @@
                                         <th class="actions-col" style="width: 100px;">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="eventListBody">
+                                <tbody id="eventListBody" class="compact-rows">
                                     <!-- Events injected here -->
                                 </tbody>
                             </table>

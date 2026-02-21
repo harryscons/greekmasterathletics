@@ -605,6 +605,12 @@ select:focus {
     /* Ensure solid background so rows don't show through */
 }
 
+/* Compact style for management tables */
+.compact-rows td {
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.9rem;
+}
+
 .report-table th,
 .report-table td {
     padding: 0.6rem 0.8rem;

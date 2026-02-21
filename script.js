@@ -913,20 +913,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     fixSpecificEventFormulas();
 
-    function populateAthleteFilter() {
-        if (!filterAthlete) return;
-        const currentVal = filterAthlete.value;
-        filterAthlete.innerHTML = '<option value="all">All Athletes</option>';
+    function populateEventDropdowns() {
+        if (!filterEvent) return;
+        const currentFilter = filterEvent.value;
+        const currentReportFilter = document.getElementById('wmaReportFilterEvent')?.value || 'all';
 
-        // Get unique names from records
-        const names = [...new Set(records.map(r => r.athlete))].sort();
-        names.forEach(name => {
-            const opt = document.createElement('option');
-            opt.value = name;
-            opt.textContent = name;
-            filterAthlete.appendChild(opt);
-        });
-        filterAthlete.value = currentVal;
+        // Sort events alphabetically ONLY for the dropdown if we want, 
+        // but user says "reports and export reports in the order i arrange them".
+        // It's probably better to keep the manual order everywhere for consistency.
+        const sortedEvents = [...events];
+        // sortedEvents.sort((a, b) => a.name.localeCompare(b.name));
+
+        const eventOptionsHTML = '<option value="all">All Events</option>' +
+            sortedEvents.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+
+        filterEvent.innerHTML = eventOptionsHTML;
+        filterEvent.value = currentFilter;
     }
 
 
@@ -2087,6 +2089,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const delBtn = e.target.closest('.delete-country-btn');
             if (delBtn) deleteCountry(delBtn.dataset.country);
         });
+    }
+
+    // Event Management Toggling
+    const btnNewEvent = document.getElementById('btnNewEvent');
+    const btnCancelEvent = document.getElementById('btnCancelEvent');
+    if (btnNewEvent) {
+        btnNewEvent.addEventListener('click', () => {
+            eventForm.style.display = 'block';
+            editingEventId = null;
+            eventForm.reset();
+            if (eventSubmitBtn) eventSubmitBtn.querySelector('span').textContent = '+ Add Event';
+            btnNewEvent.style.display = 'none';
+        });
+    }
+    if (btnCancelEvent) {
+        btnCancelEvent.addEventListener('click', cancelEventEdit);
     }
 
     const historyListBody = document.getElementById('historyListBody');
@@ -3357,7 +3375,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderEventList();
         renderReports();
         resetEventForm();
-        newEventName.focus();
+        cancelEventEdit(); // Hide form and reset UI
+        if (newEventName) newEventName.focus();
     }
 
     function resetEventForm() {
@@ -3383,11 +3402,26 @@ document.addEventListener('DOMContentLoaded', () => {
         editingEventId = null;
     }
 
+    function cancelEventEdit() {
+        if (!eventForm) return;
+        eventForm.reset();
+        eventForm.style.display = 'none';
+        editingEventId = null;
+        if (eventSubmitBtn) eventSubmitBtn.querySelector('span').textContent = '+ Add Event';
+        const btnNewEvent = document.getElementById('btnNewEvent');
+        if (btnNewEvent) btnNewEvent.style.display = 'block';
+    }
+
     function editEvent(id) {
-        const ev = events.find(e => e.id == id);
+        const ev = events.find(e => e.id === id);
         if (!ev) return;
 
-        newEventName.value = ev.name;
+        editingEventId = id;
+        if (eventForm) eventForm.style.display = 'block';
+        const btnNewEvent = document.getElementById('btnNewEvent');
+        if (btnNewEvent) btnNewEvent.style.display = 'none';
+
+        if (newEventName) newEventName.value = ev.name;
         if (newEventIAAF) newEventIAAF.value = ev.iaafEvent || '';
         if (newEventWMA) newEventWMA.value = ev.wmaEvent || '';
         newEventSpecs.value = ev.specs || '';
@@ -3568,12 +3602,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderEventList() {
         if (!eventListBody) return;
         eventListBody.innerHTML = '';
-        // Sort by Name
-        events.sort((a, b) => a.name.localeCompare(b.name));
+        // REMOVED: events.sort((a, b) => a.name.localeCompare(b.name));
 
-        events.forEach(ev => {
+        events.forEach((ev, index) => {
             const isUsed = records.some(r => r.event === ev.name);
             const tr = document.createElement('tr');
+            tr.dataset.id = ev.id;
 
             // Determine event type and create badge
             const eventType = ev.type || (ev.isCombined ? 'Combined' : ev.isRelay ? 'Relay' : 'Track');
@@ -3600,13 +3634,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             tr.innerHTML = `
+                <td style="text-align:center; white-space:nowrap;">
+                    <button class="btn-icon move-event-up" data-id="${ev.id}" title="Move Up" ${index === 0 ? 'disabled' : ''}>⬆️</button>
+                    <button class="btn-icon move-event-down" data-id="${ev.id}" title="Move Down" ${index === events.length - 1 ? 'disabled' : ''}>⬇️</button>
+                </td>
                 <td style="font-weight:600;">${ev.name}</td>
                 <td style="font-size:0.85em; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${ev.formula || ''}">${ev.formula || '-'}</td>
                 <td style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.specs || '-'}</td>
                 <td style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.notes || '-'}</td>
             <td style="font-size:0.85rem; color:var(--accent);">${ev.iaafEvent || '-'} / ${ev.wmaEvent || '-'}</td>
             <td>${typeBadge}</td>
-                <td>
+                <td style="white-space:nowrap;">
                     <button class="btn-icon edit edit-event-btn" data-id="${ev.id}" title="Edit">✏️</button>
                     <button class="btn-icon delete delete-event-btn" data-id="${ev.id}" 
                         title="${isUsed ? 'In use' : 'Delete'}" ${isUsed ? 'disabled' : ''}>🗑️</button>
@@ -3622,6 +3660,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!isDataReady) return;
         if (db) db.ref('events').set(events);
+    }
+
+    if (eventListBody) {
+        eventListBody.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-event-btn');
+            const delBtn = e.target.closest('.delete-event-btn');
+            const upBtn = e.target.closest('.move-event-up');
+            const downBtn = e.target.closest('.move-event-down');
+
+            if (editBtn) editEvent(editBtn.dataset.id);
+            if (delBtn) {
+                const id = delBtn.dataset.id;
+                const isUsed = records.some(r => r.event === events.find(ev => ev.id == id)?.name);
+                if (!isUsed && confirm('Delete this event?')) {
+                    events = events.filter(ev => ev.id != id);
+                    saveEvents();
+                    renderEventList();
+                    populateEventDropdowns();
+                }
+            }
+            if (upBtn) moveEventUp(upBtn.dataset.id);
+            if (downBtn) moveEventDown(downBtn.dataset.id);
+        });
+    }
+
+    function moveEventUp(id) {
+        const idx = events.findIndex(ev => ev.id == id);
+        if (idx > 0) {
+            [events[idx - 1], events[idx]] = [events[idx], events[idx - 1]];
+            saveEvents();
+            renderEventList();
+            populateEventDropdowns();
+        }
+    }
+
+    function moveEventDown(id) {
+        const idx = events.findIndex(ev => ev.id == id);
+        if (idx < events.length - 1 && idx !== -1) {
+            [events[idx], events[idx + 1]] = [events[idx + 1], events[idx]];
+            saveEvents();
+            renderEventList();
+            populateEventDropdowns();
+        }
     }
 
     // --- Records ---
@@ -4332,6 +4413,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'athlete':
                     return a.athlete.localeCompare(b.athlete) * direction;
                 case 'event':
+                    const idxA = events.findIndex(e => e.name === a.event);
+                    const idxB = events.findIndex(e => e.name === b.event);
+                    if (idxA !== -1 && idxB !== -1) {
+                        return (idxA - idxB) * direction;
+                    }
                     return a.event.localeCompare(b.event) * direction;
                 case 'mark':
                     // Numeric sort for marks if possible
@@ -4546,17 +4632,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const categoryOrder = ['Track', 'Road', 'Field', 'Combined', 'Relay'];
 
         const sortedData = rawData.sort((a, b) => {
-            const evA = events.find(e => e.name === a.event);
-            const evB = events.find(e => e.name === b.event);
+            const idxA = events.findIndex(e => e.name === a.event);
+            const idxB = events.findIndex(e => e.name === b.event);
 
-            const catA = evA ? (evA.eventType || evA.type || 'Track') : 'Track';
-            const catB = evB ? (evB.eventType || evB.type || 'Track') : 'Track';
+            if (idxA !== -1 && idxB !== -1 && idxA !== idxB) {
+                return idxA - idxB;
+            }
 
-            const indexA = categoryOrder.indexOf(catA);
-            const indexB = categoryOrder.indexOf(catB);
+            // Fallback to alphabetical if index not found or same event
+            if (idxA === -1 || idxB === -1) {
+                const categoryOrder = ['Track', 'Road', 'Field', 'Combined', 'Relay'];
+                const evA = events[idxA] || events.find(e => e.name === a.event);
+                const evB = events[idxB] || events.find(e => e.name === b.event);
 
-            if (indexA !== indexB) {
-                return indexA - indexB;
+                const catA = evA ? (evA.eventType || evA.type || 'Track') : 'Track';
+                const catB = evB ? (evB.eventType || evB.type || 'Track') : 'Track';
+
+                const indexA = categoryOrder.indexOf(catA);
+                const indexB = categoryOrder.indexOf(catB);
+
+                if (indexA !== indexB) {
+                    return indexA - indexB;
+                }
             }
 
             // If both are same category and it's Track, sort by length (User requirement)

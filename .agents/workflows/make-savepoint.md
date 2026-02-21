@@ -10,4 +10,4 @@ To create a savepoint, follow these steps:
 
 // turbo
 Example command:
-`powershell -Command "Compress-Archive -Path ./* -ExitedPath ./.git, ./savepoints -DestinationPath ./savepoints/savepoint[ID].zip"`
+`powershell -Command "Compress-Archive -Path (Get-ChildItem -Path . -Exclude 'savepoints') -DestinationPath './savepoints/savepoint[ID].zip' -Force"`
