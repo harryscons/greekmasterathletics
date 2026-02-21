@@ -1638,27 +1638,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generate6DigitId() {
-        let newId;
-        const usedIds = new Set(athletes.map(a => a.id.toString()));
-        const usedNumIds = new Set(athletes.map(a => (a.idNumber || '').toString()));
+        if (!athletes || athletes.length === 0) return "100001";
 
-        do {
-            newId = Math.floor(100000 + Math.random() * 900000).toString();
-        } while (usedIds.has(newId) || usedNumIds.has(newId));
-        return newId;
+        let maxId = 100000;
+        athletes.forEach(a => {
+            const currentId = parseInt(a.idNumber || a.id);
+            if (!isNaN(currentId) && currentId > maxId && currentId < 1000000) {
+                maxId = currentId;
+            }
+        });
+        return (maxId + 1).toString();
+    }
+
+    function standardizeAthleteIdsAlpha() {
+        if (localStorage.getItem('tf_ids_standardized_v2') === 'true') return;
+
+        console.log("Starting Sequential Alphabetical ID Standardization...");
+
+        // 1. Sort athletes alphabetically by Last Name then First Name
+        athletes.sort((a, b) => {
+            const lastA = (a.lastName || '').trim().toLowerCase();
+            const lastB = (b.lastName || '').trim().toLowerCase();
+            if (lastA < lastB) return -1;
+            if (lastA > lastB) return 1;
+
+            const firstA = (a.firstName || '').trim().toLowerCase();
+            const firstB = (b.firstName || '').trim().toLowerCase();
+            if (firstA < firstB) return -1;
+            if (firstA > firstB) return 1;
+            return 0;
+        });
+
+        // 2. Reassign IDs starting from 100001
+        athletes.forEach((a, index) => {
+            const newId = (100001 + index).toString();
+            a.id = newId;
+            a.idNumber = newId;
+        });
+
+        saveAthletes();
+        localStorage.setItem('tf_ids_standardized_v2', 'true');
+        console.log(`Reassigned sequential IDs to ${athletes.length} athletes.`);
     }
 
     function migrateAthleteIds() {
-        if (localStorage.getItem('tf_ids_standardized_v1') === 'true') return;
+        // v1 migration (legacy random 6-digit)
+        if (localStorage.getItem('tf_ids_standardized_v1') === 'true') {
+            // If already v1, we still want to run v2
+            standardizeAthleteIdsAlpha();
+            return;
+        }
 
-        console.log("Starting Athlete ID Standardization (6-digit)...");
+        console.log("Starting Athlete ID Standardization (random 6-digit)...");
         let migratedCount = 0;
 
         athletes.forEach(a => {
-            // Check if current ID is already 6 digits
             const isAlready6Digit = /^\d{6}$/.test(a.id.toString());
             if (!isAlready6Digit) {
-                const newId = generate6DigitId();
+                const newId = Math.floor(100000 + Math.random() * 900000).toString();
                 a.id = newId;
                 a.idNumber = newId;
                 migratedCount++;
@@ -1673,6 +1710,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         localStorage.setItem('tf_ids_standardized_v1', 'true');
+
+        // Chain to the new sequential alphabetical migration
+        standardizeAthleteIdsAlpha();
     }
 
     // --- Logic ---
