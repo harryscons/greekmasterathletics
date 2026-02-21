@@ -5994,7 +5994,21 @@ Replace ALL current data with this backup ? `;
 
     window.toggleStatsDetail = function (id) {
         const el = document.getElementById(id);
-        if (el) el.classList.toggle('hidden');
+        if (!el) return;
+        el.classList.toggle('hidden');
+        const isOpen = !el.classList.contains('hidden');
+
+        // Scope the row highlight to only: athlete name cell (td[1]) + record count cell (td[4])
+        // Remove the row selection colour from gen rank, ratio, age rank cells
+        const parentTr = el.closest('tr');
+        if (parentTr) {
+            const tds = parentTr.querySelectorAll('td');
+            const cardBg = 'var(--bg-card)';
+            // td[0]=GenRank, td[2]=Ratio%, td[3]=AgeRank get card bg when open
+            [0, 2, 3].forEach(i => {
+                if (tds[i]) tds[i].style.background = isOpen ? cardBg : '';
+            });
+        }
     };
 
     // Fallback if needed
