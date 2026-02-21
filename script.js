@@ -5939,8 +5939,8 @@ Replace ALL current data with this backup ? `;
 
             let detailsHtml = `
                 <div id="${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(6,182,212,0.3); padding-top:8px;">
-                    <table style="width:100%; font-size: 0.9em; border-collapse: collapse; background:rgba(6,182,212,0.07); border-radius:8px; overflow:hidden;">
-                        <thead style="background: rgba(6, 182, 212, 0.25);">
+                    <table style="width:100%; font-size: 0.9em; border-collapse: collapse;">
+                        <thead>
                             <tr>
                                 <th style="padding:6px 4px; text-align:left;">Event</th>
                                 <th style="padding:6px 4px; text-align:left;">Track Type</th>
