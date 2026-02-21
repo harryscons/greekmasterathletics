@@ -5259,8 +5259,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Reset input
-        athleteImportFile.value = '';
+        e.target.value = '';
     }
+
+    // New: Handle specialized DOB restoration from JSON
+    window.handleDobRestoration = function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                const jsonData = JSON.parse(e.target.result);
+                const beforeCount = athletes.filter(a => a.dob && a.dob.trim() !== '').length;
+                processAthleteData(jsonData);
+                const afterCount = athletes.filter(a => a.dob && a.dob.trim() !== '').length;
+                const restored = afterCount - beforeCount;
+
+                alert(`Restoration complete! ${restored} Date of Birth entries were recovered.`);
+                console.log(`DOB Restoration: ${restored} restored, total with DOB: ${afterCount}`);
+            } catch (err) {
+                alert('Error processing restoration file: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = ''; // Reset
+    };
 
     function processAthleteData(jsonData) {
         try {
@@ -5290,39 +5314,50 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (g.startsWith('f') || g === 'gyn') gender = 'Female';
                 }
 
-                // Parse DOB (Excel dates are often numbers)
+                // Parse DOB (Excel dates are often numbers) - INTERNAL FORMAT IS YYYY-MM-DD for <input type="date"> compatibility
                 let dob = '';
-                const fmtddmmyyyy = d => {
-                    const dd = String(d.getUTCDate()).padStart(2, '0');
-                    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-                    return `${dd}/${mm}/${d.getUTCFullYear()}`;
+                const fmtYYYYMMDD = d => {
+                    const y = d.getUTCFullYear();
+                    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+                    const day = String(d.getUTCDate()).padStart(2, '0');
+                    return `${y}-${m}-${day}`;
                 };
                 if (dobVal) {
                     if (typeof dobVal === 'number') {
-                        dob = fmtddmmyyyy(new Date(Math.round((dobVal - 25569) * 864e5)));
+                        // Excel serial date
+                        dob = fmtYYYYMMDD(new Date(Math.round((dobVal - 25569) * 864e5)));
                     } else {
                         const s = dobVal.toString().trim();
                         if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-                            const [y, mo, d2] = s.split('T')[0].split('-');
-                            dob = `${d2}/${mo}/${y}`;
+                            dob = s.split('T')[0];
                         } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
-                            dob = s;
+                            // Convert DD/MM/YYYY to YYYY-MM-DD
+                            const [d, m, y] = s.split('/');
+                            dob = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
                         } else {
                             const parsed = new Date(s);
-                            dob = isNaN(parsed) ? s : fmtddmmyyyy(parsed);
+                            dob = isNaN(parsed) ? s : fmtYYYYMMDD(parsed);
                         }
                     }
                 }
 
                 // Check duplicates (by Name + DOB or ID)
-                const exists = athletes.some(a =>
+                const existingIdx = athletes.findIndex(a =>
                     (idVal && a.id == idVal) ||
                     (a.firstName.toLowerCase() === firstName.toString().toLowerCase() &&
-                        a.lastName.toLowerCase() === lastName.toString().toLowerCase() &&
-                        (!dob || a.dob === dob))
+                        a.lastName.toLowerCase() === lastName.toString().toLowerCase())
                 );
 
-                if (!exists) {
+                if (existingIdx !== -1) {
+                    // Update existing if new info is present
+                    let updated = false;
+                    const a = athletes[existingIdx];
+                    if (!a.dob && dob) { a.dob = dob; updated = true; }
+                    if (!a.idNumber && idVal) { a.idNumber = idVal.toString(); updated = true; }
+                    if (!a.gender && gender) { a.gender = gender; updated = true; }
+                    if (!a.club && normalizedRow['club']) { a.club = normalizedRow['club']; updated = true; }
+                    if (updated) importedCount++;
+                } else {
                     const newAthlete = {
                         id: idVal ? idVal.toString() : Date.now() + Math.floor(Math.random() * 100000),
                         firstName: firstName.toString(),

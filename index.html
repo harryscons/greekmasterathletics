@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.15.015</span>
+                        <span class="version-label">v2.15.016</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -968,6 +968,21 @@
                                 <span id="recordImportFileName"
                                     style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-left: 5px;"></span>
                             </div>
+                        </div>
+
+                        <div
+                            style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--border); display: flex; align-items: center; gap: 1rem;">
+                            <div style="flex: 1;">
+                                <h3 style="margin-bottom: 0.25rem;">Data Recovery</h3>
+                                <p class="subtitle" style="margin-bottom: 0;">Use this to restore missing DOBs from
+                                    `restored_athletes.json`</p>
+                            </div>
+                            <label class="btn btn-secondary"
+                                style="display: inline-block; cursor: pointer; white-space: nowrap; background: #ef44441a; border-color: #ef44444d; color: #ef4444;">
+                                🚑 Emergency Restore DOBs
+                                <input type="file" id="fileRestoreDobs" accept=".json" style="display: none;"
+                                    onchange="handleDobRestoration(event)">
+                            </label>
                         </div>
                     </section>
                     <section class="card" style="margin-top: 2rem; border-color: rgba(239, 68, 68, 0.3);">
