@@ -601,6 +601,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .toLowerCase();
     }
 
+    function getLastName(fullName) {
+        if (!fullName) return "";
+        if (fullName.includes(',')) {
+            return fullName.split(',')[0].trim();
+        }
+        return fullName.trim();
+    }
+
     function findAthleteByNormalizedName(rawName) {
         if (!rawName) return null;
         const searchKey = normalizeName(rawName);
@@ -3710,21 +3718,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newEventName) newEventName.value = ev.name;
         if (newEventIAAF) newEventIAAF.value = ev.iaafEvent || '';
         if (newEventWMA) newEventWMA.value = ev.wmaEvent || '';
-        newEventSpecs.value = ev.specs || '';
+
+        if (newEventSpecs) {
+            newEventSpecs.value = ev.specs || '';
+            newEventSpecs.disabled = false;
+        }
         if (newEventFormula) newEventFormula.value = ev.formula || '';
-        if (newEventNotes) newEventNotes.value = ev.notes || '';
+        if (newEventNotes) {
+            newEventNotes.value = ev.notes || '';
+            newEventNotes.disabled = false;
+        }
 
         // Set the correct event type radio button
         const eventType = ev.type || (ev.isCombined ? 'Combined' : ev.isRelay ? 'Relay' : 'Track');
-        document.querySelector(`input[name="eventType"][value="${eventType}"]`).checked = true;
-
-        editingEventId = id; // Set ID early for filter logic
+        const typeRadio = document.querySelector(`input[name="eventType"][value="${eventType}"]`);
+        if (typeRadio) typeRadio.checked = true;
 
         if (ev.isCombined) {
-            newEventSubCount.disabled = false;
+            if (newEventSubCount) newEventSubCount.disabled = false;
             const subs = ev.subEvents || [];
-            const count = subs.length;
-            if (count > 0) {
+            if (subs.length > 0 && subEventsContainer) {
                 subEventsContainer.style.display = 'flex';
                 const availableEvents = events.filter(e => !e.isCombined && !e.isRelay && e.id != editingEventId);
                 availableEvents.sort((a, b) => a.name.localeCompare(b.name));
@@ -3762,16 +3775,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         } else {
-            newEventSubCount.disabled = true;
-            newEventSubCount.value = '';
-            subEventsContainer.innerHTML = '';
-            subEventsContainer.style.display = 'none';
+            if (newEventSubCount) {
+                newEventSubCount.disabled = true;
+                newEventSubCount.value = '';
+            }
+            if (subEventsContainer) {
+                subEventsContainer.innerHTML = '';
+                subEventsContainer.style.display = 'none';
+            }
         }
 
-        editingEventId = id;
-        newEventName.focus();
-        eventSubmitBtn.innerHTML = '<span>Update Event</span>';
-        eventSubmitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
+        if (newEventName) newEventName.focus();
+        if (eventSubmitBtn) {
+            eventSubmitBtn.innerHTML = '<span>Update Event</span>';
+            eventSubmitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
+        }
     }
 
     // Modal Logic Initialization
@@ -3786,6 +3804,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (openFormulaBtn && formulaModal && modalFormulaInput && newEventFormula) {
             openFormulaBtn.addEventListener('click', () => {
                 modalFormulaInput.value = newEventFormula.value;
+                modalFormulaInput.disabled = false;
                 formulaModal.classList.remove('hidden');
             });
         }
@@ -4158,7 +4177,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 ].filter(p => p !== '') : [],
                 raceName: raceName,
                 idr: idr,
-                notes: notesInput ? notesInput.value.trim() : '',
+                notes: (function () {
+                    let finalNotes = notesInput ? notesInput.value.trim() : '';
+                    if (isRelay && !finalNotes) {
+                        const relayParticipants = [
+                            relayAthlete1.value,
+                            relayAthlete2.value,
+                            relayAthlete3.value,
+                            relayAthlete4.value
+                        ].filter(p => p !== '');
+                        if (relayParticipants.length > 0) {
+                            finalNotes = relayParticipants.map(p => getLastName(p)).join('/');
+                        }
+                    }
+                    return finalNotes;
+                })(),
                 mark: markInput ? markInput.value : '',
                 wind: windInput ? windInput.value : '',
                 date: dateInput ? dateInput.value : '',
