@@ -5060,9 +5060,84 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
+            // --- Add Double-Click to show Record Details ---
+            tr.addEventListener('dblclick', () => {
+                showRecordDetails(r.id);
+            });
+
             reportTableBody.appendChild(tr);
         });
     }
+
+    window.showRecordDetails = function (recordId) {
+        const r = records.find(rec => String(rec.id) === String(recordId));
+        if (!r) return;
+
+        const athlete = findAthleteByNormalizedName(r.athlete);
+        const dob = (athlete && athlete.dob) ? athlete.dob : 'Not available';
+        const formattedDate = new Date(r.date).toLocaleDateString('en-GB');
+
+        const content = document.getElementById('recordDetailContent');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="detail-container">
+                <div class="detail-row">
+                    <span class="detail-label">Event:</span>
+                    <span class="detail-value">${r.event}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Athlete:</span>
+                    <span class="detail-value">${r.athlete} ${athlete && athlete.isTeam ? '(Team)' : ''}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Birth Date:</span>
+                    <span class="detail-value">${dob}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Gender:</span>
+                    <span class="detail-value">${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Age Group:</span>
+                    <span class="detail-value">${r.ageGroup || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Result:</span>
+                    <span class="detail-value" style="font-size: 1.2rem; color: var(--accent);">${formatTimeMark(r.mark, r.event)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Wind:</span>
+                    <span class="detail-value">${r.wind || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value">${formattedDate}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Location:</span>
+                    <span class="detail-value">${r.town || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Competition:</span>
+                    <span class="detail-value">${r.raceName || '-'}</span>
+                </div>
+                ${r.notes ? `
+                <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                    <span class="detail-label">Notes:</span>
+                    <span class="detail-value" style="font-style: italic; color: var(--text-muted); font-weight: 400; white-space: pre-wrap;">${r.notes}</span>
+                </div>` : ''}
+            </div>
+        `;
+
+        const modal = document.getElementById('recordDetailModal');
+        if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeRecordDetailModal = function () {
+        const modal = document.getElementById('recordDetailModal');
+        if (modal) modal.classList.add('hidden');
+    };
 
     function getExportData() {
         // Enforce STRICT approval check (must be explicitly true)

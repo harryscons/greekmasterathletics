@@ -1291,3 +1291,42 @@ td>div {
     opacity: 0 !important;
     visibility: hidden !important;
 }
+
+/* Record Detail Table Styles */
+.detail-container {
+    background: var(--bg-input);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--border);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.detail-value {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.report-table tbody tr {
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.report-table tbody tr:hover {
+    background: var(--bg-hover) !important;
+}
+
