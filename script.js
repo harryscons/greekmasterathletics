@@ -39,11 +39,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadedNodes.size >= CORE_NODES.length) {
             console.log("✅ Data Consensus Reached. System is now READY.");
             isDataReady = true;
+
             // Now safe to run migrations and seeding
             if (typeof runPostLoadMaintenance === 'function') {
                 runPostLoadMaintenance();
             } else {
                 renderAll();
+            }
+
+            // Hide Initial Loading Overlay
+            const overlay = document.getElementById('initial-loading-overlay');
+            if (overlay) {
+                overlay.classList.add('fade-out');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 500);
             }
         }
     }
@@ -392,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Records updated (Smart Merge):", records.length);
                 loadedNodes.add('records');
                 checkReady();
-                renderAll();
+                if (isDataReady) renderAll();
             } catch (e) {
                 console.error("🔥 Error in Validating/Loading Records:", e);
                 alert("Data Sync Error: " + e.message);
@@ -413,10 +423,12 @@ document.addEventListener('DOMContentLoaded', () => {
             loadedNodes.add('athletes');
             checkReady();
 
-            rebuildPerformanceIndexes(); // Rebuild name map for age calc
-            populateAthleteDropdown();
-            populateAthleteFilter();
-            renderAthleteList();
+            if (isDataReady) {
+                rebuildPerformanceIndexes(); // Rebuild name map for age calc
+                populateAthleteDropdown();
+                populateAthleteFilter();
+                renderAthleteList();
+            }
         });
 
         // Listen for Events
@@ -426,9 +438,11 @@ document.addEventListener('DOMContentLoaded', () => {
             loadedNodes.add('events');
             checkReady();
 
-            if (events.length > 0) repairEventMetadata(); // Auto-repair on load
-            populateEventDropdowns();
-            renderEventList();
+            if (isDataReady) {
+                if (events.length > 0) repairEventMetadata(); // Auto-repair on load
+                populateEventDropdowns();
+                renderEventList();
+            }
         });
 
         // Listen for Countries
@@ -438,8 +452,10 @@ document.addEventListener('DOMContentLoaded', () => {
             loadedNodes.add('countries');
             checkReady();
 
-            populateCountryDropdown();
-            renderCountryList();
+            if (isDataReady) {
+                populateCountryDropdown();
+                renderCountryList();
+            }
         });
 
         // Listen for History
@@ -472,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Users updated from Firebase. Count:", appUsers.length);
             loadedNodes.add('users');
             checkReady();
-            renderUserList();
+            if (isDataReady) renderUserList();
         });
     }
 

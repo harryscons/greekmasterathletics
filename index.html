@@ -43,6 +43,15 @@
             }
         })();
     </script>
+    <div id="initial-loading-overlay"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s ease;">
+        <div class="spinner"
+            style="width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;">
+        </div>
+        <h2 style="margin-top: 20px; color: var(--text-main); font-family: var(--font-stack);">Greek Master Athletics
+        </h2>
+        <p style="color: var(--text-muted); font-family: var(--font-stack);">Synchronizing Data...</p>
+    </div>
     <div class="background-glow"></div>
 
     <div class="app-container">
@@ -132,7 +141,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.15.033</span>
+                        <span class="version-label">v2.15.034</span>
                     </div>
 
                     <div class="report-toolbar">

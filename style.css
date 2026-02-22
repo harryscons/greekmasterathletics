@@ -1281,3 +1281,13 @@ td>div {
         padding: 0.3rem 0.6rem;
     }
 }
+/* Animations & Utility */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.fade-out {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
