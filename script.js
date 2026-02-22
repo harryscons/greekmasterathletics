@@ -2798,8 +2798,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const factor = getWMAFactorVal(r.gender, ageAtEvent, eventDef.wmaEvent);
             if (factor) {
                 const calculatedAgeMark = rawMark * factor;
-                const isTrackOrRoad = eventDef && (eventDef.type === 'Track' || eventDef.type === 'Road');
-                r.wmaAgeMark = isTrackOrRoad ? formatSecondsToTime(calculatedAgeMark) : calculatedAgeMark.toFixed(2);
+                r.wmaAgeMark = calculatedAgeMark.toFixed(2);
                 if (eventDef.iaafEvent) {
                     const points = getIAAFPointsVal(r.gender, eventDef.iaafEvent, calculatedAgeMark);
                     r.wmaPoints = points !== null ? points.toString() : 'Not Found';
@@ -2983,8 +2982,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const factor = getWMAFactorVal(gender, ageAtEvent, eventDef.wmaEvent);
                         if (factor) {
                             const calculatedAgeMark = rawMark * factor;
-                            const isTrackOrRoad = eventDef && (eventDef.type === 'Track' || eventDef.type === 'Road');
-                            ageMark = isTrackOrRoad ? formatSecondsToTime(calculatedAgeMark) : calculatedAgeMark.toFixed(2);
+                            ageMark = calculatedAgeMark.toFixed(2);
                             if (eventDef.iaafEvent) {
                                 const points = getIAAFPointsVal(gender, eventDef.iaafEvent, calculatedAgeMark);
                                 pts = points !== null ? points : 'Not Found';
@@ -2997,6 +2995,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            let displayAgeMark = ageMark;
+            const isTrackOrRoad = eventDef && (eventDef.type === 'Track' || eventDef.type === 'Road');
+            if (isTrackOrRoad && displayAgeMark && displayAgeMark !== '-' && displayAgeMark !== 'Not Found') {
+                displayAgeMark = formatSecondsToTime(displayAgeMark);
+            }
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${r.event}</td>
@@ -3006,7 +3010,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="text-align:center;">${formatTimeMark(r.mark, r.event)}</td>
                 <td>${r.idr || '-'}</td>
                 <td>${rateConv || '-'}</td>
-                <td>${ageMark || '-'}</td>
+                <td>${displayAgeMark || '-'}</td>
                 <td>${pts || '-'}</td>
                 <td>${r.date}</td>
                 <td>${r.raceName || '-'}</td>
