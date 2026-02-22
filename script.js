@@ -4797,8 +4797,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     if (eventDiff !== 0) return eventDiff * direction;
 
-                    // 2. Sort by Gender
-                    const genderDiff = (a.gender || '').localeCompare(b.gender || '');
+                    // 2. Sort by Gender (Male first)
+                    const rankA = a.gender === 'Male' ? 1 : (a.gender === 'Female' ? 2 : 3);
+                    const rankB = b.gender === 'Male' ? 1 : (b.gender === 'Female' ? 2 : 3);
+                    const genderDiff = rankA - rankB;
                     if (genderDiff !== 0) return genderDiff * direction;
 
                     // 3. Sort by Age Group
@@ -4825,8 +4827,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     return a.mark.localeCompare(b.mark, undefined, { numeric: true }) * direction;
                 case 'ageGroup':
                     return ((parseInt(a.ageGroup) || 0) - (parseInt(b.ageGroup) || 0)) * direction;
-                case 'gender':
-                    return (a.gender || '').localeCompare(b.gender || '') * direction;
+                case 'gender': {
+                    const rankA = a.gender === 'Male' ? 1 : (a.gender === 'Female' ? 2 : 3);
+                    const rankB = b.gender === 'Male' ? 1 : (b.gender === 'Female' ? 2 : 3);
+                    return (rankA - rankB) * direction;
+                }
                 case 'town':
                     return (a.town || '').localeCompare(b.town || '') * direction;
                 case 'raceName':
