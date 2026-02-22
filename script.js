@@ -2344,10 +2344,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
 
         // Filter approved, non-relay records with valid WMA points
+        const fTrackType = document.getElementById('rankingsFilterTrackType')?.value || 'all';
+
         const eligible = records.filter(r => {
             if (!r.athlete || !r.mark) return false;
             if (r.approved !== true) return false;
             if (archivedIds.has(r.id)) return false;
+
             const ev = events.find(e => e.name === r.event);
             const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
             if (isRelay) return false;
@@ -2405,7 +2408,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const fName = nameEl ? nameEl.value : 'all';
         const fGender = document.getElementById('rankingsFilterGender')?.value || 'all';
         const fAge = ageEl ? ageEl.value : 'all';
-        const fTrackType = document.getElementById('rankingsFilterTrackType')?.value || 'all';
 
         if (fName !== 'all') data = data.filter(d => d.name === fName);
         if (fGender !== 'all') data = data.filter(d => d.gender === fGender);
@@ -2498,7 +2500,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (y !== selYear) return false;
             }
             if (!exclusions.ageGroup && selAgeGroup !== 'all') {
-                const athleteObj = findAthleteByNormalizedName(r.athlete);
+                const athleteObj = athleteLookupMap[r.athlete] || findAthleteByNormalizedName(r.athlete);
                 let ageAtEvent = 0;
                 if (athleteObj && athleteObj.dob && r.date) {
                     ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
@@ -2550,29 +2552,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => r.date ? new Date(r.date).getFullYear() : null).filter(y => y))].sort((a, b) => b - a);
         updateSelect('wmaReportFilterYear', yearsList, selYear);
 
-        // 4. Age Groups (filtered by Event, Athlete, Gender, Year)
-        // We can either keep a static list or dynamically find which age groups have records
-        const allPossibleGroups = ["M35", "M40", "M45", "M50", "M55", "M60", "M65", "M70", "M75", "M80", "M85", "M90",
-            "W35", "W40", "W45", "W50", "W55", "W60", "W65", "W70", "W75", "W80", "W85", "W90",
-            "X35", "X40", "X45", "X50", "X55", "X60", "X65", "X70", "X75", "X80", "X85", "X90"];
-        const relevantGroups = allPossibleGroups.filter(g_loop => {
-            return baseRecords.some(r => {
-                if (!matches(r, { ageGroup: true })) return false;
-                const athleteObj = findAthleteByNormalizedName(r.athlete);
-                let ageAtEvent = 0;
-                if (athleteObj && athleteObj.dob && r.date) {
-                    ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
-                } else if (r.ageGroup) {
-                    ageAtEvent = parseInt(r.ageGroup);
-                } else {
-                    return false;
-                }
-                const floorAge = Math.floor(ageAtEvent / 5) * 5;
+        // 4. Age Groups (Single-pass optimization)
+        const relevantGroupsSet = new Set();
+        baseRecords.forEach(r => {
+            if (!matches(r, { ageGroup: true })) return;
+            const athleteObj = athleteLookupMap[r.athlete] || findAthleteByNormalizedName(r.athlete);
+            let ageAtEvent = 0;
+            if (athleteObj && athleteObj.dob && r.date) {
+                ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
+            } else if (r.ageGroup) {
+                ageAtEvent = parseInt(r.ageGroup);
+            } else {
+                return;
+            }
+            const floorAge = Math.floor(ageAtEvent / 5) * 5;
+            if (floorAge >= 35) {
                 const gNorm = normalizeGenderLookups(r.gender);
                 const prefix = gNorm === 'men' ? 'M' : (gNorm === 'women' ? 'W' : 'X');
-                const groupName = `${prefix}${floorAge}`;
-                return groupName === g_loop;
-            });
+                relevantGroupsSet.add(`${prefix}${floorAge}`);
+            }
+        });
+        const relevantGroups = [...relevantGroupsSet].sort((a, b) => {
+            const prefixA = a[0], prefixB = b[0];
+            if (prefixA !== prefixB) return prefixA.localeCompare(prefixB);
+            return parseInt(a.slice(1)) - parseInt(b.slice(1));
         });
         updateSelect('wmaReportFilterAgeGroup', relevantGroups, selAgeGroup);
     }
