@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadedNodes = new Set();
     const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
     let isSuppressingAutoFill = false; // Prevents change events from overwriting edit form data
+    let isRecordUpdateFlow = false; // Flag to distinguish between Edit (no history) and Update (archiving)
 
     function checkReady() {
         if (isDataReady) return;
@@ -4268,16 +4269,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (isSup) {
                         try {
-                            // Supervisor Direct Edit -> Archive Old
-                            const oldRecordData = { ...originalRecord };
-                            oldRecordData.archivedAt = new Date().toISOString();
-                            oldRecordData.originalId = String(oldRecordData.id); // Link to original
-                            // Attribution for the archive entry matches the current session user
-                            oldRecordData.updatedBy = getCurrentUsername();
-                            oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                            // Archive ONLY if it's an Update Flow (New performance)
+                            if (isRecordUpdateFlow) {
+                                const oldRecordData = { ...originalRecord };
+                                oldRecordData.archivedAt = new Date().toISOString();
+                                oldRecordData.originalId = String(oldRecordData.id); // Link to original
+                                oldRecordData.updatedBy = getCurrentUsername();
+                                oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
 
-                            history.unshift(oldRecordData);
-                            saveHistory();
+                                history.unshift(oldRecordData);
+                                saveHistory();
+                                console.log("Record Archived (Update Flow)");
+                            } else {
+                                console.log("Record updated in-place (Edit Flow - No History)");
+                            }
 
                             // Update Live Record in place
                             records[index] = newRecord;
@@ -4289,7 +4294,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             renderAthleteList();
                             populateYearDropdown();
 
-                            submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
+                            submitBtn.querySelector('span').textContent = isRecordUpdateFlow ? 'Updated & Archived! ✓' : 'Record Updated! ✓';
                         } catch (err) {
                             console.error("Error archiving/updating record:", err);
                             alert("Failed to update record: " + err.message);
@@ -5060,10 +5065,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // --- Add Double-Click to show Record Details ---
-            tr.addEventListener('dblclick', () => {
-                showRecordDetails(r.id);
-            });
+            // --- Add Double-Click to show Record Details (Admin/Supervisor ONLY) ---
+            const isSup = isSupervisor(currentUser ? currentUser.email : null);
+            const isAdm = isAdminUser(currentUser ? currentUser.email : null);
+
+            if (isSup || isAdm) {
+                tr.classList.add('clickable-row');
+                tr.addEventListener('dblclick', () => {
+                    showRecordDetails(r.id);
+                });
+            }
 
             reportTableBody.appendChild(tr);
         });
@@ -5164,23 +5175,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (recordForm) recordForm.reset();
 
-        // Manual pre-fill of key fields
+        // 1. Preserve Core Fields (Athlete, Event, Gender, Category)
         if (evtInput) evtInput.value = r.event;
         if (genderInput) genderInput.value = r.gender;
         if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
+        if (ageGroupInput) ageGroupInput.value = r.ageGroup;
 
-        // Athlete selection is tricky due to custom dropdown logic
+        // Athlete selection dropdown
         const athleteSelect = document.getElementById('athlete');
         if (athleteSelect) {
             athleteSelect.value = r.athlete;
-            // Trigger change to update age groups etc
             athleteSelect.dispatchEvent(new Event('change'));
         }
+
+        // 2. Set Date to Today
+        const today = new Date().toISOString().split('T')[0];
+        if (dateInput) {
+            if (datePicker) datePicker.setDate(today);
+            else dateInput.value = today;
+        }
+
+        // 3. Ensure performance fields are BLANK (redundant because of reset, but safe)
+        if (markInput) markInput.value = '';
+        if (windInput) windInput.value = '';
+        if (townInput) townInput.value = '';
+        if (raceNameInput) raceNameInput.value = '';
+        if (notesInput) notesInput.value = '';
+        if (idrInput) idrInput.value = '';
+
+        // Reset editing IDs so it's treated as a replacement of recordId
+        editingId = recordId;
+        // IMPORTANT: handleFormSubmit uses editingId to know which record to replacesId. 
+        // We want archiving to happen here if isRecordUpdateFlow is true.
 
         // Focus on mark input for quick entry
         if (markInput) markInput.focus();
 
-        console.log("Prepared form for new record update based on record:", recordId);
+        console.log("Prepared form for new record update (archiving flow) based on record:", recordId);
     };
 
     function getExportData() {
