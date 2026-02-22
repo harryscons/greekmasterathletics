@@ -5080,7 +5080,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    window.showRecordDetails = function (recordId) {
+    window.showRecordDetails = function (recordId, isEditing = false, isUpdateFlow = false) {
         const r = records.find(rec => String(rec.id) === String(recordId));
         if (!r) return;
 
@@ -5101,64 +5101,205 @@ document.addEventListener('DOMContentLoaded', () => {
         const content = document.getElementById('recordDetailContent');
         if (!content) return;
 
-        content.innerHTML = `
-            <div class="detail-container">
-                <div class="detail-row">
-                    <span class="detail-label">Event:</span>
-                    <span class="detail-value">${r.event}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Athlete:</span>
-                    <span class="detail-value">${r.athlete} ${athlete && athlete.isTeam ? '(Team)' : ''}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Birth Date:</span>
-                    <span class="detail-value">${dob}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Gender:</span>
-                    <span class="detail-value">${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Age Group:</span>
-                    <span class="detail-value">${r.ageGroup || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Mark:</span>
-                    <span class="detail-value" style="font-size: 1.2rem; color: var(--accent);">${formatTimeMark(r.mark, r.event)}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Wind:</span>
-                    <span class="detail-value">${r.wind || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Date:</span>
-                    <span class="detail-value">${formattedDate}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Location:</span>
-                    <span class="detail-value">${r.town || '-'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Competition:</span>
-                    <span class="detail-value">${r.raceName || '-'}</span>
-                </div>
-                ${r.notes ? `
-                <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 5px;">
-                    <span class="detail-label">Notes:</span>
-                    <span class="detail-value" style="font-style: italic; color: var(--text-muted); font-weight: 400; white-space: pre-wrap;">${r.notes}</span>
-                </div>` : ''}
-            </div>
+        if (isEditing) {
+            // --- EDIT MODE ---
+            let markVal = isUpdateFlow ? '' : r.mark || '';
+            let windVal = isUpdateFlow ? '' : r.wind || '';
+            let dateVal = isUpdateFlow ? new Date().toISOString().split('T')[0] : r.date || '';
+            let townVal = isUpdateFlow ? '' : r.town || '';
+            let raceVal = isUpdateFlow ? '' : r.raceName || '';
+            let notesVal = isUpdateFlow ? '' : r.notes || '';
+            let idrVal = isUpdateFlow ? '' : r.idr || '';
+            let trackVal = r.trackType || 'Outdoor';
+            let countryVal = isUpdateFlow ? '' : r.country || '';
 
-            <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                <button onclick="editRecord('${r.id}'); closeRecordDetailModal();" class="btn-secondary" style="background: rgba(139, 92, 246, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 0.5rem 1rem;">✏️ Edit</button>
-                <button onclick="deleteRecord('${r.id}'); closeRecordDetailModal();" class="btn-danger" style="padding: 0.5rem 1rem;">🗑️ Delete</button>
-                <button onclick="prepareRecordUpdate('${r.id}'); closeRecordDetailModal();" class="btn-primary" style="padding: 0.5rem 1rem;">🔄 Update with new record</button>
-            </div>
-        `;
+            content.innerHTML = `
+                <div class="modal-form-container">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1.15rem; font-weight: 700;">${isUpdateFlow ? '🔄 Update with New Record' : '✏️ Edit Record Data'}</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group-modal">
+                            <label>Event</label>
+                            <input type="text" id="modal-event" value="${r.event}" readonly>
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Athlete</label>
+                            <input type="text" id="modal-athlete" value="${r.athlete}" readonly>
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Gender</label>
+                            <input type="text" id="modal-gender" value="${r.gender}" readonly>
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Age Group</label>
+                            <input type="text" id="modal-ageGroup" value="${r.ageGroup}" readonly>
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Track Type</label>
+                            <select id="modal-trackType">
+                                <option value="Outdoor" ${trackVal === 'Outdoor' ? 'selected' : ''}>Outdoor</option>
+                                <option value="Indoor" ${trackVal === 'Indoor' ? 'selected' : ''}>Indoor</option>
+                            </select>
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Date</label>
+                            <input type="date" id="modal-date" value="${dateVal}">
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Mark</label>
+                            <input type="text" id="modal-mark" value="${markVal}" placeholder="e.g. 10.55">
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Wind</label>
+                            <input type="text" id="modal-wind" value="${windVal}" placeholder="e.g. +1.2">
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Record Code (IDR)</label>
+                            <input type="text" id="modal-idr" value="${idrVal}" placeholder="e.g. NR">
+                        </div>
+                         <div class="form-group-modal">
+                            <label>Country</label>
+                            <input type="text" id="modal-country" value="${countryVal}" placeholder="e.g. GRE">
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Location (Town)</label>
+                            <input type="text" id="modal-town" value="${townVal}" placeholder="e.g. Athens">
+                        </div>
+                        <div class="form-group-modal">
+                            <label>Competition (Race)</label>
+                            <input type="text" id="modal-race" value="${raceVal}" placeholder="e.g. National C'ship">
+                        </div>
+                    </div>
+                    <div class="form-group-modal" style="margin-top: 15px;">
+                        <label>Notes</label>
+                        <textarea id="modal-notes" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); color: var(--text-input); border: 1px solid var(--border); font-family: inherit;">${notesVal}</textarea>
+                    </div>
+                    
+                    <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="showRecordDetails('${recordId}')" class="btn-secondary" style="padding: 0.5rem 1rem;">Cancel</button>
+                        <button onclick="handleModalSave('${recordId}', ${isUpdateFlow})" class="btn-primary" style="padding: 0.5rem 1.5rem;">💾 Save Changes</button>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => {
+                const mk = document.getElementById('modal-mark');
+                if (mk) mk.focus();
+            }, 100);
+        } else {
+            // --- VIEW MODE ---
+            content.innerHTML = `
+                <div class="detail-container">
+                    <div class="detail-row"><span class="detail-label">Event:</span><span class="detail-value">${r.event}</span></div>
+                    <div class="detail-row"><span class="detail-label">Athlete:</span><span class="detail-value">${r.athlete} ${athlete && athlete.isTeam ? '(Team)' : ''}</span></div>
+                    <div class="detail-row"><span class="detail-label">Birth Date:</span><span class="detail-value">${dob}</span></div>
+                    <div class="detail-row"><span class="detail-label">Gender:</span><span class="detail-value">${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</span></div>
+                    <div class="detail-row"><span class="detail-label">Age Group:</span><span class="detail-value">${r.ageGroup || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Track Type:</span><span class="detail-value">${r.trackType || 'Outdoor'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Mark:</span><span class="detail-value" style="font-size: 1.2rem; color: var(--accent);">${formatTimeMark(r.mark, r.event)}</span></div>
+                    <div class="detail-row"><span class="detail-label">Wind:</span><span class="detail-value">${r.wind || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Record Code (IDR):</span><span class="detail-value">${r.idr || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Country:</span><span class="detail-value">${r.country || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Date:</span><span class="detail-value">${formattedDate}</span></div>
+                    <div class="detail-row"><span class="detail-label">Location:</span><span class="detail-value">${r.town || '-'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Competition:</span><span class="detail-value">${r.raceName || '-'}</span></div>
+                    <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                        <span class="detail-label">Notes:</span>
+                        <span class="detail-value" style="font-style: italic; color: var(--text-muted); font-weight: 400; white-space: pre-wrap;">${r.notes || '-'}</span>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                    <button onclick="showRecordDetails('${recordId}', true, false)" class="btn-secondary" style="background: rgba(139, 92, 246, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 0.5rem 1rem;">✏️ Edit</button>
+                    <button onclick="deleteRecord('${recordId}'); closeRecordDetailModal();" class="btn-danger" style="padding: 0.5rem 1rem;">🗑️ Delete</button>
+                    <button onclick="showRecordDetails('${recordId}', true, true)" class="btn-primary" style="padding: 0.5rem 1rem;">🔄 Update with new record</button>
+                </div>
+            `;
+        }
 
         const modal = document.getElementById('recordDetailModal');
         if (modal) modal.classList.remove('hidden');
+    };
+
+    window.handleModalSave = function (recordId, isUpdateFlow) {
+        const r = records.find(rec => String(rec.id) === String(recordId));
+        if (!r) return;
+
+        const modalDate = document.getElementById('modal-date').value;
+        const modalMark = document.getElementById('modal-mark').value.trim();
+        const modalWind = document.getElementById('modal-wind').value.trim();
+        const modalIDR = document.getElementById('modal-idr').value.trim();
+        const modalTown = document.getElementById('modal-town').value.trim();
+        const modalRace = document.getElementById('modal-race').value.trim();
+        const modalNotes = document.getElementById('modal-notes').value.trim();
+        const modalTrack = document.getElementById('modal-trackType').value;
+        const modalCountry = document.getElementById('modal-country').value.trim();
+
+        if (!modalMark || !modalDate) {
+            alert("Mark and Date are required!");
+            return;
+        }
+
+        const isSupervisorUser = isSupervisor(currentUser ? currentUser.email : null);
+        const currentUsername = getCurrentUsername();
+
+        const newRecord = {
+            id: isUpdateFlow ? String(Date.now() + '-' + Math.floor(Math.random() * 10000)) : r.id,
+            event: r.event,
+            gender: r.gender,
+            ageGroup: r.ageGroup,
+            trackType: modalTrack,
+            athlete: r.athlete,
+            isRelay: r.isRelay || false,
+            approved: isSupervisorUser,
+            relayParticipants: r.relayParticipants || [],
+            raceName: modalRace,
+            idr: modalIDR,
+            notes: modalNotes,
+            mark: modalMark,
+            wind: modalWind,
+            date: modalDate,
+            town: modalTown,
+            country: modalCountry,
+            updatedBy: currentUsername
+        };
+
+        calculateRecordWMAStats(newRecord);
+
+        if (isSupervisorUser) {
+            const index = records.findIndex(rec => String(rec.id) === String(recordId));
+            if (index !== -1) {
+                if (isUpdateFlow) {
+                    const oldRecordData = { ...records[index] };
+                    oldRecordData.archivedAt = new Date().toISOString();
+                    oldRecordData.originalId = String(oldRecordData.id);
+                    oldRecordData.updatedBy = currentUsername;
+                    oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+
+                    history.unshift(oldRecordData);
+                    saveHistory();
+
+                    records[index] = newRecord;
+                } else {
+                    records[index] = newRecord;
+                }
+                saveRecords();
+                renderReports();
+                closeRecordDetailModal();
+                alert(isUpdateFlow ? "New performance logged & old archived! ✓" : "Record updated! ✓");
+            }
+        } else {
+            newRecord.isPending = true;
+            newRecord.replacesId = recordId;
+            newRecord.updateType = isUpdateFlow ? 'performance' : 'typo';
+
+            pendingrecs.unshift(newRecord);
+            savePendingRecs();
+            renderReports();
+            closeRecordDetailModal();
+            alert("Your changes have been submitted for Supervisor approval.");
+        }
+
+        populateYearDropdown();
+        renderAthleteList();
     };
 
     window.closeRecordDetailModal = function () {
