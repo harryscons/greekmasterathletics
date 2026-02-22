@@ -5074,7 +5074,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!r) return;
 
         const athlete = findAthleteByNormalizedName(r.athlete);
-        const dob = (athlete && athlete.dob) ? athlete.dob : 'Not available';
+        let dob = 'Not available';
+        if (athlete && athlete.dob) {
+            try {
+                const [y, m, d] = athlete.dob.split('-');
+                if (y && m && d) dob = `${d}/${m}/${y}`;
+                else dob = athlete.dob;
+            } catch (e) {
+                dob = athlete.dob;
+            }
+        }
+
         const formattedDate = new Date(r.date).toLocaleDateString('en-GB');
 
         const content = document.getElementById('recordDetailContent');
@@ -5103,7 +5113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="detail-value">${r.ageGroup || '-'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Result:</span>
+                    <span class="detail-label">Mark:</span>
                     <span class="detail-value" style="font-size: 1.2rem; color: var(--accent);">${formatTimeMark(r.mark, r.event)}</span>
                 </div>
                 <div class="detail-row">
@@ -5128,6 +5138,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="detail-value" style="font-style: italic; color: var(--text-muted); font-weight: 400; white-space: pre-wrap;">${r.notes}</span>
                 </div>` : ''}
             </div>
+
+            <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                <button onclick="editRecord('${r.id}'); closeRecordDetailModal();" class="btn-secondary" style="background: rgba(139, 92, 246, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 0.5rem 1rem;">✏️ Edit</button>
+                <button onclick="deleteRecord('${r.id}'); closeRecordDetailModal();" class="btn-danger" style="padding: 0.5rem 1rem;">🗑️ Delete</button>
+                <button onclick="prepareRecordUpdate('${r.id}'); closeRecordDetailModal();" class="btn-primary" style="padding: 0.5rem 1rem;">🔄 Update with new record</button>
+            </div>
         `;
 
         const modal = document.getElementById('recordDetailModal');
@@ -5137,6 +5153,34 @@ document.addEventListener('DOMContentLoaded', () => {
     window.closeRecordDetailModal = function () {
         const modal = document.getElementById('recordDetailModal');
         if (modal) modal.classList.add('hidden');
+    };
+
+    window.prepareRecordUpdate = function (recordId) {
+        const r = records.find(rec => String(rec.id) === String(recordId));
+        if (!r) return;
+
+        // Pre-fill form for a NEW record based on existing athlete/event
+        switchTab('log');
+
+        if (recordForm) recordForm.reset();
+
+        // Manual pre-fill of key fields
+        if (evtInput) evtInput.value = r.event;
+        if (genderInput) genderInput.value = r.gender;
+        if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
+
+        // Athlete selection is tricky due to custom dropdown logic
+        const athleteSelect = document.getElementById('athlete');
+        if (athleteSelect) {
+            athleteSelect.value = r.athlete;
+            // Trigger change to update age groups etc
+            athleteSelect.dispatchEvent(new Event('change'));
+        }
+
+        // Focus on mark input for quick entry
+        if (markInput) markInput.focus();
+
+        console.log("Prepared form for new record update based on record:", recordId);
     };
 
     function getExportData() {
