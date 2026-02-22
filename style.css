@@ -943,11 +943,11 @@ select:focus {
 /* Modal Content */
 .modal-content {
     width: 95%;
-    max-width: 850px;
+    max-width: 1000px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 20px;
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
     position: relative;
     animation: modalSlide 0.3s ease-out;

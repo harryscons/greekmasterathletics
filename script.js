@@ -5113,9 +5113,17 @@ document.addEventListener('DOMContentLoaded', () => {
             let trackVal = r.trackType || 'Outdoor';
             let currentCountry = isUpdateFlow ? '' : r.country || '';
 
-            // Generate Country Options
+            // Generate Options
             const countryOptions = countries.map(c => `
                 <option value="${c.code}" ${c.code === currentCountry ? 'selected' : ''}>${c.name} (${c.code})</option>
+            `).join('');
+
+            const athleteOptions = (athletes || []).map(a => `
+                <option value="${a.name}" ${a.name === r.athlete ? 'selected' : ''}>${a.name} ${a.idNumber ? `(${a.idNumber})` : ''}</option>
+            `).join('');
+
+            const eventOptions = (events || []).map(e => `
+                <option value="${e.name}" ${e.name === r.event ? 'selected' : ''}>${e.name}</option>
             `).join('');
 
             content.innerHTML = `
@@ -5124,19 +5132,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="form-group-modal">
                             <label>Event</label>
-                            <input type="text" id="modal-event" value="${r.event}" readonly>
+                            <select id="modal-event">
+                                <option value="">Select Event...</option>
+                                ${eventOptions}
+                            </select>
                         </div>
                         <div class="form-group-modal">
                             <label>Athlete</label>
-                            <input type="text" id="modal-athlete" value="${r.athlete}" readonly>
+                            <select id="modal-athlete">
+                                <option value="">Select Athlete...</option>
+                                ${athleteOptions}
+                            </select>
                         </div>
                         <div class="form-group-modal">
                             <label>Gender</label>
-                            <input type="text" id="modal-gender" value="${r.gender}" readonly>
+                            <select id="modal-gender">
+                                <option value="Male" ${r.gender === 'Male' ? 'selected' : ''}>Male</option>
+                                <option value="Female" ${r.gender === 'Female' ? 'selected' : ''}>Female</option>
+                            </select>
                         </div>
                         <div class="form-group-modal">
                             <label>Age Group</label>
-                            <input type="text" id="modal-ageGroup" value="${r.ageGroup}" readonly>
+                            <input type="text" id="modal-ageGroup" value="${r.ageGroup}">
                         </div>
                         <div class="form-group-modal">
                             <label>Track Type</label>
@@ -5231,6 +5248,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const r = records.find(rec => String(rec.id) === String(recordId));
         if (!r) return;
 
+        const modalEvent = document.getElementById('modal-event').value;
+        const modalAthlete = document.getElementById('modal-athlete').value;
+        const modalGender = document.getElementById('modal-gender').value;
+        const modalAgeGroup = document.getElementById('modal-ageGroup').value.trim();
         const modalDate = document.getElementById('modal-date').value;
         const modalMark = document.getElementById('modal-mark').value.trim();
         const modalWind = document.getElementById('modal-wind').value.trim();
@@ -5241,8 +5262,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalTrack = document.getElementById('modal-trackType').value;
         const modalCountry = document.getElementById('modal-country').value.trim();
 
-        if (!modalMark || !modalDate) {
-            alert("Mark and Date are required!");
+        if (!modalMark || !modalDate || !modalEvent || !modalAthlete) {
+            alert("Event, Athlete, Mark and Date are required!");
             return;
         }
 
@@ -5251,11 +5272,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const newRecord = {
             id: isUpdateFlow ? String(Date.now() + '-' + Math.floor(Math.random() * 10000)) : r.id,
-            event: r.event,
-            gender: r.gender,
-            ageGroup: r.ageGroup,
+            event: modalEvent,
+            gender: modalGender,
+            ageGroup: modalAgeGroup,
             trackType: modalTrack,
-            athlete: r.athlete,
+            athlete: modalAthlete,
             isRelay: r.isRelay || false,
             approved: isSupervisorUser,
             relayParticipants: r.relayParticipants || [],
