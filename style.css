@@ -434,6 +434,15 @@ select {
     width: 100%;
 }
 
+/* Fix for radios and checkboxes to keep them inline and unstyled by global rules */
+.form-group input[type="radio"],
+.form-group input[type="checkbox"] {
+    width: auto;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
 option {
     background-color: var(--bg-dropdown);
     color: var(--text-main);
