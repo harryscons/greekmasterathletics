@@ -5111,7 +5111,12 @@ document.addEventListener('DOMContentLoaded', () => {
             let notesVal = isUpdateFlow ? '' : r.notes || '';
             let idrVal = isUpdateFlow ? '' : r.idr || '';
             let trackVal = r.trackType || 'Outdoor';
-            let countryVal = isUpdateFlow ? '' : r.country || '';
+            let currentCountry = isUpdateFlow ? '' : r.country || '';
+
+            // Generate Country Options
+            const countryOptions = countries.map(c => `
+                <option value="${c.code}" ${c.code === currentCountry ? 'selected' : ''}>${c.name} (${c.code})</option>
+            `).join('');
 
             content.innerHTML = `
                 <div class="modal-form-container">
@@ -5158,7 +5163,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                          <div class="form-group-modal">
                             <label>Country</label>
-                            <input type="text" id="modal-country" value="${countryVal}" placeholder="e.g. GRE">
+                            <select id="modal-country">
+                                <option value="">Select Country...</option>
+                                ${countryOptions}
+                            </select>
                         </div>
                         <div class="form-group-modal">
                             <label>Location (Town)</label>
