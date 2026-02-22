@@ -5118,9 +5118,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <option value="${c.code}" ${c.code === currentCountry ? 'selected' : ''}>${c.name} (${c.code})</option>
             `).join('');
 
-            const athleteOptions = (athletes || []).map(a => `
-                <option value="${a.name}" ${a.name === r.athlete ? 'selected' : ''}>${a.name} ${a.idNumber ? `(${a.idNumber})` : ''}</option>
-            `).join('');
+            const athleteOptions = (athletes || []).map(a => {
+                const nameText = a.isTeam ? `${a.teamName || 'Unnamed Team'} [TEAM]` : `${a.lastName}${a.lastName ? ', ' : ''}${a.firstName}`;
+                const val = a.isTeam ? (a.teamName || '') : `${a.lastName}, ${a.firstName}`;
+                return `<option value="${val}" ${val === r.athlete ? 'selected' : ''}>${nameText} ${a.idNumber ? `(#${a.idNumber})` : ''}</option>`;
+            }).join('');
 
             const eventOptions = (events || []).map(e => `
                 <option value="${e.name}" ${e.name === r.event ? 'selected' : ''}>${e.name}</option>
@@ -5208,6 +5210,32 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 const mk = document.getElementById('modal-mark');
                 if (mk) mk.focus();
+
+                const modAthlete = document.getElementById('modal-athlete');
+                const modDate = document.getElementById('modal-date');
+                const modAge = document.getElementById('modal-ageGroup');
+                const modGender = document.getElementById('modal-gender');
+
+                const updateModalAge = () => {
+                    if (!modAthlete || !modDate || !modAge) return;
+                    const athleteName = modAthlete.value;
+                    const dateVal = modDate.value;
+                    if (!athleteName || !dateVal) return;
+
+                    const athleteData = findAthleteByNormalizedName(athleteName);
+                    if (athleteData) {
+                        if (modGender && athleteData.gender) {
+                            modGender.value = athleteData.gender;
+                        }
+                        const cat = calculateAgeGroup(athleteData.dob, dateVal);
+                        if (cat) {
+                            modAge.value = cat;
+                        }
+                    }
+                };
+
+                if (modAthlete) modAthlete.addEventListener('change', updateModalAge);
+                if (modDate) modDate.addEventListener('change', updateModalAge);
             }, 100);
         } else {
             // --- VIEW MODE ---
