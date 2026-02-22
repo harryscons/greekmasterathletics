@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- State for Sorting ---
-    let currentSort = { column: 'date', direction: 'desc' };
+    let currentSort = { column: 'default', direction: 'asc' };
 
 
 
@@ -4784,6 +4784,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const direction = currentSort.direction === 'asc' ? 1 : -1;
 
             switch (currentSort.column) {
+                case 'default': {
+                    // 1. Sort by Event Name
+                    const idxA = events.findIndex(e => e.name === a.event);
+                    const idxB = events.findIndex(e => e.name === b.event);
+
+                    let eventDiff = 0;
+                    if (idxA !== -1 && idxB !== -1) {
+                        eventDiff = idxA - idxB;
+                    } else {
+                        eventDiff = (a.event || '').localeCompare(b.event || '');
+                    }
+                    if (eventDiff !== 0) return eventDiff * direction;
+
+                    // 2. Sort by Gender
+                    const genderDiff = (a.gender || '').localeCompare(b.gender || '');
+                    if (genderDiff !== 0) return genderDiff * direction;
+
+                    // 3. Sort by Age Group
+                    const ageA = parseInt(a.ageGroup) || 0;
+                    const ageB = parseInt(b.ageGroup) || 0;
+                    return (ageA - ageB) * direction;
+                }
                 case 'date':
                     return (new Date(a.date) - new Date(b.date)) * direction;
                 case 'athlete':
@@ -4810,9 +4832,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'raceName':
                     return (a.raceName || '').localeCompare(b.raceName || '') * direction;
                 case 'wind':
-                    return (parseFloat(a.wind) || 0 - parseFloat(b.wind) || 0) * direction;
+                    return ((parseFloat(a.wind) || 0) - (parseFloat(b.wind) || 0)) * direction;
                 case 'idr':
-                    return (parseInt(a.idr) || 0 - parseInt(b.idr) || 0) * direction;
+                    return ((parseInt(a.idr) || 0) - (parseInt(b.idr) || 0)) * direction;
                 default:
                     return (new Date(a.date) - new Date(b.date)) * direction;
             }
@@ -4830,7 +4852,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Toggle direction
                     currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
                 } else {
-                    // New column, default to asc (except date/mark maybe?)
+                    // New column, default to asc (except date/mark)
                     currentSort.column = column;
                     currentSort.direction = ['date', 'mark'].includes(column) ? 'desc' : 'asc';
                 }
