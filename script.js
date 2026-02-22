@@ -2350,7 +2350,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (archivedIds.has(r.id)) return false;
             const ev = events.find(e => e.name === r.event);
             const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
-            return !isRelay;
+            if (isRelay) return false;
+
+            if (fTrackType !== 'all') {
+                if ((r.trackType || 'Outdoor') !== fTrackType) return false;
+            }
+            return true;
         }).map(r => calculateRecordWMAStats({ ...r }));
 
         // Aggregate per athlete
@@ -2400,6 +2405,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fName = nameEl ? nameEl.value : 'all';
         const fGender = document.getElementById('rankingsFilterGender')?.value || 'all';
         const fAge = ageEl ? ageEl.value : 'all';
+        const fTrackType = document.getElementById('rankingsFilterTrackType')?.value || 'all';
 
         if (fName !== 'all') data = data.filter(d => d.name === fName);
         if (fGender !== 'all') data = data.filter(d => d.gender === fGender);
@@ -2472,6 +2478,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selGender = document.getElementById('wmaReportFilterGender')?.value || 'all';
         const selAgeGroup = document.getElementById('wmaReportFilterAgeGroup')?.value || 'all';
         const selYear = document.getElementById('wmaReportFilterYear')?.value || 'all';
+        const selTrackType = document.getElementById('wmaReportFilterTrackType')?.value || 'all';
 
         // Base records (non-empty)
         const baseRecords = records.filter(r => r.athlete && r.mark && r.athlete.trim() !== '' && r.mark.trim() !== '');
@@ -2491,7 +2498,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (y !== selYear) return false;
             }
             if (!exclusions.ageGroup && selAgeGroup !== 'all') {
-                const athleteObj = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+                const athleteObj = findAthleteByNormalizedName(r.athlete);
                 let ageAtEvent = 0;
                 if (athleteObj && athleteObj.dob && r.date) {
                     ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
@@ -2505,6 +2512,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const g = normalizeGenderLookups(r.gender);
                 const prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
                 if (`${prefix}${floorAge}` !== selAgeGroup) return false;
+            }
+            if (!exclusions.trackType && selTrackType !== 'all') {
+                if ((r.trackType || 'Outdoor') !== selTrackType) return false;
             }
             return true;
         };
@@ -2548,7 +2558,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const relevantGroups = allPossibleGroups.filter(g_loop => {
             return baseRecords.some(r => {
                 if (!matches(r, { ageGroup: true })) return false;
-                const athleteObj = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+                const athleteObj = findAthleteByNormalizedName(r.athlete);
                 let ageAtEvent = 0;
                 if (athleteObj && athleteObj.dob && r.date) {
                     ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
@@ -2560,7 +2570,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const floorAge = Math.floor(ageAtEvent / 5) * 5;
                 const gNorm = normalizeGenderLookups(r.gender);
                 const prefix = gNorm === 'men' ? 'M' : (gNorm === 'women' ? 'W' : 'X');
-                return `${prefix}${floorAge}` === g_loop;
+                const groupName = `${prefix}${floorAge}`;
+                return groupName === g_loop;
             });
         });
         updateSelect('wmaReportFilterAgeGroup', relevantGroups, selAgeGroup);
@@ -2822,6 +2833,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fGender = document.getElementById('wmaReportFilterGender')?.value || 'all';
         const fAgeGroup = document.getElementById('wmaReportFilterAgeGroup')?.value || 'all';
         const fYear = document.getElementById('wmaReportFilterYear')?.value || 'all';
+        const fTrackType = document.getElementById('wmaReportFilterTrackType')?.value || 'all';
 
         const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
 
@@ -2849,7 +2861,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (fAgeGroup !== 'all') {
-                const athleteObj = athletes.find(a => `${a.lastName}, ${a.firstName}` === r.athlete);
+                const athleteObj = findAthleteByNormalizedName(r.athlete);
                 let ageAtEvent = 0;
                 if (athleteObj && athleteObj.dob && r.date) {
                     ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
@@ -2862,6 +2874,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const g = normalizeGenderLookups(r.gender);
                 const prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
                 if (`${prefix}${floorAge}` !== fAgeGroup) return false;
+            }
+
+            if (fTrackType !== 'all') {
+                if ((r.trackType || 'Outdoor') !== fTrackType) return false;
             }
 
             // --- Exclude Relays from WMA Statistics ---

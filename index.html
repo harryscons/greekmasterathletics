@@ -132,7 +132,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.15.030</span>
+                        <span class="version-label">v2.15.031</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -1157,6 +1157,15 @@
                                     </select>
                                 </div>
                                 <div class="form-group" style="flex:1; min-width:100px; margin-bottom:0;">
+                                    <label style="font-size: 0.75rem; margin-bottom: 2px;">Track</label>
+                                    <select id="wmaReportFilterTrackType" class="form-control"
+                                        style="padding: 4px 8px; height: auto;" onchange="renderWMAReport()">
+                                        <option value="all">All</option>
+                                        <option value="Outdoor">Outdoor</option>
+                                        <option value="Indoor">Indoor</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:100px; margin-bottom:0;">
                                     <label style="font-size: 0.75rem; margin-bottom: 2px;">Age</label>
                                     <select id="wmaReportFilterAgeGroup" class="form-control"
                                         style="padding: 4px 8px; height: auto;" onchange="renderWMAReport()">
@@ -1219,6 +1228,12 @@
                                 <select id="rankingsFilterAgeGroup" class="form-control" style="width:auto;"
                                     onchange="renderRankings()">
                                     <option value="all">All Age Groups</option>
+                                </select>
+                                <select id="rankingsFilterTrackType" class="form-control" style="width:auto;"
+                                    onchange="renderRankings()">
+                                    <option value="all">All Tracks</option>
+                                    <option value="Outdoor">Outdoor</option>
+                                    <option value="Indoor">Indoor</option>
                                 </select>
                             </div>
                             <table class="report-table">
