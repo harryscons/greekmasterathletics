@@ -57,6 +57,17 @@
                 style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
         </div>
     </div>
+    </div>
+    <script>
+        // Native fail-safe to guarantee overlay dismissal even if main JS crashes heavily
+        setTimeout(() => {
+            const ol = document.getElementById('initial-loading-overlay');
+            if (ol && ol.style.display !== 'none') {
+                console.warn('Native failsafe: Hiding stuck overlay.');
+                ol.style.display = 'none';
+            }
+        }, 8000);
+    </script>
     <div class="background-glow"></div>
 
     <div class="app-container">
@@ -154,7 +165,7 @@
                                 <button id="btnThemeWhite" title="Clean White (Light)"
                                     style="width: 20px; height: 20px; border-radius: 4px; border: 1px solid #e5e7eb; background: #ffffff; cursor: pointer; padding: 0;"></button>
                             </div>
-                            <span class="version-label">v2.15.062</span>
+                            <span class="version-label">v2.15.063</span>
                         </div>
                     </div>
 

@@ -79,10 +79,14 @@ document.addEventListener('DOMContentLoaded', () => {
             isDataReady = true;
 
             // Minimal Startup: Just index and render
-            rebuildPerformanceIndexes();
-            renderAll();
-
-            hideInitialLoadingOverlay();
+            try {
+                rebuildPerformanceIndexes();
+                renderAll();
+            } catch (e) {
+                console.error("🔥 Error during Data Ready Rendering:", e);
+            } finally {
+                hideInitialLoadingOverlay();
+            }
         }
     }
 
@@ -1327,10 +1331,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadLocalDataOnly() {
         console.log("Loading data from LocalStorage fallback...");
         isDataReady = true;
-        if (typeof runPostLoadMaintenance === 'function') {
-            runPostLoadMaintenance();
-        } else {
-            renderAll();
+        try {
+            if (typeof runPostLoadMaintenance === 'function') {
+                runPostLoadMaintenance();
+            } else {
+                renderAll();
+            }
+        } catch (e) {
+            console.error("🔥 Error during loadLocalDataOnly:", e);
+        } finally {
+            hideInitialLoadingOverlay();
         }
     }
 
@@ -1409,20 +1419,29 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        setupEventListeners();
-        setupTableSorting(); // Initialize sorting listeners
-        renderAll();
+        try {
+            setupEventListeners();
+            setupTableSorting(); // Initialize sorting listeners
+            renderAll();
+        } catch (e) {
+            console.error("🔥 Error during synchronous init rendering:", e);
+        }
 
         // Safety Timeout: Force Data Ready if Firebase hangs
         setTimeout(() => {
-            if (!isDataReady) {
-                console.warn("⚠️ Data Sync Timeout: Forcing System Ready state to allow interaction.");
-                isDataReady = true;
-                rebuildPerformanceIndexes();
-                renderAll();
+            try {
+                if (!isDataReady) {
+                    console.warn("⚠️ Data Sync Timeout: Forcing System Ready state to allow interaction.");
+                    isDataReady = true;
+                    rebuildPerformanceIndexes();
+                    renderAll();
+                }
+            } catch (e) {
+                console.error("🔥 Error during forced Maintenance:", e);
+            } finally {
+                // Always hide overlay after timeout
+                hideInitialLoadingOverlay();
             }
-            // Always hide overlay after timeout
-            hideInitialLoadingOverlay();
         }, 5000);
 
         // General Settings Init
