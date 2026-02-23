@@ -67,22 +67,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkReady() {
         if (isDataReady) return;
+
+        // Update Sync Progress Bar
+        const progress = (loadedNodes.size / CORE_NODES.length) * 100;
+        const progressBar = document.getElementById('sync-progress-bar');
+        if (progressBar) progressBar.style.width = progress + '%';
+
         // Verify we have received snapshots for all critical data nodes
         if (loadedNodes.size >= CORE_NODES.length) {
             console.log("✅ Data Consensus Reached. System is now READY.");
             isDataReady = true;
 
-            // Now safe to run migrations and seeding
-            try {
-                if (typeof runPostLoadMaintenance === 'function') {
-                    runPostLoadMaintenance();
-                } else {
-                    renderAll();
-                }
-            } catch (e) {
-                console.error("🔥 Error during Post-Load Maintenance:", e);
-                renderAll(); // Fallback: try to render at least
-            }
+            // Minimal Startup: Just index and render
+            rebuildPerformanceIndexes();
+            renderAll();
 
             hideInitialLoadingOverlay();
         }
@@ -563,7 +561,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCountryList();
         // Persist and re-render
         saveRecords();
-        markStatsDirty();
         renderAll();
 
         // Also populate sub-feature dropdowns
@@ -1421,15 +1418,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isDataReady) {
                 console.warn("⚠️ Data Sync Timeout: Forcing System Ready state to allow interaction.");
                 isDataReady = true;
-                try {
-                    if (typeof runPostLoadMaintenance === 'function') {
-                        runPostLoadMaintenance();
-                    } else {
-                        renderAll();
-                    }
-                } catch (e) {
-                    console.error("🔥 Error during forced Maintenance:", e);
-                }
+                rebuildPerformanceIndexes();
+                renderAll();
             }
             // Always hide overlay after timeout
             hideInitialLoadingOverlay();
@@ -3139,7 +3129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function recalculateAllWMAStats() {
-        if (!isAdmin) {
+        if (!isAdminUser(currentUser ? currentUser.email : null) && !isSupervisor(currentUser ? currentUser.email : null)) {
             alert('You must be logged in as an administrator to recalculate and save statistics.');
             return;
         }
@@ -3157,8 +3147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function markStatsDirty() {
-        console.log("🚩 Stats marked dirty. Recalculation will occur on next load.");
-        localStorage.setItem('tf_stats_dirty', 'true');
+        // DEPRECATED in v2.15.062 - using reactive triggers instead
     }
 
     async function preCalculateAllStats(force = false) {
@@ -3588,8 +3577,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveAthletes() {
         // ALWAYS save to LocalStorage first (Synchronous Backup)
         localStorage.setItem('tf_athletes', JSON.stringify(athletes));
-        markStatsDirty();
         rebuildPerformanceIndexes();
+        preCalculateAllStats(true); // Reactive calculation on athlete changes
 
         if (!isDataReady) {
             console.warn("Cloud Save aborted: System not ready (Synchronization in progress). Local backup saved.");
@@ -4094,7 +4083,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveEvents() {
         // ALWAYS save to LocalStorage first (Synchronous Backup)
         localStorage.setItem('tf_events', JSON.stringify(events));
-        markStatsDirty();
+        preCalculateAllStats(true); // Reactive calculation on event changes
 
         if (!isDataReady) return;
         if (db) db.ref('events').set(events);
@@ -4345,6 +4334,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveHistory();
                     renderHistoryList();
                 }
+                // History records don't need reactive calculations in live set
                 submitBtn.querySelector('span').textContent = 'History Updated! ✓';
                 setTimeout(() => {
                     cancelEdit();
@@ -4843,6 +4833,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {
             console.error("Local Save Failed:", e);
         }
+
+        // Trigger reactive calculation for any data changes
+        preCalculateAllStats(true);
 
         if (!isDataReady) {
             console.warn("Cloud Save aborted: System not ready (Synchronization in progress). Local backup saved.");
@@ -7123,12 +7116,8 @@ Replace ALL current data with this backup ? `;
         if (typeof cleanupDuplicateAthletes === 'function') cleanupDuplicateAthletes();
 
         // 5. Pre-calculation (Background)
-        // Delay calculation slightly to prioritize UI responsiveness
-        setTimeout(() => {
-            // Check if we need to force a recalculation due to data changes
-            const isDirty = localStorage.getItem('tf_stats_dirty') === 'true';
-            preCalculateAllStats(isDirty);
-        }, 1000);
+        // REMOVED IN v2.15.062 - using reactive triggers only
+
 
         // 6. Rendering & UI Population
         renderAll();
@@ -7248,6 +7237,7 @@ Replace ALL current data with this backup ? `;
                     savePendingRecs();
                 }
                 saveRecords();
+                preCalculateAllStats(true); // Reactive calculation on approval
                 renderReports();
                 console.log(`Approved DELETION for record ${targetId}`);
                 return;
