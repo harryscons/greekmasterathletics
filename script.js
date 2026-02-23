@@ -4575,12 +4575,13 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // 1. SET ALL BASIC FIELDS FIRST
-        // Always keep event, gender, trackType, ageGroup
+        // Always keep event and ageGroup. Event is locked for Update flow.
         setSelectValue(evtInput, r.event);
-        setSelectValue(genderInput, r.gender);
-        if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
+        if (evtInput) evtInput.disabled = isUpdateFlow;
 
         // Clear performance fields if updating to a new record
+        setSelectValue(genderInput, isUpdateFlow ? '' : r.gender);
+        if (trackTypeInput) trackTypeInput.value = isUpdateFlow ? '' : (r.trackType || 'Outdoor');
         if (raceNameInput) raceNameInput.value = isUpdateFlow ? '' : (r.raceName || '');
         if (notesInput) notesInput.value = isUpdateFlow ? '' : (r.notes || '');
         if (markInput) markInput.value = isUpdateFlow ? '' : (r.mark || '');
@@ -4652,6 +4653,7 @@ document.addEventListener('DOMContentLoaded', () => {
         previousTab = null; // Reset
         recordForm.reset();
         toggleRelayFields(false); // Reset to individual view
+        if (evtInput) evtInput.disabled = false; // Always re-enable on cancel
 
         if (datePicker) {
             datePicker.setDate(new Date());
@@ -5032,9 +5034,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 isAuthor = true; // User authored this record or is a Local Admin
                             }
                         }
-                        if (isSup || isAdm || isAuthor) {
+                        if (isSup || isAdm) {
                             return `
                                 <button class="btn-icon update-btn" onclick="editRecord('${r.id}', true)" title="Update With New Record (Archives Old)" style="color:var(--text); margin-right:5px; margin-left:5px;">🔄</button>
+                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">✏️</button>
+                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:5px;">🗑️</button>
+                            `;
+                        } else if (isAuthor) {
+                            return `
                                 <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">✏️</button>
                                 <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:5px;">🗑️</button>
                             `;
