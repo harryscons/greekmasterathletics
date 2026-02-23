@@ -428,6 +428,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("🔥 Error in Validating/Loading Records:", e);
                 alert("Data Sync Error: " + e.message);
             }
+        }, (err) => {
+            console.error("🔥 Firebase Permission Error (records):", err);
+            loadedNodes.add('records');
+            checkReady();
         });
 
         // Listen for Athletes
@@ -450,6 +454,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 populateAthleteFilter();
                 renderAthleteList();
             }
+        }, (err) => {
+            console.error("🔥 Firebase Permission Error (athletes):", err);
+            loadedNodes.add('athletes');
+            checkReady();
         });
 
         // Listen for Events
@@ -464,6 +472,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 populateEventDropdowns();
                 renderEventList();
             }
+        }, (err) => {
+            console.error("🔥 Firebase Permission Error (events):", err);
+            loadedNodes.add('events');
+            checkReady();
         });
 
         // Listen for Countries
@@ -477,6 +489,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 populateCountryDropdown();
                 renderCountryList();
             }
+        }, (err) => {
+            console.error("🔥 Firebase Permission Error (countries):", err);
+            loadedNodes.add('countries');
+            checkReady();
         });
 
         // Listen for History
@@ -487,6 +503,10 @@ document.addEventListener('DOMContentLoaded', () => {
             checkReady();
 
             renderHistoryList();
+        }, (err) => {
+            console.error("🔥 Firebase Permission Error (history):", err);
+            loadedNodes.add('history');
+            checkReady();
         });
 
         // Listen for Pending Records
@@ -496,6 +516,10 @@ document.addEventListener('DOMContentLoaded', () => {
             loadedNodes.add('pendingrecs');
             checkReady();
             renderReports(); // Re-render main report to show pending changes
+        }, (err) => {
+            console.error("🔥 Firebase Permission Error (pendingrecs):", err);
+            loadedNodes.add('pendingrecs');
+            checkReady();
         });
 
         // Listen for Users
@@ -510,6 +534,10 @@ document.addEventListener('DOMContentLoaded', () => {
             loadedNodes.add('users');
             checkReady();
             if (isDataReady) renderUserList();
+        }, (err) => {
+            console.warn("🛡️ Firebase Permission Refused (users): Normal for standard users.");
+            loadedNodes.add('users');
+            checkReady();
         });
     }
 
@@ -2410,7 +2438,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Aggregate per athlete
         const agg = {};
         eligible.forEach(r => {
-            const pts = parseFloat(r.wmaPoints);
+            let ptsVal = r.wmaPoints;
+
+            // Fallback for missing pre-calculated stats (e.g. startup failed or uncalculated)
+            if (ptsVal === undefined || ptsVal === 'Not Found' || ptsVal === '-') {
+                calculateRecordWMAStats(r);
+                ptsVal = r.wmaPoints;
+            }
+
+            const pts = parseFloat(ptsVal);
             if (isNaN(pts) || pts <= 0) return;
             if (!agg[r.athlete]) {
                 const ath = athleteLookupMap[r.athlete];
