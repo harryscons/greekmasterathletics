@@ -746,9 +746,8 @@ select:focus {
     font-size: 0.9rem;
 }
 
-.report-table tr.clickable-row:hover {
+.report-table tr:hover {
     background: var(--bg-card-hover);
-    cursor: pointer;
 }
 
 /* Table Actions */
@@ -931,8 +930,8 @@ select:focus {
     left: 0;
     width: 100%;
     height: 100%;
-    background: transparent;
-    backdrop-filter: none;
+    background: var(--bg-modal);
+    backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -942,62 +941,15 @@ select:focus {
 
 /* Modal Content */
 .modal-content {
-    width: 95%;
-    max-width: 1200px;
+    width: 90%;
+    max-width: 600px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 20px;
-    padding: 1.5rem 2rem;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-    position: relative;
-    animation: modalSlide 0.3s ease-out;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-/* In-Modal Form Styling */
-.modal-form-container {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group-modal {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.form-group-modal label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.form-group-modal input,
-.form-group-modal select,
-.form-group-modal textarea {
-    padding: 10px;
-    border-radius: 8px;
-    background: var(--bg-input);
-    color: var(--text-input);
-    border: 1px solid var(--border);
-    font-size: 0.95rem;
-    transition: 0.2s;
-}
-
-.form-group-modal input:focus,
-.form-group-modal select:focus,
-.form-group-modal textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-}
-
-.form-group-modal input[readonly] {
-    cursor: not-allowed;
-    opacity: 0.7;
+    padding: 2rem;
+    box-shadow: 0 25px 80px -12px var(--primary-glow);
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 
@@ -1329,57 +1281,13 @@ td>div {
         padding: 0.3rem 0.6rem;
     }
 }
-
 /* Animations & Utility */
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .fade-out {
     opacity: 0 !important;
     visibility: hidden !important;
-}
-
-/* Record Detail Table Styles */
-.detail-container {
-    background: var(--bg-input);
-    border-radius: 8px;
-    padding: 1rem;
-    border: 1px solid var(--border);
-}
-
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.8rem 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.detail-row:last-child {
-    border-bottom: none;
-}
-
-.detail-label {
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-.detail-value {
-    color: var(--text-main);
-    font-weight: 600;
-}
-
-.report-table tbody tr {
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.report-table tbody tr:hover {
-    background: var(--bg-hover) !important;
 }

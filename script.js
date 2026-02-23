@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadedNodes = new Set();
     const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
     let isSuppressingAutoFill = false; // Prevents change events from overwriting edit form data
-    let isRecordUpdateFlow = false; // Flag to distinguish between Edit (no history) and Update (archiving)
 
     function checkReady() {
         if (isDataReady) return;
@@ -4269,20 +4268,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (isSup) {
                         try {
-                            // Archive ONLY if it's an Update Flow (New performance)
-                            if (isRecordUpdateFlow) {
-                                const oldRecordData = { ...originalRecord };
-                                oldRecordData.archivedAt = new Date().toISOString();
-                                oldRecordData.originalId = String(oldRecordData.id); // Link to original
-                                oldRecordData.updatedBy = getCurrentUsername();
-                                oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                            // Supervisor Direct Edit -> Archive Old
+                            const oldRecordData = { ...originalRecord };
+                            oldRecordData.archivedAt = new Date().toISOString();
+                            oldRecordData.originalId = String(oldRecordData.id); // Link to original
+                            // Attribution for the archive entry matches the current session user
+                            oldRecordData.updatedBy = getCurrentUsername();
+                            oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
 
-                                history.unshift(oldRecordData);
-                                saveHistory();
-                                console.log("Record Archived (Update Flow)");
-                            } else {
-                                console.log("Record updated in-place (Edit Flow - No History)");
-                            }
+                            history.unshift(oldRecordData);
+                            saveHistory();
 
                             // Update Live Record in place
                             records[index] = newRecord;
@@ -4294,7 +4289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             renderAthleteList();
                             populateYearDropdown();
 
-                            submitBtn.querySelector('span').textContent = isRecordUpdateFlow ? 'Updated & Archived! ✓' : 'Record Updated! ✓';
+                            submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
                         } catch (err) {
                             console.error("Error archiving/updating record:", err);
                             alert("Failed to update record: " + err.message);
@@ -5065,353 +5060,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // --- Add Double-Click to show Record Details (Admin/Supervisor ONLY) ---
-            const isSup = isSupervisor(currentUser ? currentUser.email : null);
-            const isAdm = isAdminUser(currentUser ? currentUser.email : null);
-
-            if (isSup || isAdm) {
-                tr.classList.add('clickable-row');
-                tr.addEventListener('dblclick', () => {
-                    showRecordDetails(r.id);
-                });
-            }
-
             reportTableBody.appendChild(tr);
         });
     }
-
-    window.showRecordDetails = function (recordId, isEditing = false, isUpdateFlow = false) {
-        const r = records.find(rec => String(rec.id) === String(recordId));
-        if (!r) return;
-
-        const athlete = findAthleteByNormalizedName(r.athlete);
-        let dob = 'Not available';
-        if (athlete && athlete.dob) {
-            try {
-                const [y, m, d] = athlete.dob.split('-');
-                if (y && m && d) dob = `${d}/${m}/${y}`;
-                else dob = athlete.dob;
-            } catch (e) {
-                dob = athlete.dob;
-            }
-        }
-
-        const formattedDate = new Date(r.date).toLocaleDateString('en-GB');
-
-        const content = document.getElementById('recordDetailContent');
-        if (!content) return;
-
-        if (isEditing) {
-            // --- EDIT MODE ---
-            let markVal = isUpdateFlow ? '' : r.mark || '';
-            let windVal = isUpdateFlow ? '' : r.wind || '';
-            let dateVal = isUpdateFlow ? new Date().toISOString().split('T')[0] : r.date || '';
-            let townVal = isUpdateFlow ? '' : r.town || '';
-            let raceVal = isUpdateFlow ? '' : r.raceName || '';
-            let notesVal = isUpdateFlow ? '' : r.notes || '';
-            let idrVal = isUpdateFlow ? '' : r.idr || '';
-            let trackVal = r.trackType || 'Outdoor';
-            let currentCountry = isUpdateFlow ? '' : r.country || '';
-
-            // Generate Options
-            const countryOptions = countries.map(c => `
-                <option value="${c.code}" ${c.code === currentCountry ? 'selected' : ''}>${c.name} (${c.code})</option>
-            `).join('');
-
-            const athleteOptions = (athletes || []).map(a => {
-                const nameText = a.isTeam ? `${a.teamName || 'Unnamed Team'} [TEAM]` : `${a.lastName}${a.lastName ? ', ' : ''}${a.firstName}`;
-                const val = a.isTeam ? (a.teamName || '') : `${a.lastName}, ${a.firstName}`;
-                return `<option value="${val}" ${val === r.athlete ? 'selected' : ''}>${nameText} ${a.idNumber ? `(#${a.idNumber})` : ''}</option>`;
-            }).join('');
-
-            const eventOptions = (events || []).map(e => `
-                <option value="${e.name}" ${e.name === r.event ? 'selected' : ''}>${e.name}</option>
-            `).join('');
-
-            content.innerHTML = `
-                <div class="modal-form-container">
-                    <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1.15rem; font-weight: 700;">${isUpdateFlow ? '🔄 Update with New Record' : '✏️ Edit Record Data'}</h3>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                        <div class="form-group-modal">
-                            <label>Event</label>
-                            <select id="modal-event">
-                                <option value="">Select Event...</option>
-                                ${eventOptions}
-                            </select>
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Athlete</label>
-                            <select id="modal-athlete">
-                                <option value="">Select Athlete...</option>
-                                ${athleteOptions}
-                            </select>
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Gender</label>
-                            <select id="modal-gender">
-                                <option value="Male" ${r.gender === 'Male' ? 'selected' : ''}>Male</option>
-                                <option value="Female" ${r.gender === 'Female' ? 'selected' : ''}>Female</option>
-                            </select>
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Age Group</label>
-                            <input type="text" id="modal-ageGroup" value="${r.ageGroup}">
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Track Type</label>
-                            <select id="modal-trackType">
-                                <option value="Outdoor" ${trackVal === 'Outdoor' ? 'selected' : ''}>Outdoor</option>
-                                <option value="Indoor" ${trackVal === 'Indoor' ? 'selected' : ''}>Indoor</option>
-                            </select>
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Date</label>
-                            <input type="date" id="modal-date" value="${dateVal}">
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Mark</label>
-                            <input type="text" id="modal-mark" value="${markVal}" placeholder="e.g. 10.55">
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Wind</label>
-                            <input type="text" id="modal-wind" value="${windVal}" placeholder="e.g. +1.2">
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Record Code (IDR)</label>
-                            <input type="text" id="modal-idr" value="${idrVal}" placeholder="e.g. NR">
-                        </div>
-                         <div class="form-group-modal">
-                            <label>Country</label>
-                            <select id="modal-country">
-                                <option value="">Select Country...</option>
-                                ${countryOptions}
-                            </select>
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Location (Town)</label>
-                            <input type="text" id="modal-town" value="${townVal}" placeholder="e.g. Athens">
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Competition (Race)</label>
-                            <input type="text" id="modal-race" value="${raceVal}" placeholder="e.g. National C'ship">
-                        </div>
-                    </div>
-                    <div class="form-group-modal" style="margin-top: 15px;">
-                        <label>Notes</label>
-                        <textarea id="modal-notes" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--bg-input); color: var(--text-input); border: 1px solid var(--border); font-family: inherit;">${notesVal}</textarea>
-                    </div>
-                    
-                    <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 10px; justify-content: flex-end;">
-                        <button onclick="showRecordDetails('${recordId}')" class="btn-secondary" style="padding: 0.5rem 1rem;">Cancel</button>
-                        <button onclick="handleModalSave('${recordId}', ${isUpdateFlow})" class="btn-primary" style="padding: 0.5rem 1.5rem;">💾 Save Changes</button>
-                    </div>
-                </div>
-            `;
-            setTimeout(() => {
-                const mk = document.getElementById('modal-mark');
-                if (mk) mk.focus();
-
-                const modAthlete = document.getElementById('modal-athlete');
-                const modDate = document.getElementById('modal-date');
-                const modAge = document.getElementById('modal-ageGroup');
-                const modGender = document.getElementById('modal-gender');
-
-                const updateModalAge = () => {
-                    if (!modAthlete || !modDate || !modAge) return;
-                    const athleteName = modAthlete.value;
-                    const dateVal = modDate.value;
-                    if (!athleteName || !dateVal) return;
-
-                    const athleteData = findAthleteByNormalizedName(athleteName);
-                    if (athleteData) {
-                        if (modGender && athleteData.gender) {
-                            modGender.value = athleteData.gender;
-                        }
-                        const cat = calculateAgeGroup(athleteData.dob, dateVal);
-                        if (cat) {
-                            modAge.value = cat;
-                        }
-                    }
-                };
-
-                if (modAthlete) modAthlete.addEventListener('change', updateModalAge);
-                if (modDate) modDate.addEventListener('change', updateModalAge);
-            }, 100);
-        } else {
-            // --- VIEW MODE ---
-            content.innerHTML = `
-                <div class="detail-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                    <div class="detail-row"><span class="detail-label">Event:</span><span class="detail-value">${r.event}</span></div>
-                    <div class="detail-row"><span class="detail-label">Athlete:</span><span class="detail-value">${r.athlete} ${athlete && athlete.isTeam ? '(Team)' : ''}</span></div>
-                    <div class="detail-row"><span class="detail-label">Birth Date:</span><span class="detail-value">${dob}</span></div>
-                    <div class="detail-row"><span class="detail-label">Gender:</span><span class="detail-value">${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</span></div>
-                    <div class="detail-row"><span class="detail-label">Age Group:</span><span class="detail-value">${r.ageGroup || '-'}</span></div>
-                    <div class="detail-row"><span class="detail-label">Track Type:</span><span class="detail-value">${r.trackType || 'Outdoor'}</span></div>
-                    <div class="detail-row"><span class="detail-label">Mark:</span><span class="detail-value" style="font-size: 1.2rem; color: var(--accent);">${formatTimeMark(r.mark, r.event)}</span></div>
-                    <div class="detail-row"><span class="detail-label">Wind:</span><span class="detail-value">${r.wind || '-'}</span></div>
-                    <div class="detail-row"><span class="detail-label">Record Code (IDR):</span><span class="detail-value">${r.idr || '-'}</span></div>
-                    <div class="detail-row"><span class="detail-label">Country:</span><span class="detail-value">${r.country || '-'}</span></div>
-                    <div class="detail-row"><span class="detail-label">Date:</span><span class="detail-value">${formattedDate}</span></div>
-                    <div class="detail-row"><span class="detail-label">Location:</span><span class="detail-value">${r.town || '-'}</span></div>
-                    <div class="detail-row"><span class="detail-label">Competition:</span><span class="detail-value">${r.raceName || '-'}</span></div>
-                </div>
-
-                <div class="detail-row" style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
-                    <span class="detail-label">Notes:</span>
-                    <span class="detail-value" style="word-break: break-word; line-height: 1.6;">${r.notes || '-'}</span>
-                </div>
-                
-                <div class="modal-actions" style="margin-top: 2rem; display: flex; gap: 15px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                    <button onclick="closeRecordDetailModal()" class="btn-secondary" style="padding: 0.6rem 1.2rem;">Close</button>
-                    <button onclick="showRecordDetails('${recordId}', true, true)" class="btn-primary" style="padding: 0.6rem 1.5rem; background: var(--accent);">🔄 Update with New Record</button>
-                    <button onclick="showRecordDetails('${recordId}', true)" class="btn-primary" style="padding: 0.6rem 1.5rem;">✏️ Edit Details</button>
-                </div>
-            `;
-        }
-
-        const modal = document.getElementById('recordDetailModal');
-        if (modal) modal.classList.remove('hidden');
-    };
-
-    window.handleModalSave = function (recordId, isUpdateFlow) {
-        const r = records.find(rec => String(rec.id) === String(recordId));
-        if (!r) return;
-
-        const modalEvent = document.getElementById('modal-event').value;
-        const modalAthlete = document.getElementById('modal-athlete').value;
-        const modalGender = document.getElementById('modal-gender').value;
-        const modalAgeGroup = document.getElementById('modal-ageGroup').value.trim();
-        const modalDate = document.getElementById('modal-date').value;
-        const modalMark = document.getElementById('modal-mark').value.trim();
-        const modalWind = document.getElementById('modal-wind').value.trim();
-        const modalIDR = document.getElementById('modal-idr').value.trim();
-        const modalTown = document.getElementById('modal-town').value.trim();
-        const modalRace = document.getElementById('modal-race').value.trim();
-        const modalNotes = document.getElementById('modal-notes').value.trim();
-        const modalTrack = document.getElementById('modal-trackType').value;
-        const modalCountry = document.getElementById('modal-country').value.trim();
-
-        if (!modalMark || !modalDate || !modalEvent || !modalAthlete) {
-            alert("Event, Athlete, Mark and Date are required!");
-            return;
-        }
-
-        const isSupervisorUser = isSupervisor(currentUser ? currentUser.email : null);
-        const currentUsername = getCurrentUsername();
-
-        const newRecord = {
-            id: isUpdateFlow ? String(Date.now() + '-' + Math.floor(Math.random() * 10000)) : r.id,
-            event: modalEvent,
-            gender: modalGender,
-            ageGroup: modalAgeGroup,
-            trackType: modalTrack,
-            athlete: modalAthlete,
-            isRelay: r.isRelay || false,
-            approved: isSupervisorUser,
-            relayParticipants: r.relayParticipants || [],
-            raceName: modalRace,
-            idr: modalIDR,
-            notes: modalNotes,
-            mark: modalMark,
-            wind: modalWind,
-            date: modalDate,
-            town: modalTown,
-            country: modalCountry,
-            updatedBy: currentUsername
-        };
-
-        calculateRecordWMAStats(newRecord);
-
-        if (isSupervisorUser) {
-            const index = records.findIndex(rec => String(rec.id) === String(recordId));
-            if (index !== -1) {
-                if (isUpdateFlow) {
-                    const oldRecordData = { ...records[index] };
-                    oldRecordData.archivedAt = new Date().toISOString();
-                    oldRecordData.originalId = String(oldRecordData.id);
-                    oldRecordData.updatedBy = currentUsername;
-                    oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
-
-                    history.unshift(oldRecordData);
-                    saveHistory();
-
-                    records[index] = newRecord;
-                } else {
-                    records[index] = newRecord;
-                }
-                saveRecords();
-                renderReports();
-                closeRecordDetailModal();
-                alert(isUpdateFlow ? "New performance logged & old archived! ✓" : "Record updated! ✓");
-            }
-        } else {
-            newRecord.isPending = true;
-            newRecord.replacesId = recordId;
-            newRecord.updateType = isUpdateFlow ? 'performance' : 'typo';
-
-            pendingrecs.unshift(newRecord);
-            savePendingRecs();
-            renderReports();
-            closeRecordDetailModal();
-            alert("Your changes have been submitted for Supervisor approval.");
-        }
-
-        populateYearDropdown();
-        renderAthleteList();
-    };
-
-    window.closeRecordDetailModal = function () {
-        const modal = document.getElementById('recordDetailModal');
-        if (modal) modal.classList.add('hidden');
-    };
-
-    window.prepareRecordUpdate = function (recordId) {
-        const r = records.find(rec => String(rec.id) === String(recordId));
-        if (!r) return;
-
-        // Pre-fill form for a NEW record based on existing athlete/event
-        switchTab('log');
-
-        if (recordForm) recordForm.reset();
-
-        // 1. Preserve Core Fields (Athlete, Event, Gender, Category)
-        if (evtInput) evtInput.value = r.event;
-        if (genderInput) genderInput.value = r.gender;
-        if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
-        if (ageGroupInput) ageGroupInput.value = r.ageGroup;
-
-        // Athlete selection dropdown
-        const athleteSelect = document.getElementById('athlete');
-        if (athleteSelect) {
-            athleteSelect.value = r.athlete;
-            athleteSelect.dispatchEvent(new Event('change'));
-        }
-
-        // 2. Set Date to Today
-        const today = new Date().toISOString().split('T')[0];
-        if (dateInput) {
-            if (datePicker) datePicker.setDate(today);
-            else dateInput.value = today;
-        }
-
-        // 3. Ensure performance fields are BLANK (redundant because of reset, but safe)
-        if (markInput) markInput.value = '';
-        if (windInput) windInput.value = '';
-        if (townInput) townInput.value = '';
-        if (raceNameInput) raceNameInput.value = '';
-        if (notesInput) notesInput.value = '';
-        if (idrInput) idrInput.value = '';
-
-        // Reset editing IDs so it's treated as a replacement of recordId
-        editingId = recordId;
-        // IMPORTANT: handleFormSubmit uses editingId to know which record to replacesId. 
-        // We want archiving to happen here if isRecordUpdateFlow is true.
-
-        // Focus on mark input for quick entry
-        if (markInput) markInput.focus();
-
-        console.log("Prepared form for new record update (archiving flow) based on record:", recordId);
-    };
 
     function getExportData() {
         // Enforce STRICT approval check (must be explicitly true)
@@ -7579,4 +7230,3 @@ Replace ALL current data with this backup ? `;
     }
 
 });
-
