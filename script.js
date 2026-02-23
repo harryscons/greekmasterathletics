@@ -5240,7 +5240,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // --- VIEW MODE ---
             content.innerHTML = `
-                <div class="detail-container">
+                <div class="detail-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
                     <div class="detail-row"><span class="detail-label">Event:</span><span class="detail-value">${r.event}</span></div>
                     <div class="detail-row"><span class="detail-label">Athlete:</span><span class="detail-value">${r.athlete} ${athlete && athlete.isTeam ? '(Team)' : ''}</span></div>
                     <div class="detail-row"><span class="detail-label">Birth Date:</span><span class="detail-value">${dob}</span></div>
@@ -5254,16 +5254,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="detail-row"><span class="detail-label">Date:</span><span class="detail-value">${formattedDate}</span></div>
                     <div class="detail-row"><span class="detail-label">Location:</span><span class="detail-value">${r.town || '-'}</span></div>
                     <div class="detail-row"><span class="detail-label">Competition:</span><span class="detail-value">${r.raceName || '-'}</span></div>
-                    <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 5px;">
-                        <span class="detail-label">Notes:</span>
-                        <span class="detail-value" style="font-style: italic; color: var(--text-muted); font-weight: 400; white-space: pre-wrap;">${r.notes || '-'}</span>
-                    </div>
                 </div>
 
-                <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                    <button onclick="showRecordDetails('${recordId}', true, false)" class="btn-secondary" style="background: rgba(139, 92, 246, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 0.5rem 1rem;">✏️ Edit</button>
-                    <button onclick="deleteRecord('${recordId}'); closeRecordDetailModal();" class="btn-danger" style="padding: 0.5rem 1rem;">🗑️ Delete</button>
-                    <button onclick="showRecordDetails('${recordId}', true, true)" class="btn-primary" style="padding: 0.5rem 1rem;">🔄 Update with new record</button>
+                <div class="detail-row" style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
+                    <span class="detail-label">Notes:</span>
+                    <span class="detail-value" style="word-break: break-word; line-height: 1.6;">${r.notes || '-'}</span>
+                </div>
+                
+                <div class="modal-actions" style="margin-top: 2rem; display: flex; gap: 15px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                    <button onclick="closeRecordDetailModal()" class="btn-secondary" style="padding: 0.6rem 1.2rem;">Close</button>
+                    <button onclick="showRecordDetails('${recordId}', true, true)" class="btn-primary" style="padding: 0.6rem 1.5rem; background: var(--accent);">🔄 Update with New Record</button>
+                    <button onclick="showRecordDetails('${recordId}', true)" class="btn-primary" style="padding: 0.6rem 1.5rem;">✏️ Edit Details</button>
                 </div>
             `;
         }
