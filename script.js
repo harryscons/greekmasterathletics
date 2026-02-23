@@ -4621,7 +4621,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Clear performance fields if updating to a new record
         setSelectValue(genderInput, isUpdateFlow ? '' : r.gender);
-        if (trackTypeInput) trackTypeInput.value = isUpdateFlow ? '' : (r.trackType || 'Outdoor');
+        if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
         if (raceNameInput) raceNameInput.value = isUpdateFlow ? '' : (r.raceName || '');
         if (notesInput) notesInput.value = isUpdateFlow ? '' : (r.notes || '');
         if (markInput) markInput.value = isUpdateFlow ? '' : (r.mark || '');
