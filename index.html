@@ -183,10 +183,34 @@
                             </select>
                         </div>
 
-                        <div class="actions-bar">
-                            <button id="exportExcel" class="btn-small">📊 Excel (CSV)</button>
-                            <button id="exportHTML" class="btn-small">🌐 HTML</button>
-                            <button id="exportPDF" class="btn-small">📄 PDF</button>
+                        <div class="actions-bar" style="display: flex; gap: 0.5rem; align-items: center;">
+                            <button id="btnNewRecordInline" class="btn-small" title="Log New Record"
+                                onclick="switchTab('log')"
+                                style="background: var(--primary); color: white; border-radius: 50%; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">➕</button>
+                            <div style="width: 1px; height: 24px; background: var(--border); margin: 0 0.25rem;"></div>
+
+                            <button id="exportExcel" class="btn-small btn-icon" title="Export to MS Excel"
+                                style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                                    <path fill="#4CAF50"
+                                        d="M41,10H25v28h16c0.553,0,1-0.447,1-1V11C42,10.447,41.553,10,41,10z" />
+                                    <path fill="#E8F5E9"
+                                        d="M32,15h7v2.5h-7V15z M32,20h7v2.5h-7V20z M32,25h7v2.5h-7V25z M32,30h7v2.5h-7V30z" />
+                                    <path fill="#2E7D32"
+                                        d="M25,10h-2L6,13v22l17,3h2V10z M17.063,29l-2.071-4.708l-2.158,4.708H9.728l3.655-7.013l-3.321-6.987h3.048l1.791,4.407L16.883,15h3.181l-3.267,6.804L20.446,29H17.063z" />
+                                </svg>
+                            </button>
+                            <button id="exportHTML" class="btn-small btn-icon" title="View as HTML Report"
+                                style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; min-width: 32px; min-height: 32px;">🌐</button>
+                            <button id="exportPDF" class="btn-small btn-icon" title="Export to PDF"
+                                style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                                    <path fill="#F44336"
+                                        d="M38,10H10c-1.105,0-2,0.895-2,2v24c0,1.105,0.895,2,2,2h28c1.105,0,2-0.895,2-2V12C40,10.895,39.105,10,38,10z" />
+                                    <path fill="#FFFFFF"
+                                        d="M21.059,20.081c-0.291-1.025-0.655-2.083-1.066-3.085c-1.196-2.903-2.613-4.524-3.567-4.524c-0.244,0-0.457,0.088-0.638,0.25c-0.445,0.404-0.613,1.38-0.465,2.748C15.539,17.452,16.513,19.349,21.059,20.081z M15.688,31.758c0.669-0.584,2.23-2.185,4.359-4.809C18.423,28.855,16.924,30.686,15.688,31.758z M33.166,24.811c-1.579-0.27-4.331-0.288-7.733,0.301c-1.554-1.396-2.922-3.056-4.04-4.821c1.233-1.603,2.029-3.238,2.378-4.646c0.41-1.657,0.485-3.089,0.222-4.225c-0.418-1.83-1.576-2.92-2.951-2.92c-1.105,0-2.062,0.618-2.628,1.86c-0.654,1.439-0.784,3.535-0.342,5.744c-0.016,0.076-0.038,0.155-0.053,0.231c-0.323,1.604-0.864,3.313-1.565,4.98c-0.373,0.891-0.781,1.803-1.221,2.72c-2.478-0.288-5.322-0.086-7.397,0.511c-1.393,0.4-2.228,0.926-2.585,1.551c-0.325,0.575-0.345,1.258-0.081,1.966c0.605,1.621,2.83,2.067,5.084,0.14c1.177-1.002,2.384-2.463,3.619-4.21c2.183-1.285,4.52-2.316,6.953-3.13C24.3,23.36,25.437,25.33,26.471,27.057c0,0,0.007,0.015,0.007,0.015c-1.6,2.296-3.013,4.685-3.791,6.386c-0.347,0.76-0.585,1.408-0.686,1.936c-0.203,1.065,0.134,2.022,1.033,2.361c0.403,0.153,0.875,0.187,1.487,0.058c1.373-0.288,2.693-1.58,3.905-3.921c0.916-1.782,1.564-4.047,1.967-6.261c1.849-0.246,3.67-0.316,5.333-0.146c1.625,0.165,2.943,0.613,3.537,1.383c0.407,0.529,0.485,1.048,0.301,1.516c-0.25,0.635-0.902,1.076-1.928,1.3C35.807,32.064,34.185,27.971,33.166,24.811z M27.872,25.864c-0.915-1.521-1.996-3.328-3.098-5.321c1.235,0.64,2.392,1.354,3.42,2.155C28.232,23.778,28.093,24.832,27.872,25.864z M25.842,32.96c-0.697,1.469-1.393,2.238-1.895,2.344c-0.084,0.018-0.108,0.008-0.132-0.017c-0.3-0.306-0.021-1.4,0.375-2.275c0.648-1.423,1.879-3.565,3.284-5.632C27.093,29.395,26.54,31.488,25.842,32.96z" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
 

@@ -2168,6 +2168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (reportTableBody) {
         reportTableBody.addEventListener('click', (e) => {
             const expandBtn = e.target.closest('.expand-btn');
+            const updateBtn = e.target.closest('.update-btn');
             const editBtn = e.target.closest('.edit-btn');
             const delBtn = e.target.closest('.delete-btn');
 
@@ -2179,6 +2180,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
                 }
             }
+            if (updateBtn) editRecord(updateBtn.dataset.id, true);
             if (editBtn) editRecord(editBtn.dataset.id);
             if (delBtn) deleteRecord(delBtn.dataset.id);
         });
@@ -5036,7 +5038,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         if (isSup || isAdm) {
                             return `
-                                <button class="btn-icon update-btn" onclick="editRecord('${r.id}', true)" title="Update With New Record (Archives Old)" style="color:var(--text); margin-right:5px; margin-left:5px;">🔄</button>
+                                <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="color:var(--text); margin-right:5px; margin-left:5px;">🔄</button>
                                 <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">✏️</button>
                                 <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:5px;">🗑️</button>
                             `;
