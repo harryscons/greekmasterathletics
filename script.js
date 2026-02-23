@@ -54,6 +54,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
     let isSuppressingAutoFill = false; // Prevents change events from overwriting edit form data
 
+    function hideInitialLoadingOverlay() {
+        const overlay = document.getElementById('initial-loading-overlay');
+        if (overlay && overlay.style.display !== 'none') {
+            console.log("🎬 Dismissing Initial Loading Overlay...");
+            overlay.classList.add('fade-out');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+        }
+    }
+
     function checkReady() {
         if (isDataReady) return;
         // Verify we have received snapshots for all critical data nodes
@@ -62,20 +73,18 @@ document.addEventListener('DOMContentLoaded', () => {
             isDataReady = true;
 
             // Now safe to run migrations and seeding
-            if (typeof runPostLoadMaintenance === 'function') {
-                runPostLoadMaintenance();
-            } else {
-                renderAll();
+            try {
+                if (typeof runPostLoadMaintenance === 'function') {
+                    runPostLoadMaintenance();
+                } else {
+                    renderAll();
+                }
+            } catch (e) {
+                console.error("🔥 Error during Post-Load Maintenance:", e);
+                renderAll(); // Fallback: try to render at least
             }
 
-            // Hide Initial Loading Overlay
-            const overlay = document.getElementById('initial-loading-overlay');
-            if (overlay) {
-                overlay.classList.add('fade-out');
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                }, 500);
-            }
+            hideInitialLoadingOverlay();
         }
     }
 
@@ -1410,12 +1419,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Safety Timeout: Force Data Ready if Firebase hangs
         setTimeout(() => {
             if (!isDataReady) {
-                console.warn("⚠️ Data Sync Timeout: Forcing System Ready state to allow saves.");
+                console.warn("⚠️ Data Sync Timeout: Forcing System Ready state to allow interaction.");
                 isDataReady = true;
-                if (typeof runPostLoadMaintenance === 'function') {
-                    runPostLoadMaintenance();
+                try {
+                    if (typeof runPostLoadMaintenance === 'function') {
+                        runPostLoadMaintenance();
+                    } else {
+                        renderAll();
+                    }
+                } catch (e) {
+                    console.error("🔥 Error during forced Maintenance:", e);
                 }
             }
+            // Always hide overlay after timeout
+            hideInitialLoadingOverlay();
         }, 5000);
 
         // General Settings Init
@@ -3130,10 +3147,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('This will recalculate WMA Statistics for all records and save them to the database. This may take a few moments. Continue?')) return;
 
         console.log("Starting global WMA recalculation...");
-        
+
         // Use the new force parameter in the pre-calculator
         await preCalculateAllStats(true);
-        
+
         alert('Global recalculation complete. Results have been saved to the database.');
         renderWMAReport();
         renderRankings();
@@ -7106,9 +7123,12 @@ Replace ALL current data with this backup ? `;
         if (typeof cleanupDuplicateAthletes === 'function') cleanupDuplicateAthletes();
 
         // 5. Pre-calculation (Background)
-        // Check if we need to force a recalculation due to data changes
-        const isDirty = localStorage.getItem('tf_stats_dirty') === 'true';
-        preCalculateAllStats(isDirty);
+        // Delay calculation slightly to prioritize UI responsiveness
+        setTimeout(() => {
+            // Check if we need to force a recalculation due to data changes
+            const isDirty = localStorage.getItem('tf_stats_dirty') === 'true';
+            preCalculateAllStats(isDirty);
+        }, 1000);
 
         // 6. Rendering & UI Population
         renderAll();
