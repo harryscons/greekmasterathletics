@@ -2405,7 +2405,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if ((r.trackType || 'Outdoor') !== fTrackType) return false;
             }
             return true;
-        }).map(r => calculateRecordWMAStats({ ...r }));
+        }); // No .map(calculateRecordWMAStats) here, we'll use pre-calculated values
 
         // Aggregate per athlete
         const agg = {};
@@ -2940,8 +2940,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
-        // Pre-calculate stats for all filtered records so sorting works on calculated fields
-        let sortedRecords = filtered.map(r => calculateRecordWMAStats({ ...r }));
+        // Use pre-calculated stats (calculated at startup)
+        let sortedRecords = [...filtered];
 
         sortedRecords.sort((a, b) => {
             let valA, valB;
@@ -3151,6 +3151,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderRankings();
             }, 800);
         }
+    }
+
+    function preCalculateAllStats() {
+        console.log("📊 Pre-calculating WMA statistics for all records...");
+        if (!records || records.length === 0) return;
+
+        records.forEach(r => {
+            // Only skip if already calculated AND valid
+            if (r.wmaRate && r.wmaAgeMark && r.wmaPoints && r.wmaPoints !== 'Not Found') return;
+
+            // Skip unapproved or incomplete records
+            if (r.approved !== true || !r.athlete || !r.mark) return;
+
+            // Skip relays
+            const ev = events.find(e => e.name === r.event);
+            const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
+            if (isRelay) return;
+
+            calculateRecordWMAStats(r);
+        });
+        console.log("✅ Pre-calculation complete.");
     }
 
     window.sortWMAReport = function (field) {
@@ -7059,7 +7080,10 @@ Replace ALL current data with this backup ? `;
         // 4. Cleanup
         if (typeof cleanupDuplicateAthletes === 'function') cleanupDuplicateAthletes();
 
-        // 5. Rendering & UI Population
+        // 5. Pre-calculation (Background)
+        preCalculateAllStats();
+
+        // 6. Rendering & UI Population
         renderAll();
 
         if (recordsUpdated) {
