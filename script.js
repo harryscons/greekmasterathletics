@@ -4814,7 +4814,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (mVal === 'valid') {
                     matchesMismatch = !isMismatch;
                 } else if (mVal === 'approval') {
-                    matchesMismatch = (r.approvalStatus !== 'approved');
+                    matchesMismatch = (r.approved !== true);
                 }
             }
 
