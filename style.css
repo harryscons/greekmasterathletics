@@ -943,7 +943,7 @@ select:focus {
 /* Modal Content */
 .modal-content {
     width: 95%;
-    max-width: 1000px;
+    max-width: 1200px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 20px;

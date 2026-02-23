@@ -5131,7 +5131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             content.innerHTML = `
                 <div class="modal-form-container">
                     <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1.15rem; font-weight: 700;">${isUpdateFlow ? '🔄 Update with New Record' : '✏️ Edit Record Data'}</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
                         <div class="form-group-modal">
                             <label>Event</label>
                             <select id="modal-event">
