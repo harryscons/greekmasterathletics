@@ -552,9 +552,10 @@ document.addEventListener('DOMContentLoaded', () => {
         renderEventList();
         renderAthleteList();
         renderCountryList();
-        renderHistoryList();
-        renderReports();
-        renderUserList();
+        // Persist and re-render
+        saveRecords();
+        markStatsDirty();
+        renderAll();
 
         // Also populate sub-feature dropdowns
         if (typeof populateIAAFEventDropdown === 'function') populateIAAFEventDropdown();
@@ -3128,74 +3129,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!confirm('This will recalculate WMA Statistics for all records and save them to the database. This may take a few moments. Continue?')) return;
 
-        const modal = document.getElementById('recalcModal');
-        const progressBar = document.getElementById('recalcProgressBar');
-        const statusText = document.getElementById('recalcStatus');
-        const progressText = document.getElementById('recalcProgressText');
-
-        if (modal) {
-            modal.classList.remove('hidden');
-            if (progressBar) progressBar.style.width = '0%';
-            if (statusText) statusText.textContent = 'Calculating...';
-            if (progressText) progressText.textContent = `0 / ${records.length} records`;
-        }
-
         console.log("Starting global WMA recalculation...");
-        let count = 0;
-        const total = (records || []).length;
-
-        // Process in batches to keep UI responsive
-        const batchSize = 50;
-        for (let i = 0; i < total; i++) {
-            calculateRecordWMAStats(records[i]);
-            count++;
-
-            if (count % batchSize === 0 || count === total) {
-                const percent = Math.round((count / total) * 100);
-                if (progressBar) progressBar.style.width = percent + '%';
-                if (progressText) progressText.textContent = `${count} / ${total} records`;
-                // Brief pause to allow browser to render the update
-                await new Promise(r => setTimeout(r, 10));
-            }
-        }
-
-        // Phase 2: Saving
-        if (statusText) statusText.textContent = 'Saving to Database...';
-        localStorage.setItem('tf_records', JSON.stringify(records));
-
-        if (db) {
-            try {
-                await db.ref('records').set(records);
-                if (statusText) statusText.textContent = 'Success!';
-                setTimeout(() => {
-                    if (modal) modal.classList.add('hidden');
-                    alert(`Successfully recalculated and saved WMA stats for ${count} records.`);
-                    renderWMAReport();
-                    renderRankings();
-                }, 800);
-            } catch (err) {
-                console.error("Firebase save failed:", err);
-                if (modal) modal.classList.add('hidden');
-                alert('Recalculation complete locally, but failed to sync with cloud. Check console for details.');
-            }
-        } else {
-            if (statusText) statusText.textContent = 'Success (Local)!';
-            setTimeout(() => {
-                if (modal) modal.classList.add('hidden');
-                alert(`Recalculated stats for ${count} records locally.`);
-                renderWMAReport();
-                renderRankings();
-            }, 800);
-        }
+        
+        // Use the new force parameter in the pre-calculator
+        await preCalculateAllStats(true);
+        
+        alert('Global recalculation complete. Results have been saved to the database.');
+        renderWMAReport();
+        renderRankings();
     }
 
-    function preCalculateAllStats() {
-        console.log("📊 Pre-calculating WMA statistics for all records...");
+    function markStatsDirty() {
+        console.log("🚩 Stats marked dirty. Recalculation will occur on next load.");
+        localStorage.setItem('tf_stats_dirty', 'true');
+    }
+
+    async function preCalculateAllStats(force = false) {
+        // Check local dirty flag
+        const isDirty = localStorage.getItem('tf_stats_dirty') === 'true';
+        if (!force && !isDirty) {
+            console.log("📊 Stats are clean. Skipping background pre-calculation.");
+            return;
+        }
+
+        console.log(`📊 ${force ? 'FORCED' : 'DIRTY'} Pre-calculating WMA statistics...`);
         if (!records || records.length === 0) return;
 
+        let updatedCount = 0;
         records.forEach(r => {
-            // Only skip if already calculated AND valid
-            if (r.wmaRate && r.wmaAgeMark && r.wmaPoints && r.wmaPoints !== 'Not Found') return;
+            // Only skip if NOT forced AND already calculated AND valid
+            if (!force && r.wmaRate && r.wmaAgeMark && r.wmaPoints && r.wmaPoints !== 'Not Found') return;
 
             // Skip unapproved or incomplete records
             if (r.approved !== true || !r.athlete || !r.mark) return;
@@ -3206,8 +3169,31 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isRelay) return;
 
             calculateRecordWMAStats(r);
+            updatedCount++;
         });
-        console.log("✅ Pre-calculation complete.");
+
+        if (updatedCount > 0) {
+            console.log(`✅ Pre-calculation complete. ${updatedCount} records updated.`);
+            localStorage.removeItem('tf_stats_dirty');
+
+            // Persist to local storage immediately
+            localStorage.setItem('tf_records', JSON.stringify(records));
+
+            // Persist to Firebase in background if we are admin/supervisor
+            const isSup = isSupervisor(currentUser ? currentUser.email : null);
+            const isAdmin = isAdminUser(currentUser ? currentUser.email : null);
+            if (db && (isSup || isAdmin)) {
+                try {
+                    await db.ref('records').set(records);
+                    console.log("💾 Stats persisted to Cloud.");
+                } catch (e) {
+                    console.error("❌ Failed to persist pre-calculated stats to cloud:", e);
+                }
+            }
+        } else {
+            console.log("📊 No records needed updating.");
+            localStorage.removeItem('tf_stats_dirty');
+        }
     }
 
     window.sortWMAReport = function (field) {
@@ -3585,6 +3571,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveAthletes() {
         // ALWAYS save to LocalStorage first (Synchronous Backup)
         localStorage.setItem('tf_athletes', JSON.stringify(athletes));
+        markStatsDirty();
         rebuildPerformanceIndexes();
 
         if (!isDataReady) {
@@ -4090,6 +4077,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveEvents() {
         // ALWAYS save to LocalStorage first (Synchronous Backup)
         localStorage.setItem('tf_events', JSON.stringify(events));
+        markStatsDirty();
 
         if (!isDataReady) return;
         if (db) db.ref('events').set(events);
@@ -4201,6 +4189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function savePendingRecs() {
         // ALWAYS save to LocalStorage first (Synchronous Backup)
         localStorage.setItem('tf_pendingrecs', JSON.stringify(pendingrecs));
+        markStatsDirty();
 
         if (!isDataReady) return;
         if (db) {
@@ -7117,7 +7106,9 @@ Replace ALL current data with this backup ? `;
         if (typeof cleanupDuplicateAthletes === 'function') cleanupDuplicateAthletes();
 
         // 5. Pre-calculation (Background)
-        preCalculateAllStats();
+        // Check if we need to force a recalculation due to data changes
+        const isDirty = localStorage.getItem('tf_stats_dirty') === 'true';
+        preCalculateAllStats(isDirty);
 
         // 6. Rendering & UI Population
         renderAll();
