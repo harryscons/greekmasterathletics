@@ -1276,6 +1276,13 @@ document.addEventListener('DOMContentLoaded', () => {
             else navSave.style.display = 'none';
         }
 
+        // Hide 'Add New Record' inline button if not Admin/Supervisor
+        const btnNewRecordInline = document.getElementById('btnNewRecordInline');
+        if (btnNewRecordInline) {
+            if (isAdmin) btnNewRecordInline.style.display = 'flex';
+            else btnNewRecordInline.style.display = 'none';
+        }
+
         // Hide Log Record Tab content or show login prompt? 
         // For now, let's just disable the Submit button in Log Record
         const submitBtn = document.getElementById('submitBtn');
@@ -5081,11 +5088,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (isSup || isAdm) {
                             return `
                                 <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="color:var(--text); margin-right:5px; margin-left:5px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 2px; border: 1px solid transparent; border-radius: 4px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                        <path d="M12 18a3 3 0 1 0-.5-5.9"></path>
-                                        <path d="m10 16 2 2-2 2"></path>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 2v6h-6"></path>
+                                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                                        <path d="M3 22v-6h6"></path>
+                                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
                                     </svg>
                                 </button>
                                 <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">✏️</button>
