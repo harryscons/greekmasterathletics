@@ -14,7 +14,7 @@
             return false;
         };
     </script>
-    <link rel="stylesheet" href="style.css?v=2.15.064">
+    <link rel="stylesheet" href="style.css?v=2.15.065">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -56,18 +56,12 @@
             <div id="sync-progress-bar"
                 style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
         </div>
+        <a id="boot-bypass" href="#" onclick="hideInitialLoadingOverlay(); return false;"
+            style="display:none; margin-top:2rem; color:var(--primary); text-decoration:underline; font-family:var(--font-stack); font-size:0.9rem; transition: opacity 0.3s;">
+            Entrance blocked? Click here to bypass synchronization.
+        </a>
     </div>
-    </div>
-    <script>
-        // Native fail-safe to guarantee overlay dismissal even if main JS crashes heavily
-        setTimeout(() => {
-            const ol = document.getElementById('initial-loading-overlay');
-            if (ol && ol.style.display !== 'none') {
-                console.warn('Native failsafe: Hiding stuck overlay.');
-                ol.style.display = 'none';
-            }
-        }, 8000);
-    </script>
+
     <div class="background-glow"></div>
 
     <div class="app-container">
@@ -165,7 +159,7 @@
                                 <button id="btnThemeWhite" title="Clean White (Light)"
                                     style="width: 20px; height: 20px; border-radius: 4px; border: 1px solid #e5e7eb; background: #ffffff; cursor: pointer; padding: 0;"></button>
                             </div>
-                            <span class="version-label">v2.15.064</span>
+                            <span class="version-label">v2.15.065</span>
                         </div>
                     </div>
 
@@ -1393,7 +1387,7 @@
     <script src="data/iaaf_data.js?v=2.15.064"></script>
     <script src="data/event_rules.js?v=2.15.064"></script>
     <script src="seed_data.js?v=2.15.064"></script>
-    <script src="script.js?v=2.15.064"></script>
+    <script src="script.js?v=2.15.065"></script>
 
     <!-- Excel Import Step 1: Column Mapping Modal -->
     <div id="excelMappingModal"
@@ -1450,6 +1444,27 @@
         </div>
     </div>
 
+    <script>
+        // Native fail-safe to guarantee overlay dismissal (v2.15.065)
+        // This is the absolute last script to run.
+        setTimeout(() => {
+            const ol = document.getElementById('initial-loading-overlay');
+            if (ol && ol.style.display !== 'none') {
+                console.warn('Native watchdog: Startup seems stalled. Hiding overlay.');
+                ol.style.display = 'none';
+            }
+        }, 10000); // 10s watchdog
+
+        // Reveal the manual bypass link after 15s
+        setTimeout(() => {
+            const bypass = document.getElementById('boot-bypass');
+            if (bypass) {
+                bypass.style.display = 'block';
+                bypass.style.opacity = '1';
+                console.warn('Native watchdog: Revealing manual bypass link.');
+            }
+        }, 15000);
+    </script>
 </body>
 
 </html>

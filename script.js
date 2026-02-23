@@ -54,16 +54,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
     let isSuppressingAutoFill = false; // Prevents change events from overwriting edit form data
 
-    function hideInitialLoadingOverlay() {
-        const overlay = document.getElementById('initial-loading-overlay');
-        if (overlay && overlay.style.display !== 'none') {
-            console.log("🎬 Dismissing Initial Loading Overlay...");
-            overlay.classList.add('fade-out');
-            setTimeout(() => {
-                overlay.style.display = 'none';
-            }, 500);
+    window.hideInitialLoadingOverlay = function () {
+        if (!isDataReady) {
+            console.warn("⚠️ Forcing Data Ready via Overlay Dismissal.");
+            isDataReady = true;
+            rebuildPerformanceIndexes();
+            renderAll();
         }
-    }
+        const ol = document.getElementById('initial-loading-overlay');
+        if (ol) {
+            ol.style.opacity = '0';
+            ol.style.visibility = 'hidden';
+            setTimeout(() => ol.style.display = 'none', 500);
+        }
+    };
 
     function checkReady() {
         if (isDataReady) return;
@@ -1441,6 +1445,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } finally {
                 // Always hide overlay after timeout
                 hideInitialLoadingOverlay();
+                // Reveal the manual bypass link after 15s (handled in index.html native script too)
+                const bypass = document.getElementById('boot-bypass');
+                if (bypass) {
+                    bypass.style.display = 'block';
+                    bypass.style.opacity = '1';
+                }
             }
         }, 5000);
 
