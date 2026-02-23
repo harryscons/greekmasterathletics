@@ -4813,6 +4813,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     matchesMismatch = isMismatch;
                 } else if (mVal === 'valid') {
                     matchesMismatch = !isMismatch;
+                } else if (mVal === 'approval') {
+                    matchesMismatch = (r.approvalStatus !== 'approved');
                 }
             }
 
