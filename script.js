@@ -4537,8 +4537,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function editRecord(id) {
-        console.log("✏️ editRecord called for ID:", id);
+    function editRecord(id, isUpdateFlow = false) {
+        console.log("✏️ editRecord called for ID:", id, "Update Flow:", isUpdateFlow);
 
         const activeView = document.querySelector('.view-section.active-view');
         if (activeView) {
@@ -4575,20 +4575,24 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // 1. SET ALL BASIC FIELDS FIRST
+        // Always keep event, gender, trackType, ageGroup
         setSelectValue(evtInput, r.event);
         setSelectValue(genderInput, r.gender);
         if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
-        if (raceNameInput) raceNameInput.value = r.raceName || '';
-        if (notesInput) notesInput.value = r.notes || '';
-        if (markInput) markInput.value = r.mark || '';
-        if (windInput) windInput.value = r.wind || '';
-        if (idrInput) idrInput.value = r.idr || '';
-        if (townInput) townInput.value = r.town || '';
-        if (countryInput) countryInput.value = r.country || '';
+
+        // Clear performance fields if updating to a new record
+        if (raceNameInput) raceNameInput.value = isUpdateFlow ? '' : (r.raceName || '');
+        if (notesInput) notesInput.value = isUpdateFlow ? '' : (r.notes || '');
+        if (markInput) markInput.value = isUpdateFlow ? '' : (r.mark || '');
+        if (windInput) windInput.value = isUpdateFlow ? '' : (r.wind || '');
+        if (idrInput) idrInput.value = isUpdateFlow ? '' : (r.idr || '');
+        if (townInput) townInput.value = isUpdateFlow ? '' : (r.town || '');
+        if (countryInput) countryInput.value = isUpdateFlow ? '' : (r.country || '');
 
         if (dateInput) {
-            if (datePicker) datePicker.setDate(r.date);
-            else dateInput.value = r.date;
+            const dateToSet = isUpdateFlow ? new Date().toISOString().split('T')[0] : r.date;
+            if (datePicker) datePicker.setDate(dateToSet);
+            else dateInput.value = dateToSet;
         }
 
         const ev = events.find(e => e.name === r.event);
@@ -4607,14 +4611,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setSelectValue(ageGroupInput, r.ageGroup);
 
             if (isRelay) {
-                if (relayTeamNameInput) relayTeamNameInput.value = r.athlete || '';
-                const p = r.relayParticipants || [];
+                if (relayTeamNameInput) relayTeamNameInput.value = isUpdateFlow ? '' : (r.athlete || '');
+                const p = isUpdateFlow ? [] : (r.relayParticipants || []);
                 if (relayAthlete1) relayAthlete1.value = p[0] || '';
                 if (relayAthlete2) relayAthlete2.value = p[1] || '';
                 if (relayAthlete3) relayAthlete3.value = p[2] || '';
                 if (relayAthlete4) relayAthlete4.value = p[3] || '';
             } else {
-                setSelectValue(athleteInput, r.athlete);
+                setSelectValue(athleteInput, isUpdateFlow ? '' : r.athlete);
             }
 
             // final sync for age calculation just in case
@@ -4629,11 +4633,11 @@ document.addEventListener('DOMContentLoaded', () => {
         editingId = id;
         editingHistoryId = null;
 
-        if (formTitle) formTitle.textContent = 'Edit Record (Archives Old)';
+        if (formTitle) formTitle.textContent = isUpdateFlow ? 'Update With New Record' : 'Edit Record (Archives Old)';
         if (submitBtn) {
             const span = submitBtn.querySelector('span');
-            if (span) span.textContent = 'Update & Archive';
-            submitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
+            if (span) span.textContent = isUpdateFlow ? 'Log New Record' : 'Update & Archive';
+            submitBtn.style.background = isUpdateFlow ? '' : 'linear-gradient(135deg, var(--warning), #f59e0b)';
         }
         if (cancelBtn) cancelBtn.classList.remove('hidden');
         if (recordForm) recordForm.scrollIntoView({ behavior: 'smooth' });
@@ -5028,9 +5032,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 isAuthor = true; // User authored this record or is a Local Admin
                             }
                         }
-
                         if (isSup || isAdm || isAuthor) {
                             return `
+                                <button class="btn-icon update-btn" onclick="editRecord('${r.id}', true)" title="Update With New Record (Archives Old)" style="color:var(--text); margin-right:5px; margin-left:5px;">🔄</button>
                                 <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">✏️</button>
                                 <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:5px;">🗑️</button>
                             `;
