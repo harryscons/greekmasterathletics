@@ -1,3 +1,8 @@
+# v2.15.060
+- Global Icon Standardization: Replaced all emojis and colored icons with monochromatic outlined SVGs.
+- Standardized action buttons in all tables (Records, Athletes, Users, Events).
+- Updated Stats, Rankings, and Data Management UI for total consistency.
+
 # Celestial Plasma - Savepoint 104 Updates
 
 ## Recent Accomplishments (v2.15.004 - v2.15.014)

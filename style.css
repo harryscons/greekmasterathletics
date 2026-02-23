@@ -1281,13 +1281,38 @@ td>div {
         padding: 0.3rem 0.6rem;
     }
 }
+
 /* Animations & Utility */
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .fade-out {
     opacity: 0 !important;
     visibility: hidden !important;
+}
+
+.btn-export {
+    padding: 0.4rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-export:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent);
 }
