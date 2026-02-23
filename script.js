@@ -6,6 +6,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     console.log("🚀 DOMContentLoaded: Starting initialization...");
+    // --- Theme Logic ---
+    function applyTheme(theme) {
+        // Remove existing theme classes
+        document.body.classList.remove('theme-clean-white', 'theme-mint-pale', 'theme-rose-pale', 'theme-sky-pale', 'theme-lavender-pale', 'theme-lemon-pale');
+
+        if (theme && theme !== 'theme-default') {
+            document.body.classList.add(theme);
+        }
+
+        // Save to local storage
+        localStorage.setItem('greekathletics-theme', theme);
+    }
+
+    const savedTheme = localStorage.getItem('greekathletics-theme') || 'theme-default';
+    applyTheme(savedTheme);
+
+    const btnNebula = document.getElementById('btnThemeNebula');
+    const btnWhite = document.getElementById('btnThemeWhite');
+    if (btnNebula) btnNebula.addEventListener('click', () => applyTheme('theme-default'));
+    if (btnWhite) btnWhite.addEventListener('click', () => applyTheme('theme-clean-white'));
+
     // --- Sorting State ---
     let athleteSortField = 'lastName';
     let athleteSortOrder = 'asc';
@@ -4360,6 +4381,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (empty) empty.classList.add('hidden');
 
+        // Check permissions
+        const isSup = isSupervisor(currentUser ? currentUser.email : null);
+        const isAdm = isAdminUser(currentUser ? currentUser.email : null);
+        const hasActionsAccess = isSup || isAdm;
+
+        // Sync header Actions column visibility
+        const historyActionsHeader = document.querySelector('#view-history th.actions-col');
+        if (historyActionsHeader) {
+            historyActionsHeader.style.display = hasActionsAccess ? '' : 'none';
+        }
+
         history.forEach(r => {
             const tr = document.createElement('tr');
             // Find immediate successor (The record that replaced this one)
@@ -4380,8 +4412,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 successorLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
             }
 
-            // Note: Local Admin is considered Supervisor based on isSupervisor logic
-            const isSup = isSupervisor(currentUser ? currentUser.email : null);
+            // Permissions already checked above (hasActionsAccess)
 
             tr.innerHTML = `
                 <td style="text-align:center;">
@@ -4398,7 +4429,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${r.raceName || '-'}</td>
                 <td>${r.updatedBy || 'N/A'}</td>
                 <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
-                 <td class="history-actions-col" style="${isSup ? '' : 'display:none;'}">
+                 <td class="actions-col" style="${hasActionsAccess ? '' : 'display:none;'}">
                     <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
                     <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>
                 </td>
@@ -4955,6 +4986,16 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("renderReports called");
         reportTableBody.innerHTML = '';
 
+        const isSup = isSupervisor(currentUser ? currentUser.email : null);
+        const isAdm = isAdminUser(currentUser ? currentUser.email : null);
+        const hasActionsAccess = isSup || isAdm;
+
+        // Sync header Actions column visibility
+        const actionsHeader = document.querySelector('th.actions-col');
+        if (actionsHeader) {
+            actionsHeader.style.display = hasActionsAccess ? '' : 'none';
+        }
+
         const filtered = getFilteredRecords();
         const isHideNotesChecked = hideNotesSymbol && hideNotesSymbol.checked;
 
@@ -5005,7 +5046,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="white-space:nowrap;">${new Date(r.date).toLocaleDateString('en-GB')}</td>
                     <td>${r.town || ''}</td>
                     <td>${r.raceName || ''}</td>
-                    <td class="actions-col" style="white-space:nowrap;">
+                    <td class="actions-col" style="white-space:nowrap; display: ${hasActionsAccess ? '' : 'none'};">
+                        <div style="display: flex; align-items: center; justify-content: flex-start;">
                         ${(() => {
                     if (r.isPending || r.isPendingDelete) {
                         // Pending Record Logic
@@ -5038,9 +5080,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         if (isSup || isAdm) {
                             return `
-                                <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="color:var(--text); margin-right:5px; margin-left:5px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 2px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 12c0-4.4 3.6-8 8-8 3.3 0 6.2 2 7.4 4.9M22 12c0 4.4-3.6 8-8 8-3.3 0-6.2-2-7.4-4.9"/>
+                                <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="color:var(--text); margin-right:5px; margin-left:5px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 2px; border: 1px solid transparent; border-radius: 4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <path d="M12 18a3 3 0 1 0-.5-5.9"></path>
+                                        <path d="m10 16 2 2-2 2"></path>
                                     </svg>
                                 </button>
                                 <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">✏️</button>
@@ -5056,6 +5101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 })()}
+                        </div>
                     </td>
                 `;
 

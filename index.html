@@ -141,7 +141,16 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.15.053</span>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div class="theme-toggle-container"
+                                style="display: flex; gap: 4px; background: var(--bg-nav); padding: 2px; border-radius: 6px; border: 1px solid var(--border);">
+                                <button id="btnThemeNebula" title="Nebula (Dark)"
+                                    style="width: 20px; height: 20px; border-radius: 4px; border: none; background: #8b5cf6; cursor: pointer; padding: 0;"></button>
+                                <button id="btnThemeWhite" title="Clean White (Light)"
+                                    style="width: 20px; height: 20px; border-radius: 4px; border: 1px solid #e5e7eb; background: #ffffff; cursor: pointer; padding: 0;"></button>
+                            </div>
+                            <span class="version-label">v2.15.054</span>
+                        </div>
                     </div>
 
                     <div class="report-toolbar">
@@ -186,8 +195,8 @@
                         <div class="actions-bar" style="display: flex; gap: 0.5rem; align-items: center;">
                             <button id="btnNewRecordInline" class="btn-small btn-icon" title="Log New Record"
                                 onclick="switchTab('log')"
-                                style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20px" height="20px"
+                                style="width: 32px; height: 32px; padding: 0; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18px" height="18px"
                                     fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                                     stroke-linejoin="round">
                                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -197,8 +206,8 @@
                             <div style="width: 1px; height: 24px; background: var(--border); margin: 0 0.25rem;"></div>
 
                             <button id="exportExcel" class="btn-small btn-icon" title="Export to MS Excel"
-                                style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                                style="width: 32px; height: 32px; padding: 0; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18px" height="18px">
                                     <path fill="#4CAF50"
                                         d="M41,10H25v28h16c0.553,0,1-0.447,1-1V11C42,10.447,41.553,10,41,10z" />
                                     <path fill="#E8F5E9"
@@ -208,10 +217,10 @@
                                 </svg>
                             </button>
                             <button id="exportHTML" class="btn-small btn-icon" title="View as HTML Report"
-                                style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; min-width: 32px; min-height: 32px;">🌐</button>
+                                style="width: 32px; height: 32px; padding: 0; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🌐</button>
                             <button id="exportPDF" class="btn-small btn-icon" title="Export to PDF"
-                                style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20px" height="20px"
+                                style="width: 32px; height: 32px; padding: 0; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18px" height="18px"
                                     fill="none" stroke="#F44336" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
