@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const hasLocalApproval = records.some(r => r.approved === true && serverRecords.some(s => s.id === r.id && s.approved === false));
 
                 if (hasLocalOnly || hasLocalApproval) {
-                    console.log("🔄 Triggering resync to settle cloud with local state...");
+                    console.log("Triggering resync to settle cloud with local state...");
                     setTimeout(() => saveRecords(), 2000);
                 }
 
@@ -5103,7 +5103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (isSup || isAdm) {
                             return `
                                 <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="font-size:1.1rem; color:var(--text); margin-right:5px; margin-left:5px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 2px;">
-                                    🔄
+                                    Update
                                 </button>
                                 <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">
                                     ✏️
@@ -6724,7 +6724,7 @@ Replace ALL current data with this backup ? `;
                 </button>
                 ${iaafUpdates[r.id] && !iaafUpdates[r.id].deleted ? `
                 <button class="btn-icon" onclick="window.revertIAAFEdit(${r.id})" title="Revert Changes" style="color:var(--text-muted); display: inline-flex; align-items: center; justify-content: center;">
-                    🔄
+                    Revert
                 </button>` : ''}
             </td>
         `;
