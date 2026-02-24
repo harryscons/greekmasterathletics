@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Greek Master Athletics Statistics</title>
+    <title>Celestial Plasma v2.15.063</title>
     <!-- Robust Global Error Handler -->
     <script>
         window.onerror = function (msg, url, line, col, error) {
@@ -64,11 +64,7 @@
                 <div id="authSection" style="display: flex; align-items: center; gap: 0.5rem; justify-self: start;">
                     <button id="btnLogin" class="btn-small"
                         style="background: var(--primary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
+                        🔐
                         Admin Login
                     </button>
                     <div id="userProfile" class="hidden" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -115,24 +111,14 @@
                         style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-hover); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
                         <span id="cloudIcon"
                             style="color: #ef4444; font-size: 1.2rem; transform: translateY(1px); display: inline-flex; align-items: center;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
-                                fill="currentColor">
-                                <circle cx="12" cy="12" r="10"></circle>
-                            </svg>
+                            ●
                         </span>
                         <span id="cloudText">Cloud Offline</span>
                     </div>
 
                     <button id="btnSaveCloud" onclick="saveToCloud()" title="Save Changes to Cloud"
                         style="display: none; align-items: center; gap: 0.5rem; background: var(--success); color: white; padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M17.5 19c.6 0 1.2-.2 1.6-.6.4-.4.9-1 .9-1.6V8.1c0-.6-.3-1.2-.7-1.6l-2.8-2.8c-.4-.4-1-.7-1.6-.7H5.1c-.6 0-1.2.3-1.6.7-.4.4-.7 1-.7 1.6v11.9c0 .6.3 1.2.7 1.6.4.4 1 .6 1.6.6h12.4z">
-                            </path>
-                            <path d="M15 19v-6H9v6"></path>
-                            <path d="M14 4v4H4"></path>
-                        </svg>
+                        ☁
                         <span>Save</span>
                     </button>
                 </div>
@@ -158,7 +144,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.15.061</span>
+                        <span class="version-label">v2.15.064</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -215,37 +201,13 @@
                             <div style="width: 1px; height: 24px; background: var(--border); margin: 0 0.25rem;"></div>
 
                             <button id="exportExcel" class="btn-small btn-icon btn-export" title="Export to MS Excel">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="8" y1="13" x2="16" y2="13"></line>
-                                    <line x1="8" y1="17" x2="16" y2="17"></line>
-                                    <line x1="10" y1="9" x2="8" y2="9"></line>
-                                </svg>
+                                📊
                             </button>
                             <button id="exportHTML" class="btn-small btn-icon btn-export" title="View as HTML Report">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <path
-                                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                                    </path>
-                                </svg>
+                                📁
                             </button>
                             <button id="exportPDF" class="btn-small btn-icon btn-export" title="Export to PDF">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    <polyline points="10 9 9 9 8 9"></polyline>
-                                </svg>
+                                📄
                             </button>
                         </div>
                     </div>
@@ -255,16 +217,16 @@
                             <thead>
                                 <tr>
                                     <th class="expand-col" style="width: 40px;"></th>
-                                    <th class="sortable" data-sort="event">Αγώνισμα</th>
-                                    <th class="sortable" data-sort="ageGroup">Κατηγ.</th>
-                                    <th class="sortable" data-sort="athlete">Αθλητής/τρια</th>
-                                    <th class="sortable" data-sort="gender">Φύλο</th>
-                                    <th class="sortable" data-sort="mark" style="text-align: center;">Επίδοση</th>
-                                    <th class="sortable" data-sort="idr">IDR</th>
-                                    <th class="sortable" data-sort="wind">Άνεμος</th>
-                                    <th class="sortable" data-sort="date">Ημερομηνία</th>
-                                    <th class="sortable" data-sort="town">Πόλη</th>
-                                    <th class="sortable" data-sort="raceName">Διοργάνωση</th>
+                                    <th class="sortable" data-sort="event">Αγώνισμα ↕</th>
+                                    <th class="sortable" data-sort="ageGroup">Κατηγ. ↕</th>
+                                    <th class="sortable" data-sort="athlete">Αθλητής/τρια ↕</th>
+                                    <th class="sortable" data-sort="gender">Φύλο ↕</th>
+                                    <th class="sortable" data-sort="mark" style="text-align: center;">Επίδοση ↕</th>
+                                    <th class="sortable" data-sort="idr">IDR ↕</th>
+                                    <th class="sortable" data-sort="wind">Άνεμος ↕</th>
+                                    <th class="sortable" data-sort="date">Ημερομηνία ↕</th>
+                                    <th class="sortable" data-sort="town">Πόλη ↕</th>
+                                    <th class="sortable" data-sort="raceName">Διοργάνωση ↕</th>
                                     <th class="actions-col">Ενέργειες</th>
                                 </tr>
                             </thead>
@@ -419,7 +381,15 @@
                             style="background: var(--bg-danger-light); border: 1px solid var(--danger); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; color: var(--text-danger-light);">
                             <h4
                                 style="color: var(--danger); margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.5rem;">
-                                ⚠️ Age Category Mismatch
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round" style="color:var(--danger);">
+                                    <path
+                                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                                    </path>
+                                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg> Age Category Mismatch
                             </h4>
                             <p id="ageValidationMessage"
                                 style="font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.4; color: #fca5a5;">
@@ -548,13 +518,11 @@
                             <table class="report-table compact-table">
                                 <thead>
                                     <tr>
-                                        <th onclick="sortAthletes('idNumber')" style="cursor:pointer; width: 80px;">ID ↕
-                                        </th>
-                                        <th onclick="sortAthletes('lastName')" style="cursor:pointer;">Last Name ↕</th>
-                                        <th onclick="sortAthletes('firstName')" style="cursor:pointer;">First Name ↕
-                                        </th>
-                                        <th onclick="sortAthletes('dob')" style="cursor:pointer;">DOB ↕</th>
-                                        <th onclick="sortAthletes('gender')" style="cursor:pointer;">Gender ↕</th>
+                                        stroke-linecap="round" stroke-linejoin="round"
+                                        style="vertical-align:middle; opacity:0.6;">
+                                        <polyline points="7 15 12 20 17 15"></polyline>
+                                        <polyline points="7 9 12 4 17 9"></polyline>
+                                        </svg></th>
                                         <th class="actions-col" style="width: 100px;">Actions</th>
                                     </tr>
                                     <tr class="filter-row" style="background: var(--bg-nav);">
@@ -1241,20 +1209,50 @@
                                 <thead>
                                     <tr>
                                         <th onclick="sortStats('generalRank')"
-                                            style="width:7%; text-align:center; cursor:pointer;">Gen Rank ↕</th>
-                                        <th onclick="sortStats('name')" style="cursor:pointer; width:58%;">Athlete
-                                            Name
-                                            ↕
+                                            style="width:7%; text-align:center; cursor:pointer;">Gen Rank <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortStats('name')" style="cursor:pointer; width:58%;">Athlete Name
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg>
                                         </th>
                                         <th onclick="sortStats('ratio')"
                                             style="cursor:pointer; width:10%; text-align:right;">
-                                            Ratio % ↕</th>
+                                            Ratio % <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
                                         <th onclick="sortStats('ageRank')"
                                             style="width:15%; text-align:right; cursor:pointer;">
-                                            Age Rank (Medal) ↕</th>
+                                            Age Rank (Medal) <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
                                         <th onclick="sortStats('count')"
                                             style="cursor:pointer; width:10%; text-align:right;">
-                                            Record Count ↕</th>
+                                            Record Count <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
                                     </tr>
                                 </thead>
                                 <tbody id="statsTableBody">
@@ -1322,19 +1320,94 @@
                             <table class="report-table">
                                 <thead>
                                     <tr>
-                                        <th onclick="sortWMAReport('event')" style="cursor:pointer">Event ↕</th>
-                                        <th onclick="sortWMAReport('athlete')" style="cursor:pointer">Athlete ↕</th>
-                                        <th onclick="sortWMAReport('gender')" style="cursor:pointer">Gender ↕</th>
-                                        <th onclick="sortWMAReport('age')" style="cursor:pointer">Age ↕</th>
-                                        <th onclick="sortWMAReport('mark')" style="cursor:pointer">Mark ↕</th>
-                                        <th onclick="sortWMAReport('idr')" style="cursor:pointer">IDR ↕</th>
-                                        <th onclick="sortWMAReport('rateConv')" style="cursor:pointer">RateConv ↕
-                                        </th>
-                                        <th onclick="sortWMAReport('ageMark')" style="cursor:pointer">AgeMark ↕</th>
-                                        <th onclick="sortWMAReport('pts')" style="cursor:pointer">Pts ↕</th>
-                                        <th onclick="sortWMAReport('date')" style="cursor:pointer">Date ↕</th>
-                                        <th onclick="sortWMAReport('raceName')" style="cursor:pointer">Race Name ↕
-                                        </th>
+                                        <th onclick="sortWMAReport('event')" style="cursor:pointer">Event <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('athlete')" style="cursor:pointer">Athlete <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('gender')" style="cursor:pointer">Gender <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('age')" style="cursor:pointer">Age <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('mark')" style="cursor:pointer">Mark <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('idr')" style="cursor:pointer">IDR <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('rateConv')" style="cursor:pointer">RateConv <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('ageMark')" style="cursor:pointer">AgeMark <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('pts')" style="cursor:pointer">Pts <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('date')" style="cursor:pointer">Date <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortWMAReport('raceName')" style="cursor:pointer">Race Name <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
                                     </tr>
                                 </thead>
                                 <tbody id="wmaReportBody">
@@ -1379,12 +1452,39 @@
                                 <thead>
                                     <tr>
                                         <th onclick="sortRankings('rank')"
-                                            style="cursor:pointer; width:6%; text-align:center;"># ↕</th>
-                                        <th onclick="sortRankings('name')" style="cursor:pointer;">Athlete ↕</th>
-                                        <th onclick="sortRankings('gender')" style="cursor:pointer; width:10%;">Gender ↕
+                                            style="cursor:pointer; width:6%; text-align:center;"># <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortRankings('name')" style="cursor:pointer;">Athlete <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
+                                        <th onclick="sortRankings('gender')" style="cursor:pointer; width:10%;">Gender
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg>
                                         </th>
                                         <th onclick="sortRankings('ageGroup')" style="cursor:pointer; width:12%;">Age
-                                            Group ↕</th>
+                                            Group <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                style="vertical-align:middle; opacity:0.6;">
+                                                <polyline points="7 15 12 20 17 15"></polyline>
+                                                <polyline points="7 9 12 4 17 9"></polyline>
+                                            </svg></th>
                                         <th onclick="sortRankings('bestPts')"
                                             style="cursor:pointer; width:13%; text-align:right;">Best WMA Pts ↕</th>
                                         <th onclick="sortRankings('avgPts')"
@@ -1478,8 +1578,14 @@
                     <button onclick="document.getElementById('excelMappingModal').style.display='none'"
                         style="padding:0.65rem 1.4rem; border-radius:10px; border:none; background:#94a3b8; color:#fff; font-weight:700; cursor:pointer; font-family:inherit;">Cancel</button>
                     <button id="proceedToValidationBtn"
-                        style="padding:0.65rem 1.4rem; border-radius:10px; border:none; background:#6366f1; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; box-shadow:0 4px 6px -1px rgba(99,102,241,0.4);">Proceed
-                        to Validation →</button>
+                        style="padding:0.65rem 1.4rem; border-radius:10px; border:none; background:#6366f1; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; box-shadow:0 4px 6px -1px rgba(99,102,241,0.4); display: flex; align-items: center; gap: 8px;">
+                        Proceed to Validation
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
                 </div>
             </div>
             <div style="padding:2rem;" id="excelMappingContent"></div>

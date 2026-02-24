@@ -1,3 +1,6 @@
+# v2.15.063
+- Restored Original Icons: Reverted all global icon standardized SVGs back to the original emoji and text-based style (✏️, 🗑️, 🥇, 🏟️, 🏠, ✅, ❌, etc.).
+
 # v2.15.060
 - Global Icon Standardization: Replaced all emojis and colored icons with monochromatic outlined SVGs.
 - Standardized action buttons in all tables (Records, Athletes, Users, Events).

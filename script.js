@@ -234,25 +234,25 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'connected':
                 cloudIcon.style.color = '#10b981'; // Green
                 cloudText.textContent = 'Cloud Online';
-                cloudIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"></circle></svg>`;
+                cloudIcon.innerHTML = `●`;
                 break;
             case 'connecting':
                 cloudIcon.style.color = '#f59e0b'; // Amber
                 cloudText.textContent = 'Connecting...';
-                cloudIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"></circle></svg>`;
+                cloudIcon.innerHTML = `●`;
                 break;
             case 'permission_denied':
                 cloudIcon.style.color = '#ef4444'; // Red
                 cloudText.textContent = 'Permission Denied';
                 cloudIcon.title = "Firebase rules are blocking access.";
-                cloudIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"></circle></svg>`;
+                cloudIcon.innerHTML = `●`;
                 break;
             case 'disconnected':
             default:
                 if (local) {
                     cloudIcon.style.color = '#3b82f6'; // Blue
                     cloudText.textContent = 'Local Mode (Supervisor)';
-                    cloudIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
+                    cloudIcon.innerHTML = `🔐`;
                 } else {
                     cloudIcon.style.color = '#ef4444'; // Red
                     cloudText.textContent = 'Cloud Offline';
@@ -1974,7 +1974,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btnToggleAthleteForm.addEventListener('click', () => {
                 const isHidden = athleteForm.classList.toggle('hidden');
                 // Do not change button text to "Hide Form" as per user request
-                btnToggleAthleteForm.innerHTML = '<span>➕ Add New Athlete</span>';
+                btnToggleAthleteForm.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Add New Athlete</span>
+                `;
 
                 // If opening the form, treat it as "Add New" and reset everything
                 if (!isHidden) {
@@ -1990,7 +1993,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (dobWarning) dobWarning.classList.add('hidden');
 
                     if (athleteSubmitBtn) {
-                        athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+                        athleteSubmitBtn.innerHTML = `
+                            <span>💾 Update Athlete</span>
+                        `;
                         athleteSubmitBtn.style.background = '';
                     }
                     newAthleteFirstName.focus();
@@ -2174,7 +2179,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const detailRow = document.getElementById(`detail-${id}`);
                 if (detailRow) {
                     detailRow.classList.toggle('hidden');
-                    expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
+                    const isHidden = detailRow.classList.contains('hidden');
+                    expandBtn.innerHTML = isHidden
+                        ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`
+                        : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
                 }
             }
             if (updateBtn) editRecord(updateBtn.dataset.id, true);
@@ -2219,7 +2227,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const detailRow = document.getElementById(`detail-hist-${id}`);
                 if (detailRow) {
                     detailRow.classList.toggle('hidden');
-                    expandBtn.textContent = detailRow.classList.contains('hidden') ? '+' : '−';
+                    const isHidden = detailRow.classList.contains('hidden');
+                    expandBtn.innerHTML = isHidden
+                        ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`
+                        : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
                 }
             }
             if (delBtn) deleteHistory(delBtn.dataset.id);
@@ -2346,7 +2357,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const wmaReady = window.WMA_2023_DATA && window.WMA_2023_DATA.length > 0;
         const iaafReady = window.IAAF_SCORING_DATA && window.IAAF_SCORING_DATA.length > 0;
         if ((!wmaReady || !iaafReady) && retryCount < 10) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">⏳ Loading WMA data…</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 8px; padding: 2rem;">
+                <svg class="spin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+                Loading Statistics...</td></tr>`;
             setTimeout(() => renderRankings(retryCount + 1), 500);
             return;
         }
@@ -3295,7 +3308,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (athleteForm) {
             athleteForm.classList.add('hidden');
-            if (btnToggleAthleteForm) btnToggleAthleteForm.innerHTML = '<span>➕ Add New Athlete</span>';
+            if (btnToggleAthleteForm) {
+                btnToggleAthleteForm.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Add New Athlete</span>
+                `;
+            }
         }
 
         newAthleteID.value = '';
@@ -3480,10 +3498,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${a.gender || '-'}</td>
                         <td class="actions-col">
                             <button class="btn-icon edit edit-athlete-btn" data-id="${a.id}" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                ✏️
                             </button>
                             <button class="btn-icon delete delete-athlete-btn" data-id="${a.id}" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                🗑️
                             </button>
                         </td>
                     `;
@@ -3607,10 +3625,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${isSuper ? `
                     <div style="display:flex; gap:0.5rem; justify-content:center;">
                         <button class="edit-user-btn btn-text" data-id="${u.id}" title="Edit">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            ✏️
                         </button>
                         <button class="delete-user-btn btn-text" data-id="${u.id}" title="Delete">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            🗑️
                         </button>
                     </div>
                     ` : '<span style="color:var(--text-muted); font-size: 0.8rem;">Read Only</span>'}
@@ -3943,7 +3961,9 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td>${c}</td>
                 <td style="text-align:right;">
-                    <button class="btn-icon delete delete-country-btn" data-country="${c}" title="Delete">🗑️</button>
+                    <button class="btn-icon delete delete-country-btn" data-country="${c}" title="Delete">
+                        🗑️
+                    </button>
                 </td>
             `;
             countryListBody.appendChild(tr);
@@ -3989,10 +4009,10 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td style="text-align:center; white-space:nowrap;">
                     <button class="btn-icon move-event-up" data-id="${ev.id}" title="Move Up" ${index === 0 ? 'disabled' : ''}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                        ▲
                     </button>
                     <button class="btn-icon move-event-down" data-id="${ev.id}" title="Move Down" ${index === events.length - 1 ? 'disabled' : ''}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        ▼
                     </button>
                 </td>
                 <td style="font-weight:600;">${ev.name}</td>
@@ -4003,11 +4023,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${typeBadge}</td>
                 <td style="white-space:nowrap;">
                     <button class="btn-icon edit edit-event-btn" data-id="${ev.id}" title="Edit">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        ✏️
                     </button>
                     <button class="btn-icon delete delete-event-btn" data-id="${ev.id}" 
                         title="${isUsed ? 'In use' : 'Delete'}" ${isUsed ? 'disabled' : ''}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        🗑️
                     </button>
                 </td>
             `;
@@ -4267,7 +4287,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveHistory();
                     renderHistoryList();
                 }
-                submitBtn.querySelector('span').textContent = 'History Updated! ✓';
+                submitBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>History Updated!</span>
+                `;
                 setTimeout(() => {
                     cancelEdit();
                     switchTab('history');
@@ -4304,7 +4327,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             renderAthleteList();
                             populateYearDropdown();
 
-                            submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
+                            submitBtn.innerHTML = `
+                                ✅ <span>Updated & Archived!</span>
+                            `;
                         } catch (err) {
                             console.error("Error archiving/updating record:", err);
                             alert("Failed to update record: " + err.message);
@@ -4318,7 +4343,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         pendingrecs.unshift(newRecord);
                         savePendingRecs();
 
-                        submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
+                        submitBtn.innerHTML = `
+                            ✅ <span>Edit Proposed!</span>
+                        `;
                         alert("Your edit has been submitted for Supervisor approval.");
                     }
                 } else {
@@ -4333,12 +4360,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isSup) {
                     records.unshift(newRecord);
                     saveRecords();
-                    submitBtn.querySelector('span').textContent = 'Logged! ✓';
+                    submitBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Logged!</span>
+                    `;
                 } else {
                     newRecord.isPending = true;
                     pendingrecs.unshift(newRecord);
                     savePendingRecs();
-                    submitBtn.querySelector('span').textContent = 'Proposed! ✓';
+                    submitBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Proposed!</span>
+                    `;
                     alert("Your new record has been submitted for Supervisor approval.");
                 }
 
@@ -4413,10 +4446,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
                  <td class="history-actions-col" style="${isSup ? '' : 'display:none;'}">
                     <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        ✏️
                     </button>
                     <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        🗑️
                     </button>
                 </td>
             `;
@@ -5000,7 +5033,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create main row content
             tr.innerHTML = `
                     <td class="expand-col" style="text-align:center;">
-                        ${(isHideNotesChecked && hasNotes) ? `<button class="toggle-notes-btn" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1.2rem; font-weight:bold; padding:0; width:24px; height:24px; line-height:24px;">+</button>` : ''}
+                        ${(isHideNotesChecked && hasNotes) ? `
+                            <button class="toggle-notes-btn" style="background:none; border:none; color:var(--primary); cursor:pointer; padding:0; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center;">
+                                +
+                            </button>` : ''}
                     </td>
                     <td style="font-weight:600;">${r.event}</td>
                     <td style="white-space:nowrap;">${ageDisplay}</td>
@@ -5032,10 +5068,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (isSupervisor(currentUser ? currentUser.email : null)) {
                             return `
                                         <button class="btn-icon approve-btn" onclick="approveRecord('${r.id}')" title="Approve Record" style="color:var(--success); margin-right:5px;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            ✅
                                         </button>
                                         <button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="Reject/Cancel Proposal" style="color:var(--danger); margin-right:5px;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                            ❌
                                         </button>
                                     `;
                         } else {
@@ -5067,22 +5103,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (isSup || isAdm) {
                             return `
                                 <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="font-size:1.1rem; color:var(--text); margin-right:5px; margin-left:5px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 2px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                                    🔄
                                 </button>
                                 <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    ✏️
                                 </button>
                                 <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:5px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    🗑️
                                 </button>
                             `;
                         } else if (isAuthor) {
                             return `
                                 <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    ✏️
                                 </button>
                                 <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:5px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    🗑️
                                 </button>
                             `;
                         } else {
@@ -5101,11 +5137,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const isHidden = notesDiv.classList.contains('hidden');
                     if (isHidden) {
                         notesDiv.classList.remove('hidden');
-                        btn.textContent = '−';
+                        btn.innerHTML = `−`;
                         btn.style.color = 'var(--danger)';
                     } else {
                         notesDiv.classList.add('hidden');
-                        btn.textContent = '+';
+                        btn.innerHTML = `+`;
                         btn.style.color = 'var(--primary)';
                     }
                 });
@@ -6260,11 +6296,17 @@ Replace ALL current data with this backup ? `;
         // 2. General Rank
         // Sort temp array by count desc
         const sortedByCount = [...statsData].sort((a, b) => b.count - a.count);
+        const medalSVG = (color) => {
+            if (color === '#eab308') return '🥇';
+            if (color === '#94a3b8') return '🥈';
+            if (color === '#92400e') return '🥉';
+            return '';
+        };
         sortedByCount.forEach((item, index) => {
             item.generalRank = index + 1;
-            if (item.generalRank === 1) item.generalRank += ' 🥇';
-            else if (item.generalRank === 2) item.generalRank += ' 🥈';
-            else if (item.generalRank === 3) item.generalRank += ' 🥉';
+            if (item.generalRank === 1) item.generalRank += ' ' + medalSVG('#eab308'); // gold
+            else if (item.generalRank === 2) item.generalRank += ' ' + medalSVG('#94a3b8'); // silver
+            else if (item.generalRank === 3) item.generalRank += ' ' + medalSVG('#92400e'); // bronze
         });
 
         // 3. Age Category Rank
@@ -6282,9 +6324,10 @@ Replace ALL current data with this backup ? `;
             group.sort((a, b) => b.count - a.count);
             group.forEach((item, index) => {
                 item.ageRank = index + 1;
-                if (item.ageRank === 1) item.ageMedal = '🥇';
-                else if (item.ageRank === 2) item.ageMedal = '🥈';
-                else if (item.ageRank === 3) item.ageMedal = '🥉';
+                if (item.ageRank === 1) item.ageMedal = medalSVG('#eab308');
+                else if (item.ageRank === 2) item.ageMedal = medalSVG('#94a3b8');
+                else if (item.ageRank === 3) item.ageMedal = medalSVG('#92400e');
+                else item.ageMedal = '';
             });
         });
 
@@ -6294,10 +6337,10 @@ Replace ALL current data with this backup ? `;
         // Only apply Medal Filter if Name Filter is NOT active
         if (medalFilter !== 'all' && nameFilter === 'all') {
             statsData = statsData.filter(item => {
-                if (medalFilter === 'gold') return item.ageMedal === '🥇';
-                if (medalFilter === 'silver') return item.ageMedal === '🥈';
-                if (medalFilter === 'bronze') return item.ageMedal === '🥉';
-                if (medalFilter === 'any') return item.ageMedal !== '';
+                if (medalFilter === 'gold') return item.ageRank === 1;
+                if (medalFilter === 'silver') return item.ageRank === 2;
+                if (medalFilter === 'bronze') return item.ageRank === 3;
+                if (medalFilter === 'any') return item.ageRank <= 3;
                 return true;
             });
         }
@@ -6406,19 +6449,18 @@ Replace ALL current data with this backup ? `;
             if (item.ageCategory) {
                 ageRankDisplay = `<div style="display:flex; align-items:center; justify-content:flex-end;">
                     <span style="font-weight:bold; margin-right:5px;">${item.ageRank}</span>
-                    <span style="font-size:2.5em; margin-right:5px;">${item.ageMedal}</span>
+                    <span style="font-size:2em; margin-right:5px; display:inline-flex; align-items:center;">${item.ageMedal}</span>
                     <span style="font-size:0.8em; opacity:0.6;">(${item.ageCategory})</span>
                 </div>`;
             }
 
             // General Rank Display with large medal
             let genRankDisplay = item.generalRank;
-            if (typeof item.generalRank === 'string' && item.generalRank.includes('🥇')) {
-                genRankDisplay = item.generalRank.replace('🥇', '<span style="font-size:2.5em;">🥇</span>');
-            } else if (typeof item.generalRank === 'string' && item.generalRank.includes('🥈')) {
-                genRankDisplay = item.generalRank.replace('🥈', '<span style="font-size:2.5em;">🥈</span>');
-            } else if (typeof item.generalRank === 'string' && item.generalRank.includes('🥉')) {
-                genRankDisplay = item.generalRank.replace('🥉', '<span style="font-size:2.5em;">🥉</span>');
+            // No longer need to replace medals here as item.generalRank already contains SVG if rank <= 3
+            // But we might want to wrap it in a larger span if it contains an SVG
+            if (typeof genRankDisplay === 'string' && genRankDisplay.includes('<svg')) {
+                genRankDisplay = genRankDisplay.replace('<svg', '<span style="font-size:2em; display:inline-flex; align-items:center;"><svg');
+                genRankDisplay = genRankDisplay.replace('</svg>', '</svg></span>');
             }
 
 
@@ -6446,7 +6488,9 @@ Replace ALL current data with this backup ? `;
             `;
 
             athleteRecordsFiltered.forEach(r => {
-                const ttLabel = (r.trackType || 'Outdoor') === 'Outdoor' ? '🏟️ Outdoor' : '🏠 Indoor';
+                const ttLabel = (r.trackType || 'Outdoor') === 'Outdoor'
+                    ? `<span>🏟️ Outdoor</span>`
+                    : `<span>🏠 Indoor</span>`;
                 const dateDisplay = r.date ? new Date(r.date).toLocaleDateString('en-GB') : '-';
                 detailsHtml += `
                     <tr>
@@ -6469,7 +6513,9 @@ Replace ALL current data with this backup ? `;
                 <td style="text-align:center; font-weight:bold; color:var(--text-muted); vertical-align:top; padding-top:12px;">${genRankDisplay}</td>
                 <td style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')">
                     <div style="display:flex; align-items:center;">
-                        <span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>
+                        <span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px; display:inline-flex; align-items:center;">
+                            ▼
+                        </span></span>
                         ${ageDisplay}
                     </div>
                     ${yearBadgesHtml}
@@ -6670,9 +6716,16 @@ Replace ALL current data with this backup ? `;
             <td class="iaaf-mark" data-original="${mark}">${mark}</td>
             <td class="iaaf-points" data-original="${points}">${points}</td>
             <td style="text-align:center;" class="iaaf-actions">
-                <button class="btn-icon edit" onclick="window.startIAAFEdit(${r.id})" title="Edit">✏️</button>
-                <button class="btn-icon delete" onclick="window.deleteIAAFRow(${r.id})" title="Delete Row">🗑️</button>
-                ${iaafUpdates[r.id] && !iaafUpdates[r.id].deleted ? `<button class="btn-icon" onclick="window.revertIAAFEdit(${r.id})" title="Revert Changes" style="color:var(--text-muted);">↺</button>` : ''}
+                <button class="btn-icon edit" onclick="window.startIAAFEdit(${r.id})" title="Edit" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">
+                    ✏️
+                </button>
+                <button class="btn-icon delete" onclick="window.deleteIAAFRow(${r.id})" title="Delete Row" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">
+                    🗑️
+                </button>
+                ${iaafUpdates[r.id] && !iaafUpdates[r.id].deleted ? `
+                <button class="btn-icon" onclick="window.revertIAAFEdit(${r.id})" title="Revert Changes" style="color:var(--text-muted); display: inline-flex; align-items: center; justify-content: center;">
+                    🔄
+                </button>` : ''}
             </td>
         `;
             fragment.appendChild(tr);
@@ -6720,8 +6773,12 @@ Replace ALL current data with this backup ? `;
 
         // Replace action buttons with Save/Cancel
         actionsCell.innerHTML = `
-            <button class="btn-icon save" onclick="window.saveIAAFEdit(${id})" title="Save" style="color:var(--success);">✓</button>
-            <button class="btn-icon cancel" onclick="window.cancelIAAFEdit(${id})" title="Cancel" style="color:var(--danger);">✗</button>
+            <button class="btn-icon save" onclick="window.saveIAAFEdit(${id})" title="Save" style="color:var(--success); display: inline-flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+            <button class="btn-icon cancel" onclick="window.cancelIAAFEdit(${id})" title="Cancel" style="color:var(--danger); display: inline-flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
         `;
 
         // Focus first cell
@@ -6846,8 +6903,12 @@ Replace ALL current data with this backup ? `;
                     <td><input type="number" value="${d.age}" class="edit-age" style="width:60px;"></td>
                     <td><input type="number" value="${d.factor}" step="0.00001" class="edit-factor" style="width:100px;"></td>
                     <td style="text-align:center;">
-                        <button class="btn-icon save" onclick="window.saveWMAEdit(${d.id})" title="Save">✅</button>
-                        <button class="btn-icon cancel" onclick="window.cancelWMAEdit(${d.id})" title="Cancel">❌</button>
+                        <button class="btn-icon save" onclick="window.saveWMAEdit(${d.id})" title="Save" style="color:var(--success); display: inline-flex; align-items: center; justify-content: center;">
+                            ✅
+                        </button>
+                        <button class="btn-icon cancel" onclick="window.cancelWMAEdit(${d.id})" title="Cancel" style="color:var(--danger); display: inline-flex; align-items: center; justify-content: center;">
+                            ❌
+                        </button>
                     </td>
                 `;
             } else {
@@ -6855,8 +6916,12 @@ Replace ALL current data with this backup ? `;
                     <td>${d.age}</td>
                     <td>${d.factor.toFixed(5)}</td>
                     <td style="text-align:center;">
-                        <button class="btn-icon edit" onclick="window.startWMAEdit(${d.id})" title="Edit">✏️</button>
-                        <button class="btn-icon delete" onclick="window.deleteWMARow(${d.id})" title="Delete">🗑️</button>
+                        <button class="btn-icon edit" onclick="window.startWMAEdit(${d.id})" title="Edit" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">
+                            ✏️
+                        </button>
+                        <button class="btn-icon delete" onclick="window.deleteWMARow(${d.id})" title="Delete" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">
+                            🗑️
+                        </button>
                     </td>
                 `;
             }
