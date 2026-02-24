@@ -63,9 +63,8 @@
                 <!-- Auth UI (Left) -->
                 <div id="authSection" style="display: flex; align-items: center; gap: 0.5rem; justify-self: start;">
                     <button id="btnLogin" class="btn-small"
-                        style="background: var(--primary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
-                        🔐
-                        Admin Login
+                        style="background: var(--primary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">
+                        🔐 Admin Login
                     </button>
                     <div id="userProfile" class="hidden" style="display: flex; align-items: center; gap: 0.5rem;">
                         <img id="userAvatar" src="" alt="User"
@@ -110,15 +109,13 @@
                     <div id="cloudStatus" title="Cloud Sync Status"
                         style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-hover); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
                         <span id="cloudIcon"
-                            style="color: #ef4444; font-size: 1.2rem; transform: translateY(1px); display: inline-flex; align-items: center;">
-                            ●
-                        </span>
+                            style="color: #ef4444; font-size: 1.2rem; transform: translateY(1px); display: inline-block;">●</span>
                         <span id="cloudText">Cloud Offline</span>
                     </div>
 
                     <button id="btnSaveCloud" onclick="saveToCloud()" title="Save Changes to Cloud"
                         style="display: none; align-items: center; gap: 0.5rem; background: var(--success); color: white; padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                        ☁
+                        <span style="font-size: 1rem;">☁</span>
                         <span>Save</span>
                     </button>
                 </div>
@@ -144,7 +141,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.15.065</span>
+                        <span class="version-label">v2.15.067</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -200,15 +197,9 @@
                             </button>
                             <div style="width: 1px; height: 24px; background: var(--border); margin: 0 0.25rem;"></div>
 
-                            <button id="exportExcel" class="btn-small btn-icon btn-export" title="Export to MS Excel">
-                                📊
-                            </button>
-                            <button id="exportHTML" class="btn-small btn-icon btn-export" title="View as HTML Report">
-                                📁
-                            </button>
-                            <button id="exportPDF" class="btn-small btn-icon btn-export" title="Export to PDF">
-                                📄
-                            </button>
+                            <button id="exportExcel" class="btn-small">📊 Excel (CSV)</button>
+                            <button id="exportHTML" class="btn-small">🌐 HTML</button>
+                            <button id="exportPDF" class="btn-small">📄 PDF</button>
                         </div>
                     </div>
 
@@ -809,7 +800,7 @@
                             </div>
                             <button id="btnLoadOfficialWMA" class="btn-secondary"
                                 style="height: 42px; width: auto; padding: 0 1.5rem; border-color: var(--accent); color: var(--accent);">
-                                <span>Reload Official 2023 Tables</span>
+                                <span>🔄 Reload Official 2023 Tables</span>
                             </button>
                         </div>
 
@@ -941,7 +932,7 @@
                                 <label>Maintenance</label>
                                 <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
                                     <button id="btnRecalculateWMA" class="btn-secondary" style="font-size: 0.9rem;">
-                                        Recalculate WMA Statistics
+                                        🔄 Recalculate WMA Statistics
                                     </button>
                                     <p class="help-text"
                                         style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">

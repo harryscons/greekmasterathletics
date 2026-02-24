@@ -1,3 +1,7 @@
+# v2.15.066
+- Restore Icons from Savepoint 109: Reverted to the precise emoji and visual style of savepoint 109 for all header icons, export buttons, and table actions.
+- Maintained functional improvements while reverting the visual style.
+
 # v2.15.063
 - Restored Original Icons: Reverted all global icon standardized SVGs back to the original emoji and text-based style (✏️, 🗑️, 🥇, 🏟️, 🏠, ✅, ❌, etc.).
 

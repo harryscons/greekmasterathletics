@@ -3497,12 +3497,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${a.dob ? new Date(a.dob).toLocaleDateString('en-GB') : '-'}</td>
                         <td>${a.gender || '-'}</td>
                         <td class="actions-col">
-                            <button class="btn-icon edit edit-athlete-btn" data-id="${a.id}" title="Edit">
-                                ✏️
-                            </button>
-                            <button class="btn-icon delete delete-athlete-btn" data-id="${a.id}" title="Delete">
-                                🗑️
-                            </button>
+                            <button class="btn-icon edit edit-athlete-btn" data-id="${a.id}" title="Edit">✏️</button>
+                        <button class="btn-icon delete delete-athlete-btn" data-id="${a.id}" title="Delete">🗑️</button>
                         </td>
                     `;
                     athleteListBody.appendChild(tr);
@@ -4445,12 +4441,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${r.updatedBy || 'N/A'}</td>
                 <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
                  <td class="history-actions-col" style="${isSup ? '' : 'display:none;'}">
-                    <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">
-                        ✏️
-                    </button>
-                    <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">
-                        🗑️
-                    </button>
+                    <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
+                    <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -5067,12 +5059,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Pending Record Logic
                         if (isSupervisor(currentUser ? currentUser.email : null)) {
                             return `
-                                        <button class="btn-icon approve-btn" onclick="approveRecord('${r.id}')" title="Approve Record" style="color:var(--success); margin-right:5px;">
-                                            ✅
-                                        </button>
-                                        <button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="Reject/Cancel Proposal" style="color:var(--danger); margin-right:5px;">
-                                            ❌
-                                        </button>
+                                        <button class="btn-icon approve-btn" onclick="approveRecord('${r.id}')" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>
+                                        <button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="Reject/Cancel Proposal" style="color:var(--danger); margin-right:5px;">❌</button>
                                     `;
                         } else {
                             // Admins can ONLY cancel their own proposals
@@ -5080,9 +5068,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const ub = r.updatedBy ? String(r.updatedBy).toLowerCase() : '';
                             if (ub === cEmail || ub === 'admin' || (currentUser && ub === String(currentUser.displayName).toLowerCase())) {
                                 return `
-                                    <button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="Cancel Proposal" style="color:var(--danger);">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                    </button>
+                                    <button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="Cancel Proposal" style="color:var(--danger);">❌</button>
                                 `;
                             }
                             return ''; // Simple users see nothing
@@ -5102,15 +5088,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         if (isSup || isAdm) {
                             return `
-                                <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="font-size:1.1rem; color:var(--text); margin-right:5px; margin-left:5px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 2px;">
-                                    Update
-                                </button>
-                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">
-                                    ✏️
-                                </button>
-                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:5px;">
-                                    🗑️
-                                </button>
+                                <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="font-size:1.1rem; color:var(--text); margin-right:5px; margin-left:5px; display: inline-flex; align-items: center; justify-content: center;">🔄</button>
+                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:5px;">✏️</button>
+                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:5px;">🗑️</button>
                             `;
                         } else if (isAuthor) {
                             return `
@@ -5480,7 +5460,7 @@ document.addEventListener('DOMContentLoaded', () => {
             wma_data: wmaData,
             iaaf_updates: iaafUpdates,
             theme: localStorage.getItem('tf_theme') || 'theme-default',
-            seed_version: localStorage.getItem('tf_relays_seed_version') || '0',
+            seed_version: localStorage.getItem('tf_relays_seed_version') || '6',
             seeded: localStorage.getItem('tf_relays_seeded') || 'false'
         };
         const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
@@ -6146,6 +6126,7 @@ Replace ALL current data with this backup ? `;
 
     function renderStats() {
         if (!statsTableBody) return;
+        console.log("renderStats called");
         statsTableBody.innerHTML = '';
 
         // Read Track Type filter ONCE up front
@@ -6489,8 +6470,8 @@ Replace ALL current data with this backup ? `;
 
             athleteRecordsFiltered.forEach(r => {
                 const ttLabel = (r.trackType || 'Outdoor') === 'Outdoor'
-                    ? `<span>🏟️ Outdoor</span>`
-                    : `<span>🏠 Indoor</span>`;
+                    ? `🏟️ Outdoor`
+                    : `🏠 Indoor`;
                 const dateDisplay = r.date ? new Date(r.date).toLocaleDateString('en-GB') : '-';
                 detailsHtml += `
                     <tr>
@@ -6716,16 +6697,10 @@ Replace ALL current data with this backup ? `;
             <td class="iaaf-mark" data-original="${mark}">${mark}</td>
             <td class="iaaf-points" data-original="${points}">${points}</td>
             <td style="text-align:center;" class="iaaf-actions">
-                <button class="btn-icon edit" onclick="window.startIAAFEdit(${r.id})" title="Edit" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">
-                    ✏️
-                </button>
-                <button class="btn-icon delete" onclick="window.deleteIAAFRow(${r.id})" title="Delete Row" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">
-                    🗑️
-                </button>
+                <button class="btn-icon edit" onclick="window.startIAAFEdit(${r.id})" title="Edit" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">✏️</button>
+                <button class="btn-icon delete" onclick="window.deleteIAAFRow(${r.id})" title="Delete Row" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">🗑️</button>
                 ${iaafUpdates[r.id] && !iaafUpdates[r.id].deleted ? `
-                <button class="btn-icon" onclick="window.revertIAAFEdit(${r.id})" title="Revert Changes" style="color:var(--text-muted); display: inline-flex; align-items: center; justify-content: center;">
-                    Revert
-                </button>` : ''}
+                <button class="btn-icon" onclick="window.revertIAAFEdit(${r.id})" title="Revert Changes" style="color:var(--text-muted); display: inline-flex; align-items: center; justify-content: center;">↺</button>` : ''}
             </td>
         `;
             fragment.appendChild(tr);
@@ -6903,12 +6878,8 @@ Replace ALL current data with this backup ? `;
                     <td><input type="number" value="${d.age}" class="edit-age" style="width:60px;"></td>
                     <td><input type="number" value="${d.factor}" step="0.00001" class="edit-factor" style="width:100px;"></td>
                     <td style="text-align:center;">
-                        <button class="btn-icon save" onclick="window.saveWMAEdit(${d.id})" title="Save" style="color:var(--success); display: inline-flex; align-items: center; justify-content: center;">
-                            ✅
-                        </button>
-                        <button class="btn-icon cancel" onclick="window.cancelWMAEdit(${d.id})" title="Cancel" style="color:var(--danger); display: inline-flex; align-items: center; justify-content: center;">
-                            ❌
-                        </button>
+                        <button class="btn-icon save" onclick="window.saveWMAEdit(${d.id})" title="Save" style="color:var(--success); display: inline-flex; align-items: center; justify-content: center;">✅</button>
+            <button class="btn-icon cancel" onclick="window.cancelWMAEdit(${d.id})" title="Cancel" style="color:var(--danger); display: inline-flex; align-items: center; justify-content: center;">❌</button>
                     </td>
                 `;
             } else {
@@ -6916,12 +6887,8 @@ Replace ALL current data with this backup ? `;
                     <td>${d.age}</td>
                     <td>${d.factor.toFixed(5)}</td>
                     <td style="text-align:center;">
-                        <button class="btn-icon edit" onclick="window.startWMAEdit(${d.id})" title="Edit" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">
-                            ✏️
-                        </button>
-                        <button class="btn-icon delete" onclick="window.deleteWMARow(${d.id})" title="Delete" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">
-                            🗑️
-                        </button>
+                        <button class="btn-icon edit" onclick="window.startWMAEdit(${d.id})" title="Edit" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">✏️</button>
+                        <button class="btn-icon delete" onclick="window.deleteWMARow(${d.id})" title="Delete" style="color:var(--text); display: inline-flex; align-items: center; justify-content: center;">🗑️</button>
                     </td>
                 `;
             }
