@@ -315,7 +315,7 @@ h1 {
 
 .nav-tab:hover {
     color: var(--text-main);
-    background: var(--bg-hover);
+    background: var(--bg-dropdown); filter: brightness(1.2);
 }
 
 .nav-tab.active {
@@ -498,7 +498,7 @@ select:focus {
 }
 
 .btn-secondary {
-    background: var(--bg-hover);
+    background: var(--bg-dropdown); filter: brightness(1.2);
     color: var(--text-muted);
     border: 1px solid var(--border);
     padding: 0.9rem;
@@ -578,7 +578,7 @@ select:focus {
 }
 
 .btn-small {
-    background: var(--bg-hover);
+    background: var(--bg-dropdown); filter: brightness(1.2);
     border: 1px solid var(--border);
     color: var(--text-muted);
     padding: 0.4rem 0.8rem;
@@ -712,7 +712,7 @@ select:focus {
 }
 
 .report-table th.sortable:hover {
-    background: var(--bg-hover);
+    background: var(--bg-dropdown); filter: brightness(1.2);
     color: var(--text-main);
 }
 
@@ -810,7 +810,7 @@ select:focus {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: var(--bg-hover);
+    background: var(--bg-dropdown); filter: brightness(1.2);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -847,7 +847,7 @@ select:focus {
 
 .sub-tab:hover {
     color: var(--text-main);
-    background: var(--bg-hover);
+    background: var(--bg-dropdown); filter: brightness(1.2);
 }
 
 .sub-tab.active {
@@ -1013,7 +1013,7 @@ body.is-admin .nav-tab[data-tab="settings"] {
 
 /* --- Approval Workflow Styles --- */
 .badge-pending {
-    background: var(--bg-hover);
+    background: var(--bg-dropdown); filter: brightness(1.2);
     color: var(--text-muted);
     border: 1px solid var(--border);
     padding: 2px 6px;
