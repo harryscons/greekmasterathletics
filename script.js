@@ -5106,14 +5106,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         if (isSup || isAdm) {
                             return `
-                                <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="color:var(--text); margin-right:2px; margin-left:2px;">🔄</button>
-                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:2px;">✏️</button>
-                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:2px;">🗑️</button>
+                                <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="color:var(--text); margin:0; padding:2px;">🔄</button>
+                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin:0; padding:2px; margin-left:1px;">✏️</button>
+                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin:0; padding:2px; margin-left:1px;">🗑️</button>
                             `;
                         } else if (isAuthor) {
                             return `
-                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin-right:2px;">✏️</button>
-                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin-right:2px;">🗑️</button>
+                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin:0; padding:2px;">✏️</button>
+                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin:0; padding:2px; margin-left:1px;">🗑️</button>
                             `;
                         } else {
                             return ''; // Simple users don't see edit/delete on non-authored records
