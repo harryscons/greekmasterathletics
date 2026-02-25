@@ -3244,69 +3244,56 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`Propagating name change: "${oldLF}" / "${oldFL}" -> "${newLF}"`);
             let count = 0;
 
-            // 1. Update Main Records
-            records.forEach(r => {
+            const normalize = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+            const targetOldLF = normalize(oldLF);
+            const targetOldFL = normalize(oldFL);
+
+            const updateRecord = (r) => {
                 let changed = false;
-                if (r.athlete === oldLF || r.athlete === oldFL) {
+                if (normalize(r.athlete) === targetOldLF || normalize(r.athlete) === targetOldFL) {
                     r.athlete = newLF;
                     changed = true;
                 }
                 // Update Relay Participants
                 if (r.relayParticipants && Array.isArray(r.relayParticipants)) {
                     r.relayParticipants = r.relayParticipants.map(rp => {
-                        if (rp === oldLF || rp === oldFL) {
+                        const nrp = normalize(rp);
+                        if (nrp === targetOldLF || nrp === targetOldFL) {
                             changed = true;
                             return newLF;
                         }
                         return rp;
                     });
                 }
-                if (changed) count++;
-            });
+                return changed;
+            };
+
+            // 1. Update Main Records
+            records.forEach(r => { if (updateRecord(r)) count++; });
 
             // 2. Update History
-            history.forEach(r => {
-                let changed = false;
-                if (r.athlete === oldLF || r.athlete === oldFL) {
-                    r.athlete = newLF;
-                    changed = true;
-                }
-                if (r.relayParticipants && Array.isArray(r.relayParticipants)) {
-                    r.relayParticipants = r.relayParticipants.map(rp => {
-                        if (rp === oldLF || rp === oldFL) {
-                            changed = true;
-                            return newLF;
-                        }
-                        return rp;
-                    });
-                }
-                if (changed) count++;
-            });
+            history.forEach(r => { if (updateRecord(r)) count++; });
 
             // 3. Update Pending Records
-            pendingrecs.forEach(r => {
-                let changed = false;
-                if (r.athlete === oldLF || r.athlete === oldFL) {
-                    r.athlete = newLF;
-                    changed = true;
-                }
-                if (r.relayParticipants && Array.isArray(r.relayParticipants)) {
-                    r.relayParticipants = r.relayParticipants.map(rp => {
-                        if (rp === oldLF || rp === oldFL) {
-                            changed = true;
-                            return newLF;
-                        }
-                        return rp;
-                    });
-                }
-                if (changed) count++;
-            });
+            pendingrecs.forEach(r => { if (updateRecord(r)) count++; });
 
             console.log(`Name propagation complete. Updated ${count} total items.`);
             return count;
         }
 
         if (editingAthleteId) {
+            // Check for duplicates excluding self
+            const exists = athletes.some(a => {
+                if (a.id == editingAthleteId) return false;
+                return a.firstName.toLowerCase() === first.toLowerCase() &&
+                    a.lastName.toLowerCase() === last.toLowerCase();
+            }) || (idNum && athletes.some(a => {
+                if (a.id == editingAthleteId) return false;
+                return a.idNumber === idNum;
+            }));
+
+            if (exists) return alert('Another athlete already has this Name or ID!');
+
             const idx = athletes.findIndex(a => a.id == editingAthleteId);
             if (idx !== -1) {
                 const oldNameLF = `${athletes[idx].lastName}, ${athletes[idx].firstName}`;
@@ -3321,13 +3308,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newNameLF = `${last}, ${first}`;
 
                 // Propagate Name Update across all data nodes
-                const updatedCount = propagateAthleteNameChange(oldNameLF, oldNameFL, newNameLF);
-
-                if (updatedCount > 0) {
-                    saveRecords();
-                    saveHistory();
-                    savePendingRecs();
-                }
+                propagateAthleteNameChange(oldNameLF, oldNameFL, newNameLF);
             }
 
             editingAthleteId = null;
@@ -3335,22 +3316,16 @@ document.addEventListener('DOMContentLoaded', () => {
             athleteSubmitBtn.style.background = '';
         } else {
             const exists = athletes.some(a => {
-                // If editing, skip the current athlete in the existence check
-                if (editingAthleteId && a.id == editingAthleteId) return false;
-
                 return a.firstName.toLowerCase() === first.toLowerCase() &&
                     a.lastName.toLowerCase() === last.toLowerCase();
-            }) || (idNum && athletes.some(a => {
-                if (editingAthleteId && a.id == editingAthleteId) return false;
-                return a.idNumber === idNum;
-            }));
+            }) || (idNum && athletes.some(a => a.idNumber === idNum));
 
             if (exists) return alert('Athlete already exists (Name or ID match)!');
 
             const newId = generate6DigitId();
             athletes.push({
                 id: newId,
-                idNumber: newId,
+                idNumber: idNum || newId, // Use given ID if exists
                 firstName: first,
                 lastName: last,
                 dob: newAthleteDOB.value,
@@ -3360,6 +3335,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveAthletes();
         saveRecords();
+        saveHistory();
+        savePendingRecs();
         populateAthleteDropdown();
         renderAthleteList();
         renderReports();
