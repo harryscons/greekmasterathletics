@@ -2380,7 +2380,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const eligible = records.filter(r => {
             if (!r.athlete || !r.mark) return false;
-            if (r.approved !== true) return false;
+            if (r.approved === false) return false;
             if (archivedIds.has(r.id)) return false;
 
             const ev = events.find(e => e.name === r.event);
@@ -2877,7 +2877,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (archivedIds.has(r.id)) return false;
 
             // STRICT APPROVAL: Only include approved records in statistics
-            if (r.approved !== true) return false;
+            if (r.approved === false) return false;
             if (!r.athlete || !r.mark || r.athlete.trim() === '' || r.mark.trim() === '') return false;
 
             if (fEvent !== 'all' && r.event !== fEvent) return false;
@@ -4842,7 +4842,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const ev = events.find(e => e.name === r.event);
             const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
             if (isRelay) return;
-            if (r.approved !== true) return;
+            if (r.approved === false) return;
 
             if (r.athlete) {
                 if (!agg[r.athlete]) agg[r.athlete] = { count: 0, minYear: null, maxYear: null };
@@ -5253,7 +5253,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getExportData() {
         // Enforce STRICT approval check (must be explicitly true)
-        const rawData = getFilteredRecords().filter(r => r.approved === true);
+        const rawData = getFilteredRecords().filter(r => r.approved !== false);
 
         const sortedData = [...rawData].sort((a, b) => {
             // 1. Age Group (Numerical sort)
@@ -6361,7 +6361,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
                 const ev = events.find(e => e.name === r.event);
                 const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
                 if (isRelay) return;
-                if (r.approved !== true) return;
+                if (r.approved === false) return;
                 if (trackTypeFilter !== 'all' && (r.trackType || 'Outdoor') !== trackTypeFilter) return;
 
                 if (r.athlete) {
