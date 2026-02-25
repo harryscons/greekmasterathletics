@@ -1,3 +1,8 @@
+# v2.15.057
+- UI Refinements: Reduced widths for Age Group, IDR, and Wind columns in the main report.
+- Icon Update: Replaced "Update" button SVG with a matching 🔄 emoji and tightened action button spacing.
+- Cascaded Name Updates: Renaming an athlete now automatically propagates the change across all Records, History, and Pending submissions.
+
 # Celestial Plasma - Savepoint 104 Updates
 
 ## Recent Accomplishments (v2.15.004 - v2.15.014)
