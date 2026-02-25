@@ -4649,9 +4649,12 @@ document.addEventListener('DOMContentLoaded', () => {
         setSelectValue(evtInput, r.event);
         if (evtInput) evtInput.disabled = isUpdateFlow;
 
-        // Clear performance fields but KEEP identity fields (gender, athlete)
-        setSelectValue(genderInput, r.gender);
-        if (trackTypeInput) trackTypeInput.value = isUpdateFlow ? '' : (r.trackType || 'Outdoor');
+        // Clear performance fields but KEEP identity fields if not updating
+        setSelectValue(genderInput, isUpdateFlow ? '' : r.gender);
+        if (trackTypeInput) {
+            trackTypeInput.value = r.trackType || 'Outdoor';
+            trackTypeInput.disabled = isUpdateFlow;
+        }
         if (raceNameInput) raceNameInput.value = isUpdateFlow ? '' : (r.raceName || '');
         if (notesInput) notesInput.value = isUpdateFlow ? '' : (r.notes || '');
         if (markInput) markInput.value = isUpdateFlow ? '' : (r.mark || '');
@@ -4682,14 +4685,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setSelectValue(ageGroupInput, r.ageGroup);
 
             if (isRelay) {
-                if (relayTeamNameInput) relayTeamNameInput.value = r.athlete || '';
+                if (relayTeamNameInput) relayTeamNameInput.value = isUpdateFlow ? '' : (r.athlete || '');
                 const p = isUpdateFlow ? [] : (r.relayParticipants || []);
                 if (relayAthlete1) relayAthlete1.value = p[0] || '';
                 if (relayAthlete2) relayAthlete2.value = p[1] || '';
                 if (relayAthlete3) relayAthlete3.value = p[2] || '';
                 if (relayAthlete4) relayAthlete4.value = p[3] || '';
             } else {
-                setSelectValue(athleteInput, r.athlete);
+                setSelectValue(athleteInput, isUpdateFlow ? '' : r.athlete);
             }
 
             // final sync for age calculation just in case
@@ -4724,6 +4727,7 @@ document.addEventListener('DOMContentLoaded', () => {
         recordForm.reset();
         toggleRelayFields(false); // Reset to individual view
         if (evtInput) evtInput.disabled = false; // Always re-enable on cancel
+        if (trackTypeInput) trackTypeInput.disabled = false;
 
         if (datePicker) {
             datePicker.setDate(new Date());
