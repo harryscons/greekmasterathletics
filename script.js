@@ -5444,13 +5444,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function exportDatabase() {
         const db = {
-            version: 5,
+            version: 6,
             exportedAt: new Date().toISOString(),
             events: events,
             records: records,
             athletes: athletes,
             countries: countries,
             history: history,
+            pendingrecs: pendingrecs || [],
+            tombstones: Array.from(recentlyRejected || []),
             users: appUsers,
             wma_data: wmaData,
             iaaf_updates: iaafUpdates,
@@ -6056,40 +6058,62 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!file) return alert('Please select a JSON file first.');
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
-                const db = JSON.parse(e.target.result);
-                if (!Array.isArray(db.events) || !Array.isArray(db.records)) {
+                const dbData = JSON.parse(e.target.result);
+                if (!Array.isArray(dbData.events) || !Array.isArray(dbData.records)) {
                     throw new Error('Invalid file format. Basic tables missing.');
                 }
 
                 const msg = `Found:
-            - ${db.records.length} records
-        - ${db.athletes ? db.athletes.length : 0} athletes
-        - ${db.events.length} events
-        - ${db.history ? db.history.length : 0} history entries
-        - ${db.users ? db.users.length : 0} users
+            - ${dbData.records.length} records
+            - ${dbData.athletes ? dbData.athletes.length : 0} athletes
+            - ${dbData.events.length} events
+            - ${dbData.history ? dbData.history.length : 0} history entries
+            - ${dbData.pendingrecs ? dbData.pendingrecs.length : 0} pending entries
+            - ${dbData.users ? dbData.users.length : 0} users
 
-Replace ALL current data with this backup ? `;
+Replace ALL current data with this backup? This action is irreversible.`;
 
                 if (!confirm(msg)) return;
 
-                // Core Tables
-                localStorage.setItem('tf_records', JSON.stringify(db.records));
-                localStorage.setItem('tf_events', JSON.stringify(db.events));
-                localStorage.setItem('tf_athletes', JSON.stringify(db.athletes || []));
-                localStorage.setItem('tf_countries', JSON.stringify(db.countries || []));
-                localStorage.setItem('tf_history', JSON.stringify(db.history || []));
-                localStorage.setItem('tf_users', JSON.stringify(db.users || []));
+                // Core Tables (LocalStorage)
+                localStorage.setItem('tf_records', JSON.stringify(dbData.records));
+                localStorage.setItem('tf_events', JSON.stringify(dbData.events));
+                localStorage.setItem('tf_athletes', JSON.stringify(dbData.athletes || []));
+                localStorage.setItem('tf_countries', JSON.stringify(dbData.countries || []));
+                localStorage.setItem('tf_history', JSON.stringify(dbData.history || []));
+                localStorage.setItem('tf_users', JSON.stringify(dbData.users || []));
+                localStorage.setItem('tf_pendingrecs', JSON.stringify(dbData.pendingrecs || []));
+                localStorage.setItem('tf_tombstones', JSON.stringify(dbData.tombstones || []));
 
                 // Scoring Tables
-                if (db.wma_data) localStorage.setItem('tf_wma_data', JSON.stringify(db.wma_data));
-                if (db.iaaf_updates) localStorage.setItem('tf_iaaf_updates', JSON.stringify(db.iaaf_updates));
+                if (dbData.wma_data) localStorage.setItem('tf_wma_data', JSON.stringify(dbData.wma_data));
+                if (dbData.iaaf_updates) localStorage.setItem('tf_iaaf_updates', JSON.stringify(dbData.iaaf_updates));
 
                 // Settings
-                if (db.theme) localStorage.setItem('tf_theme', db.theme);
-                if (db.seed_version) localStorage.setItem('tf_relays_seed_version', db.seed_version);
-                if (db.seeded) localStorage.setItem('tf_relays_seeded', db.seeded);
+                if (dbData.theme) localStorage.setItem('tf_theme', dbData.theme);
+                if (dbData.seed_version) localStorage.setItem('tf_relays_seed_version', dbData.seed_version);
+                if (dbData.seeded) localStorage.setItem('tf_relays_seeded', dbData.seeded);
+
+                // --- Cloud Sync: Push to Firebase if Supervisor ---
+                const isSup = isSupervisor(currentUser ? currentUser.email : null);
+                if (isSup && db) {
+                    console.log("Supervisor detected. Syncing restored data to Cloud...");
+                    try {
+                        await db.ref('records').set(dbData.records);
+                        await db.ref('events').set(dbData.events);
+                        await db.ref('athletes').set(dbData.athletes || []);
+                        await db.ref('countries').set(dbData.countries || []);
+                        await db.ref('history').set(dbData.history || []);
+                        await db.ref('users').set(dbData.users || []);
+                        await db.ref('pendingrecs').set(dbData.pendingrecs || []);
+                        console.log("Cloud sync complete.");
+                    } catch (syncErr) {
+                        console.error("Cloud sync failed during restore:", syncErr);
+                        alert("Restored locally, but Cloud sync failed: " + syncErr.message);
+                    }
+                }
 
                 alert('Database restored successfully! The page will now reload.');
                 location.reload();
