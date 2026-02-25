@@ -1,3 +1,6 @@
+# v2.15.059
+- UI Refinements: Set Age Group, IDR, and Wind columns to shrink exactly to their content size with a small amount of padding. Tightened action buttons to be exactly 1px apart.
+
 # v2.15.057
 - UI Refinements: Reduced widths for Age Group, IDR, and Wind columns in the main report.
 - Icon Update: Replaced "Update" button SVG with a matching 🔄 emoji and tightened action button spacing.

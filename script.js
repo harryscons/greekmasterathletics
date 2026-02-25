@@ -4649,8 +4649,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setSelectValue(evtInput, r.event);
         if (evtInput) evtInput.disabled = isUpdateFlow;
 
-        // Clear performance fields if updating to a new record
-        setSelectValue(genderInput, isUpdateFlow ? '' : r.gender);
+        // Clear performance fields but KEEP identity fields (gender, athlete)
+        setSelectValue(genderInput, r.gender);
         if (trackTypeInput) trackTypeInput.value = isUpdateFlow ? '' : (r.trackType || 'Outdoor');
         if (raceNameInput) raceNameInput.value = isUpdateFlow ? '' : (r.raceName || '');
         if (notesInput) notesInput.value = isUpdateFlow ? '' : (r.notes || '');
@@ -4682,14 +4682,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setSelectValue(ageGroupInput, r.ageGroup);
 
             if (isRelay) {
-                if (relayTeamNameInput) relayTeamNameInput.value = isUpdateFlow ? '' : (r.athlete || '');
+                if (relayTeamNameInput) relayTeamNameInput.value = r.athlete || '';
                 const p = isUpdateFlow ? [] : (r.relayParticipants || []);
                 if (relayAthlete1) relayAthlete1.value = p[0] || '';
                 if (relayAthlete2) relayAthlete2.value = p[1] || '';
                 if (relayAthlete3) relayAthlete3.value = p[2] || '';
                 if (relayAthlete4) relayAthlete4.value = p[3] || '';
             } else {
-                setSelectValue(athleteInput, isUpdateFlow ? '' : r.athlete);
+                setSelectValue(athleteInput, r.athlete);
             }
 
             // final sync for age calculation just in case
