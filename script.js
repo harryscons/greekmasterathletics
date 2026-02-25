@@ -5460,11 +5460,19 @@ document.addEventListener('DOMContentLoaded', () => {
             seed_version: localStorage.getItem('tf_relays_seed_version') || '0',
             seeded: localStorage.getItem('tf_relays_seeded') || 'false'
         };
+        const now = new Date();
+        const yy = String(now.getFullYear()).slice(-2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const timestamp = `${yy}${mm}${dd}-${hh}${min}`;
+
         const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'track_data.json';
+        link.download = `track_data-${timestamp}.json`;
         link.click();
         URL.revokeObjectURL(url);
     }
