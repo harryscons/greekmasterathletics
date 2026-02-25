@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let appUsers = [];
     let pendingrecs = []; // NEW: Staging area for Admin submissions
     const recentlyRejected = new Set(JSON.parse(localStorage.getItem('tf_tombstones') || '[]'));
+    let isAdmin = false;
+    let isSuper = false;
 
     function saveTombstones() {
         localStorage.setItem('tf_tombstones', JSON.stringify(Array.from(recentlyRejected)));
@@ -489,6 +491,18 @@ document.addEventListener('DOMContentLoaded', () => {
             loadedNodes.add('users');
             checkReady();
             if (isDataReady) renderUserList();
+        });
+
+        // Listen for Stats
+        db.ref('stats').on('value', (snapshot) => {
+            const val = snapshot.val();
+            if (val && val.data) {
+                localStorage.setItem('tf_stats', JSON.stringify(val));
+                console.log("📊 Persistent Stats updated from Cloud.");
+                if (isDataReady && document.getElementById('view-stats').classList.contains('active-view')) {
+                    renderStats();
+                }
+            }
         });
     }
 
@@ -1206,8 +1220,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Always treat local environment as having Supervisor/Admin access for UI visibility
         const isLocal = isLocalEnvironment();
 
-        const isAdmin = role === 'Admin' || role === 'Supervisor' || isLocal;
-        const isSuper = role === 'Supervisor' || isLocal;
+        isAdmin = role === 'Admin' || role === 'Supervisor' || isLocal;
+        isSuper = role === 'Supervisor' || isLocal;
 
         document.body.classList.toggle('is-admin', isAdmin);
         document.body.classList.toggle('is-supervisor', isSuper);
@@ -3551,7 +3565,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn("Cloud Save aborted: System not ready (Synchronization in progress). Local backup saved.");
             return;
         }
-        if (db) db.ref('athletes').set(athletes);
+        if (db) {
+            db.ref('athletes').set(athletes).then(() => {
+                updatePersistentStats(); // Stats depend on athlete metadata
+            });
+        }
     }
 
 
@@ -4052,7 +4070,11 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('tf_events', JSON.stringify(events));
 
         if (!isDataReady) return;
-        if (db) db.ref('events').set(events);
+        if (db) {
+            db.ref('events').set(events).then(() => {
+                updatePersistentStats(); // Stats depend on event definitions
+            });
+        }
     }
 
     if (eventListBody) {
@@ -4798,12 +4820,115 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (db) {
-            db.ref('records').set(records).catch(err => {
+            db.ref('records').set(records).then(() => {
+                updatePersistentStats(); // Trigger stats update on record change
+            }).catch(err => {
                 console.error("Firebase Save Failed (Records):", err);
                 alert("Cloud Sync Error: Your changes were reverted. " + err.message);
             });
         }
         populateAthleteFilter();
+    }
+
+    async function updatePersistentStats() {
+        if (!isAdmin) return;
+        console.log("📊 Recalculating Persistent Stats...");
+
+        rebuildPerformanceIndexes();
+
+        // Basic aggregation
+        const agg = {};
+        records.forEach(r => {
+            const ev = events.find(e => e.name === r.event);
+            const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
+            if (isRelay) return;
+            if (r.approved !== true) return;
+
+            if (r.athlete) {
+                if (!agg[r.athlete]) agg[r.athlete] = { count: 0, minYear: null, maxYear: null };
+                agg[r.athlete].count++;
+                if (r.date) {
+                    const y = new Date(r.date).getFullYear();
+                    if (agg[r.athlete].minYear === null || y < agg[r.athlete].minYear) agg[r.athlete].minYear = y;
+                    if (agg[r.athlete].maxYear === null || y > agg[r.athlete].maxYear) agg[r.athlete].maxYear = y;
+                }
+            }
+        });
+
+        // Convert to enrichment objects
+        let statsData = Object.keys(agg).map(name => {
+            const data = agg[name];
+            const athlete = athleteLookupMap[name];
+            let ratioVal = 0;
+            if (data.minYear !== null && data.maxYear !== null && data.count > 0) {
+                const diff = data.maxYear - data.minYear;
+                if (diff > 0) ratioVal = (data.count / diff) * 100;
+            }
+
+            const item = {
+                name: name,
+                count: data.count,
+                ratio: ratioVal.toFixed(2) + '%',
+                gender: athlete ? athlete.gender : '',
+                dob: athlete ? athlete.dob : '',
+                ageCategory: null
+            };
+
+            if (item.dob) {
+                const age = getExactAge(item.dob, new Date());
+                if (age !== null && age >= 35) {
+                    const g = normalizeGenderLookups(item.gender);
+                    let prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
+                    item.ageCategory = prefix + (Math.floor(age / 5) * 5).toString();
+                }
+            }
+            return item;
+        });
+
+        // Rankings
+        const sortedByCount = [...statsData].sort((a, b) => b.count - a.count);
+        sortedByCount.forEach((item, index) => {
+            const rank = index + 1;
+            item.generalRank = rank.toString();
+            if (rank === 1) item.generalRank += ' 🥇';
+            else if (rank === 2) item.generalRank += ' 🥈';
+            else if (rank === 3) item.generalRank += ' 🥉';
+        });
+
+        const contentByAge = {};
+        statsData.forEach(item => {
+            const cat = item.ageCategory || 'Unknown';
+            if (!contentByAge[cat]) contentByAge[cat] = [];
+            contentByAge[cat].push(item);
+        });
+
+        Object.keys(contentByAge).forEach(cat => {
+            const group = contentByAge[cat];
+            group.sort((a, b) => b.count - a.count);
+            group.forEach((item, index) => {
+                item.ageRank = index + 1;
+                if (item.ageRank === 1) item.ageMedal = '🥇';
+                else if (item.ageRank === 2) item.ageMedal = '🥈';
+                else if (item.ageRank === 3) item.ageMedal = '🥉';
+                else item.ageMedal = '';
+            });
+        });
+
+        const statsPackage = {
+            updatedAt: new Date().toISOString(),
+            data: statsData
+        };
+
+        localStorage.setItem('tf_stats', JSON.stringify(statsPackage));
+        if (db) {
+            try {
+                await db.ref('stats').set(statsPackage);
+                console.log("✅ Persistent Stats synced to Cloud.");
+            } catch (err) {
+                console.error("❌ Stats sync failed:", err);
+            }
+        }
+        return statsData;
     }
 
     function genderFilterChange() { renderReports(); }
@@ -6155,72 +6280,18 @@ Replace ALL current data with this backup? This action is irreversible.`;
         if (!statsTableBody) return;
         statsTableBody.innerHTML = '';
 
-        // Read Track Type filter ONCE up front
+        // Prioritize loading from persistent stats
+        let statsSource;
+        try {
+            const cached = JSON.parse(localStorage.getItem('tf_stats'));
+            if (cached && cached.data) {
+                statsSource = cached.data;
+                console.log("📊 Rendering from Persistent Stats...");
+            }
+        } catch (e) { }
+
         const trackTypeFilterEl = document.getElementById('statsFilterTrackType');
         const trackTypeFilter = trackTypeFilterEl ? trackTypeFilterEl.value : 'all';
-
-        // Aggregate
-        const agg = {};
-        records.forEach(r => {
-            const ev = events.find(e => e.name === r.event);
-            const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
-            if (isRelay) return;
-
-            // --- Approval Logic: Exclude Unapproved Records from Medal Stats ---
-            if (r.approved !== true) return;
-
-            // Track Type filter
-            if (trackTypeFilter !== 'all' && (r.trackType || 'Outdoor') !== trackTypeFilter) return;
-
-            if (r.athlete) {
-                if (!agg[r.athlete]) agg[r.athlete] = { count: 0, minYear: null, maxYear: null };
-                agg[r.athlete].count++;
-                if (r.date) {
-                    const y = new Date(r.date).getFullYear();
-                    const currentMin = agg[r.athlete].minYear;
-                    const currentMax = agg[r.athlete].maxYear;
-                    if (currentMin === null || y < currentMin) agg[r.athlete].minYear = y;
-                    if (currentMax === null || y > currentMax) agg[r.athlete].maxYear = y;
-                }
-            }
-        });
-
-        // Populate Name Filter Dropdown
-        const nameSelect = document.getElementById('statsFilterName');
-        if (nameSelect && nameSelect.options.length <= 1) {
-            const allNames = Object.keys(agg).sort();
-            allNames.forEach(n => {
-                const op = document.createElement('option');
-                op.value = n;
-                op.textContent = n;
-                nameSelect.appendChild(op);
-            });
-        }
-
-        // Populate Age Category Dropdown (Unique Categories from all data)
-        const catSelect = document.getElementById('statsFilterCategory');
-        if (catSelect && catSelect.options.length <= 1) {
-            const categories = new Set();
-            Object.keys(agg).forEach(name => {
-                const athlete = athletes.find(a => `${a.lastName}, ${a.firstName} ` === name);
-                if (athlete && athlete.dob) {
-                    const age = getExactAge(athlete.dob, new Date());
-                    if (age !== null && age >= 35) {
-                        const cat = (Math.floor(age / 5) * 5).toString(); // No Gender Prefix
-                        categories.add(cat);
-                    }
-                }
-            });
-            // Sort numeric
-            Array.from(categories).sort((a, b) => {
-                return parseInt(a) - parseInt(b);
-            }).forEach(c => {
-                const op = document.createElement('option');
-                op.value = c;
-                op.textContent = c;
-                catSelect.appendChild(op);
-            });
-        }
 
         // Filter values (Read once)
         const genderFilterEl = document.getElementById('statsFilterGender');
@@ -6230,111 +6301,185 @@ Replace ALL current data with this backup? This action is irreversible.`;
         const nameFilter = nameFilterEl ? nameFilterEl.value : 'all';
         const catFilter = catFilterEl ? catFilterEl.value : 'all';
 
-        // console.log(`Stats Filter - Name: "${nameFilter}", Gender: "${genderFilter}"`);
+        let statsData = [];
+        let aggForDropdowns = {}; // Local aggregation for dropdowns if fallback needed
 
-        // Convert to Array & Enrich
-        let statsData = Object.keys(agg).reduce((acc, name) => {
-            const athlete = athletes.find(a => `${a.lastName}, ${a.firstName} ` === name);
-
-            // Name Filter (Exact) - If Name is selected, it overrides Gender filter
-            if (nameFilter !== 'all') {
-                if (name !== nameFilter) return acc;
-            } else {
-                // Gender Filter (Only check if Name not selected)
-                if (genderFilter !== 'all') {
-                    if (!athlete || athlete.gender !== genderFilter) return acc;
+        if (statsSource) {
+            // Filter persistent stats
+            statsData = statsSource.filter(item => {
+                // Name Filter (Exact) - If Name is selected, it overrides Gender filter
+                if (nameFilter !== 'all') {
+                    if (item.name !== nameFilter) return false;
+                } else {
+                    // Gender Filter
+                    if (genderFilter !== 'all') {
+                        if (item.gender !== genderFilter) return false;
+                    }
                 }
-            }
 
-            const data = agg[name];
-            let ratioVal = 0;
-            if (data.minYear !== null && data.maxYear !== null && data.count > 0) {
-                const diff = data.maxYear - data.minYear;
-                if (diff > 0) {
-                    // Formula: RecordCount / (MaxYear - MinYear)
-                    ratioVal = (data.count / diff) * 100;
+                // Category Filter
+                if (catFilter !== 'all' && nameFilter === 'all') {
+                    if (!item.ageCategory) return false;
+                    let itemCat = item.ageCategory.replace(/^[MW]/, '');
+                    if (itemCat !== catFilter) return false;
                 }
-            }
 
-            const item = {
-                name: name,
-                count: data.count,
-                ratio: ratioVal.toFixed(2) + '%',
-                age: null,
-                ageCategory: null,
-                generalRank: null,
-                ageRank: null,
-                ageMedal: '',
-                gender: athlete ? athlete.gender : ''
-            };
-
-            // Enrich with Age & Category
-            if (athlete && athlete.dob) {
-                const age = getExactAge(athlete.dob, new Date());
-                item.age = age;
-                if (age !== null && age >= 35) {
-                    // Category Logic: >=35 = 5-year bucket
-                    // Prefix: M or W or X based on gender
-                    const g = normalizeGenderLookups(item.gender);
-                    let prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
-                    item.ageCategory = prefix + (Math.floor(age / 5) * 5).toString();
-                }
-            }
-
-            // Category Filter (Overrides if Name not selected)
-            if (catFilter !== 'all' && nameFilter === 'all') {
-                if (!item.ageCategory) return acc;
-                let itemCat = item.ageCategory.replace(/^[MW]/, '');
-                if (itemCat !== catFilter) return acc;
-            }
-
-            acc.push(item);
-            return acc;
-        }, []);
-
-        if (statsData.length === 0) {
-            statsTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No records found for selected filters.</td></tr>';
-            return;
-        }
-
-        // --- Calculate Rankings ---
-
-
-        // 2. General Rank
-        // Sort temp array by count desc
-        const sortedByCount = [...statsData].sort((a, b) => b.count - a.count);
-        sortedByCount.forEach((item, index) => {
-            item.generalRank = index + 1;
-            if (item.generalRank === 1) item.generalRank += ' 🥇';
-            else if (item.generalRank === 2) item.generalRank += ' 🥈';
-            else if (item.generalRank === 3) item.generalRank += ' 🥉';
-        });
-
-        // 3. Age Category Rank
-        // Group by category
-        const contentByAge = {};
-        statsData.forEach(item => {
-            const cat = item.ageCategory || 'Unknown';
-            if (!contentByAge[cat]) contentByAge[cat] = [];
-            contentByAge[cat].push(item);
-        });
-
-        // Rank within groups
-        Object.keys(contentByAge).forEach(cat => {
-            const group = contentByAge[cat];
-            group.sort((a, b) => b.count - a.count);
-            group.forEach((item, index) => {
-                item.ageRank = index + 1;
-                if (item.ageRank === 1) item.ageMedal = '🥇';
-                else if (item.ageRank === 2) item.ageMedal = '🥈';
-                else if (item.ageRank === 3) item.ageMedal = '🥉';
+                return true;
             });
-        });
 
+            // Populate Dropdowns from source data
+            const nameSelect = document.getElementById('statsFilterName');
+            if (nameSelect && nameSelect.options.length <= 1) {
+                const allNames = [...new Set(statsSource.map(s => s.name))].sort();
+                allNames.forEach(n => {
+                    const op = document.createElement('option');
+                    op.value = n;
+                    op.textContent = n;
+                    nameSelect.appendChild(op);
+                });
+            }
+
+            const catSelect = document.getElementById('statsFilterCategory');
+            if (catSelect && catSelect.options.length <= 1) {
+                const categories = new Set();
+                statsSource.forEach(item => {
+                    if (item.ageCategory) {
+                        categories.add(item.ageCategory.replace(/^[MW]/, ''));
+                    }
+                });
+                Array.from(categories).sort((a, b) => parseInt(a) - parseInt(b)).forEach(c => {
+                    const op = document.createElement('option');
+                    op.value = c;
+                    op.textContent = c;
+                    catSelect.appendChild(op);
+                });
+            }
+        } else {
+            // Fallback to on-the-fly calculation (Original Logic)
+            const agg = {};
+            records.forEach(r => {
+                const ev = events.find(e => e.name === r.event);
+                const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
+                if (isRelay) return;
+                if (r.approved !== true) return;
+                if (trackTypeFilter !== 'all' && (r.trackType || 'Outdoor') !== trackTypeFilter) return;
+
+                if (r.athlete) {
+                    if (!agg[r.athlete]) agg[r.athlete] = { count: 0, minYear: null, maxYear: null };
+                    agg[r.athlete].count++;
+                    if (r.date) {
+                        const y = new Date(r.date).getFullYear();
+                        if (agg[r.athlete].minYear === null || y < agg[r.athlete].minYear) agg[r.athlete].minYear = y;
+                        if (agg[r.athlete].maxYear === null || y > agg[r.athlete].maxYear) agg[r.athlete].maxYear = y;
+                    }
+                }
+            });
+
+            aggForDropdowns = agg;
+
+            statsData = Object.keys(agg).reduce((acc, name) => {
+                const athlete = athleteLookupMap[name];
+                if (nameFilter !== 'all') {
+                    if (name !== nameFilter) return acc;
+                } else {
+                    if (genderFilter !== 'all') {
+                        if (!athlete || athlete.gender !== genderFilter) return acc;
+                    }
+                }
+
+                const data = agg[name];
+                let ratioVal = 0;
+                if (data.minYear !== null && data.maxYear !== null && data.count > 0) {
+                    const diff = data.maxYear - data.minYear;
+                    if (diff > 0) ratioVal = (data.count / diff) * 100;
+                }
+
+                const item = {
+                    name: name, count: data.count, ratio: ratioVal.toFixed(2) + '%',
+                    age: null, ageCategory: null, gender: athlete ? athlete.gender : ''
+                };
+
+                if (athlete && athlete.dob) {
+                    const age = getExactAge(athlete.dob, new Date());
+                    item.age = age;
+                    if (age !== null && age >= 35) {
+                        const g = normalizeGenderLookups(item.gender);
+                        let prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
+                        item.ageCategory = prefix + (Math.floor(age / 5) * 5).toString();
+                    }
+                }
+
+                if (catFilter !== 'all' && nameFilter === 'all') {
+                    if (!item.ageCategory) return acc;
+                    let itemCat = item.ageCategory.replace(/^[MW]/, '');
+                    if (itemCat !== catFilter) return acc;
+                }
+
+                acc.push(item);
+                return acc;
+            }, []);
+
+            // Rankings for fallback
+            const sortedByCount = [...statsData].sort((a, b) => b.count - a.count);
+            sortedByCount.forEach((item, index) => {
+                item.generalRank = (index + 1).toString();
+                if (item.generalRank === "1") item.generalRank += ' 🥇';
+                else if (item.generalRank === "2") item.generalRank += ' 🥈';
+                else if (item.generalRank === "3") item.generalRank += ' 🥉';
+            });
+            const contentByAge = {};
+            statsData.forEach(item => {
+                const cat = item.ageCategory || 'Unknown';
+                if (!contentByAge[cat]) contentByAge[cat] = [];
+                contentByAge[cat].push(item);
+            });
+            Object.keys(contentByAge).forEach(cat => {
+                const group = contentByAge[cat];
+                group.sort((a, b) => b.count - a.count);
+                group.forEach((item, index) => {
+                    item.ageRank = index + 1;
+                    if (item.ageRank === 1) item.ageMedal = '🥇';
+                    else if (item.ageRank === 2) item.ageMedal = '🥈';
+                    else if (item.ageRank === 3) item.ageMedal = '🥉';
+                    else item.ageMedal = '';
+                });
+            });
+
+            // Populate Dropdowns if fallback
+            const nameSelect = document.getElementById('statsFilterName');
+            if (nameSelect && nameSelect.options.length <= 1) {
+                const allNames = Object.keys(agg).sort();
+                allNames.forEach(n => {
+                    const op = document.createElement('option');
+                    op.value = n;
+                    op.textContent = n;
+                    nameSelect.appendChild(op);
+                });
+            }
+
+            const catSelect = document.getElementById('statsFilterCategory');
+            if (catSelect && catSelect.options.length <= 1) {
+                const categories = new Set();
+                Object.keys(agg).forEach(name => {
+                    const athlete = athleteLookupMap[name];
+                    if (athlete && athlete.dob) {
+                        const age = getExactAge(athlete.dob, new Date());
+                        if (age !== null && age >= 35) {
+                            categories.add((Math.floor(age / 5) * 5).toString());
+                        }
+                    }
+                });
+                Array.from(categories).sort((a, b) => parseInt(a) - parseInt(b)).forEach(c => {
+                    const op = document.createElement('option');
+                    op.value = c;
+                    op.textContent = c;
+                    catSelect.appendChild(op);
+                });
+            }
+        }
 
         // --- Filter by Medal (Post-Ranking) ---
         const medalFilter = document.getElementById('statsFilterMedal') ? document.getElementById('statsFilterMedal').value : 'all';
-        // Only apply Medal Filter if Name Filter is NOT active
         if (medalFilter !== 'all' && nameFilter === 'all') {
             statsData = statsData.filter(item => {
                 if (medalFilter === 'gold') return item.ageMedal === '🥇';
@@ -6346,33 +6491,23 @@ Replace ALL current data with this backup? This action is irreversible.`;
         }
 
         if (statsData.length === 0) {
-            let msg = 'No athletes found with selected filters.';
-            if (nameFilter !== 'all') msg += ` (Name: "${nameFilter}")`;
-            statsTableBody.innerHTML = `< tr > <td colspan="5" style="text-align:center;">${msg}</td></tr > `;
+            statsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No records found for selected filters.</td></tr>';
             return;
         }
-
 
         // --- User Display Sort ---
         statsData.sort((a, b) => {
             let valA = a[statsSortField];
             let valB = b[statsSortField];
-
             if (statsSortField === 'ratio') {
                 valA = parseFloat(valA.replace('%', ''));
                 valB = parseFloat(valB.replace('%', ''));
             } else if (statsSortField === 'generalRank' || statsSortField === 'ageRank') {
-                // Clean strings (remove medals/whitespace) and parse int
-                // If value is just number, parseInt works.
-                // If "1 🥇", parseInt("1 🥇") -> 1.
                 valA = parseInt(valA.toString());
                 valB = parseInt(valB.toString());
             }
-
-            // Case insensitive for names
             if (typeof valA === 'string') valA = valA.toLowerCase();
             if (typeof valB === 'string') valB = valB.toLowerCase();
-
             if (valA < valB) return statsSortOrder === 'asc' ? -1 : 1;
             if (valA > valB) return statsSortOrder === 'asc' ? 1 : -1;
             return 0;
@@ -6380,20 +6515,10 @@ Replace ALL current data with this backup? This action is irreversible.`;
 
         // Render
         statsData.forEach((item, index) => {
-            const uniqueId = `stats - detail - ${index} `;
+            const uniqueId = `stats-detail-${index}`;
+            let ageDisplay = item.age !== null ? `<span style="background-color: var(--success); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9em; font-weight: 600; margin-left: 10px; margin-right: 15px;">Age: ${item.age}</span>` : '';
 
-            // Age Badge (Existing Logic reused/adjusted)
-            let ageDisplay = '';
-            if (item.age !== null) {
-                ageDisplay = `<span style="background-color: var(--success); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9em; font-weight: 600; margin-left: 10px; margin-right: 15px;">Age: ${item.age}</span>`;
-            }
-
-            // Calculate Year Badges
-            // 1. Get records for athlete
-            // (Note: redundant filter here, optimize later if slow, strict validation says no redeclaring 'athleteRecords')
             const athleteRecords = records.filter(r => r.athlete === item.name);
-
-            // 2. Group by Year
             const years = {};
             athleteRecords.forEach(r => {
                 if (r.date) {
@@ -6401,127 +6526,34 @@ Replace ALL current data with this backup? This action is irreversible.`;
                     years[y] = (years[y] || 0) + 1;
                 }
             });
-
-            // 3. Sort Years Descending
             const sortedYears = Object.keys(years).sort((a, b) => b - a);
 
-            // 4. Build HTML
             let yearBadgesHtml = '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:5px;">';
             sortedYears.forEach(year => {
-                yearBadgesHtml += `
-                    <div style="
-                        position: relative;
-                        background-color: var(--primary); /* Blue */
-                        border: none;
-                        border-radius: 6px;
-                        padding: 4px 10px;
-                        font-size: 0.9em;
-                        color: white;
-                        margin-top: 6px;
-                        font-weight: 500;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                    ">
-                        ${year}
-                        <div style="
-                            position: absolute;
-                            top: -10px;
-                            right: -10px;
-                            background-color: var(--danger); /* Red */
-                            color: white;
-                            border-radius: 50%;
-                            width: 20px;
-                            height: 20px;
-                            font-size: 0.75em;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-weight: bold;
-                            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-                            border: 2px solid var(--bg-card); /* Border to separate from year box */
-                        ">${years[year]}</div>
-                    </div>
-                `;
+                yearBadgesHtml += `<div style="position: relative; background-color: var(--primary); border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.9em; color: white; margin-top: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${year}<div style="position: absolute; top: -10px; right: -10px; background-color: var(--danger); color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.75em; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.3); border: 2px solid var(--bg-card);">${years[year]}</div></div>`;
             });
             yearBadgesHtml += '</div>';
 
-            // Age Rank Display
-            let ageRankDisplay = '-';
-            if (item.ageCategory) {
-                ageRankDisplay = `<div style="display:flex; align-items:center; justify-content:flex-end;">
-                    <span style="font-weight:bold; margin-right:5px;">${item.ageRank}</span>
-                    <span style="font-size:2.5em; margin-right:5px;">${item.ageMedal}</span>
-                    <span style="font-size:0.8em; opacity:0.6;">(${item.ageCategory})</span>
-                </div>`;
-            }
+            let ageRankDisplay = item.ageCategory ? `<div style="display:flex; align-items:center; justify-content:flex-end;"><span style="font-weight:bold; margin-right:5px;">${item.ageRank}</span><span style="font-size:2.5em; margin-right:5px;">${item.ageMedal}</span><span style="font-size:0.8em; opacity:0.6;">(${item.ageCategory})</span></div>` : '-';
 
-            // General Rank Display with large medal
             let genRankDisplay = item.generalRank;
-            if (typeof item.generalRank === 'string' && item.generalRank.includes('🥇')) {
-                genRankDisplay = item.generalRank.replace('🥇', '<span style="font-size:2.5em;">🥇</span>');
-            } else if (typeof item.generalRank === 'string' && item.generalRank.includes('🥈')) {
-                genRankDisplay = item.generalRank.replace('🥈', '<span style="font-size:2.5em;">🥈</span>');
-            } else if (typeof item.generalRank === 'string' && item.generalRank.includes('🥉')) {
-                genRankDisplay = item.generalRank.replace('🥉', '<span style="font-size:2.5em;">🥉</span>');
+            if (typeof genRankDisplay === 'string') {
+                genRankDisplay = genRankDisplay.replace('🥇', '<span style="font-size:2.5em;">🥇</span>').replace('🥈', '<span style="font-size:2.5em;">🥈</span>').replace('🥉', '<span style="font-size:2.5em;">🥉</span>');
             }
 
-
-            // Build the detail records panel HTML
-            const athleteRecordsFiltered = athleteRecords.filter(r =>
-                trackTypeFilter === 'all' || (r.trackType || 'Outdoor') === trackTypeFilter
-            );
+            const athleteRecordsFiltered = athleteRecords.filter(r => trackTypeFilter === 'all' || (r.trackType || 'Outdoor') === trackTypeFilter);
             athleteRecordsFiltered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            let detailsHtml = `
-                <div id="${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(6,182,212,0.3); padding-top:8px; background:var(--bg-card); border-radius:8px; padding:10px;">
-                    <table style="width:100%; font-size: 0.9em; border-collapse: collapse; background:var(--bg-card);">
-                        <thead>
-                            <tr>
-                                <th style="padding:6px 4px; text-align:left;">Event</th>
-                                <th style="padding:6px 4px; text-align:left;">Track Type</th>
-                                <th style="padding:6px 4px; text-align:left;">Age</th>
-                                <th style="padding:6px 4px; text-align:left;">Mark</th>
-                                <th style="padding:6px 4px; text-align:left;">Date</th>
-                                <th style="padding:6px 4px; text-align:left;">Race</th>
-                                <th style="padding:6px 4px; text-align:left;">Place</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
+            let detailsHtml = `<div id="${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(6,182,212,0.3); padding-top:8px; background:var(--bg-card); border-radius:8px; padding:10px;"><table style="width:100%; font-size: 0.9em; border-collapse: collapse; background:var(--bg-card);"><thead><tr><th style="padding:6px 4px; text-align:left;">Event</th><th style="padding:6px 4px; text-align:left;">Track Type</th><th style="padding:6px 4px; text-align:left;">Age</th><th style="padding:6px 4px; text-align:left;">Mark</th><th style="padding:6px 4px; text-align:left;">Date</th><th style="padding:6px 4px; text-align:left;">Race</th><th style="padding:6px 4px; text-align:left;">Place</th></tr></thead><tbody>`;
             athleteRecordsFiltered.forEach(r => {
                 const ttLabel = (r.trackType || 'Outdoor') === 'Outdoor' ? '🏟️ Outdoor' : '🏠 Indoor';
                 const dateDisplay = r.date ? new Date(r.date).toLocaleDateString('en-GB') : '-';
-                detailsHtml += `
-                    <tr>
-                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.event}</td>
-                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.85em; color:var(--text-muted);">${ttLabel}</td>
-                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.ageGroup || '-'}</td>
-                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td>
-                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${dateDisplay}</td>
-                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.raceName || '-'}</td>
-                        <td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.town || r.location || '-'}</td>
-                    </tr>
-                `;
+                detailsHtml += `<tr><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.event}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.85em; color:var(--text-muted);">${ttLabel}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.ageGroup || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${dateDisplay}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.raceName || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.town || r.location || '-'}</td></tr>`;
             });
-
             detailsHtml += `</tbody></table></div>`;
 
-            // Build main row — detail panel is embedded inside the athlete name td
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="text-align:center; font-weight:bold; color:var(--text-muted); vertical-align:top; padding-top:12px;">${genRankDisplay}</td>
-                <td style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')">
-                    <div style="display:flex; align-items:center;">
-                        <span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>
-                        ${ageDisplay}
-                    </div>
-                    ${yearBadgesHtml}
-                    ${detailsHtml}
-                </td>
-                <td style="text-align:right; vertical-align:top; padding-top:12px;">${item.ratio}</td>
-                <td style="text-align:right; vertical-align:top; padding-top:12px;">${ageRankDisplay}</td>
-                <td style="text-align:right; padding-right:15px; vertical-align:top; padding-top:12px;">${item.count}</td>
-            `;
+            tr.innerHTML = `<td style="text-align:center; font-weight:bold; color:var(--text-muted); vertical-align:top; padding-top:12px;">${genRankDisplay}</td><td style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')"><div style="display:flex; align-items:center;"><span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>${ageDisplay}</div>${yearBadgesHtml}${detailsHtml}</td><td style="text-align:right; vertical-align:top; padding-top:12px;">${item.ratio}</td><td style="text-align:right; vertical-align:top; padding-top:12px;">${ageRankDisplay}</td><td style="text-align:right; padding-right:15px; vertical-align:top; padding-top:12px;">${item.count}</td>`;
             statsTableBody.appendChild(tr);
         });
     }
