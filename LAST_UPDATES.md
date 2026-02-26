@@ -1,3 +1,6 @@
+# v2.20.01
+- Version increment and deployment.
+
 # v2.20.00
 - **Major Milestone Release**: Consolidated recent robust read-only lockdown, UI refinements, and badge alignment improvements into a stable milestone version.
 - **Enhanced Data Integrity**: Finalized the surgical CSS-based lockdown for record viewing.
