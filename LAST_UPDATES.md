@@ -1,8 +1,3 @@
-# v2.15.072
-- **Empty Server Protection**: Added a safeguard to prevent local data loss if the server returns zero records (e.g., due to connectivity issues).
-- **Report Scrolling Fix**: Improved table header CSS to be fully opaque and visually distinct, preventing record data from being visible through labels during scrolling.
-- **Project Import**: Successfully synchronized work from Desktop/Windows environment to the primary Documents workspace.
-
 # v2.15.059
 - UI Refinements: Set Age Group, IDR, and Wind columns to shrink exactly to their content size with a small amount of padding. Tightened action buttons to be exactly 1px apart.
 
