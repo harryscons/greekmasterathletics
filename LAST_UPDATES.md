@@ -1,3 +1,12 @@
+# v2.15.074
+- **2026 Records Fix**: Standardized ID handling to ensure current year records (e.g. 2026) are correctly processed and visible in WMA Statistics reports.
+- **80m Hurdles Points**: Linked "80μ Εμπόδια" to official IAAF/WMA scoring tables to ensure points are calculated automatically.
+- **Improved Filtering**: Fixed a potential ID type mismatch (String/Number) in archiving and filtering logic across the whole application.
+- **Diagnostic Logging**: Added browser console logs to the WMA Statistics view to assist with debugging of record visibility.
+
+# v2.15.073
+- Deployment of initial 80mH points fix.
+
 # v2.15.059
 - UI Refinements: Set Age Group, IDR, and Wind columns to shrink exactly to their content size with a small amount of padding. Tightened action buttons to be exactly 1px apart.
 
