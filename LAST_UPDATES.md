@@ -1,3 +1,8 @@
+# v2.15.077
+- **Robust Date Parsing**: Implemented a centralized parsing system to handle multiple date formats (ISO, European DD/MM/YYYY, etc.).
+- **WMA Statistics Fix**: Ensured 2026 records are correctly identified and included in statistics reports regardless of the input date format.
+- **Improved Age Calculation**: Switched to standardized age helpers across all reporting logic for better data consistency.
+
 # v2.15.076
 - **Cloud-Only Transition**: Migrated to a pure cloud data model. Removed `localStorage` "Fast Pass" and "Smart Merge", ensuring Firebase is the absolute source of truth.
 - **Cloud Tombstones**: Record deletions (tombstones) are now synchronized globally across all devices via Firebase.
