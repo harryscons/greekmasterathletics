@@ -1,3 +1,7 @@
+# v2.15.082
+- **Tab Visibility Fix**: Resolved a critical layout issue where "Record History", "Settings", and "Statistics" tabs appeared empty due to an unclosed HTML tag in the new modal structure.
+- **Improved HTML Structure**: Hardened the modal container to prevent interference with main navigation.
+
 # v2.15.081
 - **Record Form Modal**: Converted the "Log New Record" tab into a premium modal window.
 - **Improved Workflow**: Clicking "+", "Edit", or "Update" now opens the form in a centered overlay, preserving your place in the main report.
