@@ -1,3 +1,7 @@
+# v2.15.095
+- **Reinforced Read-Only Lockdown**: Added redundant security layers to the view-only modal. Interaction is now blocked via CSS classes, direct inline-style overrides, and multi-stage script verification.
+- **Enhanced Modal UX**: Non-interactive buttons are now completely removed from the DOM flow, and the "Cancel" button dynamically changes to "Close Window" for better clarity.
+
 # v2.15.094
 - **Definitive Read-Only Lockdown**: Implemented a "Triple-Lock" security layer for the view-only modal. This includes a global JS interaction flag, physical CSS pointer-blocking (`pointer-events: none`), and aggressive multi-stage element disabling to ensure no modifications can be made when viewing records via double-click.
 - **Improved UI Reliability**: Fixed an issue where background calculation scripts could accidentally re-enable fields after the modal opened.

@@ -4556,18 +4556,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!recordForm) return;
         isReadOnlyForm = isReadOnly;
 
-        const elements = recordForm.querySelectorAll('input, select, textarea, button:not(#cancelBtn)');
+        const elements = recordForm.querySelectorAll('input, select, textarea, button');
         elements.forEach(el => {
-            el.disabled = isReadOnly;
+            if (el.id !== 'cancelBtn') {
+                el.disabled = isReadOnly;
+                if (isReadOnly) el.style.pointerEvents = 'none';
+                else el.style.pointerEvents = '';
+            }
         });
 
         if (isReadOnly) {
             recordForm.classList.add('read-only-lock');
+            recordForm.style.pointerEvents = 'none';
             // Support for flatpickr calendar button if any
             const fpBtns = recordForm.querySelectorAll('.flatpickr-input + .input-button');
             fpBtns.forEach(btn => btn.style.display = 'none');
         } else {
             recordForm.classList.remove('read-only-lock');
+            recordForm.style.pointerEvents = '';
             const fpBtns = recordForm.querySelectorAll('.flatpickr-input + .input-button');
             fpBtns.forEach(btn => btn.style.display = '');
         }
@@ -4576,6 +4582,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (submitBtnContainer) {
             if (isReadOnly) submitBtnContainer.style.display = 'none';
             else submitBtnContainer.style.display = '';
+        }
+
+        // Handle the Cancel/Close button specifically
+        if (isReadOnly && cancelBtn) {
+            cancelBtn.disabled = false;
+            cancelBtn.style.pointerEvents = 'auto';
+            cancelBtn.classList.remove('hidden');
+            cancelBtn.textContent = 'Close Window';
+        } else if (cancelBtn) {
+            cancelBtn.textContent = 'Cancel';
         }
     }
 
@@ -4818,7 +4834,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Re-enable and unlock
             applyReadOnlyMode(false);
             const elements = recordForm.querySelectorAll('input, select, textarea, button');
-            elements.forEach(el => el.disabled = false);
+            elements.forEach(el => {
+                el.disabled = false;
+                el.style.pointerEvents = '';
+            });
         }
         const submitBtnContainer = document.getElementById('submitBtn');
         if (submitBtnContainer) submitBtnContainer.classList.remove('hidden');

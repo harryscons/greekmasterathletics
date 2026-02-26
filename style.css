@@ -1438,3 +1438,19 @@ td>div {
     opacity: 0 !important;
     visibility: hidden !important;
 }
+
+/* --- Read-Only Lockdown Styles --- */
+.read-only-lock {
+    pointer-events: none !important;
+    user-select: none;
+    cursor: not-allowed;
+    filter: grayscale(0.5) contrast(0.8);
+    opacity: 0.9;
+}
+
+.read-only-lock #cancelBtn {
+    pointer-events: auto !important;
+    cursor: pointer;
+    filter: none;
+    opacity: 1;
+}
