@@ -664,24 +664,25 @@ document.addEventListener('DOMContentLoaded', () => {
         let dobBadge = document.getElementById('athleteDobBadge');
         let ageBadge = document.getElementById('athleteAgeBadge');
         const athleteLabel = document.getElementById('athleteLabel');
-        const badgeContainer = athleteLabel ? athleteLabel.querySelector('div') : null;
+        const ageGroupLabel = document.getElementById('ageGroupLabel');
+        const dobBadgeContainer = athleteLabel ? athleteLabel.querySelector('div') : null;
 
-        // Self-Healing Logic: If badges are missing, re-create them in the flex container
-        if (athleteLabel && badgeContainer) {
-            if (!dobBadge) {
-                console.warn("⚠️ athleteDobBadge missing, re-creating...");
-                dobBadge = document.createElement('span');
-                dobBadge.id = 'athleteDobBadge';
-                dobBadge.className = 'dob-badge hidden';
-                badgeContainer.appendChild(dobBadge);
-            }
-            if (!ageBadge) {
-                console.warn("⚠️ athleteAgeBadge missing, re-creating...");
-                ageBadge = document.createElement('span');
-                ageBadge.id = 'athleteAgeBadge';
-                ageBadge.className = 'age-group-badge hidden';
-                badgeContainer.appendChild(ageBadge);
-            }
+        // Self-Healing Logic: Athlete DOB Badge
+        if (athleteLabel && dobBadgeContainer && !dobBadge) {
+            console.warn("⚠️ athleteDobBadge missing, re-creating...");
+            dobBadge = document.createElement('span');
+            dobBadge.id = 'athleteDobBadge';
+            dobBadge.className = 'dob-badge hidden';
+            dobBadgeContainer.appendChild(dobBadge);
+        }
+
+        // Self-Healing Logic: Age Group Badge
+        if (ageGroupLabel && !ageBadge) {
+            console.warn("⚠️ athleteAgeBadge missing, re-creating...");
+            ageBadge = document.createElement('span');
+            ageBadge.id = 'athleteAgeBadge';
+            ageBadge.className = 'age-group-badge hidden';
+            ageGroupLabel.appendChild(ageBadge);
         }
 
         if (athlete && athlete.dob) {

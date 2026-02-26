@@ -1,3 +1,8 @@
+# v2.15.092
+- **Optimized Badge Placement**: The "Current Age Group" badge has been moved to the right of the Age Group label for better organization.
+- **Enhanced Readability**: Font sizes for both the DOB and Age Group badges have been increased for better visibility.
+- **Structural Improvements**: Updated label layouts to ensure consistent alignment of all information badges.
+
 # v2.15.091
 - **Read-Only Modal Mode**: Users can now double-click any record in the reports, history, or statistics tables to view full details in a protected, read-only modal.
 - **Enhanced Data Visibility**: The read-only mode is available to all users, bypassing edit-permission restrictions while ensuring data integrity.

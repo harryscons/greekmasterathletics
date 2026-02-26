@@ -867,7 +867,7 @@ select:focus {
     color: white;
     padding: 0.25rem 0.6rem;
     border-radius: 8px;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 700;
     transition: all 0.2s ease;
     white-space: nowrap;
