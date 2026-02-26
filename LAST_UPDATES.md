@@ -1,3 +1,8 @@
+# v2.15.100
+- **Definitive Surgical Lockdown**: Transitioned from a physical shield to a precision CSS-based lockdown. This guarantees that all form fields are un-editable while ensuring the "Close Window" and "X" buttons remain perfectly interactive.
+- **Persistent Visibility**: Ensured that the athlete's name, DOB badge, and Age Group badge are always correctly populated and visible in read-only mode.
+- **Reliable Accessibility**: Upgraded the z-index and event handling of all closing controls to ensure they are never blocked.
+
 # v2.15.099
 - **Refined Badge Alignment**: Moved the DOB and Age Group badges to be positioned immediately next to the label text for better readability and a more compact layout.
 

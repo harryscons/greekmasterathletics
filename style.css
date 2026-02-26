@@ -1440,42 +1440,24 @@ td>div {
 }
 
 /* --- Absolute interaction Lockdown --- */
-.interaction-shield {
-    position: absolute;
-    top: 50px;
-    /* Below the title */
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    /* Below the close button (10) but above everything else in modal */
-    background: rgba(255, 255, 255, 0.01);
-    /* Almost invisible but catches clicks */
-    cursor: not-allowed;
-    pointer-events: auto !important;
-    /* Catch all events */
-}
-
-.interaction-shield.hidden {
-    display: none;
-}
-
-/* --- Read-Only Lockdown Styles --- */
 .read-only-lock {
+    pointer-events: none !important;
     user-select: none;
     filter: grayscale(0.5) contrast(0.8);
     opacity: 0.9;
+}
+
+/* Explicitly exempt active UI elements from the lockdown */
+.read-only-lock #cancelBtn,
+.modal-close {
+    pointer-events: auto !important;
+    cursor: pointer;
+    filter: none;
+    opacity: 1;
 }
 
 .read-only-lock .dob-badge,
 .read-only-lock .age-group-badge {
     filter: none !important;
     opacity: 1 !important;
-}
-
-.read-only-lock #cancelBtn {
-    pointer-events: auto !important;
-    cursor: pointer;
-    filter: none;
-    opacity: 1;
 }

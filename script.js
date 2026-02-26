@@ -4540,9 +4540,6 @@ document.addEventListener('DOMContentLoaded', () => {
             applyReadOnlyMode(true);
             const formTitle = document.getElementById('formTitle');
             if (formTitle) formTitle.textContent = 'View Archived Record (Read-Only)';
-            // Final check: hide shield if it was somehow hidden
-            const shield = document.getElementById('interactionShield');
-            if (shield) shield.classList.remove('hidden');
         } else {
             formTitle.textContent = 'Edit Archived Record';
             formTitle.style.color = 'var(--text-muted)';
@@ -4559,12 +4556,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyReadOnlyMode(isReadOnly) {
         if (!recordForm) return;
         isReadOnlyForm = isReadOnly;
-
-        const shield = document.getElementById('interactionShield');
-        if (shield) {
-            if (isReadOnly) shield.classList.remove('hidden');
-            else shield.classList.add('hidden');
-        }
 
         const elements = recordForm.querySelectorAll('input, select, textarea, button');
         elements.forEach(el => {
@@ -4589,14 +4580,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handle the Cancel/Close button specifically
         if (isReadOnly && cancelBtn) {
             cancelBtn.disabled = false;
-            cancelBtn.style.position = 'relative';
-            cancelBtn.style.zIndex = '10001'; // Well above shield (9999)
             cancelBtn.classList.remove('hidden');
             cancelBtn.textContent = 'Close Window';
-            // Force pointer-events for safety
+            // Surgical enablement for CSS-based lock
             cancelBtn.style.pointerEvents = 'auto';
+            cancelBtn.style.position = 'relative';
+            cancelBtn.style.zIndex = '10001';
         } else if (cancelBtn) {
             cancelBtn.style.zIndex = '';
+            cancelBtn.style.pointerEvents = '';
             cancelBtn.textContent = 'Cancel';
         }
     }
@@ -4841,8 +4833,6 @@ document.addEventListener('DOMContentLoaded', () => {
             recordForm.reset();
             // Re-enable and unlock
             applyReadOnlyMode(false);
-            const shield = document.getElementById('interactionShield');
-            if (shield) shield.classList.add('hidden');
             const elements = recordForm.querySelectorAll('input, select, textarea, button');
             elements.forEach(el => {
                 el.disabled = false;
