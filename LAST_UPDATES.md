@@ -1,3 +1,7 @@
+# v2.15.078
+- **Archive Filter Fix**: Removed the redundant archive protection that erroneously hid edited records from the WMA Statistics report.
+- **Track Type Consistency**: Standardized track type filtering to be case-insensitive and more robust, ensuring "Indoor" records appear correctly.
+
 # v2.15.077
 - **Robust Date Parsing**: Implemented a centralized parsing system to handle multiple date formats (ISO, European DD/MM/YYYY, etc.).
 - **WMA Statistics Fix**: Ensured 2026 records are correctly identified and included in statistics reports regardless of the input date format.

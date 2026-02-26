@@ -2790,17 +2790,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(`📊 Rendering WMA Report. Year Filter: ${fYear}, Track Filter: ${fTrackType}`);
 
-        const archivedIds = new Set(history.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
-
         let filtered = records.filter(r => {
             const rIdStr = String(r.id);
             const rYear = getYearFromDate(r.date);
+            const rTrack = (r.trackType || 'Outdoor').trim();
 
-            // ARCHIVE PROTECTION
-            if (archivedIds.has(rIdStr)) {
-                if (rYear === '2026') console.log(`🔍 2026 record ${rIdStr} hidden: Archived`);
-                return false;
-            }
+            // ARCHIVE PROTECTION REMOVED: history unshift/push reuses IDs for edited records.
+            // Live records in the records[] array should always be considered for reports.
 
             // STRICT APPROVAL: Only include approved records in statistics
             if (r.approved === false) {
@@ -2844,7 +2840,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (fTrackType !== 'all') {
-                if ((r.trackType || 'Outdoor') !== fTrackType) return false;
+                // Case-insensitive comparison with 'Outdoor' default
+                if (rTrack.toLowerCase() !== fTrackType.toLowerCase()) return false;
             }
 
             // --- Exclude Relays from WMA Statistics ---
