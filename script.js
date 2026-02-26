@@ -661,24 +661,37 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function updateAthleteDobBadge(athlete) {
+        console.log("🛠️ updateAthleteDobBadge called for:", athlete ? `${athlete.lastName}, ${athlete.firstName}` : "null");
         const badge = document.getElementById('athleteDobBadge');
-        if (!badge) return;
+        if (!badge) {
+            console.error("❌ athleteDobBadge element not found!");
+            return;
+        }
 
         if (athlete && athlete.dob) {
+            console.log("📅 DOB found:", athlete.dob);
+            const d = parseDateRobust(athlete.dob);
+            if (isNaN(d.getTime())) {
+                console.warn("🚫 Invalid DOB date:", athlete.dob);
+                badge.textContent = '';
+                badge.classList.add('hidden');
+                return;
+            }
+
             // Format DD/MM/YYYY
-            const d = new Date(athlete.dob);
             const day = String(d.getDate()).padStart(2, '0');
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const year = d.getFullYear();
 
             badge.textContent = `Date of Birth: ${day}/${month}/${year}`;
             badge.classList.remove('hidden');
+            console.log("✅ Badge updated and shown.");
         } else {
+            console.log("🌑 No athlete or DOB, hiding badge.");
             badge.textContent = '';
             badge.classList.add('hidden');
         }
     }
-    const updateCalculatedAgeGroup = window.updateCalculatedAgeGroup;
 
     // --- Post-Loading Tasks: Seeding & Migration ---
     let recordsUpdated = false;

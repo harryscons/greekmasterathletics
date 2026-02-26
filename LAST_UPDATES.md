@@ -1,3 +1,7 @@
+# v2.15.087
+- **Athlete DOB Badge Fix**: Improved date parsing for the DOB badge using the robust system-wide helper.
+- **Diagnostic Logging**: Added console logging to track athlete data and badge visibility for troubleshooting purposes.
+
 # v2.15.086
 - **Record Access Restriction**: The "Add New Record" button (`+`) is now restricted to Supervisors and Admins.
 - **Security Guard**: Added unauthorized access protection to the Record Modal to ensure only permitted roles can create or modify records.
