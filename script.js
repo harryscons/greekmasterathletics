@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // ARCHIVE PROTECTION: Identify records that should no longer be live
                 // (Records that have been replaced and moved to history)
-                const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
+                const archivedIds = new Set(history.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
 
                 // SMART MERGE: Combine server and local, prioritizing "advanced" local states
                 const uniqueMap = new Map();
@@ -2373,15 +2373,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tbody.innerHTML = '';
 
-        const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
+        const archivedIds = new Set(history.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
 
         // Filter approved, non-relay records with valid WMA points
         const fTrackType = document.getElementById('rankingsFilterTrackType')?.value || 'all';
 
         const eligible = records.filter(r => {
+            const rIdStr = String(r.id);
             if (!r.athlete || !r.mark) return false;
             if (r.approved === false) return false;
-            if (archivedIds.has(r.id)) return false;
+            if (archivedIds.has(rIdStr)) return false;
 
             const ev = events.find(e => e.name === r.event);
             const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
@@ -2870,15 +2871,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const fYear = document.getElementById('wmaReportFilterYear')?.value || 'all';
         const fTrackType = document.getElementById('wmaReportFilterTrackType')?.value || 'all';
 
-        const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
+        console.log(`📊 Rendering WMA Report. Year Filter: ${fYear}, Track Filter: ${fTrackType}`);
+
+        const archivedIds = new Set(history.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
 
         let filtered = records.filter(r => {
+            const rIdStr = String(r.id);
+            const rYear = r.date ? new Date(r.date).getFullYear().toString() : '';
+
             // ARCHIVE PROTECTION
-            if (archivedIds.has(r.id)) return false;
+            if (archivedIds.has(rIdStr)) {
+                if (rYear === '2026') console.log(`🔍 2026 record ${rIdStr} hidden: Archived`);
+                return false;
+            }
 
             // STRICT APPROVAL: Only include approved records in statistics
-            if (r.approved === false) return false;
-            if (!r.athlete || !r.mark || r.athlete.trim() === '' || r.mark.trim() === '') return false;
+            if (r.approved === false) {
+                if (rYear === '2026') console.log(`🔍 2026 record ${rIdStr} hidden: Not Approved (Explicit false)`);
+                return false;
+            }
+
+            if (!r.athlete || !r.mark || r.athlete.trim() === '' || r.mark.trim() === '') {
+                if (rYear === '2026') console.log(`🔍 2026 record ${rIdStr} hidden: Missing Athlete or Mark`);
+                return false;
+            }
 
             if (fEvent !== 'all' && r.event !== fEvent) return false;
             if (fAthlete !== 'all' && r.athlete !== fAthlete) return false;
@@ -2918,11 +2934,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // --- Exclude Relays from WMA Statistics ---
             const ev = events.find(e => e.name === r.event);
             const isRelay = ev ? (ev.isRelay || ev.name.includes('4x') || ev.name.includes('Σκυτάλη')) : (r.event && (r.event.includes('4x') || r.event.includes('Σκυτάλη')));
-            if (isRelay) return false;
+            if (isRelay) {
+                if (rYear === '2026') console.log(`🔍 2026 record ${rIdStr} hidden: Relay`);
+                return false;
+            }
 
-            // --- Approval Logic: Exclude Unapproved Records from WMA Stats ---
-            if (r.approved === false) return false;
-
+            if (rYear === '2026') console.log(`✅ 2026 record ${rIdStr} PASSED all filters`);
             return true;
         });
 
@@ -4949,7 +4966,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mVal = filterAgeMismatch ? filterAgeMismatch.value : 'all';
         const ttVal = filterTrackType ? filterTrackType.value : 'all';
 
-        const archivedIds = new Set(history.map(h => h.originalId).filter(id => id));
+        const archivedIds = new Set(history.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
 
         // Merge records and pendingrecs for unified display
         const mergedRecords = [...records, ...(pendingrecs || [])];
