@@ -1467,6 +1467,12 @@ td>div {
     opacity: 0.9;
 }
 
+.read-only-lock .dob-badge,
+.read-only-lock .age-group-badge {
+    filter: none !important;
+    opacity: 1 !important;
+}
+
 .read-only-lock #cancelBtn {
     pointer-events: auto !important;
     cursor: pointer;

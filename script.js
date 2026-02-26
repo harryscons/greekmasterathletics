@@ -1890,7 +1890,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateRelayAthletes(gender) {
-        if (isReadOnlyForm) return; // ABSOLUTE GUARD
+        // No guard here, let it populate initially. Interaction is blocked by shield.
         const relayDropdowns = [relayAthlete1, relayAthlete2, relayAthlete3, relayAthlete4];
         relayDropdowns.forEach(dd => {
             if (!dd) return;
@@ -4590,9 +4590,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isReadOnly && cancelBtn) {
             cancelBtn.disabled = false;
             cancelBtn.style.position = 'relative';
-            cancelBtn.style.zIndex = '10001'; // Above shield
+            cancelBtn.style.zIndex = '10001'; // Well above shield (9999)
             cancelBtn.classList.remove('hidden');
             cancelBtn.textContent = 'Close Window';
+            // Force pointer-events for safety
+            cancelBtn.style.pointerEvents = 'auto';
         } else if (cancelBtn) {
             cancelBtn.style.zIndex = '';
             cancelBtn.textContent = 'Cancel';
@@ -4634,7 +4636,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleRelayFields(isRelay) {
-        if (isReadOnlyForm) return; // ABSOLUTE GUARD
+        // No guard here, let it populate initially
         const athleteSelect = document.getElementById('athlete');
         const teamInput = document.getElementById('relayTeamName');
         const athleteLabel = document.getElementById('athleteLabel');
@@ -4796,8 +4798,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (relayAthlete3) relayAthlete3.value = p[2] || '';
                 if (relayAthlete4) relayAthlete4.value = p[3] || '';
             } else {
-                setSelectValue(athleteInput, isUpdateFlow || isReadOnly ? '' : r.athlete);
-                const athlete = findAthleteByNormalizedName(isUpdateFlow || isReadOnly ? '' : r.athlete);
+                setSelectValue(athleteInput, isUpdateFlow ? '' : r.athlete);
+                const athleteName = isUpdateFlow ? '' : r.athlete;
+                const athlete = findAthleteByNormalizedName(athleteName);
                 updateAthleteDobBadge(athlete);
             }
 

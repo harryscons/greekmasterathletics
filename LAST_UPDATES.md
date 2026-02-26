@@ -1,3 +1,8 @@
+# v2.15.098
+- **Read-Only UI Refinements**: Restored athlete name and information badges (DOB/Age Group) in the view-only modal.
+- **Improved Interaction Layering**: Balanced the interaction shield to allow smooth operation of the "Close Window" and "X" buttons while maintaining absolute protection for all form fields.
+- **Badge Vibrancy**: Information badges remain fully vibrant and visible, bypassing the read-only gray-scale filter.
+
 # v2.15.097
 - **Absolute Interaction Lockdown**: Fixed a critical parameter synchronization bug that prevented the read-only flag from activating. 
 - **Physical Barrier**: The "Interaction Shield" is now physically layered above all form elements to guarantee no clicks or keystrokes can modify the data.
