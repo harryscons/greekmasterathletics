@@ -4383,8 +4383,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Modal Management ---
-    window.openRecordModal = function (id = null, isUpdateFlow = false) {
-        if (!isAdmin) {
+    window.openRecordModal = function (id = null, isUpdateFlow = false, isReadOnly = false) {
+        if (!isAdmin && !isReadOnly) {
             alert("Permission Denied: Only Supervisors or Admins can perform this action.");
             return;
         }
@@ -4480,6 +4480,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>
                 </td>
             `;
+
+            // Add double-click listener for Read-Only view
+            tr.style.cursor = 'pointer';
+            tr.title = 'Double-click to view archived details';
+            tr.addEventListener('dblclick', () => {
+                editHistory(r.id, true);
+            });
+
             tbody.appendChild(tr);
 
             if (successor) {
@@ -4507,12 +4515,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function editHistory(id) {
-        if (!isSupervisor(currentUser ? currentUser.email : null)) {
+    function editHistory(id, isReadOnly = false) {
+        if (!isSupervisor(currentUser ? currentUser.email : null) && !isReadOnly) {
             alert("Only Supervisors can edit history.");
             return;
         }
-        openRecordModal();
+        openRecordModal(null, false, isReadOnly);
         // Use strict string comparison for robust ID matching
         const idStr = String(id);
         const r = history.find(item => String(item.id) === idStr);
@@ -4535,14 +4543,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (townInput) townInput.value = r.town || '';
         if (countryInput) countryInput.value = r.country || '';
 
+        // If Read-Only, re-apply field disabling (openRecordModal(null) doesn't know the ID yet)
+        if (isReadOnly && recordForm) {
+            const inputs = recordForm.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => input.disabled = true);
+            const submitBtnContainer = document.getElementById('submitBtn');
+            if (submitBtnContainer) submitBtnContainer.classList.add('hidden');
+            const formTitle = document.getElementById('formTitle');
+            if (formTitle) formTitle.textContent = 'View Archived Record (Read-Only)';
+        }
+
         editingHistoryId = id;
         editingId = null; // Ensure we are not editing a live record
 
-        formTitle.textContent = 'Edit Archived Record';
-        formTitle.style.color = 'var(--text-muted)';
-        submitBtn.querySelector('span').textContent = 'Update Archive';
-        submitBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)'; // Purple for history
-        cancelBtn.classList.remove('hidden');
+        if (!isReadOnly) {
+            formTitle.textContent = 'Edit Archived Record';
+            formTitle.style.color = 'var(--text-muted)';
+            submitBtn.querySelector('span').textContent = 'Update Archive';
+            submitBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)'; // Purple for history
+            cancelBtn.classList.remove('hidden');
+        }
         recordForm.scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -4648,7 +4668,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function editRecord(id, isUpdateFlow = false) {
+    function editRecord(id, isUpdateFlow = false, isReadOnly = false) {
         console.log("✏️ editRecord called for ID:", id, "Update Flow:", isUpdateFlow);
 
         // Instead of switchTab, we just ensure modal is open
@@ -4656,6 +4676,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modal && modal.classList.contains('hidden')) {
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+        }
+
+        // Toggle Read-Only State
+        if (recordForm) {
+            const inputs = recordForm.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.disabled = isReadOnly;
+            });
+        }
+        const submitBtnContainer = document.getElementById('submitBtn');
+        if (submitBtnContainer) {
+            if (isReadOnly) submitBtnContainer.classList.add('hidden');
+            else submitBtnContainer.classList.remove('hidden');
+        }
+        const formTitle = document.getElementById('formTitle');
+        if (formTitle) {
+            if (isReadOnly) formTitle.textContent = 'View Record Details (Read-Only)';
+            else formTitle.textContent = isUpdateFlow ? 'Update With New Record' : 'Edit Record (Archives Old)';
         }
 
         const idStr = String(id);
@@ -4734,8 +4772,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (relayAthlete3) relayAthlete3.value = p[2] || '';
                 if (relayAthlete4) relayAthlete4.value = p[3] || '';
             } else {
-                setSelectValue(athleteInput, isUpdateFlow ? '' : r.athlete);
-                const athlete = findAthleteByNormalizedName(isUpdateFlow ? '' : r.athlete);
+                setSelectValue(athleteInput, isUpdateFlow || isReadOnly ? '' : r.athlete);
+                const athlete = findAthleteByNormalizedName(isUpdateFlow || isReadOnly ? '' : r.athlete);
                 updateAthleteDobBadge(athlete);
             }
 
@@ -4765,7 +4803,15 @@ document.addEventListener('DOMContentLoaded', () => {
         editingId = null;
         editingHistoryId = null;
         previousTab = null;
-        if (recordForm) recordForm.reset();
+        if (recordForm) {
+            recordForm.reset();
+            // Re-enable all inputs just in case we were in read-only mode
+            const inputs = recordForm.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => input.disabled = false);
+        }
+        const submitBtnContainer = document.getElementById('submitBtn');
+        if (submitBtnContainer) submitBtnContainer.classList.remove('hidden');
+
         toggleRelayFields(false);
         if (evtInput) evtInput.disabled = false;
         if (trackTypeInput) trackTypeInput.disabled = false;
@@ -5276,6 +5322,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 })()}
                     </td>
                 `;
+
+            // Add double-click listener for Read-Only view
+            tr.style.cursor = 'pointer'; // Visual hint
+            tr.title = 'Double-click to view details';
+            tr.addEventListener('dblclick', () => {
+                openRecordModal(r.id, false, true);
+            });
 
             // Add event listener to the toggle button (if present)
             const btn = tr.querySelector('.toggle-notes-btn');
@@ -6597,7 +6650,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
             athleteRecordsFiltered.forEach(r => {
                 const ttLabel = (r.trackType || 'Outdoor') === 'Outdoor' ? '🏟️ Outdoor' : '🏠 Indoor';
                 const dateDisplay = r.date ? new Date(r.date).toLocaleDateString('en-GB') : '-';
-                detailsHtml += `<tr><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.event}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.85em; color:var(--text-muted);">${ttLabel}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.ageGroup || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${dateDisplay}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.raceName || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.town || r.location || '-'}</td></tr>`;
+                detailsHtml += `<tr style="cursor:pointer;" ondblclick="openRecordModal('${r.id}', false, true)" title="Double-click to view details"><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.event}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.85em; color:var(--text-muted);">${ttLabel}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.ageGroup || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${dateDisplay}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.raceName || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.town || r.location || '-'}</td></tr>`;
             });
             detailsHtml += `</tbody></table></div>`;
 

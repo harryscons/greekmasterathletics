@@ -1,3 +1,7 @@
+# v2.15.091
+- **Read-Only Modal Mode**: Users can now double-click any record in the reports, history, or statistics tables to view full details in a protected, read-only modal.
+- **Enhanced Data Visibility**: The read-only mode is available to all users, bypassing edit-permission restrictions while ensuring data integrity.
+
 # v2.15.090
 - **Branded Athlete Badges**: The "Date of Birth" badge is now a vibrant green (#10b981) for better visibility.
 - **Current Age Group Badge**: Added a new indigo (#6366f1) badge that dynamically displays the athlete's current age group next to their name.
