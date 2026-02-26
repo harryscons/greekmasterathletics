@@ -1,3 +1,7 @@
+# v2.15.083
+- **Final Tab Visibility Fix**: Corrected a second missing closing `</div>` tag in the modal structure that was still causing "Record History", "Settings", and "Statistics" to be hidden.
+- **Structural Integrity**: Verified all HTML containers are properly closed to ensure reliable tab switching.
+
 # v2.15.082
 - **Tab Visibility Fix**: Resolved a critical layout issue where "Record History", "Settings", and "Statistics" tabs appeared empty due to an unclosed HTML tag in the new modal structure.
 - **Improved HTML Structure**: Hardened the modal container to prevent interference with main navigation.
