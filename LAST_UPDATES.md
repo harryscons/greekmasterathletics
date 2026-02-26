@@ -1,3 +1,6 @@
+# v2.15.079
+- **Age Display Fix**: Resolved "Age: undefined" in National Holder Statistics and green age badges by ensuring current age is correctly cached and robustly null-checked during rendering.
+
 # v2.15.078
 - **Archive Filter Fix**: Removed the redundant archive protection that erroneously hid edited records from the WMA Statistics report.
 - **Track Type Consistency**: Standardized track type filtering to be case-insensitive and more robust, ensuring "Indoor" records appear correctly.
