@@ -4398,7 +4398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = 'hidden'; // Prevent background scroll
 
         if (id) {
-            editRecord(id, isUpdateFlow);
+            editRecord(id, isUpdateFlow, isReadOnly);
         } else {
             // New Record Mode
             editingId = null;

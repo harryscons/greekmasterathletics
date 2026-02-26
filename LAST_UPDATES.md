@@ -1,3 +1,8 @@
+# v2.15.097
+- **Absolute Interaction Lockdown**: Fixed a critical parameter synchronization bug that prevented the read-only flag from activating. 
+- **Physical Barrier**: The "Interaction Shield" is now physically layered above all form elements to guarantee no clicks or keystrokes can modify the data.
+- **Root Cause Resolution**: Unified the `openRecordModal` and `editRecord` flow to strictly enforce the read-only state when triggered via double-click.
+
 # v2.15.096
 - **Absolute Read-Only Lockdown**: Implemented a physical "Interaction Shield" (invisible overlay) that covers the entire form in view-only mode, making it impossible to click, type, or change any values.
 - **Global Logic Guards**: Added internal security guards to all UI functions (like Relay management) to prevent any background state changes while the modal is locked.
