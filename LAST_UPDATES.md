@@ -1,3 +1,8 @@
+# v2.20.00
+- **Major Milestone Release**: Consolidated recent robust read-only lockdown, UI refinements, and badge alignment improvements into a stable milestone version.
+- **Enhanced Data Integrity**: Finalized the surgical CSS-based lockdown for record viewing.
+- **Optimized UI**: Refined information badge placement and athlete profile visibility.
+
 # v2.15.100
 - **Definitive Surgical Lockdown**: Transitioned from a physical shield to a precision CSS-based lockdown. This guarantees that all form fields are un-editable while ensuring the "Close Window" and "X" buttons remain perfectly interactive.
 - **Persistent Visibility**: Ensured that the athlete's name, DOB badge, and Age Group badge are always correctly populated and visible in read-only mode.
