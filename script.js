@@ -4279,23 +4279,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 setTimeout(() => submitBtn.querySelector('span').textContent = 'Log Record', 1500);
-                recordForm.reset();
-                if (datePicker) {
-                    datePicker.setDate(new Date());
-                } else if (dateInput && dateInput.type === 'date') {
-                    dateInput.valueAsDate = new Date();
-                } else if (dateInput) {
-                    dateInput.value = new Date().toISOString().split('T')[0];
-                }
             }
+
             populateYearDropdown();
             renderReports();
             renderAthleteList();
+
+            // Auto close modal after successful submit
+            setTimeout(() => closeRecordModal(), 1500);
         } catch (error) {
             console.error("Form Submit Error:", error);
             alert("Error saving record: " + error.message);
         }
     }
+
+    // --- Modal Management ---
+    window.openRecordModal = function (id = null, isUpdateFlow = false) {
+        const modal = document.getElementById('recordModal');
+        if (!modal) return;
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+
+        if (id) {
+            editRecord(id, isUpdateFlow);
+        } else {
+            // New Record Mode
+            editingId = null;
+            if (recordForm) recordForm.reset();
+            const formTitle = document.getElementById('formTitle');
+            if (formTitle) formTitle.textContent = 'Log New Record';
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) submitBtn.querySelector('span').textContent = 'Log Record';
+            if (cancelBtn) cancelBtn.classList.add('hidden');
+
+            // Set default date
+            if (datePicker) {
+                datePicker.setDate(new Date());
+            } else if (dateInput && dateInput.type === 'date') {
+                dateInput.valueAsDate = new Date();
+            }
+        }
+    };
+
+    window.closeRecordModal = function () {
+        const modal = document.getElementById('recordModal');
+        if (!modal) return;
+
+        modal.classList.add('hidden');
+        document.body.style.overflow = ''; // Restore background scroll
+        cancelEdit();
+    };
 
     function renderHistoryList() {
         const tbody = document.getElementById('historyListBody');
@@ -4384,7 +4418,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Only Supervisors can edit history.");
             return;
         }
-        switchTab('log');
+        openRecordModal();
         // Use strict string comparison for robust ID matching
         const idStr = String(id);
         const r = history.find(item => String(item.id) === idStr);
@@ -4491,12 +4525,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function editRecord(id, isUpdateFlow = false) {
         console.log("✏️ editRecord called for ID:", id, "Update Flow:", isUpdateFlow);
 
-        const activeView = document.querySelector('.view-section.active-view');
-        if (activeView) {
-            previousTab = activeView.id.replace('view-', '');
+        // Instead of switchTab, we just ensure modal is open
+        const modal = document.getElementById('recordModal');
+        if (modal && modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
 
-        switchTab('log');
         const idStr = String(id);
         const r = records.find(item => String(item.id) === idStr);
 
@@ -4599,36 +4634,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cancelEdit() {
-        const wasEditingHistory = !!editingHistoryId;
-        const returnTab = previousTab; // Save before resetting
-
         editingId = null;
         editingHistoryId = null;
-        previousTab = null; // Reset
-        recordForm.reset();
-        toggleRelayFields(false); // Reset to individual view
-        if (evtInput) evtInput.disabled = false; // Always re-enable on cancel
+        previousTab = null;
+        if (recordForm) recordForm.reset();
+        toggleRelayFields(false);
+        if (evtInput) evtInput.disabled = false;
         if (trackTypeInput) trackTypeInput.disabled = false;
 
         if (datePicker) {
             datePicker.setDate(new Date());
         } else if (dateInput && dateInput.type === 'date') {
             dateInput.valueAsDate = new Date();
-        } else if (dateInput) {
-            dateInput.value = new Date().toISOString().split('T')[0];
         }
 
-        formTitle.textContent = 'Log New Record';
-        formTitle.style.color = '';
-        submitBtn.querySelector('span').textContent = 'Log Record';
-        submitBtn.style.background = '';
-        cancelBtn.classList.add('hidden');
+        if (formTitle) {
+            formTitle.textContent = 'Log New Record';
+            formTitle.style.color = '';
+        }
+        if (submitBtn) {
+            submitBtn.querySelector('span').textContent = 'Log Record';
+            submitBtn.style.background = '';
+        }
+        if (cancelBtn) cancelBtn.classList.add('hidden');
+        isSuppressingAutoFill = false;
 
-        // Return to previous tab or history if editing history
-        if (wasEditingHistory) {
-            switchTab('history');
-        } else if (returnTab && returnTab !== 'log') {
-            switchTab(returnTab);
+        // Ensure modal is hidden
+        const modal = document.getElementById('recordModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
         }
     }
 

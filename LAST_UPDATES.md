@@ -1,3 +1,8 @@
+# v2.15.081
+- **Record Form Modal**: Converted the "Log New Record" tab into a premium modal window.
+- **Improved Workflow**: Clicking "+", "Edit", or "Update" now opens the form in a centered overlay, preserving your place in the main report.
+- **Enhanced UI**: Added glassmorphism effects and smooth slide-up animations for the new modal window.
+
 # v2.15.080
 - **Maintenance Disabled**: Completely removed all automated post-load maintenance (seeding, migrations, and metadata repairs) as requested.
 - **Auto-Cleanup Removed**: Deleted the duplicate athlete cleanup logic to prevent any automatic modification of the athlete database.
