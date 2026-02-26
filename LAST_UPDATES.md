@@ -1,3 +1,6 @@
+# v2.15.099
+- **Refined Badge Alignment**: Moved the DOB and Age Group badges to be positioned immediately next to the label text for better readability and a more compact layout.
+
 # v2.15.098
 - **Read-Only UI Refinements**: Restored athlete name and information badges (DOB/Age Group) in the view-only modal.
 - **Improved Interaction Layering**: Balanced the interaction shield to allow smooth operation of the "Close Window" and "X" buttons while maintaining absolute protection for all form fields.
