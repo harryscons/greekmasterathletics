@@ -4531,40 +4531,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (athleteInput) athleteInput.value = r.athlete;
         if (genderInput) genderInput.value = r.gender || '';
         if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
-        if (raceNameInput) raceNameInput.value = r.raceName || '';
-        if (notesInput) notesInput.value = r.notes || '';
-        if (markInput) markInput.value = r.mark;
-        if (windInput) windInput.value = r.wind || '';
-
-        if (dateInput) {
-            if (datePicker) datePicker.setDate(r.date);
-            else dateInput.value = r.date;
-        }
-
-        if (townInput) townInput.value = r.town || '';
         if (countryInput) countryInput.value = r.country || '';
 
-        // If Read-Only, re-apply field disabling (openRecordModal(null) doesn't know the ID yet)
-        if (isReadOnly && recordForm) {
-            const inputs = recordForm.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => input.disabled = true);
-            const submitBtnContainer = document.getElementById('submitBtn');
-            if (submitBtnContainer) submitBtnContainer.classList.add('hidden');
+        // Apply Read-Only logic if needed
+        if (isReadOnly) {
+            applyReadOnlyMode(true);
             const formTitle = document.getElementById('formTitle');
             if (formTitle) formTitle.textContent = 'View Archived Record (Read-Only)';
-        }
-
-        editingHistoryId = id;
-        editingId = null; // Ensure we are not editing a live record
-
-        if (!isReadOnly) {
+        } else {
             formTitle.textContent = 'Edit Archived Record';
             formTitle.style.color = 'var(--text-muted)';
             submitBtn.querySelector('span').textContent = 'Update Archive';
             submitBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)'; // Purple for history
             cancelBtn.classList.remove('hidden');
         }
+
+        editingHistoryId = id;
+        editingId = null; // Ensure we are not editing a live record
         recordForm.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function applyReadOnlyMode(isReadOnly) {
+        if (!recordForm) return;
+        const elements = recordForm.querySelectorAll('input, select, textarea, button:not(#cancelBtn)');
+        elements.forEach(el => {
+            el.disabled = isReadOnly;
+        });
+        const submitBtnContainer = document.getElementById('submitBtn');
+        if (submitBtnContainer) {
+            if (isReadOnly) submitBtnContainer.classList.add('hidden');
+            else submitBtnContainer.classList.remove('hidden');
+        }
     }
 
     function deleteHistory(id) {
@@ -4679,22 +4676,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.style.overflow = 'hidden';
         }
 
-        // Toggle Read-Only State
-        if (recordForm) {
-            const inputs = recordForm.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                input.disabled = isReadOnly;
-            });
-        }
-        const submitBtnContainer = document.getElementById('submitBtn');
-        if (submitBtnContainer) {
-            if (isReadOnly) submitBtnContainer.classList.add('hidden');
-            else submitBtnContainer.classList.remove('hidden');
-        }
+        // Initialize Read-Only State
+        applyReadOnlyMode(isReadOnly);
+
         const formTitle = document.getElementById('formTitle');
-        if (formTitle) {
-            if (isReadOnly) formTitle.textContent = 'View Record Details (Read-Only)';
-            else formTitle.textContent = isUpdateFlow ? 'Update With New Record' : 'Edit Record (Archives Old)';
+        if (formTitle && isReadOnly) {
+            formTitle.textContent = 'View Record Details (Read-Only)';
         }
 
         const idStr = String(id);
@@ -4728,13 +4715,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. SET ALL BASIC FIELDS FIRST
         // Always keep event and ageGroup. Event is locked for Update flow.
         setSelectValue(evtInput, r.event);
-        if (evtInput) evtInput.disabled = isUpdateFlow;
+        if (evtInput) evtInput.disabled = (isUpdateFlow || isReadOnly);
 
         // Clear performance fields but KEEP identity fields if not updating
         setSelectValue(genderInput, isUpdateFlow ? '' : r.gender);
         if (trackTypeInput) {
             trackTypeInput.value = r.trackType || 'Outdoor';
-            trackTypeInput.disabled = isUpdateFlow;
+            trackTypeInput.disabled = (isUpdateFlow || isReadOnly);
         }
         if (raceNameInput) raceNameInput.value = isUpdateFlow ? '' : (r.raceName || '');
         if (notesInput) notesInput.value = isUpdateFlow ? '' : (r.notes || '');
@@ -4785,16 +4772,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log("Edit form population complete.");
             isSuppressingAutoFill = false; // RE-ENABLE Auto-Calculations
+
+            // Final Lock for Read-Only Mode (to prevent overrides from auto-calculate scripts)
+            if (isReadOnly) {
+                applyReadOnlyMode(true);
+            }
         }, 300); // Increased to 300ms for heavy sync environments
 
         editingId = id;
         editingHistoryId = null;
 
-        if (formTitle) formTitle.textContent = isUpdateFlow ? 'Update With New Record' : 'Edit Record (Archives Old)';
-        if (submitBtn) {
-            const span = submitBtn.querySelector('span');
-            if (span) span.textContent = isUpdateFlow ? 'Log New Record' : 'Update & Archive';
-            submitBtn.style.background = isUpdateFlow ? '' : 'linear-gradient(135deg, var(--warning), #f59e0b)';
+        if (!isReadOnly) {
+            if (formTitle) formTitle.textContent = isUpdateFlow ? 'Update With New Record' : 'Edit Record (Archives Old)';
+            if (submitBtn) {
+                const span = submitBtn.querySelector('span');
+                if (span) span.textContent = isUpdateFlow ? 'Log New Record' : 'Update & Archive';
+                submitBtn.style.background = isUpdateFlow ? '' : 'linear-gradient(135deg, var(--warning), #f59e0b)';
+            }
         }
         if (cancelBtn) cancelBtn.classList.remove('hidden');
         if (recordForm) recordForm.scrollIntoView({ behavior: 'smooth' });
@@ -4806,9 +4800,9 @@ document.addEventListener('DOMContentLoaded', () => {
         previousTab = null;
         if (recordForm) {
             recordForm.reset();
-            // Re-enable all inputs just in case we were in read-only mode
-            const inputs = recordForm.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => input.disabled = false);
+            // Re-enable all inputs and buttons
+            const elements = recordForm.querySelectorAll('input, select, textarea, button');
+            elements.forEach(el => el.disabled = false);
         }
         const submitBtnContainer = document.getElementById('submitBtn');
         if (submitBtnContainer) submitBtnContainer.classList.remove('hidden');

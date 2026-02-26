@@ -1,3 +1,7 @@
+# v2.15.093
+- **Robust Read-Only Mode**: Improved the record modal's view-only logic to provide a total lockdown of all interactive elements (inputs, dropdowns, and buttons) when double-clicking a record.
+- **Button Protection**: The "Update & Archive" buttons are now hidden more reliably in read-only mode, with a final verification step to prevent background scripts from re-enabling fields.
+
 # v2.15.092
 - **Optimized Badge Placement**: The "Current Age Group" badge has been moved to the right of the Age Group label for better organization.
 - **Enhanced Readability**: Font sizes for both the DOB and Age Group badges have been increased for better visibility.
