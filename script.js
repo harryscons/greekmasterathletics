@@ -4565,7 +4565,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 teamInput.classList.remove('hidden');
                 teamInput.required = true;
             }
-            if (athleteLabel) athleteLabel.textContent = 'Team Name';
+            if (athleteLabel) {
+                const labelText = athleteLabel.querySelector('.label-main-text');
+                if (labelText) labelText.textContent = 'Team Name';
+                else athleteLabel.textContent = 'Team Name'; // Fallback
+            }
             if (participantsSection) participantsSection.classList.remove('hidden');
 
             // Only populate if genderInput exists
@@ -4581,7 +4585,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 teamInput.classList.add('hidden');
                 teamInput.required = false;
             }
-            if (athleteLabel) athleteLabel.textContent = 'Athlete Name';
+            if (athleteLabel) {
+                const labelText = athleteLabel.querySelector('.label-main-text');
+                if (labelText) labelText.textContent = 'Athlete Name';
+                else athleteLabel.textContent = 'Athlete Name'; // Fallback
+            }
             if (participantsSection) participantsSection.classList.add('hidden');
         }
     }

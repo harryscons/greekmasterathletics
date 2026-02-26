@@ -1,3 +1,7 @@
+# v2.15.088
+- **Athlete DOB Badge Stability**: Refactored the internal structure of the record form labels to prevent the DOB badge from being inadvertently removed during form state changes (e.g., switching between Athlete and Team modes).
+- **Persistent Badge State**: The badge now remains securely in the DOM and updates correctly regardless of label text changes.
+
 # v2.15.087
 - **Athlete DOB Badge Fix**: Improved date parsing for the DOB badge using the robust system-wide helper.
 - **Diagnostic Logging**: Added console logging to track athlete data and badge visibility for troubleshooting purposes.
