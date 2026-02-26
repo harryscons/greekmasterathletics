@@ -140,7 +140,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.15.089</span>
+                        <span class="version-label">v2.15.090</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -283,7 +283,10 @@
                                     <label for="athlete" id="athleteLabel"
                                         style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                                         <span class="label-main-text">Athlete Name</span>
-                                        <span id="athleteDobBadge" class="dob-badge hidden"></span>
+                                        <div style="display: flex; gap: 4px;">
+                                            <span id="athleteDobBadge" class="dob-badge hidden"></span>
+                                            <span id="athleteAgeBadge" class="age-group-badge hidden"></span>
+                                        </div>
                                     </label>
                                     <select id="athlete" required>
                                         <option value="" disabled selected>Select Athlete</option>

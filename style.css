@@ -859,23 +859,33 @@ select:focus {
     background: rgba(0, 0, 0, 0.1);
 }
 
-/* Athlete DOB Badge */
-.dob-badge {
+/* Athlete Badges */
+.dob-badge,
+.age-group-badge {
     display: inline-flex;
     align-items: center;
-    background: var(--bg-primary-light);
-    color: var(--primary);
+    color: white;
     padding: 0.25rem 0.6rem;
     border-radius: 8px;
     font-size: 0.75rem;
     font-weight: 700;
-    border: 1px solid var(--primary-glow);
-    margin-left: 0.5rem;
     transition: all 0.2s ease;
     white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.dob-badge:not(.hidden) {
+.dob-badge {
+    background: #10b981;
+    /* Green */
+}
+
+.age-group-badge {
+    background: #6366f1;
+    /* Indigo/Blue */
+}
+
+.dob-badge:not(.hidden),
+.age-group-badge:not(.hidden) {
     animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 

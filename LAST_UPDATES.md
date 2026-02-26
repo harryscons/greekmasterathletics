@@ -1,3 +1,8 @@
+# v2.15.090
+- **Branded Athlete Badges**: The "Date of Birth" badge is now a vibrant green (#10b981) for better visibility.
+- **Current Age Group Badge**: Added a new indigo (#6366f1) badge that dynamically displays the athlete's current age group next to their name.
+- **Improved Badge Layout**: Badges are now grouped side-by-side in a responsive flex container.
+
 # v2.15.089
 - **Self-Healing DOB Badge**: Implemented an automated recovery system for the Athlete DOB badge. The system now detects if the badge element is missing (e.g., due to accidental DOM clearing) and re-creates it on-the-fly.
 - **Improved DOM Logic**: Upgraded the record form's label management to use a non-destructive text update method, ensuring that dynamic components like badges are preserved during form state transitions.

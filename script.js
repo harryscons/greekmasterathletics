@@ -661,41 +661,65 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function updateAthleteDobBadge(athlete) {
-        let badge = document.getElementById('athleteDobBadge');
+        let dobBadge = document.getElementById('athleteDobBadge');
+        let ageBadge = document.getElementById('athleteAgeBadge');
         const athleteLabel = document.getElementById('athleteLabel');
+        const badgeContainer = athleteLabel ? athleteLabel.querySelector('div') : null;
 
-        // Self-Healing Logic: If badge is missing (e.g. wiped by textContent update), re-create it
-        if (!badge && athleteLabel) {
-            console.warn("⚠️ athleteDobBadge missing, attempting to re-create...");
-            badge = document.createElement('span');
-            badge.id = 'athleteDobBadge';
-            badge.className = 'dob-badge hidden';
-            athleteLabel.appendChild(badge);
-        }
-
-        if (!badge) {
-            console.error("❌ athleteDobBadge element not found/recreated!");
-            return;
+        // Self-Healing Logic: If badges are missing, re-create them in the flex container
+        if (athleteLabel && badgeContainer) {
+            if (!dobBadge) {
+                console.warn("⚠️ athleteDobBadge missing, re-creating...");
+                dobBadge = document.createElement('span');
+                dobBadge.id = 'athleteDobBadge';
+                dobBadge.className = 'dob-badge hidden';
+                badgeContainer.appendChild(dobBadge);
+            }
+            if (!ageBadge) {
+                console.warn("⚠️ athleteAgeBadge missing, re-creating...");
+                ageBadge = document.createElement('span');
+                ageBadge.id = 'athleteAgeBadge';
+                ageBadge.className = 'age-group-badge hidden';
+                badgeContainer.appendChild(ageBadge);
+            }
         }
 
         if (athlete && athlete.dob) {
             const d = parseDateRobust(athlete.dob);
-            if (isNaN(d.getTime())) {
-                badge.textContent = '';
-                badge.classList.add('hidden');
-                return;
+            if (!isNaN(d.getTime())) {
+                // DOB Badge
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                if (dobBadge) {
+                    dobBadge.textContent = `Date of Birth: ${day}/${month}/${year}`;
+                    dobBadge.classList.remove('hidden');
+                }
+
+                // Current Age Group Badge (based on today's date)
+                const today = new Date().toISOString().split('T')[0];
+                const currentAgeGroup = calculateAgeGroup(athlete.dob, today);
+                if (ageBadge) {
+                    if (currentAgeGroup) {
+                        ageBadge.textContent = `Current: ${currentAgeGroup}`;
+                        ageBadge.classList.remove('hidden');
+                    } else {
+                        ageBadge.classList.add('hidden');
+                    }
+                }
+            } else {
+                if (dobBadge) dobBadge.classList.add('hidden');
+                if (ageBadge) ageBadge.classList.add('hidden');
             }
-
-            // Format DD/MM/YYYY
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = d.getFullYear();
-
-            badge.textContent = `Date of Birth: ${day}/${month}/${year}`;
-            badge.classList.remove('hidden');
         } else {
-            badge.textContent = '';
-            badge.classList.add('hidden');
+            if (dobBadge) {
+                dobBadge.textContent = '';
+                dobBadge.classList.add('hidden');
+            }
+            if (ageBadge) {
+                ageBadge.textContent = '';
+                ageBadge.classList.add('hidden');
+            }
         }
     }
 
