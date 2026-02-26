@@ -652,10 +652,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 ageGroupInput.value = calculatedGroup;
                 console.log(`Applied Age Group: "${calculatedGroup}"`);
             }
+
+            updateAthleteDobBadge(athlete);
         } else {
             console.warn(`Could not match athlete for name: "${rawName}"`);
+            updateAthleteDobBadge(null);
         }
     };
+
+    function updateAthleteDobBadge(athlete) {
+        const badge = document.getElementById('athleteDobBadge');
+        if (!badge) return;
+
+        if (athlete && athlete.dob) {
+            // Format DD/MM/YYYY
+            const d = new Date(athlete.dob);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+
+            badge.textContent = `Date of Birth: ${day}/${month}/${year}`;
+            badge.classList.remove('hidden');
+        } else {
+            badge.textContent = '';
+            badge.classList.add('hidden');
+        }
+    }
     const updateCalculatedAgeGroup = window.updateCalculatedAgeGroup;
 
     // --- Post-Loading Tasks: Seeding & Migration ---
@@ -4324,6 +4346,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // New Record Mode
             editingId = null;
             if (recordForm) recordForm.reset();
+            updateAthleteDobBadge(null);
             const formTitle = document.getElementById('formTitle');
             if (formTitle) formTitle.textContent = 'Log New Record';
             const submitBtn = document.getElementById('submitBtn');
@@ -4626,6 +4649,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (relayAthlete4) relayAthlete4.value = p[3] || '';
             } else {
                 setSelectValue(athleteInput, isUpdateFlow ? '' : r.athlete);
+                const athlete = findAthleteByNormalizedName(isUpdateFlow ? '' : r.athlete);
+                updateAthleteDobBadge(athlete);
             }
 
             // final sync for age calculation just in case
@@ -4676,7 +4701,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cancelBtn) cancelBtn.classList.add('hidden');
         isSuppressingAutoFill = false;
 
-        // Ensure modal is hidden
+        // Hide DOB badge and modal
+        updateAthleteDobBadge(null);
         const modal = document.getElementById('recordModal');
         if (modal) {
             modal.classList.add('hidden');

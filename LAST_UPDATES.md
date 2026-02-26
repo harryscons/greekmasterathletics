@@ -1,3 +1,6 @@
+# v2.15.085
+- **Athlete DOB Badge**: When editing a record or selecting an athlete in the modal, their Date of Birth is now displayed as a distinct badge next to their name for quick verification.
+
 # v2.15.084
 - **Modal Display Preference**: Added a "Show Only Modal Window" setting in General Settings.
 - **Minimalist Mode**: Enabling this removes background blur and glassmorphism, displaying the modal as a focused window with distinct shadows for better clarity on busy reports.

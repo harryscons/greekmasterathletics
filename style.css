@@ -859,6 +859,38 @@ select:focus {
     background: rgba(0, 0, 0, 0.1);
 }
 
+/* Athlete DOB Badge */
+.dob-badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--bg-primary-light);
+    color: var(--primary);
+    padding: 0.25rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid var(--primary-glow);
+    margin-left: 0.5rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.dob-badge:not(.hidden) {
+    animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badgePop {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 @keyframes modalSlideUp {
     from {
         opacity: 0;
