@@ -1,3 +1,8 @@
+# v2.15.076
+- **Cloud-Only Transition**: Migrated to a pure cloud data model. Removed `localStorage` "Fast Pass" and "Smart Merge", ensuring Firebase is the absolute source of truth.
+- **Cloud Tombstones**: Record deletions (tombstones) are now synchronized globally across all devices via Firebase.
+- **Improved Stability**: Removed legacy local-to-cloud migration logic to prevent accidental data overwrites and ensure a consistent system state.
+
 # v2.15.074
 - **2026 Records Fix**: Standardized ID handling to ensure current year records (e.g. 2026) are correctly processed and visible in WMA Statistics reports.
 - **80m Hurdles Points**: Linked "80μ Εμπόδια" to official IAAF/WMA scoring tables to ensure points are calculated automatically.

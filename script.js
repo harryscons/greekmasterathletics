@@ -26,7 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let isSuper = false;
 
     function saveTombstones() {
-        localStorage.setItem('tf_tombstones', JSON.stringify(Array.from(recentlyRejected)));
+        // Tombstones are now handled via Firebase 'tombstones' node
+        if (db) {
+            db.ref('tombstones').set(Array.from(recentlyRejected));
+        }
     }
 
     // --- Data Protection ---
@@ -60,19 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Fast Pass: Load immediate cache from LocalStorage for permission checks & initial state
-    try {
-        records = JSON.parse(localStorage.getItem('tf_records')) || [];
-        events = JSON.parse(localStorage.getItem('tf_events')) || [];
-        athletes = JSON.parse(localStorage.getItem('tf_athletes')) || [];
-        countries = JSON.parse(localStorage.getItem('tf_countries')) || [];
-        history = JSON.parse(localStorage.getItem('tf_history')) || [];
-        appUsers = JSON.parse(localStorage.getItem('tf_users')) || [];
-        pendingrecs = JSON.parse(localStorage.getItem('tf_pendingrecs')) || []; // NEW: Load staging area
-        console.log("⚡ Fast Pass: Core state initialized from LocalStorage");
-    } catch (e) {
-        console.error("❌ Fast Pass failed:", e);
-    }
+    // --- Fast Pass Removed: System now waits for Firebase consensus ---
+    console.log("📡 Initializing Cloud-Only Data Model...");
 
     // --- Performance Indexes ---
     let iaafLookupMap = {}; // Event -> Gender -> [sorted records]
@@ -341,82 +333,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listen for Records
         db.ref('records').on('value', (snapshot) => {
             try {
-                const rawVal = snapshot.val();
-                const serverRecords = valToArray(rawVal);
-                const localRecords = JSON.parse(localStorage.getItem('tf_records')) || [];
+                records = valToArray(snapshot.val());
+                console.log("Records updated from Firebase:", records.length);
 
-                console.log(`📡 Firebase Record Snapshot: Received ${serverRecords.length} records.`);
-
-                // Diagnostic: Check for 2026 records in raw server data
-                const server2026 = serverRecords.filter(r => r.date && r.date.includes('2026'));
-                if (server2026.length > 0) {
-                    console.log(`🔍 Found ${server2026.length} records for 2026 in Firebase snapshot:`, server2026.map(r => `${r.athlete} (${r.event})`));
-                } else {
-                    console.warn("⚠️ No 2026 records found in the incoming Firebase 'records' snapshot.");
-                }
-
-                // ARCHIVE PROTECTION: Identify records that should no longer be live
-                // (Records that have been replaced and moved to history)
-                const archivedIds = new Set(history.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
-
-                // SMART MERGE: Combine server and local, prioritizing "advanced" local states
-                const uniqueMap = new Map();
-
-                // 1. Start with Server Records (Base Truth)
-                serverRecords.forEach(r => {
-                    const rIdStr = String(r.id);
-                    // Use rIdStr for BOTH sets to ensure type match
-                    if (!recentlyRejected.has(rIdStr)) {
-                        uniqueMap.set(rIdStr, r);
-                    }
-                });
-
-                // 2. Blend in Local Records (Update state if local is "ahead")
-                localRecords.forEach(l => {
-                    const lIdStr = String(l.id);
-                    if (recentlyRejected.has(lIdStr)) return;
-
-                    const existing = uniqueMap.get(lIdStr);
-                    if (!existing) {
-                        // "Local Only" record (likely a proposal from this device)
-                        // STABILITY FIX: Only rescue if it's very recent (e.g., < 2 hours old) or specifically unapproved.
-                        const ageInMs = Date.now() - (Number(l.id) || 0);
-                        const isRecent = ageInMs < (2 * 60 * 60 * 1000);
-
-                        if (l.approved === false && isRecent) {
-                            console.log(`🛡️ Smart Merge: Rescuing recent proposal ${lIdStr}`);
-                            uniqueMap.set(lIdStr, l);
-                        }
-                    } else if (l.approved === true && existing.approved === false) {
-                        console.log(`🛡️ Smart Merge: Favoring local approval for record ${lIdStr}`);
-                        uniqueMap.set(lIdStr, l);
-                    }
-                });
-
-                const finalRecords = Array.from(uniqueMap.values());
-
-                // Empty Server Protection (fallback if server is blank but local isn't)
-                if (finalRecords.length === 0 && localRecords.length > 0 && serverRecords.length === 0) {
-                    console.warn("⚠️ Empty snapshot received. Preserving local state.");
-                    records = localRecords.filter(l => !archivedIds.has(l.id));
-                } else {
-                    records = finalRecords;
-                }
-
-                // If we rescued local-only records or approvals, trigger a sync to settle the cloud
-                const hasLocalOnly = records.some(r => !serverRecords.some(s => s.id === r.id));
-                const hasLocalApproval = records.some(r => r.approved === true && serverRecords.some(s => s.id === r.id && s.approved === false));
-
-                if (hasLocalOnly || hasLocalApproval) {
-                    console.log("🔄 Triggering resync to settle cloud with local state...");
-                    setTimeout(() => saveRecords(), 2000);
-                }
-
-                console.log("Records updated (Smart Merge):", records.length);
-
-                // Final Check: Are 2026 records in the merged 'records' array?
+                // Diagnostic: Are 2026 records in the state?
                 const final2026 = records.filter(r => r.date && r.date.includes('2026'));
-                console.log(`📊 Final 2026 records in state: ${final2026.length}`);
+                if (final2026.length > 0) {
+                    console.log(`📊 2026 records now in state: ${final2026.length}`, final2026.map(r => r.athlete));
+                }
 
                 loadedNodes.add('records');
                 checkReady();
@@ -555,63 +479,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof populateWMAEventDropdown === 'function') populateWMAEventDropdown();
     }
 
-    // Migration Helper: Push local data to Firebase if Firebase is empty
+    // Migration logic removed: Always trust the current cloud state
     async function migrateLocalToCloud(db) {
-        const nodes = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
-        let cloudIsEmpty = true;
-
-        // 1. Check if cloud has any records at all
-        try {
-            const sn = await db.ref('records').once('value');
-            if (sn.exists()) cloudIsEmpty = false;
-        } catch (e) {
-            console.error("Cloud check failed", e);
-            if (e.code === 'PERMISSION_DENIED') {
-                updateCloudStatus('permission_denied');
-            }
-        }
-
-        if (!cloudIsEmpty) return; // Cloud has data, no migration needed
-
-        console.log("Cloud database empty. Attempting migration/seeding...");
-
-        let migrationSourceFound = false;
-
-        // 2. Try to migrate from LocalStorage first
-        for (const node of nodes) {
-            try {
-                const localData = JSON.parse(localStorage.getItem(`tf_${node === 'history' ? 'history' : node}`)) || [];
-                if (localData.length > 0) {
-                    console.log(`Pushing ${localData.length} ${node} from localStorage to cloud...`);
-                    await db.ref(node).set(localData);
-                    migrationSourceFound = true;
-                }
-            } catch (e) {
-                console.error(`Error migrating ${node}:`, e);
-            }
-        }
-
-        // 3. IF still empty, try to seed from track_data.json (Emergency Fallback)
-        if (!migrationSourceFound) {
-            console.log("LocalStorage empty. Attempting a seed from track_data.json...");
-            try {
-                const response = await fetch('track_data.json');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.records && data.records.length > 0) {
-                        console.log("Seeding Cloud from track_data.json...");
-                        if (data.records) await db.ref('records').set(data.records);
-                        if (data.athletes) await db.ref('athletes').set(data.athletes);
-                        if (data.events) await db.ref('events').set(data.events);
-                        if (data.countries) await db.ref('countries').set(data.countries);
-                        if (data.history) await db.ref('history').set(data.history);
-                        console.log("Cloud seeded successfully from file.");
-                    }
-                }
-            } catch (e) {
-                console.log("Auto-seed fetch failed or file not found (normal if first run).");
-            }
-        }
+        console.log("📡 System in Cloud-Only mode. Skipping local migrations.");
+        return;
     }
 
     // Logic to repair missing metadata (IAAF, WMA, Formula)
