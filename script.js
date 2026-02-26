@@ -341,8 +341,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listen for Records
         db.ref('records').on('value', (snapshot) => {
             try {
-                const serverRecords = valToArray(snapshot.val());
+                const rawVal = snapshot.val();
+                const serverRecords = valToArray(rawVal);
                 const localRecords = JSON.parse(localStorage.getItem('tf_records')) || [];
+
+                console.log(`📡 Firebase Record Snapshot: Received ${serverRecords.length} records.`);
+
+                // Diagnostic: Check for 2026 records in raw server data
+                const server2026 = serverRecords.filter(r => r.date && r.date.includes('2026'));
+                if (server2026.length > 0) {
+                    console.log(`🔍 Found ${server2026.length} records for 2026 in Firebase snapshot:`, server2026.map(r => `${r.athlete} (${r.event})`));
+                } else {
+                    console.warn("⚠️ No 2026 records found in the incoming Firebase 'records' snapshot.");
+                }
 
                 // ARCHIVE PROTECTION: Identify records that should no longer be live
                 // (Records that have been replaced and moved to history)
@@ -402,6 +413,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 console.log("Records updated (Smart Merge):", records.length);
+
+                // Final Check: Are 2026 records in the merged 'records' array?
+                const final2026 = records.filter(r => r.date && r.date.includes('2026'));
+                console.log(`📊 Final 2026 records in state: ${final2026.length}`);
+
                 loadedNodes.add('records');
                 checkReady();
                 if (isDataReady) renderAll();
@@ -410,6 +426,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Data Sync Error: " + e.message);
             }
         });
+
+        // Diagnostic Helper: Expose a function to manually inspect the Firebase snapshot
+        window.traceCloudRecords = async function () {
+            if (!db) return console.error("Database not initialized");
+            console.log("🕵️ Starting Cloud Trace...");
+            const snap = await db.ref('records').get();
+            const data = snap.val();
+            const arr = valToArray(data);
+            console.log(`Cloud contains ${arr.length} records.`);
+            const recs2026 = arr.filter(r => String(r.date).includes('2026'));
+            console.table(recs2026);
+            return recs2026;
+        };
 
         // Listen for Athletes
         db.ref('athletes').on('value', (snapshot) => {
