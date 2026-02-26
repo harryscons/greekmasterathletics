@@ -1,3 +1,7 @@
+# v2.15.089
+- **Self-Healing DOB Badge**: Implemented an automated recovery system for the Athlete DOB badge. The system now detects if the badge element is missing (e.g., due to accidental DOM clearing) and re-creates it on-the-fly.
+- **Improved DOM Logic**: Upgraded the record form's label management to use a non-destructive text update method, ensuring that dynamic components like badges are preserved during form state transitions.
+
 # v2.15.088
 - **Athlete DOB Badge Stability**: Refactored the internal structure of the record form labels to prevent the DOB badge from being inadvertently removed during form state changes (e.g., switching between Athlete and Team modes).
 - **Persistent Badge State**: The badge now remains securely in the DOM and updates correctly regardless of label text changes.

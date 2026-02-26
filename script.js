@@ -661,18 +661,26 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function updateAthleteDobBadge(athlete) {
-        console.log("🛠️ updateAthleteDobBadge called for:", athlete ? `${athlete.lastName}, ${athlete.firstName}` : "null");
-        const badge = document.getElementById('athleteDobBadge');
+        let badge = document.getElementById('athleteDobBadge');
+        const athleteLabel = document.getElementById('athleteLabel');
+
+        // Self-Healing Logic: If badge is missing (e.g. wiped by textContent update), re-create it
+        if (!badge && athleteLabel) {
+            console.warn("⚠️ athleteDobBadge missing, attempting to re-create...");
+            badge = document.createElement('span');
+            badge.id = 'athleteDobBadge';
+            badge.className = 'dob-badge hidden';
+            athleteLabel.appendChild(badge);
+        }
+
         if (!badge) {
-            console.error("❌ athleteDobBadge element not found!");
+            console.error("❌ athleteDobBadge element not found/recreated!");
             return;
         }
 
         if (athlete && athlete.dob) {
-            console.log("📅 DOB found:", athlete.dob);
             const d = parseDateRobust(athlete.dob);
             if (isNaN(d.getTime())) {
-                console.warn("🚫 Invalid DOB date:", athlete.dob);
                 badge.textContent = '';
                 badge.classList.add('hidden');
                 return;
@@ -685,9 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             badge.textContent = `Date of Birth: ${day}/${month}/${year}`;
             badge.classList.remove('hidden');
-            console.log("✅ Badge updated and shown.");
         } else {
-            console.log("🌑 No athlete or DOB, hiding badge.");
             badge.textContent = '';
             badge.classList.add('hidden');
         }
@@ -4567,8 +4573,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (athleteLabel) {
                 const labelText = athleteLabel.querySelector('.label-main-text');
-                if (labelText) labelText.textContent = 'Team Name';
-                else athleteLabel.textContent = 'Team Name'; // Fallback
+                if (labelText) {
+                    labelText.textContent = 'Team Name';
+                } else {
+                    // Fallback that doesn't wipe other elements (it finds the first text node)
+                    let found = false;
+                    for (let node of athleteLabel.childNodes) {
+                        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
+                            node.textContent = 'Team Name';
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) athleteLabel.prepend(document.createTextNode('Team Name'));
+                }
             }
             if (participantsSection) participantsSection.classList.remove('hidden');
 
@@ -4587,8 +4605,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (athleteLabel) {
                 const labelText = athleteLabel.querySelector('.label-main-text');
-                if (labelText) labelText.textContent = 'Athlete Name';
-                else athleteLabel.textContent = 'Athlete Name'; // Fallback
+                if (labelText) {
+                    labelText.textContent = 'Athlete Name';
+                } else {
+                    // Fallback
+                    let found = false;
+                    for (let node of athleteLabel.childNodes) {
+                        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
+                            node.textContent = 'Athlete Name';
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) athleteLabel.prepend(document.createTextNode('Athlete Name'));
+                }
             }
             if (participantsSection) participantsSection.classList.add('hidden');
         }
