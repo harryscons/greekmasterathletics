@@ -1,3 +1,8 @@
+# v2.15.096
+- **Absolute Read-Only Lockdown**: Implemented a physical "Interaction Shield" (invisible overlay) that covers the entire form in view-only mode, making it impossible to click, type, or change any values.
+- **Global Logic Guards**: Added internal security guards to all UI functions (like Relay management) to prevent any background state changes while the modal is locked.
+- **Reinforced UI Security**: The "Close Window" button is now the only interactive element, elevated above the interaction shield for guaranteed accessibility.
+
 # v2.15.095
 - **Reinforced Read-Only Lockdown**: Added redundant security layers to the view-only modal. Interaction is now blocked via CSS classes, direct inline-style overrides, and multi-stage script verification.
 - **Enhanced Modal UX**: Non-interactive buttons are now completely removed from the DOM flow, and the "Cancel" button dynamically changes to "Close Window" for better clarity.

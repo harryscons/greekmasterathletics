@@ -1890,6 +1890,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateRelayAthletes(gender) {
+        if (isReadOnlyForm) return; // ABSOLUTE GUARD
         const relayDropdowns = [relayAthlete1, relayAthlete2, relayAthlete3, relayAthlete4];
         relayDropdowns.forEach(dd => {
             if (!dd) return;
@@ -4539,6 +4540,9 @@ document.addEventListener('DOMContentLoaded', () => {
             applyReadOnlyMode(true);
             const formTitle = document.getElementById('formTitle');
             if (formTitle) formTitle.textContent = 'View Archived Record (Read-Only)';
+            // Final check: hide shield if it was somehow hidden
+            const shield = document.getElementById('interactionShield');
+            if (shield) shield.classList.remove('hidden');
         } else {
             formTitle.textContent = 'Edit Archived Record';
             formTitle.style.color = 'var(--text-muted)';
@@ -4556,26 +4560,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!recordForm) return;
         isReadOnlyForm = isReadOnly;
 
+        const shield = document.getElementById('interactionShield');
+        if (shield) {
+            if (isReadOnly) shield.classList.remove('hidden');
+            else shield.classList.add('hidden');
+        }
+
         const elements = recordForm.querySelectorAll('input, select, textarea, button');
         elements.forEach(el => {
             if (el.id !== 'cancelBtn') {
                 el.disabled = isReadOnly;
-                if (isReadOnly) el.style.pointerEvents = 'none';
-                else el.style.pointerEvents = '';
+                // No need for pointer-events here since shield covers it
             }
         });
 
         if (isReadOnly) {
             recordForm.classList.add('read-only-lock');
-            recordForm.style.pointerEvents = 'none';
-            // Support for flatpickr calendar button if any
-            const fpBtns = recordForm.querySelectorAll('.flatpickr-input + .input-button');
-            fpBtns.forEach(btn => btn.style.display = 'none');
         } else {
             recordForm.classList.remove('read-only-lock');
-            recordForm.style.pointerEvents = '';
-            const fpBtns = recordForm.querySelectorAll('.flatpickr-input + .input-button');
-            fpBtns.forEach(btn => btn.style.display = '');
         }
 
         const submitBtnContainer = document.getElementById('submitBtn');
@@ -4587,10 +4589,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handle the Cancel/Close button specifically
         if (isReadOnly && cancelBtn) {
             cancelBtn.disabled = false;
-            cancelBtn.style.pointerEvents = 'auto';
+            cancelBtn.style.position = 'relative';
+            cancelBtn.style.zIndex = '10001'; // Above shield
             cancelBtn.classList.remove('hidden');
             cancelBtn.textContent = 'Close Window';
         } else if (cancelBtn) {
+            cancelBtn.style.zIndex = '';
             cancelBtn.textContent = 'Cancel';
         }
     }
@@ -4630,6 +4634,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleRelayFields(isRelay) {
+        if (isReadOnlyForm) return; // ABSOLUTE GUARD
         const athleteSelect = document.getElementById('athlete');
         const teamInput = document.getElementById('relayTeamName');
         const athleteLabel = document.getElementById('athleteLabel');
@@ -4833,6 +4838,8 @@ document.addEventListener('DOMContentLoaded', () => {
             recordForm.reset();
             // Re-enable and unlock
             applyReadOnlyMode(false);
+            const shield = document.getElementById('interactionShield');
+            if (shield) shield.classList.add('hidden');
             const elements = recordForm.querySelectorAll('input, select, textarea, button');
             elements.forEach(el => {
                 el.disabled = false;
