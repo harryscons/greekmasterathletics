@@ -45,12 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("✅ Data Consensus Reached. System is now READY.");
             isDataReady = true;
 
-            // Now safe to run migrations and seeding
-            if (typeof runPostLoadMaintenance === 'function') {
-                runPostLoadMaintenance();
-            } else {
-                renderAll();
-            }
+            // Now safe to render
+            rebuildPerformanceIndexes();
+            renderAll();
 
             // Hide Initial Loading Overlay
             const overlay = document.getElementById('initial-loading-overlay');
@@ -1200,11 +1197,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadLocalDataOnly() {
         console.log("Loading data from LocalStorage fallback...");
         isDataReady = true;
-        if (typeof runPostLoadMaintenance === 'function') {
-            runPostLoadMaintenance();
-        } else {
-            renderAll();
-        }
+        rebuildPerformanceIndexes();
+        renderAll();
     }
 
     // Initialize Firebase
@@ -1291,9 +1285,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isDataReady) {
                 console.warn("⚠️ Data Sync Timeout: Forcing System Ready state to allow saves.");
                 isDataReady = true;
-                if (typeof runPostLoadMaintenance === 'function') {
-                    runPostLoadMaintenance();
-                }
+                rebuildPerformanceIndexes();
+                renderAll();
             }
         }, 5000);
 
@@ -3082,53 +3075,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         renderWMAReport();
     };
-    function cleanupDuplicateAthletes() {
-        const groups = {};
-
-        // Group by normalized name (accent-insensitive)
-        athletes.forEach(a => {
-            const f = normalizeName(a.firstName);
-            const l = normalizeName(a.lastName);
-
-            // Still sorting to be order-agnostic, but using normalized versions
-            const key = [f, l].sort().join('|');
-            if (!key || key === '|') return; // Skip invalid entries
-
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(a);
-        });
-
-        let removedCount = 0;
-        const newAthletes = [];
-
-        Object.values(groups).forEach(group => {
-            if (group.length === 1) {
-                newAthletes.push(group[0]);
-            } else {
-                // Duplicates found: Pick BEST candidate
-                // Score: Has DOB (10) > Has Gender (2) > Has IDNumber (1)
-                group.sort((a, b) => {
-                    const scoreA = (a.dob && a.dob.trim() !== "" ? 10 : 0) +
-                        (a.gender ? 2 : 0) +
-                        (a.idNumber ? 1 : 0);
-                    const scoreB = (b.dob && b.dob.trim() !== "" ? 10 : 0) +
-                        (b.gender ? 2 : 0) +
-                        (b.idNumber ? 1 : 0);
-                    return scoreB - scoreA;
-                });
-
-                newAthletes.push(group[0]);
-                removedCount += (group.length - 1);
-            }
-        });
-
-        if (removedCount > 0) {
-            athletes = newAthletes;
-            saveAthletes();
-            console.log(`Cleaned up ${removedCount} duplicate athletes.`);
-            alert(`System Maintenance: Removed ${removedCount} duplicate athlete profiles.`);
-        }
-    }
 
 
     function migrateAgeGroupsToStartAge() {
@@ -7023,54 +6969,6 @@ Replace ALL current data with this backup? This action is irreversible.`;
         }
     }
 
-    function runPostLoadMaintenance() {
-        console.log("🛠️ Running Post-Load Maintenance (Migrations & Seeding)...");
-        let recordsUpdated = false;
-
-        // 1. Core Data Prep
-        rebuildPerformanceIndexes();
-        if (typeof repairEventMetadata === 'function') repairEventMetadata();
-
-        // 2. Seeding
-        if (typeof seedEvents === 'function') seedEvents();
-        if (typeof seedCountries === 'function') seedCountries();
-        if (typeof seedRecords === 'function') seedRecords();
-
-        // 3. Migrations
-        if (typeof migrateAthletes === 'function') migrateAthletes();
-        if (typeof migrateAthleteNames === 'function') migrateAthleteNames();
-        if (typeof migrateEvents === 'function') migrateEvents();
-        if (typeof migrateRecordFormat === 'function') migrateRecordFormat();
-        if (typeof migrateAthleteIds === 'function') migrateAthleteIds();
-        if (typeof migrateAgeGroupsToStartAge === 'function') migrateAgeGroupsToStartAge();
-        if (typeof migrateEventDescriptions === 'function') migrateEventDescriptions();
-        if (typeof migrateApprovalStatus === 'function') migrateApprovalStatus();
-
-        // Specific Migration: Normalize age groups (e.g. "50-54" -> "50")
-        records.forEach(r => {
-            if (r.ageGroup && typeof r.ageGroup === 'string' && r.ageGroup.includes('-') && r.ageGroup !== '100+') {
-                const parts = r.ageGroup.split('-');
-                const ageNum = parseInt(parts[0]);
-                if (!isNaN(ageNum)) {
-                    r.ageGroup = ageNum.toString();
-                    recordsUpdated = true;
-                }
-            }
-        });
-
-        // 4. Cleanup
-        if (typeof cleanupDuplicateAthletes === 'function') cleanupDuplicateAthletes();
-
-        // 5. Rendering & UI Population
-        renderAll();
-
-        if (recordsUpdated) {
-            console.log("💾 Post-Load Maintenance complete. Changes persisted.");
-            saveRecords();
-        }
-
-        console.log("🚀 System verified and ready for interaction.");
-    }
 
     function initThemes() {
         const savedTheme = localStorage.getItem('tf_theme') || 'theme-default';

@@ -1,3 +1,7 @@
+# v2.15.080
+- **Maintenance Disabled**: Completely removed all automated post-load maintenance (seeding, migrations, and metadata repairs) as requested.
+- **Auto-Cleanup Removed**: Deleted the duplicate athlete cleanup logic to prevent any automatic modification of the athlete database.
+
 # v2.15.079
 - **Age Display Fix**: Resolved "Age: undefined" in National Holder Statistics and green age badges by ensuring current age is correctly cached and robustly null-checked during rendering.
 
