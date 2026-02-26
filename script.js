@@ -1210,11 +1210,18 @@ document.addEventListener('DOMContentLoaded', () => {
             else navSave.style.display = 'none';
         }
 
-        // Hide Log Record Tab content or show login prompt? 
+        // Add Record Button Visibility
+        const btnNewRecord = document.getElementById('btnNewRecordInline');
+        if (btnNewRecord) {
+            if (isAdmin) btnNewRecord.classList.remove('hidden');
+            else btnNewRecord.classList.add('hidden');
+        }
+
         // For now, let's just disable the Submit button in Log Record
         const submitBtn = document.getElementById('submitBtn');
         if (submitBtn) submitBtn.disabled = !isAdmin;
     }
+
 
     function loadLocalDataOnly() {
         console.log("Loading data from LocalStorage fallback...");
@@ -4334,6 +4341,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Modal Management ---
     window.openRecordModal = function (id = null, isUpdateFlow = false) {
+        if (!isAdmin) {
+            alert("Permission Denied: Only Supervisors or Admins can perform this action.");
+            return;
+        }
         const modal = document.getElementById('recordModal');
         if (!modal) return;
 

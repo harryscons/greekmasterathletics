@@ -1,4 +1,7 @@
-# v2.15.085
+# v2.15.086
+- **Record Access Restriction**: The "Add New Record" button (`+`) is now restricted to Supervisors and Admins.
+- **Security Guard**: Added unauthorized access protection to the Record Modal to ensure only permitted roles can create or modify records.
+
 - **Athlete DOB Badge**: When editing a record or selecting an athlete in the modal, their Date of Birth is now displayed as a distinct badge next to their name for quick verification.
 
 # v2.15.084
