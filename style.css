@@ -315,7 +315,8 @@ h1 {
 
 .nav-tab:hover {
     color: var(--text-main);
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
 }
 
 .nav-tab.active {
@@ -498,7 +499,8 @@ select:focus {
 }
 
 .btn-secondary {
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     color: var(--text-muted);
     border: 1px solid var(--border);
     padding: 0.9rem;
@@ -578,7 +580,8 @@ select:focus {
 }
 
 .btn-small {
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     border: 1px solid var(--border);
     color: var(--text-muted);
     padding: 0.4rem 0.8rem;
@@ -606,12 +609,23 @@ select:focus {
     border-collapse: collapse;
 }
 
+/* Main Report Table Styling */
 .report-table th {
     position: sticky;
     top: 0;
-    z-index: 10;
-    background-color: var(--bg-card);
-    /* Ensure solid background so rows don't show through */
+    z-index: 100;
+    background-color: var(--bg-dropdown);
+    /* Solid opaque color */
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transition: background 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-bottom: 2px solid var(--border) !important;
+    padding: 0.6rem 0.8rem;
+    line-height: 1.4;
+    text-align: left;
 }
 
 /* Compact style for management tables */
@@ -639,7 +653,6 @@ select:focus {
     border-top: 2px solid var(--accent) !important;
 }
 
-.report-table th,
 .report-table td {
     padding: 0.6rem 0.8rem;
     line-height: 1.4;
@@ -690,20 +703,7 @@ select:focus {
     text-align: right;
 }
 
-.report-table th {
-    background: var(--bg-dropdown);
-    /* solid color */
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 0.85rem;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    transition: background 0.2s;
-    white-space: nowrap;
-    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
-    /* visual separation */
-}
+/* Redundant report-table th removed (consolidated above) */
 
 .report-table th.sortable {
     cursor: pointer;
@@ -712,7 +712,8 @@ select:focus {
 }
 
 .report-table th.sortable:hover {
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     color: var(--text-main);
 }
 
@@ -810,7 +811,8 @@ select:focus {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -847,7 +849,8 @@ select:focus {
 
 .sub-tab:hover {
     color: var(--text-main);
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
 }
 
 .sub-tab.active {
@@ -1013,7 +1016,8 @@ body.is-admin .nav-tab[data-tab="settings"] {
 
 /* --- Approval Workflow Styles --- */
 .badge-pending {
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     color: var(--text-muted);
     border: 1px solid var(--border);
     padding: 2px 6px;
@@ -1281,10 +1285,16 @@ td>div {
         padding: 0.3rem 0.6rem;
     }
 }
+
 /* Animations & Utility */
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .fade-out {

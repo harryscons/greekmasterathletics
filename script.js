@@ -4305,7 +4305,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 date: dateInput ? dateInput.value : '',
                 town: townInput ? townInput.value : '',
                 country: countryInput ? countryInput.value : '',
-                updatedBy: getCurrentUsername()
+                updatedBy: getCurrentUsername(),
+                approvedBy: isSupervisor(currentUser ? currentUser.email : null) ? getCurrentUsername() : null
             };
 
             // Calculate WMA stats for new record
@@ -4348,6 +4349,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             history.unshift(oldRecordData);
                             saveHistory();
 
+                            newRecord.approved = true;
+                            newRecord.approvedBy = getCurrentUsername();
+
                             // Update Live Record in place
                             records[index] = newRecord;
                             saveRecords();
@@ -4385,6 +4389,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Log New Record
                 const isSup = isSupervisor(currentUser ? currentUser.email : null);
                 if (isSup) {
+                    newRecord.approved = true;
+                    newRecord.approvedBy = getCurrentUsername();
                     records.unshift(newRecord);
                     saveRecords();
                     submitBtn.querySelector('span').textContent = 'Logged! ✓';
@@ -7270,7 +7276,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
                     // Clean the pending record
                     delete pendingRecord.replacesId;
                     delete pendingRecord.isPending;
-
+                    pendingRecord.approved = true;
                     pendingRecord.approvedBy = getCurrentUsername();
 
                     // Swap in the live records array
@@ -7279,6 +7285,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
                     // Failsafe: original record missing, treat as new
                     delete pendingRecord.replacesId;
                     delete pendingRecord.isPending;
+                    pendingRecord.approved = true;
                     pendingRecord.approvedBy = getCurrentUsername();
                     records.unshift(pendingRecord);
                 }
