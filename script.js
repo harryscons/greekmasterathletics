@@ -4807,11 +4807,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 ratio: ratioVal.toFixed(2) + '%',
                 gender: athlete ? athlete.gender : '',
                 dob: athlete ? athlete.dob : '',
+                age: null,
                 ageCategory: null
             };
 
             if (item.dob) {
                 const age = getExactAge(item.dob, new Date());
+                item.age = age;
                 if (age !== null && age >= 35) {
                     const g = normalizeGenderLookups(item.gender);
                     let prefix = g === 'men' ? 'M' : (g === 'women' ? 'W' : 'X');
@@ -6452,7 +6454,8 @@ Replace ALL current data with this backup? This action is irreversible.`;
         // Render
         statsData.forEach((item, index) => {
             const uniqueId = `stats-detail-${index}`;
-            let ageDisplay = item.age !== null ? `<span style="background-color: var(--success); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9em; font-weight: 600; margin-left: 10px; margin-right: 15px;">Age: ${item.age}</span>` : '';
+            // Handle both null and undefined to prevent "Age: undefined"
+            let ageDisplay = (item.age !== null && item.age !== undefined) ? `<span style="background-color: var(--success); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9em; font-weight: 600; margin-left: 10px; margin-right: 15px;">Age: ${item.age}</span>` : '';
 
             const athleteRecords = records.filter(r => r.athlete === item.name);
             const years = {};
