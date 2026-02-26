@@ -1299,6 +1299,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        const showOnlyModalSetting = document.getElementById('showOnlyModal');
+        const recordModalEl = document.getElementById('recordModal');
+        if (showOnlyModalSetting && recordModalEl) {
+            const isMinimal = localStorage.getItem('tf_show_only_modal') === 'true';
+            showOnlyModalSetting.checked = isMinimal;
+            if (isMinimal) recordModalEl.classList.add('minimal');
+
+            showOnlyModalSetting.addEventListener('change', () => {
+                localStorage.setItem('tf_show_only_modal', showOnlyModalSetting.checked);
+                if (showOnlyModalSetting.checked) {
+                    recordModalEl.classList.add('minimal');
+                } else {
+                    recordModalEl.classList.remove('minimal');
+                }
+            });
+        }
+
         const btnRecalculateWMA = document.getElementById('btnRecalculateWMA');
         if (btnRecalculateWMA) {
             btnRecalculateWMA.addEventListener('click', recalculateAllWMAStats);

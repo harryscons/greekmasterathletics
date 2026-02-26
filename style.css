@@ -315,7 +315,8 @@ h1 {
 
 .nav-tab:hover {
     color: var(--text-main);
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
 }
 
 .nav-tab.active {
@@ -498,7 +499,8 @@ select:focus {
 }
 
 .btn-secondary {
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     color: var(--text-muted);
     border: 1px solid var(--border);
     padding: 0.9rem;
@@ -578,7 +580,8 @@ select:focus {
 }
 
 .btn-small {
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     border: 1px solid var(--border);
     color: var(--text-muted);
     padding: 0.4rem 0.8rem;
@@ -712,7 +715,8 @@ select:focus {
 }
 
 .report-table th.sortable:hover {
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     color: var(--text-main);
 }
 
@@ -834,11 +838,33 @@ select:focus {
     flex-direction: column;
 }
 
+/* Minimal Modal Style (No Blur, High Contrast Shadows) */
+.modal-overlay.minimal {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    pointer-events: none;
+    /* Allow clicking through overlay to background */
+}
+
+.modal-overlay.minimal .modal-content {
+    pointer-events: auto;
+    /* Re-enable pointer events for the modal content itself */
+    box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.2), 0 25px 60px -12px rgba(0, 0, 0, 0.6);
+    /* The large spread shadow effectively darkens the background without blurring it */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-overlay.minimal .modal-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
 @keyframes modalSlideUp {
     from {
         opacity: 0;
         transform: translateY(30px) scale(0.98);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -880,7 +906,8 @@ select:focus {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -917,7 +944,8 @@ select:focus {
 
 .sub-tab:hover {
     color: var(--text-main);
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
 }
 
 .sub-tab.active {
@@ -1083,7 +1111,8 @@ body.is-admin .nav-tab[data-tab="settings"] {
 
 /* --- Approval Workflow Styles --- */
 .badge-pending {
-    background: var(--bg-dropdown); filter: brightness(1.2);
+    background: var(--bg-dropdown);
+    filter: brightness(1.2);
     color: var(--text-muted);
     border: 1px solid var(--border);
     padding: 2px 6px;
@@ -1351,10 +1380,16 @@ td>div {
         padding: 0.3rem 0.6rem;
     }
 }
+
 /* Animations & Utility */
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .fade-out {

@@ -1,3 +1,7 @@
+# v2.15.084
+- **Modal Display Preference**: Added a "Show Only Modal Window" setting in General Settings.
+- **Minimalist Mode**: Enabling this removes background blur and glassmorphism, displaying the modal as a focused window with distinct shadows for better clarity on busy reports.
+
 # v2.15.083
 - **Final Tab Visibility Fix**: Corrected a second missing closing `</div>` tag in the modal structure that was still causing "Record History", "Settings", and "Statistics" to be hidden.
 - **Structural Integrity**: Verified all HTML containers are properly closed to ensure reliable tab switching.
