@@ -539,6 +539,41 @@ document.addEventListener('DOMContentLoaded', () => {
         return fullName.trim();
     }
 
+    // --- Robust Date Helpers ---
+    function parseDateRobust(s) {
+        if (!s) return new Date(NaN);
+        const str = s.toString().trim();
+        // Try YYYY-MM-DD
+        if (/^\d{4}-\d{2}-\d{2}/.test(str)) return new Date(str);
+        // Try dd/mm/yyyy
+        if (/^(\d{1,2})\/(\d{1,2})\/(\d{4})/.test(str)) {
+            const match = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+            const d = parseInt(match[1], 10);
+            const m = parseInt(match[2], 10);
+            const y = parseInt(match[3], 10);
+            return new Date(y, m - 1, d);
+        }
+        // Fallback
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) return d;
+
+        // Final attempt: search for 4-digit year blindly
+        const yearMatch = str.match(/\b(20\d{2}|19\d{2})\b/);
+        if (yearMatch) return new Date(yearMatch[1], 0, 1);
+
+        return new Date(NaN);
+    }
+
+    function getYearFromDate(dateStr) {
+        if (!dateStr) return "";
+        const d = parseDateRobust(dateStr);
+        if (!isNaN(d.getTime())) return d.getFullYear().toString();
+
+        // Regex fallback as ultimate secondary
+        const match = dateStr.toString().match(/\b(20\d{2}|19\d{2})\b/);
+        return match ? match[1] : "";
+    }
+
     function findAthleteByNormalizedName(rawName) {
         if (!rawName) return null;
         const searchKey = normalizeName(rawName);
@@ -566,21 +601,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function getExactAge(dobStr, eventDateStr) {
         if (!dobStr || !eventDateStr) return null;
 
-        const parseDate = (s) => {
-            if (!s) return new Date(NaN);
-            const str = s.toString().trim();
-            // Try YYYY-MM-DD
-            if (/^\d{4}-\d{2}-\d{2}/.test(str)) return new Date(str);
-            // Try dd/mm/yyyy
-            if (/^(\d{1,2})\/(\d{1,2})\/(\d{4})/.test(str)) {
-                const [, d, m, y] = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-                return new Date(y, m - 1, d);
-            }
-            return new Date(str);
-        };
-
-        const dob = parseDate(dobStr);
-        const evt = parseDate(eventDateStr);
+        const dob = parseDateRobust(dobStr);
+        const evt = parseDateRobust(eventDateStr);
         if (isNaN(dob) || isNaN(evt)) return null;
         let age = evt.getFullYear() - dob.getFullYear();
         const m = evt.getMonth() - dob.getMonth();
@@ -1697,11 +1719,9 @@ document.addEventListener('DOMContentLoaded', () => {
         years.add(currentYear);
 
         records.forEach(r => {
-            if (r.date) {
-                const d = new Date(r.date);
-                if (!isNaN(d.getTime())) {
-                    years.add(d.getFullYear());
-                }
+            const y = getYearFromDate(r.date);
+            if (y) {
+                years.add(parseInt(y));
             }
         });
 
@@ -2733,10 +2753,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let ageAtEvent = 0;
         const athlete = athleteLookupMap[r.athlete];
         if (athlete && athlete.dob && r.date) {
-            const eventDate = new Date(r.date);
-            const dob = new Date(athlete.dob);
-            const diffTime = eventDate - dob;
-            ageAtEvent = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
+            ageAtEvent = getExactAge(athlete.dob, r.date);
         } else if (r.ageGroup) {
             ageAtEvent = parseInt(r.ageGroup);
         }
@@ -2777,7 +2794,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let filtered = records.filter(r => {
             const rIdStr = String(r.id);
-            const rYear = r.date ? new Date(r.date).getFullYear().toString() : '';
+            const rYear = getYearFromDate(r.date);
 
             // ARCHIVE PROTECTION
             if (archivedIds.has(rIdStr)) {
@@ -2807,15 +2824,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (fYear !== 'all') {
-                const y = r.date ? new Date(r.date).getFullYear().toString() : '';
-                if (y !== fYear) return false;
+                if (rYear !== fYear) return false;
             }
 
             if (fAgeGroup !== 'all') {
                 const athleteObj = findAthleteByNormalizedName(r.athlete);
                 let ageAtEvent = 0;
                 if (athleteObj && athleteObj.dob && r.date) {
-                    ageAtEvent = Math.floor((new Date(r.date) - new Date(athleteObj.dob)) / (1000 * 60 * 60 * 24 * 365.25));
+                    ageAtEvent = getExactAge(athleteObj.dob, r.date);
                 } else if (r.ageGroup) {
                     ageAtEvent = parseInt(r.ageGroup);
                 } else {
