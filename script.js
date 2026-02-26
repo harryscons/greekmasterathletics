@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadedNodes = new Set();
     const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
     let isSuppressingAutoFill = false; // Prevents change events from overwriting edit form data
+    let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
 
     function checkReady() {
         if (isDataReady) return;
@@ -4553,14 +4554,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyReadOnlyMode(isReadOnly) {
         if (!recordForm) return;
+        isReadOnlyForm = isReadOnly;
+
         const elements = recordForm.querySelectorAll('input, select, textarea, button:not(#cancelBtn)');
         elements.forEach(el => {
             el.disabled = isReadOnly;
         });
+
+        if (isReadOnly) {
+            recordForm.classList.add('read-only-lock');
+            // Support for flatpickr calendar button if any
+            const fpBtns = recordForm.querySelectorAll('.flatpickr-input + .input-button');
+            fpBtns.forEach(btn => btn.style.display = 'none');
+        } else {
+            recordForm.classList.remove('read-only-lock');
+            const fpBtns = recordForm.querySelectorAll('.flatpickr-input + .input-button');
+            fpBtns.forEach(btn => btn.style.display = '');
+        }
+
         const submitBtnContainer = document.getElementById('submitBtn');
         if (submitBtnContainer) {
-            if (isReadOnly) submitBtnContainer.classList.add('hidden');
-            else submitBtnContainer.classList.remove('hidden');
+            if (isReadOnly) submitBtnContainer.style.display = 'none';
+            else submitBtnContainer.style.display = '';
         }
     }
 
@@ -4800,7 +4815,8 @@ document.addEventListener('DOMContentLoaded', () => {
         previousTab = null;
         if (recordForm) {
             recordForm.reset();
-            // Re-enable all inputs and buttons
+            // Re-enable and unlock
+            applyReadOnlyMode(false);
             const elements = recordForm.querySelectorAll('input, select, textarea, button');
             elements.forEach(el => el.disabled = false);
         }

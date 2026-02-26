@@ -1,3 +1,7 @@
+# v2.15.094
+- **Definitive Read-Only Lockdown**: Implemented a "Triple-Lock" security layer for the view-only modal. This includes a global JS interaction flag, physical CSS pointer-blocking (`pointer-events: none`), and aggressive multi-stage element disabling to ensure no modifications can be made when viewing records via double-click.
+- **Improved UI Reliability**: Fixed an issue where background calculation scripts could accidentally re-enable fields after the modal opened.
+
 # v2.15.093
 - **Robust Read-Only Mode**: Improved the record modal's view-only logic to provide a total lockdown of all interactive elements (inputs, dropdowns, and buttons) when double-clicking a record.
 - **Button Protection**: The "Update & Archive" buttons are now hidden more reliably in read-only mode, with a final verification step to prevent background scripts from re-enabling fields.
