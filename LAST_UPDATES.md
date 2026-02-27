@@ -1,3 +1,8 @@
+# v2.20.11
+- **Enhanced Statistics UI**: Increased the size and prominence of the chart type selector for better reachability.
+- **Improved Data Integrity**: Fixed a bug preventing the line chart from switching correctly in the "Records by Year" view.
+- **Read-Only Polish**: Automatically hides the "Select Country" placeholder in the record modal if country data is missing.
+
 # v2.20.10
 - **Emergency Recovery**: Fixed a syntax error in `script.js` that prevented application loading.
 - **Stability Patch**: Restored full application initialization and bypass of the synchronization hang.
