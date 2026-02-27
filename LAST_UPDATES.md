@@ -1,3 +1,8 @@
+# v2.20.19
+- **Absolute Symmetry Lockdown**: Locked all modal labels to a strict 2rem height and removed conflicting inline styles to ensure "Athlete Name" and "Age Group" fields align perfectly with their neighbors.
+- **Baseline Alignment**: Enforced `align-items: flex-start` on all form rows to guarantee a uniform top-baseline for all controls.
+- **Badge Integration**: Refined badge spacing within labels to maintain professional aesthetics while securing absolute vertical precision.
+
 # v2.20.18
 - **Absolute Vertical Symmetry**: Standardized label heights to 2rem to ensure inputs always align perfectly, regardless of whether they have a badge (like Athlete/Age Group) or not.
 - **Precision Input Lockdown**: Enforced `box-sizing: border-box !important` on all modal fields to prevent browser-specific rendering offsets.
