@@ -1,3 +1,7 @@
+# v2.20.09
+- **Critical Fix**: Resolved application hang during "Synchronizing Data..." by adding robust library checks for Chart.js.
+- **Improved Resilience**: Added automatic retry logic for statistics visualizations to ensure core app loading is never blocked.
+
 # v2.20.08
 - **Data Robustness**: Upgraded statistics engine with internal robust date parsing to ensure "Records by Year" always finds data.
 - **UI Default Selection**: Set Bar Chart as the default view for year-based visualizations.
