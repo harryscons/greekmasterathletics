@@ -1,3 +1,8 @@
+# v2.20.14
+- **Global Toggle Fix**: Corrected the chart type selector to work reliably by exposing rendering logic to the global scope.
+- **True Multi-Color Bars**: Each year in the bar chart now has its own distinct vibrant color for maximum clarity.
+- **Enhanced Line Charts**: Optimized line chart visuals with solid borders and refined point density.
+
 # v2.20.13
 - **Line Chart Visibility Fix**: Resolved an issue where the line chart would appear blank due to transparent background settings.
 - **Enhanced Bar Visuals**: Reinforced multi-color bars to ensure distinct colors for every year in the distribution chart.

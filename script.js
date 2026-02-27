@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
     let isSuppressingAutoFill = false; // Prevents change events from overwriting edit form data
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
-    let currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
+    window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     function checkReady() {
         if (isDataReady) return;
@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof populateWMAEventDropdown === 'function') populateWMAEventDropdown();
 
         // Refresh Statistics Charts
-        if (typeof renderRecordsByYearChart === 'function') renderRecordsByYearChart(currentYearChartType);
+        if (typeof window.renderRecordsByYearChart === 'function') window.renderRecordsByYearChart(window.currentYearChartType);
     }
 
     // Migration logic removed: Always trust the current cloud state
@@ -2363,14 +2363,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─── RECORDS BY YEAR CHART ───────────────────────────────────────────────────
     let recordsByYearChart = null;
 
-    function renderRecordsByYearChart(type = "bar") {
+    window.renderRecordsByYearChart = function (type = "bar") {
         try {
-            currentYearChartType = type; // Persist for refreshes
+            window.currentYearChartType = type; // Persist for refreshes
             const canvas = document.getElementById("recordsByYearCanvas");
             if (!canvas) return;
             if (typeof Chart === "undefined") {
                 console.warn("📊 Chart.js not loaded yet. Retrying in 1s...");
-                setTimeout(() => renderRecordsByYearChart(type), 1000);
+                setTimeout(() => window.renderRecordsByYearChart(type), 1000);
                 return;
             }
             if (recordsByYearChart) recordsByYearChart.destroy();
@@ -2406,7 +2406,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         borderWidth: 2,
                         pointBackgroundColor: type === "bar" ? barColors : accentColor,
                         pointBorderColor: "#fff",
-                        pointRadius: type === "line" ? 5 : 4,
+                        pointRadius: type === "line" ? 5 : 0,
                         tension: 0.3,
                         fill: type === "line"
                     }]
