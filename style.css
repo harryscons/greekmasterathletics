@@ -1461,3 +1461,10 @@ td>div {
     filter: none !important;
     opacity: 1 !important;
 }
+.read-only-lock input,
+.read-only-lock select,
+.read-only-lock textarea {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+}
