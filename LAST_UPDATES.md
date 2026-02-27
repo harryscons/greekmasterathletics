@@ -1,3 +1,6 @@
+# v2.20.03
+- **UI Cleanup**: Removed "sample data" placeholders (e.g., "Diamond League", "Berlin") from all input fields to provide a cleaner and more professional record entry experience.
+
 # v2.20.02
 - **Optional Record History**: Added a new setting "Move also edited records to history" in General Settings. This allows supervisors to choose whether to archive old versions of a record when performing an update.
 - **Improved Data Management**: Users can now update records in-place without cluttering the history log when preferred.

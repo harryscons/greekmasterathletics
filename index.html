@@ -291,8 +291,7 @@
                                         <option value="" disabled selected>Select Athlete</option>
                                         <!-- Populated by JS -->
                                     </select>
-                                    <input type="text" id="relayTeamName" class="hidden"
-                                        placeholder="e.g. Greece 4x100m" autocomplete="off">
+                                    <input type="text" id="relayTeamName" class="hidden" autocomplete="off">
                                 </div>
                             </div>
 
@@ -365,18 +364,16 @@
                             <div class="row">
                                 <div class="form-group" style="flex: 2;">
                                     <label for="raceName">Race Name</label>
-                                    <input type="text" id="raceName" placeholder="e.g. Diamond League"
-                                        autocomplete="off">
+                                    <input type="text" id="raceName" autocomplete="off">
                                 </div>
                                 <div class="form-group" style="flex: 1;">
                                     <label for="mark">Mark (Time/Dist)</label>
-                                    <input type="text" id="mark" placeholder="9.58s / 8.95m" required
-                                        autocomplete="off">
+                                    <input type="text" id="mark" required autocomplete="off">
                                 </div>
                                 <!-- IDR Moved Here -->
                                 <div class="form-group" style="flex: 0.5;">
                                     <label for="idr">IDR</label>
-                                    <input type="text" id="idr" placeholder="ID" maxlength="2" autocomplete="off"
+                                    <input type="text" id="idr" maxlength="2" autocomplete="off"
                                         style="text-align: center;">
                                 </div>
                             </div>
@@ -385,15 +382,14 @@
                             <div class="row">
                                 <div class="form-group">
                                     <label for="notes">Notes</label>
-                                    <input type="text" id="notes" placeholder="e.g. 100m: 11.2, LJ: 6.50..."
-                                        autocomplete="off">
+                                    <input type="text" id="notes" autocomplete="off">
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="form-group">
                                     <label for="wind">Wind (+/-)</label>
-                                    <input type="text" id="wind" placeholder="+0.9" autocomplete="off">
+                                    <input type="text" id="wind" autocomplete="off">
                                 </div>
                                 <div class="form-group">
                                     <label for="date">Date</label>
@@ -404,7 +400,7 @@
                             <div class="row">
                                 <div class="form-group">
                                     <label for="town">Town</label>
-                                    <input type="text" id="town" placeholder="e.g. Berlin" autocomplete="off">
+                                    <input type="text" id="town" autocomplete="off">
                                 </div>
                                 <div class="form-group">
                                     <label for="country">Country</label>
@@ -655,8 +651,7 @@
                                 </div>
                                 <div class="form-group" style="flex: 1;" id="subEventCountGroup">
                                     <label for="newEventSubCount">Number of Events</label>
-                                    <input type="number" id="newEventSubCount" min="2" max="20" placeholder="e.g. 10"
-                                        disabled>
+                                    <input type="number" id="newEventSubCount" min="2" max="20" disabled>
                                 </div>
                             </div>
 
@@ -668,7 +663,7 @@
                             <div class="row" style="align-items: flex-end;">
                                 <div class="form-group" style="flex: 1.2;">
                                     <label for="newEventSpecs">Technical Specs</label>
-                                    <textarea id="newEventSpecs" rows="2" placeholder="e.g. 10 hurdles, 0.914m height"
+                                    <textarea id="newEventSpecs" rows="2"
                                         style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 8px; font-family: inherit; width: 100%; height: 62px; outline: none;"></textarea>
                                 </div>
                                 <div class="form-group" style="flex: 1; display: none;">
@@ -677,7 +672,7 @@
                                 </div>
                                 <div class="form-group" style="flex: 1.2;">
                                     <label for="newEventNotes">Notes</label>
-                                    <textarea id="newEventNotes" rows="2" placeholder="Notes (optional)..."
+                                    <textarea id="newEventNotes" rows="2"
                                         style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 8px; font-family: inherit; width: 100%; height: 62px; outline: none;"></textarea>
                                 </div>
                                 <div class="form-group"
@@ -736,8 +731,7 @@
                             style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-end;">
                             <div class="form-group" style="flex: 3;">
                                 <label for="newCountryName">Country Name</label>
-                                <input type="text" id="newCountryName" placeholder="e.g. France" required
-                                    autocomplete="off">
+                                <input type="text" id="newCountryName" required autocomplete="off">
                             </div>
                             <button type="submit" class="btn-primary" style="flex: 1;">
                                 <span>+ Add Country</span>
@@ -855,12 +849,11 @@
                             style="margin-bottom: 2rem; background: var(--bg-nav); padding: 1rem; border-radius: 12px; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
                             <div class="form-group" style="flex: 1; min-width: 100px;">
                                 <label for="newWMAAge">Age</label>
-                                <input type="number" id="newWMAAge" placeholder="e.g. 45" required min="35" max="110">
+                                <input type="number" id="newWMAAge" required min="35" max="110">
                             </div>
                             <div class="form-group" style="flex: 1; min-width: 100px;">
                                 <label for="newWMAFactor">Factor (0-1)</label>
-                                <input type="number" id="newWMAFactor" placeholder="e.g. 0.8523" required step="0.00001"
-                                    min="0" max="1">
+                                <input type="number" id="newWMAFactor" required step="0.00001" min="0" max="1">
                             </div>
                             <button type="submit" class="btn-primary" style="height: 42px;">
                                 <span>+ Add Factor</span>
@@ -896,8 +889,7 @@
                             <div class="row">
                                 <div class="form-group" style="flex: 1.5;">
                                     <label for="newUserName">Name</label>
-                                    <input type="text" id="newUserName" placeholder="e.g. John Doe" required
-                                        autocomplete="off">
+                                    <input type="text" id="newUserName" required autocomplete="off">
                                 </div>
                                 <div class="form-group" style="flex: 1;">
                                     <label for="newUserRole">Role</label>
@@ -909,8 +901,7 @@
                                 </div>
                                 <div class="form-group" style="flex: 1.5;">
                                     <label for="newUserEmail">Email</label>
-                                    <input type="email" id="newUserEmail" placeholder="e.g. john@example.com" required
-                                        autocomplete="off">
+                                    <input type="email" id="newUserEmail" required autocomplete="off">
                                 </div>
                                 <div class="form-actions" style="flex: 0.5; align-items: flex-end;">
                                     <button type="submit" id="userSubmitBtn" class="btn-primary"
@@ -1392,7 +1383,6 @@
             <div class="form-group">
                 <label for="modalFormulaInput">Rule Definition</label>
                 <textarea id="modalFormulaInput" rows="8"
-                    placeholder="HOWTO: Time; Rule: IF IN MARK THERE ARE 1 DOT THE FORMAT IS Seconds.Hundreds of Second ELSE FORMAT IS Minutes.Seconds.Hundreds of Second"
                     style="background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 1rem; color: var(--text-main); width: 100%; font-family: inherit; outline: none; transition: all 0.2s;"></textarea>
             </div>
             <div class="form-actions" style="justify-content: flex-end; margin-top: 1.5rem;">
