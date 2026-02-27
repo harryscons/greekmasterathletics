@@ -177,7 +177,7 @@ body.theme-lemon-pale {
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
 }
 
 body {
@@ -438,6 +438,7 @@ select {
     transition: all 0.2s;
     font-family: inherit;
     line-height: normal;
+    width: 100%;
 }
 
 .form-group input,
@@ -468,6 +469,19 @@ select:focus {
 .row {
     display: flex;
     gap: 1rem;
+    width: 100%;
+}
+
+.row>.form-group {
+    flex: 1;
+    min-width: 0;
+}
+
+.form-group label {
+    min-height: 1.5rem;
+    /* Ensure labels with badges don't shift layout */
+    display: flex;
+    align-items: center;
 }
 
 @media (max-width: 600px) {

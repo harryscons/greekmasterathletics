@@ -1,3 +1,8 @@
+# v2.20.17
+- **Pixel-Perfect Modal Symmetry**: Enforced vertical and horizontal alignment for all modal fields. Labels and inputs now share a unified grid to prevent vertical offsets.
+- **Universal Box-Sizing**: Applied `box-sizing: border-box` globally to ensure matching heights across all browser engines.
+- **Theme Axis Stability**: Reinforced the dynamic contrast of graph labels to ensure accessibility in lighter themes.
+
 # v2.20.16
 - **Pixel-Perfect Alignment**: Synchronized the height of all modal inputs and dropdowns to a strict 42px for perfect symmetry.
 - **Dynamic Graph Contrast**: Axis labels now adapt to the active theme, ensuring they are perfectly visible in both light and dark modes.
