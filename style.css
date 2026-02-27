@@ -481,11 +481,12 @@ select:focus {
 }
 
 .form-group label {
-    min-height: 2rem;
-    /* Increased from 1.5rem to guarantee alignment with badges */
+    height: 2rem;
+    /* Locked height to guarantee symmetry regardless of badges */
     display: flex;
     align-items: center;
     margin-bottom: 0;
+    overflow: visible;
 }
 
 @media (max-width: 600px) {
