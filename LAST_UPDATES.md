@@ -1,3 +1,8 @@
+# v2.20.15
+- **Modal UI Precision**: Standardized the height of all record form fields to ensure a uniform, premium layout.
+- **High-Contrast Text**: Optimized text colors for all themes to ensure sharp legibility, specially for light backgrounds.
+- **Read-Only Polish**: Enhanced the visibility of record data in read-only mode, making values clear and distinctive.
+
 # v2.20.14
 - **Global Toggle Fix**: Corrected the chart type selector to work reliably by exposing rendering logic to the global scope.
 - **True Multi-Color Bars**: Each year in the bar chart now has its own distinct vibrant color for maximum clarity.
