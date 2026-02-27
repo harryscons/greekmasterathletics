@@ -439,6 +439,7 @@ select {
     font-family: inherit;
     line-height: normal;
     width: 100%;
+    box-sizing: border-box !important;
 }
 
 .form-group input,
@@ -478,10 +479,11 @@ select:focus {
 }
 
 .form-group label {
-    min-height: 1.5rem;
-    /* Ensure labels with badges don't shift layout */
+    min-height: 2rem;
+    /* Increased from 1.5rem to guarantee alignment with badges */
     display: flex;
     align-items: center;
+    margin-bottom: 0;
 }
 
 @media (max-width: 600px) {
