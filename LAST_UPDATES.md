@@ -1,3 +1,15 @@
+# v2.20.06
+- **Version Alignment**: Synced versioning across application and logs to v2.20.06.
+- **Auto-Increment System**: Initiated automatic version tracking for each deployment command.
+
+# v2.20.05
+- **UI Fix**: Enhanced legibility of record details by forcing white text for all fields in the read-only modal.
+- **Graph Polishing**: Corrected data aggregation logic and aligned chart type selector for the "Records by Year" visualization.
+
+# v2.20.04
+- **New Statistics**: Introduced "Records by Year" tab with dynamic Chart.js visualizations (Bar/Line graphs).
+- **Interactive Tools**: Added toggle controls for different graph formats to analyze historical trends.
+
 # v2.20.03
 - **UI Cleanup**: Removed "sample data" placeholders (e.g., "Diamond League", "Berlin") from all input fields to provide a cleaner and more professional record entry experience.
 
