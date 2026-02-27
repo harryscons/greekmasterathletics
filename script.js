@@ -2115,12 +2115,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Restricted Mark Input Validation (Digits, Dots, Commas, Colons only)
     if (markInput) {
+        const allowedChars = /[0-9.,:]/;
+
+        // 1. Block invalid keys immediately
+        markInput.addEventListener('keydown', (e) => {
+            // Allow control keys (backspace, delete, arrows, tab, etc.)
+            if (e.ctrlKey || e.metaKey || e.altKey || e.key.length > 1) return;
+
+            if (!allowedChars.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        // 2. Filter pasted content
+        markInput.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            const sanitized = text.replace(/[^0-9.,:]/g, '');
+            document.execCommand('insertText', false, sanitized);
+        });
+
+        // 3. Fallback for mobile and other entry methods
         markInput.addEventListener('input', (e) => {
             const val = e.target.value;
-            // Only allow 0-9, dot, comma, colon
             const filtered = val.replace(/[^0-9.,:]/g, '');
             if (val !== filtered) {
                 e.target.value = filtered;
+            }
+        });
+
+        // 4. Modern browser "beforeinput" prevention
+        markInput.addEventListener('beforeinput', (e) => {
+            if (e.data && !/^[0-9.,:]+$/.test(e.data)) {
+                e.preventDefault();
             }
         });
     }

@@ -1,3 +1,7 @@
+# v2.20.21
+- **Absolute Mark Lockdown**: Implemented a multi-layered input filter that blocks non-numeric and invalid symbols at the keyboard level. This prevents any invalid data from ever being typed or pasted into the "Mark" field.
+- **Improved Entry Flow**: Validation is now active across Add, Edit, and Update actions, ensuring total data integrity for times, distances, and points.
+
 # v2.20.20
 - **Input Validation Lockdown**: The "Mark" field now strictly restricts input to digits (0-9), dots (.), commas (,), and colons (:). This ensures data integrity for times, points, and measurements by preventing accidental entry of letters or invalid symbols.
 
