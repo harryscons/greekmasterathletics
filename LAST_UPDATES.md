@@ -1,3 +1,7 @@
+# v2.20.22
+- **Nuclear Mark Validation**: Re-implemented input validation using global event delegation and HTML-level attributes to ensure absolute character restriction. This prevents any invalid characters from being typed, pasted, or injected into the "Mark" field under any circumstances.
+- **Fail-Safe Logic**: Even if individual listeners are bypassed or scripts are cached, the attribute-level validation provides a definitive fallback for data integrity.
+
 # v2.20.21
 - **Absolute Mark Lockdown**: Implemented a multi-layered input filter that blocks non-numeric and invalid symbols at the keyboard level. This prevents any invalid data from ever being typed or pasted into the "Mark" field.
 - **Improved Entry Flow**: Validation is now active across Add, Edit, and Update actions, ensuring total data integrity for times, distances, and points.
