@@ -2279,7 +2279,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tabId === 'stats') {
             const activeSub = document.querySelector('#view-stats .stats-sub-tab.active');
             if (activeSub) switchStatsSubTab(activeSub.dataset.statSubtab);
-            else switchStatsSubTab('medals');
+            else switchStatsSubTab('records-by-year');
         }
 
         // Settings View Default
@@ -2341,6 +2341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = document.querySelector(`.stats-sub-tab[data-stat-subtab="${subTabId}"]`);
         if (btn) btn.classList.add('active');
 
+        if (subTabId === 'records-by-year') renderRecordsByYearChart();
         if (subTabId === 'medals') renderStats();
         if (subTabId === 'wma') {
             loadIAAFData();
@@ -2353,6 +2354,104 @@ document.addEventListener('DOMContentLoaded', () => {
             initWMAOfficialData();
             renderRankings();
         }
+    }
+
+    // ─── RECORDS BY YEAR CHART ───────────────────────────────────────────────────
+    let recordsByYearChart = null;
+
+    function renderRecordsByYearChart(type = 'bar') {
+        const canvas = document.getElementById('recordsByYearCanvas');
+        if (!canvas) return;
+
+        // Cleanup existing chart
+        if (recordsByYearChart) {
+            recordsByYearChart.destroy();
+        }
+
+        // Aggregate data
+        const yearCounts = {};
+        allRecords.forEach(rec => {
+            if (!rec.date) return;
+            const year = rec.date.split('-')[0];
+            if (year && !isNaN(year)) {
+                yearCounts[year] = (yearCounts[year] || 0) + 1;
+            }
+        });
+
+        const sortedYears = Object.keys(yearCounts).sort((a, b) => parseInt(a) - parseInt(b));
+        const recordData = sortedYears.map(y => yearCounts[y]);
+
+        if (sortedYears.length === 0) {
+            // No data to show
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        const primaryColor = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#8b5cf6';
+        const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#06b6d4';
+        const textMain = getComputedStyle(document.body).getPropertyValue('--text-main').trim() || '#f8fafc';
+        const gridColor = getComputedStyle(document.body).getPropertyValue('--border').trim() || 'rgba(255,255,255,0.1)';
+
+        recordsByYearChart = new Chart(ctx, {
+            type: type,
+            data: {
+                labels: sortedYears,
+                datasets: [{
+                    label: 'Number of Records',
+                    data: recordData,
+                    backgroundColor: type === 'bar' ? primaryColor + '80' : 'transparent',
+                    borderColor: primaryColor,
+                    borderWidth: 2,
+                    pointBackgroundColor: accentColor,
+                    pointBorderColor: '#fff',
+                    pointRadius: type === 'line' ? 4 : 0,
+                    tension: 0.3,
+                    fill: type === 'line'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: primaryColor,
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: gridColor,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: textMain,
+                            font: { family: 'Outfit' }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: gridColor,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: textMain,
+                            stepSize: 1,
+                            font: { family: 'Outfit' }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     // ─── RANKINGS ───────────────────────────────────────────────────────────────

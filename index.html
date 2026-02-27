@@ -1132,14 +1132,35 @@
             <div id="view-stats" class="view-section">
                 <!-- Sub Navigation (Card wrapper removed for space) -->
                 <nav class="sub-nav" style="margin-bottom: 0.75rem;">
-                    <button class="sub-tab stats-sub-tab active" data-stat-subtab="medals">National Holder
+                    <button class="sub-tab stats-sub-tab active" data-stat-subtab="records-by-year">📊 Records by
+                        Year</button>
+                    <button class="sub-tab stats-sub-tab" data-stat-subtab="medals">National Holder
                         Statistics</button>
                     <button class="sub-tab stats-sub-tab" data-stat-subtab="wma">WMA Statistics</button>
                     <button class="sub-tab stats-sub-tab" data-stat-subtab="rankings">🏆 Rankings</button>
                 </nav>
 
+                <!-- RECORDS BY YEAR SUB-VIEW -->
+                <div id="stats-records-by-year" class="stats-section active-view">
+                    <section class="card">
+                        <div class="section-header">
+                            <h2>Records Distribution by Year</h2>
+                            <div class="filters" style="margin-bottom: 0;">
+                                <select id="yearChartType" class="form-control" style="width: auto;"
+                                    onchange="renderRecordsByYearChart(this.value)">
+                                    <option value="bar">Bar Chart</option>
+                                    <option value="line">Line Chart</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-height: 400px; position: relative;">
+                            <canvas id="recordsByYearCanvas"></canvas>
+                        </div>
+                    </section>
+                </div>
+
                 <!-- MEDAL STATS SUB-VIEW -->
-                <div id="stats-medals" class="stats-section active-view">
+                <div id="stats-medals" class="stats-section">
                     <section class="card">
                         <div class="section-header">
                             <h2>National Holder Statistics</h2>
@@ -1397,6 +1418,7 @@
             document.write('<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"><\/script>');
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="data/wma_data_2023.js"></script>
     <script src="data/iaaf_data.js"></script>
     <script src="data/event_rules.js"></script>
