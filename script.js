@@ -2374,9 +2374,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Aggregate data
         const yearCounts = {};
         records.forEach(rec => {
-            if (!rec.date) return;
-            const d = new Date(rec.date);
-            const year = d.getFullYear();
+            const year = getYearFromDate(rec.date);
             if (year && !isNaN(year)) {
                 yearCounts[year] = (yearCounts[year] || 0) + 1;
             }

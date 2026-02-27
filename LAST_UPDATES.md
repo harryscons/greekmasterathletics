@@ -1,3 +1,9 @@
+# v2.20.08
+- **Data Robustness**: Upgraded statistics engine with internal robust date parsing to ensure "Records by Year" always finds data.
+- **UI Default Selection**: Set Bar Chart as the default view for year-based visualizations.
+- **Read-Only Perfection**: Finalized grayscale removal and opacity normalization for non-editable windows.
+- **Layout Fine-Tuning**: Perfected proportional field alignment for Race Name, Mark, and IDR fields.
+
 # v2.20.07
 - **UI Consistency**: Removed dimming/grayscale effect from read-only modals for better clarity.
 - **Improved Graph Reliability**: Upgraded date parsing logic to ensure "Records by Year" chart renders correctly.

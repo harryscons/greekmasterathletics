@@ -368,6 +368,8 @@ main {
 
     to {
         .read-only-lock { opacity: 1; }
+    opacity: 1 !important;
+
         transform: translateY(0);
     }
 }
@@ -738,12 +740,16 @@ select:focus {
     border-bottom: 4px solid var(--primary);
     border-top: none;
     .read-only-lock { opacity: 1; }
+    opacity: 1 !important;
+
 }
 
 .report-table th.sortable.desc::after {
     border-top: 4px solid var(--primary);
     border-bottom: none;
     .read-only-lock { opacity: 1; }
+    opacity: 1 !important;
+
 }
 
 .report-table td {
@@ -816,6 +822,8 @@ select:focus {
     justify-content: center;
     z-index: 10000;
     .read-only-lock { opacity: 1; }
+    opacity: 1 !important;
+
     transition: opacity 0.3s ease;
 }
 
@@ -898,6 +906,8 @@ select:focus {
     to {
         transform: scale(1);
         .read-only-lock { opacity: 1; }
+    opacity: 1 !important;
+
     }
 }
 
@@ -909,6 +919,8 @@ select:focus {
 
     to {
         .read-only-lock { opacity: 1; }
+    opacity: 1 !important;
+
         transform: translateY(0) scale(1);
     }
 }
@@ -1441,6 +1453,8 @@ td>div {
 
 /* --- Absolute interaction Lockdown --- */
 .read-only-lock {
+    opacity: 1 !important;
+
     pointer-events: none !important;
     user-select: none;
     
@@ -1454,6 +1468,8 @@ td>div {
     cursor: pointer;
     filter: none;
     .read-only-lock { opacity: 1; }
+    opacity: 1 !important;
+
 }
 
 .read-only-lock .dob-badge,
