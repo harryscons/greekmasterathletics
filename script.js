@@ -1390,6 +1390,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        const editHistorySetting = document.getElementById('editHistorySetting');
+        if (editHistorySetting) {
+            const isEnabled = localStorage.getItem('tf_edit_history_flag') !== 'false'; // Default TRUE
+            editHistorySetting.checked = isEnabled;
+            editHistorySetting.addEventListener('change', () => {
+                localStorage.setItem('tf_edit_history_flag', editHistorySetting.checked);
+            });
+        }
+
         const btnRecalculateWMA = document.getElementById('btnRecalculateWMA');
         if (btnRecalculateWMA) {
             btnRecalculateWMA.addEventListener('click', recalculateAllWMAStats);
@@ -4307,15 +4316,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (isSup) {
                         try {
                             // Supervisor Direct Edit -> Archive Old
-                            const oldRecordData = { ...originalRecord };
-                            oldRecordData.archivedAt = new Date().toISOString();
-                            oldRecordData.originalId = String(oldRecordData.id); // Link to original
-                            // Attribution for the archive entry matches the current session user
-                            oldRecordData.updatedBy = getCurrentUsername();
-                            oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                            const isHistoryEnabled = localStorage.getItem('tf_edit_history_flag') !== 'false';
 
-                            history.unshift(oldRecordData);
-                            saveHistory();
+                            if (isHistoryEnabled) {
+                                const oldRecordData = { ...originalRecord };
+                                oldRecordData.archivedAt = new Date().toISOString();
+                                oldRecordData.originalId = String(oldRecordData.id); // Link to original
+                                // Attribution for the archive entry matches the current session user
+                                oldRecordData.updatedBy = getCurrentUsername();
+                                oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+
+                                history.unshift(oldRecordData);
+                                saveHistory();
+                            }
 
                             newRecord.approved = true;
                             newRecord.approvedBy = getCurrentUsername();
@@ -7338,14 +7351,18 @@ Replace ALL current data with this backup? This action is irreversible.`;
                     const originalRecord = records[originalIndex];
 
                     // Archive Original to History
-                    const historyRecord = { ...originalRecord };
-                    historyRecord.archivedAt = new Date().toISOString();
-                    historyRecord.originalId = String(originalRecord.id);
-                    historyRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
-                    if (!historyRecord.updatedBy) historyRecord.updatedBy = 'Initial Import';
+                    const isHistoryEnabled = localStorage.getItem('tf_edit_history_flag') !== 'false';
 
-                    history.unshift(historyRecord);
-                    saveHistory();
+                    if (isHistoryEnabled) {
+                        const historyRecord = { ...originalRecord };
+                        historyRecord.archivedAt = new Date().toISOString();
+                        historyRecord.originalId = String(originalRecord.id);
+                        historyRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                        if (!historyRecord.updatedBy) historyRecord.updatedBy = 'Initial Import';
+
+                        history.unshift(historyRecord);
+                        saveHistory();
+                    }
 
                     // Tombstone old ID so it doesn't reappear
                     recentlyRejected.add(replIdStr);
