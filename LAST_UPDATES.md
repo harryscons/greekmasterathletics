@@ -1,3 +1,8 @@
+# v2.20.18
+- **Absolute Vertical Symmetry**: Standardized label heights to 2rem to ensure inputs always align perfectly, regardless of whether they have a badge (like Athlete/Age Group) or not.
+- **Precision Input Lockdown**: Enforced `box-sizing: border-box !important` on all modal fields to prevent browser-specific rendering offsets.
+- **Enhanced Form Sizing**: Standardized padding and margin-bottom logic for all form groups to create a perfectly synchronized grid.
+
 # v2.20.17
 - **Pixel-Perfect Modal Symmetry**: Enforced vertical and horizontal alignment for all modal fields. Labels and inputs now share a unified grid to prevent vertical offsets.
 - **Universal Box-Sizing**: Applied `box-sizing: border-box` globally to ensure matching heights across all browser engines.
