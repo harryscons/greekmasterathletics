@@ -2113,44 +2113,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
     if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
 
-    // Restricted Mark Input Validation (Digits, Dots, Commas, Colons only)
-    if (markInput) {
+    // 🔒 ABSOLUTE MARK LOCKDOWN: Use global delegation for maximum reliability
+    document.addEventListener('keydown', (e) => {
+        if (!e.target || e.target.id !== 'mark') return;
         const allowedChars = /[0-9.,:]/;
+        if (e.ctrlKey || e.metaKey || e.altKey || e.key.length > 1) return;
+        if (!allowedChars.test(e.key)) e.preventDefault();
+    }, true);
 
-        // 1. Block invalid keys immediately
-        markInput.addEventListener('keydown', (e) => {
-            // Allow control keys (backspace, delete, arrows, tab, etc.)
-            if (e.ctrlKey || e.metaKey || e.altKey || e.key.length > 1) return;
+    document.addEventListener('beforeinput', (e) => {
+        if (!e.target || e.target.id !== 'mark') return;
+        if (e.data && !/^[0-9.,:]+$/.test(e.data)) e.preventDefault();
+    }, true);
 
-            if (!allowedChars.test(e.key)) {
-                e.preventDefault();
-            }
-        });
+    document.addEventListener('input', (e) => {
+        if (!e.target || e.target.id !== 'mark') return;
+        const val = e.target.value;
+        const filtered = val.replace(/[^0-9.,:]/g, '');
+        if (val !== filtered) e.target.value = filtered;
+    }, true);
 
-        // 2. Filter pasted content
-        markInput.addEventListener('paste', (e) => {
+    document.addEventListener('paste', (e) => {
+        if (!e.target || e.target.id !== 'mark') return;
+        const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+        if (/[^0-9.,:]/.test(text)) {
             e.preventDefault();
-            const text = (e.originalEvent || e).clipboardData.getData('text/plain');
             const sanitized = text.replace(/[^0-9.,:]/g, '');
-            document.execCommand('insertText', false, sanitized);
-        });
-
-        // 3. Fallback for mobile and other entry methods
-        markInput.addEventListener('input', (e) => {
-            const val = e.target.value;
-            const filtered = val.replace(/[^0-9.,:]/g, '');
-            if (val !== filtered) {
-                e.target.value = filtered;
-            }
-        });
-
-        // 4. Modern browser "beforeinput" prevention
-        markInput.addEventListener('beforeinput', (e) => {
-            if (e.data && !/^[0-9.,:]+$/.test(e.data)) {
-                e.preventDefault();
-            }
-        });
-    }
+            const start = e.target.selectionStart;
+            const end = e.target.selectionEnd;
+            const currentVal = e.target.value;
+            e.target.value = currentVal.substring(0, start) + sanitized + currentVal.substring(end);
+            e.target.setSelectionRange(start + sanitized.length, start + sanitized.length);
+        }
+    }, true);
 
     if (themeSelect) {
         themeSelect.addEventListener('change', () => {
