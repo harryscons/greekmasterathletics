@@ -2113,6 +2113,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
     if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
 
+    // Restricted Mark Input Validation (Digits, Dots, Commas, Colons only)
+    if (markInput) {
+        markInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            // Only allow 0-9, dot, comma, colon
+            const filtered = val.replace(/[^0-9.,:]/g, '');
+            if (val !== filtered) {
+                e.target.value = filtered;
+            }
+        });
+    }
+
     if (themeSelect) {
         themeSelect.addEventListener('change', () => {
             setTheme(themeSelect.value);

@@ -1,3 +1,6 @@
+# v2.20.20
+- **Input Validation Lockdown**: The "Mark" field now strictly restricts input to digits (0-9), dots (.), commas (,), and colons (:). This ensures data integrity for times, points, and measurements by preventing accidental entry of letters or invalid symbols.
+
 # v2.20.19
 - **Absolute Symmetry Lockdown**: Locked all modal labels to a strict 2rem height and removed conflicting inline styles to ensure "Athlete Name" and "Age Group" fields align perfectly with their neighbors.
 - **Baseline Alignment**: Enforced `align-items: flex-start` on all form rows to guarantee a uniform top-baseline for all controls.
