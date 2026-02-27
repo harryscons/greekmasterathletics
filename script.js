@@ -2430,22 +2430,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("❌ Error rendering Records by Year chart:", e);
         }
     }
-
-                        grid: {
-                            color: gridColor,
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: textMain,
-                            stepSize: 1,
-                            font: { family: 'Outfit' }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
     // ─── RANKINGS ───────────────────────────────────────────────────────────────
     let rankingsSortField = 'bestPts';
     let rankingsSortOrder = 'desc';
