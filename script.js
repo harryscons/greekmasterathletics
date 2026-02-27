@@ -2362,85 +2362,75 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─── RECORDS BY YEAR CHART ───────────────────────────────────────────────────
     let recordsByYearChart = null;
 
-    function renderRecordsByYearChart(type = 'bar') {
-        const canvas = document.getElementById('recordsByYearCanvas');
-        if (!canvas) return;
-
-        // Cleanup existing chart
-        if (recordsByYearChart) {
-            recordsByYearChart.destroy();
-        }
-
-        // Aggregate data
-        const yearCounts = {};
-        records.forEach(rec => {
-            const year = getYearFromDate(rec.date);
-            if (year && !isNaN(year)) {
-                yearCounts[year] = (yearCounts[year] || 0) + 1;
+    function renderRecordsByYearChart(type = "bar") {
+        try {
+            const canvas = document.getElementById("recordsByYearCanvas");
+            if (!canvas) return;
+            if (typeof Chart === "undefined") {
+                console.warn("📊 Chart.js not loaded yet. Retrying in 1s...");
+                setTimeout(() => renderRecordsByYearChart(type), 1000);
+                return;
             }
-        });
-
-        const sortedYears = Object.keys(yearCounts).sort((a, b) => parseInt(a) - parseInt(b));
-        const recordData = sortedYears.map(y => yearCounts[y]);
-
-        if (sortedYears.length === 0) {
-            // No data to show
-            return;
-        }
-
-        const ctx = canvas.getContext('2d');
-        const primaryColor = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#8b5cf6';
-        const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#06b6d4';
-        const textMain = getComputedStyle(document.body).getPropertyValue('--text-main').trim() || '#f8fafc';
-        const gridColor = getComputedStyle(document.body).getPropertyValue('--border').trim() || 'rgba(255,255,255,0.1)';
-
-        recordsByYearChart = new Chart(ctx, {
-            type: type,
-            data: {
-                labels: sortedYears,
-                datasets: [{
-                    label: 'Number of Records',
-                    data: recordData,
-                    backgroundColor: type === 'bar' ? primaryColor + '80' : 'transparent',
-                    borderColor: primaryColor,
-                    borderWidth: 2,
-                    pointBackgroundColor: accentColor,
-                    pointBorderColor: '#fff',
-                    pointRadius: type === 'line' ? 4 : 0,
-                    tension: 0.3,
-                    fill: type === 'line'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
+            if (recordsByYearChart) recordsByYearChart.destroy();
+            const yearCounts = {};
+            records.forEach(rec => {
+                const year = getYearFromDate(rec.date);
+                if (year && !isNaN(year)) yearCounts[year] = (yearCounts[year] || 0) + 1;
+            });
+            const sortedYears = Object.keys(yearCounts).sort((a, b) => parseInt(a) - parseInt(b));
+            const recordData = sortedYears.map(y => yearCounts[y]);
+            if (sortedYears.length === 0) return;
+            const ctx = canvas.getContext("2d");
+            const primaryColor = getComputedStyle(document.body).getPropertyValue("--primary").trim() || "#8b5cf6";
+            const accentColor = getComputedStyle(document.body).getPropertyValue("--accent").trim() || "#06b6d4";
+            recordsByYearChart = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: sortedYears,
+                    datasets: [{
+                        label: "Number of Records",
+                        data: recordData,
+                        backgroundColor: type === "bar" ? primaryColor + "80" : "transparent",
                         borderColor: primaryColor,
-                        borderWidth: 1
-                    }
+                        borderWidth: 2,
+                        pointBackgroundColor: accentColor,
+                        pointBorderColor: "#fff",
+                        pointRadius: type === "line" ? 4 : 0,
+                        tension: 0.3,
+                        fill: type === "line"
+                    }]
                 },
-                scales: {
-                    x: {
-                        grid: {
-                            color: gridColor,
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: textMain,
-                            font: { family: 'Outfit' }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: "rgba(30, 41, 59, 0.9)",
+                            titleColor: "#fff",
+                            bodyColor: "#fff",
+                            padding: 12,
+                            cornerRadius: 8
                         }
                     },
-                    y: {
-                        beginAtZero: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: "rgba(255,255,255,0.7)", stepSize: 1 },
+                            grid: { color: "rgba(255,255,255,0.1)" }
+                        },
+                        x: {
+                            ticks: { color: "rgba(255,255,255,0.7)" },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        } catch (e) {
+            console.error("❌ Error rendering Records by Year chart:", e);
+        }
+    }
+
                         grid: {
                             color: gridColor,
                             drawBorder: false
