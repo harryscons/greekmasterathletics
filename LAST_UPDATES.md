@@ -1,3 +1,8 @@
+# v2.20.12
+- **Chart Persistence**: Fixed the line chart toggle; your selection is now preserved across updates and refreshes.
+- **Visual Vibrancy**: The bar chart now features a multi-color palette for better distinction between years.
+- **Improved Chart State**: Statistics rendering is now smarter and respects the user's view preference.
+
 # v2.20.11
 - **Enhanced Statistics UI**: Increased the size and prominence of the chart type selector for better reachability.
 - **Improved Data Integrity**: Fixed a bug preventing the line chart from switching correctly in the "Records by Year" view.

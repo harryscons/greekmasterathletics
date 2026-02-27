@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
     let isSuppressingAutoFill = false; // Prevents change events from overwriting edit form data
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
+    let currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     function checkReady() {
         if (isDataReady) return;
@@ -477,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof populateWMAEventDropdown === 'function') populateWMAEventDropdown();
 
         // Refresh Statistics Charts
-        if (typeof renderRecordsByYearChart === 'function') renderRecordsByYearChart();
+        if (typeof renderRecordsByYearChart === 'function') renderRecordsByYearChart(currentYearChartType);
     }
 
     // Migration logic removed: Always trust the current cloud state
@@ -2364,6 +2365,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderRecordsByYearChart(type = "bar") {
         try {
+            currentYearChartType = type; // Persist for refreshes
             const canvas = document.getElementById("recordsByYearCanvas");
             if (!canvas) return;
             if (typeof Chart === "undefined") {
@@ -2380,9 +2382,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const sortedYears = Object.keys(yearCounts).sort((a, b) => parseInt(a) - parseInt(b));
             const recordData = sortedYears.map(y => yearCounts[y]);
             if (sortedYears.length === 0) return;
+
             const ctx = canvas.getContext("2d");
             const primaryColor = getComputedStyle(document.body).getPropertyValue("--primary").trim() || "#8b5cf6";
             const accentColor = getComputedStyle(document.body).getPropertyValue("--accent").trim() || "#06b6d4";
+
+            // Multi-color palette for bar charts
+            const palette = [
+                '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6',
+                '#06b6d4', '#ef4444', '#84cc16', '#a855f7', '#f97316'
+            ];
+            const barColors = sortedYears.map((_, i) => palette[i % palette.length]);
+
             recordsByYearChart = new Chart(ctx, {
                 type: type,
                 data: {
@@ -2390,8 +2401,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     datasets: [{
                         label: "Number of Records",
                         data: recordData,
-                        backgroundColor: type === "bar" ? primaryColor + "80" : "transparent",
-                        borderColor: primaryColor,
+                        backgroundColor: type === "bar" ? barColors.map(c => c + "90") : "transparent",
+                        borderColor: type === "bar" ? barColors : primaryColor,
                         borderWidth: 2,
                         pointBackgroundColor: accentColor,
                         pointBorderColor: "#fff",
