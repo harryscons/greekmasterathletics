@@ -429,9 +429,11 @@ select {
     border-radius: 12px;
     padding: 0 1rem;
     height: 42px;
+    /* Standardize height */
     color: var(--text-input);
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
+    /* Distinctive text as requested */
     outline: none;
     transition: all 0.2s;
     font-family: inherit;

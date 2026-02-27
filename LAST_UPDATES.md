@@ -1,3 +1,9 @@
+# v2.20.16
+- **Pixel-Perfect Alignment**: Synchronized the height of all modal inputs and dropdowns to a strict 42px for perfect symmetry.
+- **Dynamic Graph Contrast**: Axis labels now adapt to the active theme, ensuring they are perfectly visible in both light and dark modes.
+- **Theme-Integrated Colors**: Removed all hardcoded white fonts/backgrounds; everything now strictly follows your selected color theme.
+- **Distinctive Modal Values**: Set input text to a bolder weight (600) to make record data stand out more clearly.
+
 # v2.20.15
 - **Modal UI Precision**: Standardized the height of all record form fields to ensure a uniform, premium layout.
 - **High-Contrast Text**: Optimized text colors for all themes to ensure sharp legibility, specially for light backgrounds.

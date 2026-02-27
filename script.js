@@ -2427,11 +2427,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { color: "rgba(255,255,255,0.7)", stepSize: 1 },
+                            ticks: { color: getComputedStyle(document.body).getPropertyValue("--text-muted").trim() || "rgba(255,255,255,0.7)", stepSize: 1 },
                             grid: { color: "rgba(255,255,255,0.1)" }
                         },
                         x: {
-                            ticks: { color: "rgba(255,255,255,0.7)" },
+                            ticks: { color: getComputedStyle(document.body).getPropertyValue("--text-muted").trim() || "rgba(255,255,255,0.7)" },
                             grid: { display: false }
                         }
                     }
