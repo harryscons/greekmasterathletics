@@ -1,3 +1,7 @@
+# v2.20.10
+- **Emergency Recovery**: Fixed a syntax error in `script.js` that prevented application loading.
+- **Stability Patch**: Restored full application initialization and bypass of the synchronization hang.
+
 # v2.20.09
 - **Critical Fix**: Resolved application hang during "Synchronizing Data..." by adding robust library checks for Chart.js.
 - **Improved Resilience**: Added automatic retry logic for statistics visualizations to ensure core app loading is never blocked.
