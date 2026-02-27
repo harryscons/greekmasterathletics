@@ -2370,7 +2370,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Aggregate data
         const yearCounts = {};
-        allRecords.forEach(rec => {
+        records.forEach(rec => {
             if (!rec.date) return;
             const year = rec.date.split('-')[0];
             if (year && !isNaN(year)) {
