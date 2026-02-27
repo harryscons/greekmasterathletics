@@ -1,3 +1,8 @@
+# v2.20.07
+- **UI Consistency**: Removed dimming/grayscale effect from read-only modals for better clarity.
+- **Improved Graph Reliability**: Upgraded date parsing logic to ensure "Records by Year" chart renders correctly.
+- **Form Refinement**: Optimized horizontal alignment and spacing for fields in the record entry window.
+
 # v2.20.06
 - **Version Alignment**: Synced versioning across application and logs to v2.20.06.
 - **Auto-Increment System**: Initiated automatic version tracking for each deployment command.

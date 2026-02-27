@@ -475,6 +475,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Also populate sub-feature dropdowns
         if (typeof populateIAAFEventDropdown === 'function') populateIAAFEventDropdown();
         if (typeof populateWMAEventDropdown === 'function') populateWMAEventDropdown();
+
+        // Refresh Statistics Charts
+        if (typeof renderRecordsByYearChart === 'function') renderRecordsByYearChart();
     }
 
     // Migration logic removed: Always trust the current cloud state
@@ -2372,7 +2375,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const yearCounts = {};
         records.forEach(rec => {
             if (!rec.date) return;
-            const year = rec.date.split('-')[0];
+            const d = new Date(rec.date);
+            const year = d.getFullYear();
             if (year && !isNaN(year)) {
                 yearCounts[year] = (yearCounts[year] || 0) + 1;
             }
