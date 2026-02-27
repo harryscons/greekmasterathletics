@@ -2401,12 +2401,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     datasets: [{
                         label: "Number of Records",
                         data: recordData,
-                        backgroundColor: type === "bar" ? barColors.map(c => c + "90") : "transparent",
+                        backgroundColor: type === "bar" ? barColors.map(c => c + "90") : primaryColor + "40",
                         borderColor: type === "bar" ? barColors : primaryColor,
                         borderWidth: 2,
-                        pointBackgroundColor: accentColor,
+                        pointBackgroundColor: type === "bar" ? barColors : accentColor,
                         pointBorderColor: "#fff",
-                        pointRadius: type === "line" ? 4 : 0,
+                        pointRadius: type === "line" ? 5 : 4,
                         tension: 0.3,
                         fill: type === "line"
                     }]

@@ -1,3 +1,8 @@
+# v2.20.13
+- **Line Chart Visibility Fix**: Resolved an issue where the line chart would appear blank due to transparent background settings.
+- **Enhanced Bar Visuals**: Reinforced multi-color bars to ensure distinct colors for every year in the distribution chart.
+- **Chart Polish**: Adjusted point sizes and line tensions for better readability in statistics.
+
 # v2.20.12
 - **Chart Persistence**: Fixed the line chart toggle; your selection is now preserved across updates and refreshes.
 - **Visual Vibrancy**: The bar chart now features a multi-color palette for better distinction between years.
