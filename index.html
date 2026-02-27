@@ -140,7 +140,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.20.01</span>
+                        <span class="version-label">v2.20.03</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -1139,6 +1139,7 @@
                         Statistics</button>
                     <button class="sub-tab stats-sub-tab" data-stat-subtab="wma">WMA Statistics</button>
                     <button class="sub-tab stats-sub-tab" data-stat-subtab="rankings">🏆 Rankings</button>
+                    <button class="sub-tab stats-sub-tab" data-stat-subtab="movements">Category Movements</button>
                 </nav>
 
                 <!-- MEDAL STATS SUB-VIEW -->
@@ -1340,6 +1341,46 @@
                                 </thead>
                                 <tbody id="rankingsTableBody">
                                     <!-- Rankings injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- CATEGORY MOVEMENTS SUB-VIEW -->
+                <div id="stats-movements" class="stats-section">
+                    <section class="card">
+                        <div class="section-header">
+                            <h2>📅 Category Movements</h2>
+                        </div>
+                        <div class="table-container">
+                            <div class="filters"
+                                style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label style="font-size: 0.75rem; margin-bottom: 2px;">Target Year</label>
+                                    <input type="number" id="movementFilterYear" class="form-control"
+                                        style="width:100px;" onchange="renderMovementsStats()" min="2024">
+                                </div>
+                            </div>
+                            <table class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortMovements('lastName')" style="cursor:pointer">Last Name
+                                            ↕</th>
+                                        <th onclick="sortMovements('firstName')" style="cursor:pointer">First
+                                            Name ↕</th>
+                                        <th onclick="sortMovements('dob')" style="cursor:pointer">Birth Date ↕
+                                        </th>
+                                        <th onclick="sortMovements('currentCat')" style="cursor:pointer">Current
+                                            Cat ↕</th>
+                                        <th onclick="sortMovements('nextCat')" style="cursor:pointer">Next Cat ↕
+                                        </th>
+                                        <th onclick="sortMovements('moveDate')" style="cursor:pointer">Movement
+                                            Date ↕</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="movementsTableBody">
+                                    <!-- Movements injected here -->
                                 </tbody>
                             </table>
                         </div>

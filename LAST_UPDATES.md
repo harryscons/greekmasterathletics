@@ -1,4 +1,9 @@
-# v2.20.01
+# v2.20.03
+- **Category Movements Statistics**: Added a new tab to the Statistics section that identifies athletes moving to their next age group (e.g., M35 to M40) in a selected year.
+- **Milestone Detection**: The system calculates transition dates based on athlete birthdays and provides a proactive view for future years.
+- **Enhanced Filters**: Added a year filter to allow users to plan and track movements for any target year.
+
+# v2.20.02
 - Version increment and deployment.
 
 # v2.20.00

@@ -2344,6 +2344,13 @@ document.addEventListener('DOMContentLoaded', () => {
             initWMAOfficialData();
             renderRankings();
         }
+        if (subTabId === 'movements') {
+            const yearInput = document.getElementById('movementFilterYear');
+            if (yearInput && !yearInput.value) {
+                yearInput.value = new Date().getFullYear();
+            }
+            renderMovementsStats();
+        }
     }
 
     // ─── RANKINGS ───────────────────────────────────────────────────────────────
@@ -6403,6 +6410,107 @@ Replace ALL current data with this backup? This action is irreversible.`;
         }
         renderStats();
     };
+
+    // --- Category Movements Logic ---
+    let movementsSortField = 'moveDate';
+    let movementsSortOrder = 'asc';
+
+    window.sortMovements = function (field) {
+        if (movementsSortField === field) {
+            movementsSortOrder = movementsSortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            movementsSortField = field;
+            movementsSortOrder = 'asc';
+        }
+        renderMovementsStats();
+    };
+
+    window.renderMovementsStats = function () {
+        const yearInput = document.getElementById('movementFilterYear');
+        const targetYear = parseInt(yearInput ? yearInput.value : new Date().getFullYear());
+        const tbody = document.getElementById('movementsTableBody');
+        if (!tbody) return;
+
+        const results = [];
+
+        athletes.forEach(athlete => {
+            if (!athlete.dob) return;
+            const dobParts = athlete.dob.split('-');
+            if (dobParts.length !== 3) return;
+
+            const birthYear = parseInt(dobParts[0]);
+            const birthMonth = parseInt(dobParts[1]);
+            const birthDay = parseInt(dobParts[2]);
+
+            const ageInTargetYear = targetYear - birthYear;
+
+            // Check if they hit a milestone (35, 40, 45, etc.) in the target year
+            if (ageInTargetYear >= 35 && ageInTargetYear % 5 === 0) {
+                const moveDateStr = `${targetYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
+                const moveDate = new Date(moveDateStr);
+
+                const currentAge = ageInTargetYear - 5;
+                const nextAge = ageInTargetYear;
+
+                const gNorm = normalizeGenderLookups(athlete.gender);
+                const prefix = (gNorm === 'men' || athlete.gender === 'Male') ? 'M' :
+                    ((gNorm === 'women' || athlete.gender === 'Female') ? 'W' : 'X');
+
+                results.push({
+                    firstName: athlete.firstName || '',
+                    lastName: athlete.lastName || '',
+                    dob: athlete.dob,
+                    currentCat: `${prefix}${currentAge}`,
+                    nextCat: `${prefix}${nextAge}`,
+                    moveDate: moveDateStr,
+                    moveDateTime: moveDate.getTime()
+                });
+            }
+        });
+
+        // Sorting
+        results.sort((a, b) => {
+            let valA = a[movementsSortField];
+            let valB = b[movementsSortField];
+
+            if (movementsSortField === 'moveDate') {
+                valA = a.moveDateTime;
+                valB = b.moveDateTime;
+            }
+
+            if (typeof valA === 'string') {
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+            }
+
+            if (valA < valB) return movementsSortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return movementsSortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        if (results.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; opacity:0.6;">No category movements found for ${targetYear}.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = results.map(r => `
+            <tr>
+                <td>${r.lastName}</td>
+                <td>${r.firstName}</td>
+                <td>${formatMovementsDate(r.dob)}</td>
+                <td><span class="age-group-badge" style="background:var(--accent);">${r.currentCat}</span></td>
+                <td><span class="age-group-badge" style="background:var(--primary);">${r.nextCat}</span></td>
+                <td style="font-weight:600;">${formatMovementsDate(r.moveDate)}</td>
+            </tr>
+        `).join('');
+    };
+
+    function formatMovementsDate(dateStr) {
+        if (!dateStr) return '-';
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return dateStr;
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
 
     // Expose renderStats globally for HTML attributes
     window.renderStats = renderStats;
