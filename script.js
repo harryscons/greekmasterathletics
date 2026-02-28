@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
-    const VERSION = "v2.20.51";
+    let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
+    const VERSION = "v2.20.52";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -4666,8 +4667,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (isSup) {
                         try {
-                            // Supervisor Direct Edit -> Archive Old
-                            const isHistoryEnabled = localStorage.getItem('tf_edit_history_flag') !== 'false';
+                            // v2.20.52: Archiving during manual "Update" (🔄) is now mandatory
+                            const isHistoryEnabled = isManualUpdateMode || (localStorage.getItem('tf_edit_history_flag') !== 'false');
 
                             if (isHistoryEnabled) {
                                 const oldRecordData = { ...originalRecord };
@@ -4751,6 +4752,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Modal Management ---
     window.openRecordModal = function (id = null, isUpdateFlow = false, isReadOnly = false) {
+        isManualUpdateMode = !!isUpdateFlow; // Set global flag for form submit context
         if (!isAdmin && !isReadOnly) {
             alert("Permission Denied: Only Supervisors or Admins can perform this action.");
             return;
@@ -5067,6 +5069,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function editRecord(id, isUpdateFlow = false, isReadOnly = false) {
+        isManualUpdateMode = !!isUpdateFlow;
         console.log("✏️ editRecord called for ID:", id, "Update Flow:", isUpdateFlow);
 
         // Instead of switchTab, we just ensure modal is open
@@ -5179,10 +5182,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const filterObj = { gender: r.gender };
 
             // Layer 2: Strict Restriction adds Age Group & Date sensitivity
-            if (isUpdateFlow && isRestricted) {
+            // v2.20.52: If isManualUpdateMode is true, we ALWAYS restrict by Age Group for consistency
+            if ((isUpdateFlow && isRestricted) || isManualUpdateMode) {
                 filterObj.ageGroup = r.ageGroup;
                 filterObj.date = dateInput ? dateInput.value : r.date;
-                console.log("🛡️ Applying STRICT Athlete Restriction (Gender + Age Group + Date)");
+                console.log("🛡️ Applying Athlete Restriction (Mode: " + (isManualUpdateMode ? "Forced Update" : "Strict User Settings") + ")");
             } else {
                 console.log("🛡️ Applying BASELINE Athlete Restriction (Gender Only)");
             }
