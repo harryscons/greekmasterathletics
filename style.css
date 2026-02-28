@@ -1533,8 +1533,8 @@ td>div {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 12px;
-        margin-bottom: 1rem;
-        padding: 1rem;
+        margin-bottom: 0.6rem;
+        padding: 0.75rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         position: relative;
     }
@@ -1543,10 +1543,10 @@ td>div {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.5rem 0;
+        padding: 0.3rem 0;
         border: none !important;
         border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         white-space: normal !important;
         text-align: right !important;
         width: 100% !important;
@@ -1564,7 +1564,7 @@ td>div {
         font-weight: 700;
         color: var(--text-muted);
         text-transform: uppercase;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         margin-right: 1rem;
         flex-shrink: 0;
         text-align: left;
@@ -1584,8 +1584,8 @@ td>div {
     .report-table td[data-label="Επίδοση"] {
         background: var(--primary-light);
         border-radius: 6px;
-        margin: 0.5rem 0;
-        padding: 0.6rem;
+        margin: 0.35rem 0;
+        padding: 0.4rem 0.6rem;
     }
 
     .report-table .expand-col {
@@ -1595,7 +1595,7 @@ td>div {
 
     .report-table .actions-col {
         justify-content: center;
-        padding-top: 1rem;
+        padding-top: 0.75rem;
     }
 
     .report-table .actions-col::before {
