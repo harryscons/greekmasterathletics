@@ -1,3 +1,6 @@
+# v2.20.59
+- **Actions Column Visibility Restriction**: The "Actions" column (Edit, Delete, Update) is now hidden for regular users. It is only accessible to **Admin** and **Supervisor** roles to ensure data integrity and prevent unauthorized modifications while maintaining a cleaner interface for the general public.
+
 # v2.20.58
 - **Dynamic Athlete Column Sizing**: The "Athlete" column now automatically adjusts its width to perfectly fit the longest name in the current view.
 - **Improved Table Fluidity**: Combined with the dynamic Race Name sizing, the table now adapts to its content on the fly, ensuring maximum readability without wasting space.
@@ -375,6 +378,11 @@
 - **Dynamic Width Calculation**: The "Race Name" column width is now calculated on the fly as the table renders, using the second-largest string length as a baseline for the column width.
 - **Improved Truncation**: Ensures the longest race names don't expand the table excessively, maintaining high-density information layout.
 - **Full Screen Utilization**: The app now spans the full browser width, providing more room for the Athlete and Race Name columns.
+
+### v2.20.59: Actions Column Restriction
+- **Role-Based Visibility**: Implemented logic to hide the entire "Actions" column for non-privileged users.
+- **Enhanced Data Security**: Restricted operational buttons (Update, Edit, Delete) to Admin and Supervisor roles only.
+- **Simplified Public UI**: Regular visitors now see a cleaner report table focused solely on athletic records.
 
 ### v2.20.58: Dynamic Athlete & Race Name Sizing
 - **Dual-Column Adaptation**: Both the Athlete and Race Name columns now use real-time character length analysis to set their widths.

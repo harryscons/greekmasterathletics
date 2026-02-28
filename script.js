@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.58";
+    const VERSION = "v2.20.59";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -5696,6 +5696,13 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("renderReports called");
         reportTableBody.innerHTML = '';
 
+        const table = document.getElementById('reportTable');
+        if (table) {
+            // Restriction: Only Admins and Supervisors see the Actions column (v2.20.59)
+            const isPrivileged = isAdminOrSupervisor(currentUser ? currentUser.email : null);
+            table.classList.toggle('hide-actions', !isPrivileged);
+        }
+
         const filtered = getFilteredRecords();
         const isHideNotesChecked = hideNotesSymbol && hideNotesSymbol.checked;
 
@@ -5722,7 +5729,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const athleteColWidth = Math.max(150, (maxAthleteLen * 8.5) + 35);
 
         // Update header widths dynamically
-        const table = document.getElementById('reportTable');
         if (table) {
             const athleteHeader = table.querySelector('th:nth-child(4)');
             if (athleteHeader) {

@@ -858,6 +858,10 @@ select:focus {
     white-space: nowrap;
 }
 
+.report-table.hide-actions .actions-col {
+    display: none !important;
+}
+
 /* Athlete (Column 4) and Race Name (Column 11) are dynamically sized in script.js (v2.20.58) */
 .report-table th:nth-child(4),
 .report-table td:nth-child(4),
