@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
-    const VERSION = "v2.20.50";
+    const VERSION = "v2.20.51";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -6911,16 +6911,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (matches.length > 0) {
-                    const isHistoryEnabled = localStorage.getItem('tf_edit_history_flag') !== 'false';
+                    // v2.20.51: Archiving during import is now mandatory to ensure a clean live database
                     matches.forEach(oldRecord => {
-                        if (isHistoryEnabled) {
-                            const historyEntry = { ...oldRecord };
-                            historyEntry.archivedAt = new Date().toISOString();
-                            historyEntry.originalId = String(oldRecord.id);
-                            historyEntry.updatedBy = 'Excel Import';
-                            historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 1000000) + '-' + originalIdx);
-                            history.unshift(historyEntry);
-                        }
+                        const historyEntry = { ...oldRecord };
+                        historyEntry.archivedAt = new Date().toISOString();
+                        historyEntry.originalId = String(oldRecord.id);
+                        historyEntry.updatedBy = 'Excel Import';
+                        historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 1000000) + '-' + originalIdx);
+                        history.unshift(historyEntry);
+
                         const idxInLive = records.findIndex(liveR => liveR.id === oldRecord.id);
                         if (idxInLive !== -1) records.splice(idxInLive, 1);
                     });
