@@ -1,3 +1,6 @@
+# v2.20.58
+- **Refined Column Sizing**: The "Race Name" column is now more compact (shrinks to fit its data), while the "Athlete" column remains fluid to fill the available screen space.
+
 # v2.20.57
 - **Fluid Full-Window Layout**: Applications now stretches to fill the entire browser width, maximizing screen usage on large monitors.
 - **Single-Line Report Optimization**: The main report table now enforces single-line display for all data (no wrapping).
@@ -10,6 +13,10 @@
 # v2.20.55
 - **New EMACSI 2026 Theme**: Added a new professional theme inspired by the `emacsi-2026` athletic project. Features a clean white background with athletic navy and track red accents.
 - **Enhanced Visual Hierarchy**: The EMACSI theme includes customized chart colors and high-contrast labels for better visibility.
+
+### v2.20.58: Column Width Refinement
+- **Compact Race Name**: Adjusted the layout to ensure the Race Name column stays tight around its content.
+- **Improved Athlete Focus**: Prioritized the Athlete name column for stretching, ensuring better use of space on wide screens.
 
 ### v2.20.57: Fluid Table Overhaul
 - **Window Auto-Fit**: Removed the 1800px width limit to allow the app to utilize all available screen space.
@@ -382,10 +389,10 @@
     - [x] Verify theme application and consistency <!-- id: 384 -->
     - [x] Increment version to v2.20.55 <!-- id: 385 -->
 - [x] Importing EMACSI- [x] Renaming Theme (v2.20.56) <!-- id: 386 -->
-    - [x] Rename CSS class to `theme-championship-slate` <!-- id: 387 -->
-    - [x] Rename HTML option to "Championship Slate" <!-- id: 388 -->
-    - [x] Add migration logic in `script.js` <!-- id: 389 -->
-    - [x] Increment version to v2.20.56 <!-- id: 390 -->
+    - [x] Rename CSS class to `theme- [x] Refining Column widths (v2.20.58) <!-- id: 397 -->
+    - [x] Update `style.css` to make Race Name compact <!-- id: 398 -->
+    - [x] Verify Athlete column still expands <!-- id: 399 -->
+    - [x] Increment version to v2.20.58 <!-- id: 400 -->
 - [x] Debugging Archival Failure (v2.20.50) <!-- id: 354 -->
     - [x] Implement accent-insensitive matching (normalize NFD) <!-- id: 355 -->
     - [x] Refine `isLive` check in archival filter <!-- id: 356 -->

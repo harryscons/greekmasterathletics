@@ -852,6 +852,9 @@ select:focus {
 .report-table th:nth-child(10),
 /* Town */
 .report-table td:nth-child(10),
+.report-table th:nth-child(11),
+/* Race Name (Compact in v2.20.58) */
+.report-table td:nth-child(11),
 .report-table th:nth-child(12)
 
 /* Actions */
@@ -864,10 +867,7 @@ select:focus {
 /* Data-rich columns expand */
 .report-table th:nth-child(4),
 /* Athlete */
-.report-table td:nth-child(4),
-.report-table th:nth-child(11),
-/* Race Name */
-.report-table td:nth-child(11) {
+.report-table td:nth-child(4) {
     width: auto;
     min-width: 150px;
 }
