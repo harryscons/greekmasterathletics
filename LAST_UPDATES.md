@@ -1,4 +1,12 @@
-# v2.20.54
+# v2.20.55
+- **New EMACSI 2026 Theme**: Added a new professional theme inspired by the `emacsi-2026` athletic project. Features a clean white background with athletic navy and track red accents.
+- **Enhanced Visual Hierarchy**: The EMACSI theme includes customized chart colors and high-contrast labels for better visibility.
+
+### v2.20.55: EMACSI 2026 Theme
+- **Athletic Palette**: Imported the professional design system from the `emacsi-2026` project.
+- **Improved Charting**: Added theme-specific chart overrides to ensure data visualization matches the professional aesthetic.
+
+### v2.20.54: Robust History Lineage
 - **Restored History Expansion**: Fixed the issue where the "+" symbol was missing for many archived records. Lineage tracking now uses category-based matching (Event, Gender, Age Group), which is much more reliable than ID-based matching.
 - **Improved Detail Transparency**: Expansion rows now clearly state whether a record was replaced by an "Intermediate Version" or the "Current Live Version".
 
@@ -350,6 +358,11 @@
 - Implemented WMA performance aggregation per athlete (Best/Avg Pts, Record Count).
 - Added medal icons (🥇🥈🥉) and sortable headers with live sort direction arrows.
 - Implemented polling retry logic to ensure WMA scoring data is ready before rendering.
+- [x] Importing EMACSI-2026 Theme (v2.20.55) <!-- id: 381 -->
+    - [x] Create `body.theme-emacsi-2026` in `style.css` <!-- id: 382 -->
+    - [x] Add EMACSI option to `themeSelect` in `index.html` <!-- id: 383 -->
+    - [x] Verify theme application and consistency <!-- id: 384 -->
+    - [x] Increment version to v2.20.55 <!-- id: 385 -->
 - [x] Debugging Archival Failure (v2.20.50) <!-- id: 354 -->
     - [x] Implement accent-insensitive matching (normalize NFD) <!-- id: 355 -->
     - [x] Refine `isLive` check in archival filter <!-- id: 356 -->
