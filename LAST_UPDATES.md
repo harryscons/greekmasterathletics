@@ -1,3 +1,8 @@
+# v2.20.57
+- **Fluid Full-Window Layout**: Applications now stretches to fill the entire browser width, maximizing screen usage on large monitors.
+- **Single-Line Report Optimization**: The main report table now enforces single-line display for all data (no wrapping).
+- **Intelligent Column Sizing**: Utility columns are kept compact while data-rich columns (Athlete, Race Name, Notes) are prioritized for expansion.
+
 # v2.20.56
 - **Theme Renaming**: Renamed the professional theme to **"Championship Slate"**.
 - **Seamless Migration**: Added logic to automatically migrate users from the old theme name to the new "Championship Slate" without requiring manual settings changes.
@@ -5,6 +10,11 @@
 # v2.20.55
 - **New EMACSI 2026 Theme**: Added a new professional theme inspired by the `emacsi-2026` athletic project. Features a clean white background with athletic navy and track red accents.
 - **Enhanced Visual Hierarchy**: The EMACSI theme includes customized chart colors and high-contrast labels for better visibility.
+
+### v2.20.57: Fluid Table Overhaul
+- **Window Auto-Fit**: Removed the 1800px width limit to allow the app to utilize all available screen space.
+- **No-Wrap Data Logic**: Enforced single-line constraints on the report table to prevent row height inflation.
+- **Space Prioritization**: Reconfigured table layout to automatically prioritize expanding name and note columns while keeping fixed data compact.
 
 ### v2.20.56: Theme Refinement
 - **Championship Slate**: Polished the athletic theme with a more universal name and identity.
@@ -381,12 +391,12 @@
     - [x] Refine `isLive` check in archival filter <!-- id: 356 -->
     - [x] Add `renderHistoryList` call to import finalization <!-- id: 357 -->
     - [x] Verify matching for accented Greek labels <!-- id: 358 -->
-- [x] Import Normalization & Matching Bug-Fix (v2.20.49) <!-- id: 348 -->
-    - [x] Expand `normalizeGender` with Greek support <!-- id: 349 -->
-    - [x] Fix index bug in `handleMappedImport` <!-- id: 350 -->
-    - [x] Implement robust normalized matching in archival check <!-- id: 351 -->
-    - [x] Verify fix for Greek/Case-mismatched records <!-- id: 352 -->
-    - [x] Increment version to v2.20.49 <!-- id: 353 -->
+- [x] Import Normalization &- [x] fluid Table Layout (v2.20.57) <!-- id: 391 -->
+    - [x] Update `.app-container` for full-window fit <!-- id: 392 -->
+    - [x] Implement `nowrap` on report table cells <!-- id: 393 -->
+    - [x] Adjust column widths for better space distribution <!-- id: 394 -->
+    - [x] Verify fluid behavior on different screen sizes <!-- id: 395 -->
+    - [x] Increment version to v2.20.57 <!-- id: 396 -->
 
 ### 📊 WMA Calculation & UI Refinement
 - **Track & Road Decimal Fix**: Updated `calculateRateConv` so marks like `14.9` are correctly interpreted as `14.90` (tenths/hundredths) for both **Track** and **Road** events.
