@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.52";
+    const VERSION = "v2.20.53";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -4743,7 +4743,10 @@ document.addEventListener('DOMContentLoaded', () => {
             renderAthleteList();
 
             // Auto close modal after successful submit
-            setTimeout(() => closeRecordModal(), 1500);
+            setTimeout(() => {
+                isManualUpdateMode = false; // lifecycle guard
+                closeRecordModal();
+            }, 1500);
         } catch (error) {
             console.error("Form Submit Error:", error);
             alert("Error saving record: " + error.message);
@@ -4794,6 +4797,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modal.classList.add('hidden');
         document.body.style.overflow = ''; // Restore background scroll
+        isManualUpdateMode = false; // v2.20.53 reset
         cancelEdit();
     };
 
@@ -5070,7 +5074,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function editRecord(id, isUpdateFlow = false, isReadOnly = false) {
         isManualUpdateMode = !!isUpdateFlow;
-        console.log("✏️ editRecord called for ID:", id, "Update Flow:", isUpdateFlow);
+        console.log("✏️ editRecord called | ID:", id, "| isUpdateFlow:", isUpdateFlow, "| isManualUpdateMode:", isManualUpdateMode);
 
         // Instead of switchTab, we just ensure modal is open
         const modal = document.getElementById('recordModal');
@@ -5186,12 +5190,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if ((isUpdateFlow && isRestricted) || isManualUpdateMode) {
                 filterObj.ageGroup = r.ageGroup;
                 filterObj.date = dateInput ? dateInput.value : r.date;
-                console.log("🛡️ Applying Athlete Restriction (Mode: " + (isManualUpdateMode ? "Forced Update" : "Strict User Settings") + ")");
+                console.log("🛡️ [DIAGNOSTIC] Forced Update Filter Active:", filterObj);
             } else {
-                console.log("🛡️ Applying BASELINE Athlete Restriction (Gender Only)");
+                console.log("🛡️ [DIAGNOSTIC] Baseline Filter (Gender only):", filterObj);
             }
 
             populateAthleteDropdown(filterObj);
+            console.log("🛡️ [DIAGNOSTIC] Dropdown populated for:", r.athlete, "Mode:", isManualUpdateMode ? "UPDATE" : "EDIT");
 
             if (isRelay) {
                 if (relayTeamNameInput) relayTeamNameInput.value = isUpdateFlow ? '' : (r.athlete || '');
@@ -5237,6 +5242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cancelEdit() {
+        isManualUpdateMode = false; // v2.20.53 reset
         editingId = null;
         editingHistoryId = null;
         previousTab = null;
