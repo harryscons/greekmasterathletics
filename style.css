@@ -250,8 +250,8 @@ body {
 }
 
 .app-container {
-    width: 98%;
-    max-width: 1800px;
+    width: 100%;
+    max-width: none;
     height: 100%;
     /* Fill viewport height */
     display: flex;
@@ -824,6 +824,45 @@ select:focus {
 
 .report-table tr:hover {
     background: var(--bg-card-hover);
+}
+
+/* Fluid Column Prioritization (v2.20.57) */
+.report-table th:nth-child(2),
+/* Event */
+.report-table td:nth-child(2),
+.report-table th:nth-child(3),
+/* Category */
+.report-table td:nth-child(3),
+.report-table th:nth-child(5),
+/* Gender */
+.report-table td:nth-child(5),
+.report-table th:nth-child(6),
+/* Mark */
+.report-table td:nth-child(6),
+.report-table th:nth-child(7),
+/* IDR */
+.report-table td:nth-child(7),
+.report-table th:nth-child(8),
+/* Wind */
+.report-table td:nth-child(8),
+.report-table th:nth-child(9),
+/* Date */
+.report-table td:nth-child(9),
+.report-table th:nth-child(10),
+/* Town */
+.report-table td:nth-child(10),
+.report-table th:nth-child(12),
+/* Actions */
+.report-table td:nth-child(12) {
+    width: 1%;
+    white-space: nowrap;
+}
+
+/* Athlete (Column 4) is primary fluid column */
+.report-table th:nth-child(4),
+.report-table td:nth-child(4) {
+    width: auto;
+    min-width: 150px;
 }
 
 /* Table Actions */

@@ -1,4 +1,6 @@
-# v2.20.56
+# v2.20.57
+- **Dynamic Race Name Sizing**: The "Race Name" column now automatically adjusts its width based on the record set. It is sized to accommodate the second-longest race name, ensuring a compact layout while truncating the absolute longest entries with an ellipsis (...) to maintain visual consistency.
+- **Fluid Layout**: Removed the fixed-width container to allow the application to expand and fill the entire browser window.
 - **Theme Renaming**: Renamed the professional theme to **"Championship Slate"**.
 - **Seamless Migration**: Added logic to automatically migrate users from the old theme name to the new "Championship Slate" without requiring manual settings changes.
 
@@ -366,6 +368,16 @@
 - Implemented WMA performance aggregation per athlete (Best/Avg Pts, Record Count).
 - Added medal icons (🥇🥈🥉) and sortable headers with live sort direction arrows.
 - Implemented polling retry logic to ensure WMA scoring data is ready before rendering.
+
+## v2.20.57: Dynamic Race Name Sizing & Fluid Layout
+- **Dynamic Width Calculation**: The "Race Name" column width is now calculated on the fly as the table renders, using the second-largest string length as a baseline for the column width.
+- **Improved Truncation**: Ensures the longest race names don't expand the table excessively, maintaining high-density information layout.
+- **Full Screen Utilization**: The app now spans the full browser width, providing more room for the Athlete and Race Name columns.
+- [x] Importing EMACSI- [x] Dynamic Race Name Sizing (v2.20.57) <!-- id: 391 -->
+    - [x] Calculate secondary largest length in `renderReports` <!-- id: 392 -->
+    - [x] Apply dynamic width/truncation to Race Name column <!-- id: 393 -->
+    - [x] Verify truncation of longest entries <!-- id: 394 -->
+    - [x] Increment version to v2.20.57 <!-- id: 395 -->
 - [x] Importing EMACSI-2026 Theme (v2.20.55) <!-- id: 381 -->
     - [x] Create `body.theme-emacsi-2026` in `style.css` <!-- id: 382 -->
     - [x] Add EMACSI option to `themeSelect` in `index.html` <!-- id: 383 -->

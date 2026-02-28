@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.56";
+    const VERSION = "v2.20.57";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -5702,6 +5702,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filtered.length === 0) return;
         // Sort applied in getFilteredRecords
 
+        // --- Dynamic Race Name Width Calculation (v2.20.57) ---
+        const raceNames = filtered.map(r => (r.raceName || '').trim());
+        const lengths = raceNames.map(n => n.length).sort((a, b) => b - a);
+        let targetLength = 0;
+        if (lengths.length > 1) {
+            targetLength = lengths[1]; // Second largest
+        } else if (lengths.length === 1) {
+            targetLength = lengths[0]; // Only one
+        }
+        // Approx 8.5px per character + some padding
+        const calculatedWidth = targetLength > 0 ? (targetLength * 8.5) + 15 : 120;
+        const raceColWidth = Math.max(100, Math.min(450, calculatedWidth));
+
+        // Update header width dynamically
+        const table = document.getElementById('reportTable');
+        if (table) {
+            const raceHeader = table.querySelector('th:nth-child(11)');
+            if (raceHeader) {
+                raceHeader.style.width = `${raceColWidth}px`;
+                raceHeader.style.minWidth = `${raceColWidth}px`;
+                raceHeader.style.maxWidth = `${raceColWidth}px`;
+                raceHeader.style.overflow = 'hidden';
+                raceHeader.style.textOverflow = 'ellipsis';
+            }
+        }
+        // --------------------------------------------------------
+
         filtered.forEach(r => {
             const tr = document.createElement('tr');
             const hasNotes = r.notes && r.notes.trim().length > 0;
@@ -5745,7 +5772,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${r.wind || '-'}</td>
                     <td style="white-space:nowrap;">${new Date(r.date).toLocaleDateString('en-GB')}</td>
                     <td>${r.town || ''}</td>
-                    <td>${r.raceName || ''}</td>
+                    <td style="width:${raceColWidth}px; max-width:${raceColWidth}px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.raceName || ''}">${r.raceName || ''}</td>
                     <td class="actions-col" style="white-space:nowrap;">
                         ${(() => {
                     if (r.isPending || r.isPendingDelete) {
