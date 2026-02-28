@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.57";
+    const VERSION = "v2.20.58";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -5715,9 +5715,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const calculatedWidth = targetLength > 0 ? (targetLength * 8.5) + 15 : 120;
         const raceColWidth = Math.max(100, Math.min(450, calculatedWidth));
 
-        // Update header width dynamically
+        // --- Dynamic Athlete Width Calculation (v2.20.58) ---
+        const athleteNames = filtered.map(r => (r.athlete || '').trim());
+        const maxAthleteLen = athleteNames.reduce((max, n) => Math.max(max, n.length), 0);
+        // Approx 8.5px per char + padding + space for "TEAM" badge
+        const athleteColWidth = Math.max(150, (maxAthleteLen * 8.5) + 35);
+
+        // Update header widths dynamically
         const table = document.getElementById('reportTable');
         if (table) {
+            const athleteHeader = table.querySelector('th:nth-child(4)');
+            if (athleteHeader) {
+                athleteHeader.style.width = `${athleteColWidth}px`;
+                athleteHeader.style.minWidth = `${athleteColWidth}px`;
+            }
             const raceHeader = table.querySelector('th:nth-child(11)');
             if (raceHeader) {
                 raceHeader.style.width = `${raceColWidth}px`;
@@ -5752,7 +5763,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     <td style="font-weight:600;">${r.event}</td>
                     <td style="white-space:nowrap;">${ageDisplay}</td>
-                    <td>
+                    <td style="width:${athleteColWidth}px; min-width:${athleteColWidth}px;">
                         <div style="font-weight:500; display:flex; align-items:center; gap:5px;">
                             ${r.athlete}
                             ${(athlete && athlete.isTeam) ? '<span class="badge" style="background:var(--accent); color:white; font-size:0.7rem; padding: 2px 6px;">TEAM</span>' : ''}

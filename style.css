@@ -858,11 +858,12 @@ select:focus {
     white-space: nowrap;
 }
 
-/* Athlete (Column 4) is primary fluid column */
+/* Athlete (Column 4) and Race Name (Column 11) are dynamically sized in script.js (v2.20.58) */
 .report-table th:nth-child(4),
-.report-table td:nth-child(4) {
+.report-table td:nth-child(4),
+.report-table th:nth-child(11),
+.report-table td:nth-child(11) {
     width: auto;
-    min-width: 150px;
 }
 
 /* Table Actions */

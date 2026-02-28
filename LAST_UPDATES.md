@@ -1,4 +1,6 @@
-# v2.20.57
+# v2.20.58
+- **Dynamic Athlete Column Sizing**: The "Athlete" column now automatically adjusts its width to perfectly fit the longest name in the current view.
+- **Improved Table Fluidity**: Combined with the dynamic Race Name sizing, the table now adapts to its content on the fly, ensuring maximum readability without wasting space.
 - **Dynamic Race Name Sizing**: The "Race Name" column now automatically adjusts its width based on the record set. It is sized to accommodate the second-longest race name, ensuring a compact layout while truncating the absolute longest entries with an ellipsis (...) to maintain visual consistency.
 - **Fluid Layout**: Removed the fixed-width container to allow the application to expand and fill the entire browser window.
 - **Theme Renaming**: Renamed the professional theme to **"Championship Slate"**.
@@ -373,11 +375,15 @@
 - **Dynamic Width Calculation**: The "Race Name" column width is now calculated on the fly as the table renders, using the second-largest string length as a baseline for the column width.
 - **Improved Truncation**: Ensures the longest race names don't expand the table excessively, maintaining high-density information layout.
 - **Full Screen Utilization**: The app now spans the full browser width, providing more room for the Athlete and Race Name columns.
-- [x] Importing EMACSI- [x] Dynamic Race Name Sizing (v2.20.57) <!-- id: 391 -->
-    - [x] Calculate secondary largest length in `renderReports` <!-- id: 392 -->
-    - [x] Apply dynamic width/truncation to Race Name column <!-- id: 393 -->
-    - [x] Verify truncation of longest entries <!-- id: 394 -->
-    - [x] Increment version to v2.20.57 <!-- id: 395 -->
+
+### v2.20.58: Dynamic Athlete & Race Name Sizing
+- **Dual-Column Adaptation**: Both the Athlete and Race Name columns now use real-time character length analysis to set their widths.
+- **Maximum Length Prioritization**: The Athlete column expands to fit the longest entry, while the Race Name follows the refined second-largest rule for optimal density.
+- [x] Importing EMACSI- [x] Dynamic Athlete Sizing (v2.20.58) <!-- id: 391 -->
+    - [x] Calculate maximum athlete length in `renderReports` <!-- id: 392 -->
+    - [x] Apply dynamic width to Athlete column <!-- id: 393 -->
+    - [x] Remove `width: auto` from CSS priority list <!-- id: 394 -->
+    - [x] Increment version to v2.20.58 <!-- id: 395 -->
 - [x] Importing EMACSI-2026 Theme (v2.20.55) <!-- id: 381 -->
     - [x] Create `body.theme-emacsi-2026` in `style.css` <!-- id: 382 -->
     - [x] Add EMACSI option to `themeSelect` in `index.html` <!-- id: 383 -->
