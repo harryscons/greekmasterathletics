@@ -1,3 +1,8 @@
+# v2.20.49: Normalization & Matching Fix
+- **Greek Label Support**: The system now understands "Ανδρών" and "Γυναικών" during import, allowing it to correctly match and archive existing records.
+- **Robust Matching**: Archival checks are now case-insensitive and fully normalized.
+- **Index Fix**: Reliability fix for athlete associations when using selective row importing.
+
 # v2.20.48
 - **Robust Import Auto-Archiving**: Refined the Excel import logic to move *all* existing records for the same category into the history, preventing unexpected duplicates.
 - **Improved ID Generation**: Standardized ID format for imported records for better system compatibility.
@@ -325,6 +330,12 @@
 - Implemented WMA performance aggregation per athlete (Best/Avg Pts, Record Count).
 - Added medal icons (🥇🥈🥉) and sortable headers with live sort direction arrows.
 - Implemented polling retry logic to ensure WMA scoring data is ready before rendering.
+- [x] Import Normalization & Matching Bug-Fix (v2.20.49) <!-- id: 348 -->
+    - [x] Expand `normalizeGender` with Greek support <!-- id: 349 -->
+    - [x] Fix index bug in `handleMappedImport` <!-- id: 350 -->
+    - [x] Implement robust normalized matching in archival check <!-- id: 351 -->
+    - [x] Verify fix for Greek/Case-mismatched records <!-- id: 352 -->
+    - [x] Increment version to v2.20.49 <!-- id: 353 -->
 
 ### 📊 WMA Calculation & UI Refinement
 - **Track & Road Decimal Fix**: Updated `calculateRateConv` so marks like `14.9` are correctly interpreted as `14.90` (tenths/hundredths) for both **Track** and **Road** events.

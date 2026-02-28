@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
-    const VERSION = "v2.20.48";
+    const VERSION = "v2.20.49";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -639,9 +639,13 @@ document.addEventListener('DOMContentLoaded', () => {
     window.normalizeGender = function (val) {
         if (!val) return '';
         const lower = val.toString().toLowerCase().trim();
+        // English & Standard
         if (lower === 'male' || lower === 'm') return 'Male';
         if (lower === 'female' || lower === 'f') return 'Female';
         if (lower === 'mixed' || lower === 'x') return 'Mixed';
+        // Greek support (v2.20.49)
+        if (lower.includes('ανδ') || lower === 'α') return 'Male';
+        if (lower.includes('γυν') || lower === 'γ') return 'Female';
         return val;
     };
 
@@ -6862,33 +6866,44 @@ document.addEventListener('DOMContentLoaded', () => {
     window.handleMappedImport = function (jsonData, mapping, athleteOverrides) {
         athleteOverrides = athleteOverrides || {};
         try {
-            // Filter jsonData based on selected checkboxes (v2.20.45)
             const selectedIndices = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => parseInt(cb.dataset.idx));
-            const filteredData = jsonData.filter((_, idx) => selectedIndices.includes(idx));
-
             let importedCount = 0;
-            filteredData.forEach((row, idx) => {
+
+            // Iterate over ALL data but only process selected ones (v2.20.49 fix for index bug)
+            jsonData.forEach((row, originalIdx) => {
+                if (!selectedIndices.includes(originalIdx)) return;
+
                 const eventVal = (row[mapping['event']] || '').toString().trim();
                 const markVal = (row[mapping['mark']] || '').toString().trim();
+                const rawGenVal = (row[mapping['gender']] || '').toString().trim();
+                const genVal = normalizeGender(rawGenVal); // Robust normalization
+                const agVal = mapping['ageGroup'] ? (row[mapping['ageGroup']] || '').toString().trim() : '';
 
                 if (!eventVal || !markVal) return;
 
-                // Normalize Track Type (v2.20.46)
+                // Normalize Track Type
                 let ttVal = (row[mapping['trackType']] || '').toString().trim();
                 if (ttVal.toLowerCase().includes('indoor') || ttVal.toLowerCase().includes('κλειστός')) ttVal = 'Indoor';
                 else ttVal = 'Outdoor';
 
-                const genVal = (row[mapping['gender']] || '').toString().trim();
-                const agVal = mapping['ageGroup'] ? (row[mapping['ageGroup']] || '').toString().trim() : '';
+                // --- ROBUST AUTO-ARCHIVE MATCHING (v2.20.49) ---
+                const normSearchEv = eventVal.toLowerCase();
+                const normSearchGen = genVal.toLowerCase();
+                const normSearchAg = agVal.toLowerCase();
+                const normSearchTT = ttVal.toLowerCase();
 
-                // --- AUTO-ARCHIVE EXISTING RECORDS (v2.20.48 - Multiple matches) ---
-                const matches = records.filter(r =>
-                    r.event === eventVal &&
-                    r.gender === genVal &&
-                    (r.ageGroup || '') === agVal &&
-                    (r.trackType || 'Outdoor') === ttVal &&
-                    r.approved === true
-                );
+                const matches = records.filter(r => {
+                    const rEv = (r.event || '').toString().trim().toLowerCase();
+                    const rGen = normalizeGender(r.gender || '').toLowerCase(); // Normalize live record gender too
+                    const rAg = (r.ageGroup || '').toString().trim().toLowerCase();
+                    const rTT = (r.trackType || 'Outdoor').toString().trim().toLowerCase();
+
+                    return rEv === normSearchEv &&
+                        rGen === normSearchGen &&
+                        rAg === normSearchAg &&
+                        rTT === normSearchTT &&
+                        r.approved === true;
+                });
 
                 if (matches.length > 0) {
                     const isHistoryEnabled = localStorage.getItem('tf_edit_history_flag') !== 'false';
@@ -6898,95 +6913,81 @@ document.addEventListener('DOMContentLoaded', () => {
                             historyEntry.archivedAt = new Date().toISOString();
                             historyEntry.originalId = String(oldRecord.id);
                             historyEntry.updatedBy = 'Excel Import';
-                            historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                            historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 100000) + '-' + originalIdx);
                             history.unshift(historyEntry);
                         }
-                        // Remove from live records
                         const idxInLive = records.findIndex(liveR => liveR.id === oldRecord.id);
                         if (idxInLive !== -1) records.splice(idxInLive, 1);
                     });
                 }
 
-                // Resolve athlete from override or smart link
+                // Resolve athlete
                 let finalAthleteName = '';
-                const override = athleteOverrides[idx];
+                const override = athleteOverrides[originalIdx]; // Use correct original index
 
                 if (override && override.type === 'existing' && override.id) {
-                    // Use selected existing athlete
                     const existingAthlete = athletes.find(a => String(a.id) === String(override.id));
                     if (existingAthlete) {
                         finalAthleteName = `${existingAthlete.lastName}, ${existingAthlete.firstName}`;
                     }
                 } else if (override && override.type === 'new' && (override.firstName || override.lastName)) {
-                    // Create new athlete and add to DB
                     const newAthlete = {
-                        id: 'ath_' + Date.now() + '_' + idx,
+                        id: 'ath_' + Date.now() + '_' + originalIdx,
                         firstName: override.firstName,
                         lastName: override.lastName,
                         dob: override.dob || '',
-                        gender: override.gender || 'Male'
+                        gender: normalizeGender(override.gender || 'Male')
                     };
                     athletes.push(newAthlete);
                     finalAthleteName = `${newAthlete.lastName}, ${newAthlete.firstName}`;
                 } else {
-                    // Fallback: smart link by name from Excel
                     const rawName = (row[mapping['athlete']] || '').toString().trim();
-                    finalAthleteName = rawName;
                     if (rawName) {
-                        const match = athletes.find(a => {
-                            const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
-                            const lf = `${a.lastName} ${a.firstName}`.toLowerCase();
-                            const cleanVal = rawName.toLowerCase().replace(/,/g, '');
-                            return cleanVal === fl || cleanVal === lf;
-                        });
-                        if (match) finalAthleteName = `${match.lastName}, ${match.firstName}`;
+                        const ath = findAthleteByName(rawName);
+                        finalAthleteName = ath ? `${ath.lastName}, ${ath.firstName}` : rawName;
                     }
                 }
 
                 const dateRaw = row[mapping['date']];
-                let finalDate = '';
-                const toYYYYMMDD = d => {
+                let finalDate = new Date().toISOString().split('T')[0];
+                const toYYYYMMDD = (d) => {
                     const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
                     const dd = String(d.getUTCDate()).padStart(2, '0');
                     return `${d.getUTCFullYear()}-${mm}-${dd}`;
                 };
                 if (dateRaw && typeof dateRaw === 'number') {
-                    // Excel serial → YYYY-MM-DD
                     finalDate = toYYYYMMDD(new Date(Math.round((dateRaw - 25569) * 86400 * 1000)));
                 } else if (dateRaw) {
                     const s = dateRaw.toString().trim();
                     if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-                        // Already YYYY-MM-DD
                         finalDate = s.split('T')[0];
                     } else if (/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.test(s)) {
-                        // dd/mm/yyyy → YYYY-MM-DD (manual split, no new Date() to avoid mm/dd swap)
                         const [, d2, mo, y] = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
                         finalDate = `${y}-${mo.padStart(2, '0')}-${d2.padStart(2, '0')}`;
                     } else {
                         const parsed = new Date(s);
                         finalDate = isNaN(parsed) ? new Date().toISOString().split('T')[0] : toYYYYMMDD(parsed);
                     }
-                } else {
-                    finalDate = toYYYYMMDD(new Date());
                 }
 
                 records.unshift({
-                    id: String(Date.now() + '-' + Math.floor(Math.random() * 100000)),
+                    id: String(Date.now() + '-' + Math.floor(Math.random() * 1000000) + '-' + originalIdx),
                     event: eventVal,
                     athlete: finalAthleteName,
                     gender: genVal,
                     ageGroup: agVal,
                     trackType: ttVal,
-                    mark: markVal,
-                    wind: (row[mapping['wind']] || '').toString().trim(),
-                    idr: (row[mapping['idr']] || '').toString().trim(),
-                    date: finalDate,
-                    country: '',
-                    town: (row[mapping['town']] || '').toString().trim(),
                     raceName: (row[mapping['raceName']] || '').toString().trim(),
+                    town: (row[mapping['town']] || '').toString().trim(),
+                    date: finalDate,
+                    mark: markVal,
+                    idr: (row[mapping['idr']] || '').toString().trim(),
+                    wind: (row[mapping['wind']] || '').toString().trim(),
                     notes: (row[mapping['notes']] || '').toString().trim(),
-                    approved: true
+                    approved: true,
+                    updatedAt: new Date().toISOString()
                 });
+
                 importedCount++;
             });
 
@@ -7008,13 +7009,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 alert(`Successfully imported ${importedCount} records.`);
             } else {
-                alert('No valid records were imported.');
+                alert('No valid records were imported. Please check your mapping or selections.');
             }
         } catch (err) {
             console.error('Import processing error:', err);
             alert('Error during import processing: ' + err.message);
         }
-    }
+    };
 
     function importDatabase() {
         const file = fileRestore.files[0];
