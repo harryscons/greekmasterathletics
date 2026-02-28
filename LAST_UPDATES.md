@@ -1,3 +1,6 @@
+# v2.20.47
+- **Interactive Track Type Mapping**: Added a dropdown for the "Track Type" column in the Excel validation modal, allowing users to manually map or correct Indoor/Outdoor status before import.
+
 # v2.20.46
 - **Improved Import Persistence**: Fixed an issue where the "Track Type" (Indoor/Outdoor) was not being saved during Excel imports.
 - **Auto-Archiving on Import**: Importing a new record now automatically moves the existing record for that event, gender, and age group into the "Records History" to maintain a clean live database.

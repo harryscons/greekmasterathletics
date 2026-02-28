@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
-    const VERSION = "v2.20.46";
+    const VERSION = "v2.20.47";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -6523,6 +6523,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
+                if (f.id === 'trackType') {
+                    // Interactive Track Type Dropdown (v2.20.47)
+                    const isIndoor = val.toLowerCase().includes('indoor') || val.toLowerCase().includes('κλειστός');
+                    const isOutdoor = val.toLowerCase().includes('outdoor') || val.toLowerCase().includes('ανοικτός') || (!isIndoor && val);
+                    const normalized = isIndoor ? 'Indoor' : (isOutdoor ? 'Outdoor' : '');
+
+                    bg = normalized ? '#dcfce7' : '#fee2e2';
+                    tbodyHtml += `<td id="val_${f.id}_${idx}" style="padding:4px 6px; border:1px solid #e2e8f0; background:${bg};">
+                        <select onchange="updateImportTrackType(${idx}, this.value)" style="width:100%; border:none; background:transparent; font-family:inherit; font-size:13px; font-weight:500; color:#1e1b4b; cursor:pointer; outline:none;">
+                            <option value="">-- Select --</option>
+                            <option value="Outdoor" ${normalized === 'Outdoor' ? 'selected' : ''}>Outdoor</option>
+                            <option value="Indoor" ${normalized === 'Indoor' ? 'selected' : ''}>Indoor</option>
+                        </select>
+                    </td>`;
+                    return;
+                }
+
                 if (f.id in fieldMatch && fieldMatch[f.id] !== null) {
                     if (fieldMatch[f.id]) {
                         bg = '#dcfce7';
@@ -6650,6 +6667,19 @@ document.addEventListener('DOMContentLoaded', () => {
         compareImportRow(idx);
     };
 
+    window.updateImportTrackType = function (idx, newTT) {
+        if (!newTT) return;
+        window._currentImportData[idx][window._currentImportMapping['trackType']] = newTT;
+
+        const cell = document.getElementById(`val_trackType_${idx}`);
+        if (cell) {
+            cell.style.background = '#dcfce7';
+        }
+
+        // Trigger re-comparison for this row
+        compareImportRow(idx);
+    };
+
     window.eventAssociatePrompt = function (idx, rawVal) {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
@@ -6733,7 +6763,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const gen = genCell?.querySelector('select')?.value || genCell?.textContent || (row[mapping['gender']] || '').toString().trim();
 
         const ag = (row[mapping['ageGroup']] || '').toString().trim();
-        const tt = (row[mapping['trackType']] || '').toString().trim();
+        const ttCell = document.getElementById(`val_trackType_${idx}`);
+        const tt = ttCell?.querySelector('select')?.value || ttCell?.textContent || (row[mapping['trackType']] || '').toString().trim();
         const mark = (row[mapping['mark']] || '').toString().trim();
 
         if (!ev || !mark) {
