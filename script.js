@@ -1441,6 +1441,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (typeof updateCalculatedAgeGroup === 'function') {
                                 updateCalculatedAgeGroup();
                             }
+                            // 🛡️ V2.20.30: Refresh athlete list during restricted update if date changes
+                            const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
+                            if (editingId && !isReadOnlyForm && isRestricted) {
+                                const r = records.find(item => String(item.id) === String(editingId));
+                                if (r) {
+                                    populateAthleteDropdown({
+                                        gender: r.gender,
+                                        ageGroup: r.ageGroup,
+                                        date: dateStr
+                                    });
+                                }
+                            }
                         }
                     });
                 }
@@ -1885,10 +1897,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 1. Gender check
                 if (filterObj.gender && a.gender !== filterObj.gender) return false;
 
-                // 2. Age Group check (Age TODAY - per user correction v2.20.29)
-                if (filterObj.ageGroup) {
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    const group = calculateAgeGroup(a.dob, todayStr);
+                // 2. Age Group check (Age on the specific date)
+                if (filterObj.ageGroup && filterObj.date) {
+                    const group = calculateAgeGroup(a.dob, filterObj.date);
                     if (group !== filterObj.ageGroup) return false;
                 }
 
@@ -4979,7 +4990,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Clear performance fields but KEEP identity fields if not updating OR if restricted
         const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
-        setSelectValue(genderInput, (isUpdateFlow && !isRestricted) ? '' : r.gender);
+        setSelectValue(genderInput, (isUpdateFlow && !isRestricted) ? '' : (r.gender || ''));
         if (trackTypeInput) {
             trackTypeInput.value = r.trackType || 'Outdoor';
             trackTypeInput.disabled = (isUpdateFlow || isReadOnly);
@@ -5013,17 +5024,24 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             setSelectValue(ageGroupInput, r.ageGroup);
 
-            // 🛡️ ATHLETE RESTRICTION (v2.20.28)
+            // 🛡️ ATHLETE RESTRICTION (v2.20.30)
             const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
             if (isUpdateFlow && isRestricted) {
-                if (genderInput) genderInput.disabled = true;
-                if (ageGroupInput) ageGroupInput.disabled = true;
+                if (genderInput) {
+                    genderInput.disabled = true;
+                    genderInput.style.backgroundColor = 'var(--bg-secondary)'; // Visual lock
+                }
+                if (ageGroupInput) {
+                    ageGroupInput.disabled = true;
+                    ageGroupInput.style.backgroundColor = 'var(--bg-secondary)'; // Visual lock
+                }
 
-                // Re-populate athlete dropdown with strict filters
+                // Re-populate athlete dropdown with strict filters based on CURRENT record date
+                const currentRecordDate = dateInput ? dateInput.value : r.date;
                 populateAthleteDropdown({
                     gender: r.gender,
                     ageGroup: r.ageGroup,
-                    date: r.date
+                    date: currentRecordDate
                 });
             }
 
@@ -5089,8 +5107,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         toggleRelayFields(false);
         if (evtInput) evtInput.disabled = false;
-        if (genderInput) genderInput.disabled = false;
-        if (ageGroupInput) ageGroupInput.disabled = false;
+        if (genderInput) {
+            genderInput.disabled = false;
+            genderInput.style.backgroundColor = '';
+        }
+        if (ageGroupInput) {
+            ageGroupInput.disabled = false;
+            ageGroupInput.style.backgroundColor = '';
+        }
         if (trackTypeInput) trackTypeInput.disabled = false;
 
         // Reset athlete dropdown to full list

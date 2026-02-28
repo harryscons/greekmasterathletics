@@ -1,3 +1,7 @@
+# v2.20.30
+- **Dynamic Date-Aware Restrictions**: Enhanced the record update flow to be fully date-sensitive. Changing the record date now instantly refreshes the athlete list to show only those eligible for that specific age group on that exact day.
+- **Fixed Identity Visibility**: Corrected a display issue where Gender was not appearing in the update form when restrictions were active. Improved visual feedback for locked fields.
+
 # v2.20.29
 - **Athlete Restriction Refinement**: Fixed gender display during restricted updates and updated athlete filtering logic to use the *current* date instead of the record date, ensuring only athletes currently in the target age group are listed.
 - **Improved UI Logic**: Optimized field population in the record update flow to better support the "Smart Guard" system.
