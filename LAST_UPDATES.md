@@ -1,3 +1,7 @@
+# v2.20.26
+- **Nuclear Mark Lockdown (Predictive)**: Re-implemented the "Mark" validation with a cursor-aware predictive validator. It now calculates the projected value before characters are entered, strictly enforcing the 2-digit limit and punctuation rules regardless of cursor position (end-of-string or mid-string).
+- **Infinite Data Integrity**: All segments after a punctuation mark are now locked to hundredths precision, ensuring perfect consistency for all athletics results.
+
 # v2.20.25
 - **Sub-Mark Hundredths Precision**: Enhanced the "Mark" field to restrict digits after any separator (`.`, `,`, or `:`) to exactly two. This prevents invalid high-precision entries and ensures consistency for timing and distance measurements.
 
