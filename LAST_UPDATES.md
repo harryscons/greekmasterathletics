@@ -1,3 +1,9 @@
+# v2.20.57
+- **Fluid Table Redesign**: The application now expands to fill the entire window, maximizing screen space on larger monitors.
+- **Resizable Columns**: Users can now manually adjust the width of any table column by dragging its header boundary.
+- **Persistent Preferences**: Custom column widths are automatically saved to your browser and will persist across refreshes.
+- **Smart Responsive Wrapping**: The table maintains its clean "spreadsheet" look on large screens but automatically wraps data on smaller screens to ensure readability without horizontal scrolling.
+
 # v2.20.56
 - **Theme Renaming**: Renamed the professional theme to **"Championship Slate"**.
 - **Seamless Migration**: Added logic to automatically migrate users from the old theme name to the new "Championship Slate" without requiring manual settings changes.
@@ -5,6 +11,12 @@
 # v2.20.55
 - **New EMACSI 2026 Theme**: Added a new professional theme inspired by the `emacsi-2026` athletic project. Features a clean white background with athletic navy and track red accents.
 - **Enhanced Visual Hierarchy**: The EMACSI theme includes customized chart colors and high-contrast labels for better visibility.
+
+### v2.20.57: Table Layout Redesign & Resizability
+- **Full Window Expansion**: Transitioned the app from a fixed-width container to a fluid, full-width design.
+- **Interactive Header Resizing**: Implemented a drag-and-drop system for header resizing with visual feedback.
+- **LocalStorage Persistence**: Integrated layout preferences into the local persistence layer.
+- **Adaptive Content Wrapping**: Implemented smart media queries to balance desktop aesthetics with mobile usability.
 
 ### v2.20.56: Theme Refinement
 - **Championship Slate**: Polished the athletic theme with a more universal name and identity.
@@ -376,6 +388,12 @@
     - [x] Rename HTML option to "Championship Slate" <!-- id: 388 -->
     - [x] Add migration logic in `script.js` <!-- id: 389 -->
     - [x] Increment version to v2.20.56 <!-- id: 390 -->
+- [x] Importing EMACSI- [x] Table Layout Optimization (v2.20.57) <!-- id: 391 -->
+    - [x] Plan layout strategy for auto-fit and wrapping <!-- id: 392 -->
+    - [x] Implement responsive rules in `style.css` <!-- id: 393 -->
+    - [x] Implement resizable column logic in `script.js` <!-- id: 394 -->
+    - [x] Add width persistence logic in `localStorage` <!-- id: 395 -->
+    - [x] Increment version to v2.20.57 <!-- id: 396 -->
 - [x] Debugging Archival Failure (v2.20.50) <!-- id: 354 -->
     - [x] Implement accent-insensitive matching (normalize NFD) <!-- id: 355 -->
     - [x] Refine `isLive` check in archival filter <!-- id: 356 -->
