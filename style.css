@@ -250,8 +250,8 @@ body {
 }
 
 .app-container {
-    width: 100%;
-    max-width: none;
+    width: 98%;
+    max-width: 1800px;
     height: 100%;
     /* Fill viewport height */
     display: flex;
@@ -766,28 +766,6 @@ select:focus {
     white-space: nowrap;
     box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
     /* visual separation */
-    position: relative;
-    /* Anchor for resizer */
-}
-
-.resizer {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 6px;
-    height: 100%;
-    cursor: col-resize;
-    user-select: none;
-    z-index: 60;
-}
-
-.resizer:hover {
-    background: var(--primary);
-    opacity: 0.3;
-}
-
-.resizing {
-    cursor: col-resize !important;
 }
 
 .report-table th.sortable {
@@ -842,81 +820,10 @@ select:focus {
 
 .report-table td {
     font-size: 0.9rem;
-    white-space: nowrap;
-    /* Keep spreadsheet look on desktop */
-}
-
-@media (max-width: 1200px) {
-    .report-table td {
-        white-space: normal;
-        /* Wrap data on smaller viewports */
-        word-break: break-word;
-    }
-
-    /* Keep essential columns nowrap for readability */
-    .report-table td:nth-child(3),
-    /* Category */
-    .report-table td:nth-child(5),
-    /* Gender */
-    .report-table td:nth-child(6),
-    /* Mark */
-    .report-table td:nth-child(9),
-    /* Date */
-    .report-table td.actions-col {
-        white-space: nowrap;
-    }
 }
 
 .report-table tr:hover {
     background: var(--bg-card-hover);
-}
-
-/* Specific Column Configuration (v2.20.57) */
-.report-table th:nth-child(2),
-/* Event */
-.report-table td:nth-child(2),
-.report-table th:nth-child(3),
-/* Category */
-.report-table td:nth-child(3),
-.report-table th:nth-child(5),
-/* Gender */
-.report-table td:nth-child(5),
-.report-table th:nth-child(6),
-/* Mark */
-.report-table td:nth-child(6),
-.report-table th:nth-child(7),
-/* IDR */
-.report-table td:nth-child(7),
-.report-table th:nth-child(8),
-/* Wind */
-.report-table td:nth-child(8),
-.report-table th:nth-child(9),
-/* Date */
-.report-table td:nth-child(9),
-.report-table th:nth-child(10),
-/* Town */
-.report-table td:nth-child(10),
-.report-table th:nth-child(12)
-
-/* Actions */
-,
-.report-table td:nth-child(12) {
-    width: 1%;
-    white-space: nowrap;
-}
-
-/* Athlete (Column 4) is primary fluid column */
-.report-table th:nth-child(4),
-.report-table td:nth-child(4) {
-    width: auto;
-    min-width: 180px;
-}
-
-/* Race Name (Column 11) is secondary fluid column (resizable) */
-.report-table th:nth-child(11),
-.report-table td:nth-child(11) {
-    width: 250px;
-    /* Default width */
 }
 
 /* Table Actions */
