@@ -1,19 +1,3 @@
-# v2.20.60
-- **Resizable Table Columns**: You can now manually adjust the width of any report column by dragging the header edges.
-- **Persistent Layout**: Your custom column widths are automatically saved and will persist across browser refreshes and sessions.
-
-# v2.20.59
-- **Adaptive Table Wrapping**: Implemented a responsive media query that allows table data to wrap on smaller screens (below 1200px), preventing excessive horizontal scrolling on mobile/tablets.
-- **Race Name Truncation**: Added ellipsis truncation logic for the "Race Name" column to maintain layout integrity even with extremely long race descriptions.
-
-# v2.20.58
-- **Refined Column Sizing**: The "Race Name" column is now more compact (shrinks to fit its data), while the "Athlete" column remains fluid to fill the available screen space.
-
-# v2.20.57
-- **Fluid Full-Window Layout**: Applications now stretches to fill the entire browser width, maximizing screen usage on large monitors.
-- **Single-Line Report Optimization**: The main report table now enforces single-line display for all data (no wrapping).
-- **Intelligent Column Sizing**: Utility columns are kept compact while data-rich columns (Athlete, Race Name, Notes) are prioritized for expansion.
-
 # v2.20.56
 - **Theme Renaming**: Renamed the professional theme to **"Championship Slate"**.
 - **Seamless Migration**: Added logic to automatically migrate users from the old theme name to the new "Championship Slate" without requiring manual settings changes.
@@ -21,23 +5,6 @@
 # v2.20.55
 - **New EMACSI 2026 Theme**: Added a new professional theme inspired by the `emacsi-2026` athletic project. Features a clean white background with athletic navy and track red accents.
 - **Enhanced Visual Hierarchy**: The EMACSI theme includes customized chart colors and high-contrast labels for better visibility.
-
-### v2.20.60: Resizable Columns & Persistence
-- **Interactive Headers**: Added resize handles to all table headers for manual width adjustment.
-- **LocalStorage Storage**: Implemented logic to save and restore user-defined column widths, ensuring a personalized layout stays persistent.
-
-### v2.20.59: Responsive Table Behavior
-- **Adaptive Wrapping**: Optimized the report table to switch from single-line to multi-line wrapping when the browser window is narrowed.
-- **Auto-Ellipsis Truncation**: Enforced a maximum width and truncation on the Race Name column to prevent it from dominating the layout.
-
-### v2.20.58: Column Width Refinement
-- **Compact Race Name**: Adjusted the layout to ensure the Race Name column stays tight around its content.
-- **Improved Athlete Focus**: Prioritized the Athlete name column for stretching, ensuring better use of space on wide screens.
-
-### v2.20.57: Fluid Table Overhaul
-- **Window Auto-Fit**: Removed the 1800px width limit to allow the app to utilize all available screen space.
-- **No-Wrap Data Logic**: Enforced single-line constraints on the report table to prevent row height inflation.
-- **Space Prioritization**: Reconfigured table layout to automatically prioritize expanding name and note columns while keeping fixed data compact.
 
 ### v2.20.56: Theme Refinement
 - **Championship Slate**: Polished the athletic theme with a more universal name and identity.
@@ -404,35 +371,22 @@
     - [x] Add EMACSI option to `themeSelect` in `index.html` <!-- id: 383 -->
     - [x] Verify theme application and consistency <!-- id: 384 -->
     - [x] Increment version to v2.20.55 <!-- id: 385 -->
-- [x] Implementing Resizable Columns (v2.20.60) <!-- id: 406 -->
-    - [x] Add resizer styles to `style.css` <!-- id: 407 -->
-    - [x] Implement `initResizableColumns` in `script.js` <!-- id: 408 -->
-    - [x] Add width persistence logic in `localStorage` <!-- id: 409 -->
-    - [x] Update version to v2.20.60 <!-- id: 410 -->
-- [x] Responsive Table Wrapping & Truncation (v2.20.59) <!-- id: 401 -->
-    - [x] Add media query for responsive wrapping in `style.css` <!-- id: 402 -->
-    - [x] Implement ellipsis truncation for Race Name column <!-- id: 403 -->
-    - [x] Verify wrapping behavior on small viewports <!-- id: 404 -->
-    - [x] Increment version to v2.20.59 <!-- id: 405 -->
-- [x] Renaming Theme (v2.20.56) <!-- id: 386 -->
-    - [x] Rename CSS class to `theme-emacsi-2026` <!-- id: 387 -->
-    - [x] Update `index.html` to reflect new theme name <!-- id: 388 -->
-    - [x] Verify theme application with new name <!-- id: 389 -->
+- [x] Importing EMACSI- [x] Renaming Theme (v2.20.56) <!-- id: 386 -->
+    - [x] Rename CSS class to `theme-championship-slate` <!-- id: 387 -->
+    - [x] Rename HTML option to "Championship Slate" <!-- id: 388 -->
+    - [x] Add migration logic in `script.js` <!-- id: 389 -->
     - [x] Increment version to v2.20.56 <!-- id: 390 -->
-- [x] Refining Column widths (v2.20.58) <!-- id: 397 -->
-    - [x] Update `style.css` to make Race Name compact <!-- id: 398 -->
-    - [x] Verify Athlete column still expands <!-- id: 399 -->
-    - [x] Increment version to v2.20.58 <!-- id: 400 -->
+- [x] Debugging Archival Failure (v2.20.50) <!-- id: 354 -->
     - [x] Implement accent-insensitive matching (normalize NFD) <!-- id: 355 -->
     - [x] Refine `isLive` check in archival filter <!-- id: 356 -->
     - [x] Add `renderHistoryList` call to import finalization <!-- id: 357 -->
     - [x] Verify matching for accented Greek labels <!-- id: 358 -->
-- [x] Import Normalization &- [x] fluid Table Layout (v2.20.57) <!-- id: 391 -->
-    - [x] Update `.app-container` for full-window fit <!-- id: 392 -->
-    - [x] Implement `nowrap` on report table cells <!-- id: 393 -->
-    - [x] Adjust column widths for better space distribution <!-- id: 394 -->
-    - [x] Verify fluid behavior on different screen sizes <!-- id: 395 -->
-    - [x] Increment version to v2.20.57 <!-- id: 396 -->
+- [x] Import Normalization & Matching Bug-Fix (v2.20.49) <!-- id: 348 -->
+    - [x] Expand `normalizeGender` with Greek support <!-- id: 349 -->
+    - [x] Fix index bug in `handleMappedImport` <!-- id: 350 -->
+    - [x] Implement robust normalized matching in archival check <!-- id: 351 -->
+    - [x] Verify fix for Greek/Case-mismatched records <!-- id: 352 -->
+    - [x] Increment version to v2.20.49 <!-- id: 353 -->
 
 ### 📊 WMA Calculation & UI Refinement
 - **Track & Road Decimal Fix**: Updated `calculateRateConv` so marks like `14.9` are correctly interpreted as `14.90` (tenths/hundredths) for both **Track** and **Road** events.

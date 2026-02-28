@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.60";
+    const VERSION = "v2.20.56";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Now safe to render
             rebuildPerformanceIndexes();
             renderAll();
-            initResizableColumns(); // Initialize resizers after first render
 
             // Hide Initial Loading Overlay
             const overlay = document.getElementById('initial-loading-overlay');
@@ -5732,7 +5731,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${(athlete && athlete.isTeam) ? '<span class="badge" style="background:var(--accent); color:white; font-size:0.7rem; padding: 2px 6px;">TEAM</span>' : ''}
                         </div>
                         ${hasNotes ? `
-                            <div class="record-notes ${isHideNotesChecked ? 'hidden' : ''}" style="font-size:0.85em; color:var(--text-muted); font-style:italic; margin-top:2px;">${r.notes}</div>
+                            <div class="record-notes ${isHideNotesChecked ? 'hidden' : ''}" style="font-size:0.85em; color:var(--text-muted); font-style:italic; margin-top:2px; white-space:pre-wrap;">${r.notes}</div>
                         ` : ''}
                     </td>
                     <td>${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
@@ -8178,80 +8177,6 @@ Replace ALL current data with this backup? This action is irreversible.`;
 
     function saveIAAFUpdates() {
         localStorage.setItem('tf_iaaf_updates', JSON.stringify(iaafUpdates));
-    }
-
-    /**
-     * Resizable Columns Logic (v2.20.60)
-     */
-    function initResizableColumns() {
-        const table = document.getElementById('reportTable');
-        if (!table) return;
-
-        const cols = table.querySelectorAll('th');
-        const savedWidths = JSON.parse(localStorage.getItem('tf_column_widths') || '{}');
-
-        cols.forEach((col, index) => {
-            // Apply saved width if exists
-            if (savedWidths[index]) {
-                col.style.width = savedWidths[index];
-            }
-
-            // Don't add resizer to the first column (expand) or last (actions) if they are too small
-            if (col.classList.contains('expand-col') || col.classList.contains('actions-col')) return;
-
-            // Create resizer handle
-            const resizer = document.createElement('div');
-            resizer.classList.add('resizer');
-            col.appendChild(resizer);
-
-            createResizableColumn(col, resizer, index);
-        });
-    }
-
-    function createResizableColumn(col, resizer, index) {
-        let x = 0;
-        let w = 0;
-
-        const mouseDownHandler = function (e) {
-            x = e.clientX;
-            const styles = window.getComputedStyle(col);
-            w = parseInt(styles.width, 10);
-
-            document.addEventListener('mousemove', mouseMoveHandler);
-            document.addEventListener('mouseup', mouseUpHandler);
-            resizer.classList.add('resizing');
-            document.body.classList.add('resizing');
-        };
-
-        const mouseMoveHandler = function (e) {
-            const dx = e.clientX - x;
-            col.style.width = `${w + dx}px`;
-        };
-
-        const mouseUpHandler = function () {
-            document.removeEventListener('mousemove', mouseMoveHandler);
-            document.removeEventListener('mouseup', mouseUpHandler);
-            resizer.classList.remove('resizing');
-            document.body.classList.remove('resizing');
-
-            saveColumnWidths();
-        };
-
-        resizer.addEventListener('mousedown', mouseDownHandler);
-    }
-
-    function saveColumnWidths() {
-        const table = document.getElementById('reportTable');
-        if (!table) return;
-
-        const cols = table.querySelectorAll('th');
-        const widths = {};
-        cols.forEach((col, index) => {
-            if (col.style.width) {
-                widths[index] = col.style.width;
-            }
-        });
-        localStorage.setItem('tf_column_widths', JSON.stringify(widths));
     }
 
 });
