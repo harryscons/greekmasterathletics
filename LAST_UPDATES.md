@@ -1,3 +1,19 @@
+# v2.20.54
+- **Restored History Expansion**: Fixed the issue where the "+" symbol was missing for many archived records. Lineage tracking now uses category-based matching (Event, Gender, Age Group), which is much more reliable than ID-based matching.
+- **Improved Detail Transparency**: Expansion rows now clearly state whether a record was replaced by an "Intermediate Version" or the "Current Live Version".
+
+# v2.20.53
+- **Diagnostic Patch for Manual Updates**: Added robust lifecycle resets for the "Update" mode flag to prevent state leakage.
+- **Improved UI Feedback**: The "Records History" list now refreshes immediately upon successful update, ensuring instant visibility of archived records.
+- **Enhanced Logging**: Added temporary diagnostic logs to help pinpoint browser-specific filtering issues.
+
+# v2.20.52
+- **Mandatory Manual Update Archiving**: The "Update" button (🔄) now ALWAYS moves the old record to history, regardless of the "Move also edited records to history" setting.
+- **Forced Athlete Filtering**: When updating a record, the athlete dropdown is now strictly filtered by the record's correct gender and age group, even if the "Restrict athletes on edit" setting is disabled.
+
+# v2.20.51
+- **Mandatory Import Archiving**: Excel imports now ALWAYS move matching live records to history. This ensures a clean database even if you have "Move also edited records to history" disabled for manual edits.
+
 # v2.20.50: Advanced Import Matching
 - **Accent-Insensitive**: Fixed the bug where Greek accents on gender or event labels prevented records from being archived. The system now treats "Άνδρες" and "Ανδρες" as identical.
 - **Enhanced Reliability**: Matching logic is now much more resilient to minor discrepancies in data formatting.

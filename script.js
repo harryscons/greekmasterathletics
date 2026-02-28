@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.53";
+    const VERSION = "v2.20.54";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -4815,22 +4815,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         history.forEach(r => {
             const tr = document.createElement('tr');
-            // Find immediate successor (The record that replaced this one)
-            // 1. Get all archived versions of this record
-            const versions = history.filter(h => h.originalId === r.originalId).sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
+            // v2.20.54: Robust Successor Matching via Category Key
+            // This ensures the "+" button works even if IDs change (e.g. during imports)
+            const clean = (s) => (s || '').toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const getCatKey = (rec) => {
+                if (!rec) return '';
+                // Use normalized values consistent with handleMappedImport
+                const g = typeof normalizeGender === 'function' ? normalizeGender(rec.gender) : rec.gender;
+                return `${clean(rec.event)}|${clean(g)}|${clean(rec.ageGroup)}|${clean(rec.trackType || 'Outdoor')}`;
+            };
+
+            const rKey = getCatKey(r);
+
+            // 1. Find all history versions for this category
+            const versions = history.filter(h => getCatKey(h) === rKey)
+                .sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
             const currentIndex = versions.findIndex(v => v.id === r.id);
 
             let successor = null;
             let successorLabel = '';
 
             if (currentIndex !== -1 && currentIndex < versions.length - 1) {
-                // Formatting: Successor is the NEXT history item (intermediate version)
                 successor = versions[currentIndex + 1];
                 successorLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
             } else {
-                // Successor is the current Live record
-                successor = records.find(curr => curr.id === r.originalId);
+                // If this is the latest in history, look for the live record
+                successor = records.find(curr => getCatKey(curr) === rKey);
                 successorLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
+
+                // Safety: Hide if the "live" record is exactly the same one (shouldn't happen in history)
+                if (successor && successor.id === r.id) successor = null;
             }
 
             // Note: Local Admin is considered Supervisor based on isSupervisor logic
@@ -4874,8 +4888,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td colspan="1" style="border-top:none; background:transparent;"></td>
                     <td colspan="11" style="padding: 8px 10px; border-top:none; background: rgba(16, 185, 129, 0.1);">
                         <div style="display:flex; flex-direction:column; gap:4px;">
-                            <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:4px;">
-                                <strong>Edited by:</strong> ${r.updatedBy || 'N/A'}
+                            <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
+                                <span><strong>${successorLabel}</strong></span>
+                                <span><strong>Edited by:</strong> ${successor.updatedBy || 'N/A'}</span>
                             </div>
                             <div style="display:flex; gap:1rem; align-items:center;">
                                 <span style="font-weight:bold; color:var(--success);">${successor.athlete}</span>
