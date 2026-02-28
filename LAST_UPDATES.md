@@ -1,3 +1,6 @@
+# v2.20.61
+- **Deployment Fix**: Fixed version labels and re-deployed to ensure all recent mobile optimizations (v2.20.60) are live.
+
 # v2.20.60
 - **Smart Card-Based Mobile Layout**: The report table now transforms into a series of legible cards on mobile devices. Each record is displayed as a standalone card with clear labels and optimized spacing, ensuring data is perfectly aligned and easy to read on any phone.
 - **Improved Accessibility**: Added `data-label` attributes to all data points to support advanced layout techniques and future screen reader improvements.
