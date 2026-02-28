@@ -1,3 +1,6 @@
+# v2.20.23
+- **Firebase Security Lockdown**: Provided and verified secure database rules that restrict write access to authorized supervisors/admins while maintaining public read access. This eliminates the vulnerability warning and protects data integrity.
+
 # v2.20.22
 - **Nuclear Mark Validation**: Re-implemented input validation using global event delegation and HTML-level attributes to ensure absolute character restriction. This prevents any invalid characters from being typed, pasted, or injected into the "Mark" field under any circumstances.
 - **Fail-Safe Logic**: Even if individual listeners are bypassed or scripts are cached, the attribute-level validation provides a definitive fallback for data integrity.
