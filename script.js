@@ -1422,8 +1422,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (restrictAthletesOnEdit) {
-            const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
-            restrictAthletesOnEdit.checked = isRestricted;
+            let isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit');
+            if (isRestricted === null) {
+                isRestricted = 'true'; // Default TRUE v2.20.33
+                localStorage.setItem('tf_restrict_athletes_on_edit', 'true');
+            }
+            restrictAthletesOnEdit.checked = (isRestricted === 'true');
             restrictAthletesOnEdit.addEventListener('change', () => {
                 localStorage.setItem('tf_restrict_athletes_on_edit', restrictAthletesOnEdit.checked);
             });
@@ -1458,16 +1462,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (typeof updateCalculatedAgeGroup === 'function') {
                                 updateCalculatedAgeGroup();
                             }
-                            // 🛡️ V2.20.30: Refresh athlete list during restricted update if date changes
-                            const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
-                            if (editingId && !isReadOnlyForm && isRestricted) {
+                            // 🛡️ V2.20.30/33: Refresh athlete list during edit if date changes
+                            const isRestrictedVal = localStorage.getItem('tf_restrict_athletes_on_edit');
+                            const isRestricted = (isRestrictedVal === 'true' || isRestrictedVal === null);
+
+                            if (editingId && !isReadOnlyForm) {
                                 const r = records.find(item => String(item.id) === String(editingId));
                                 if (r) {
-                                    populateAthleteDropdown({
-                                        gender: normalizeGender(r.gender),
-                                        ageGroup: normalizeAgeGroup(r.ageGroup),
-                                        date: dateStr
-                                    });
+                                    const filterObj = { gender: r.gender, date: dateStr };
+                                    if (isUpdateFlow && isRestricted) {
+                                        filterObj.ageGroup = r.ageGroup;
+                                    }
+                                    populateAthleteDropdown(filterObj);
                                 }
                             }
                         }
@@ -5005,18 +5011,18 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // 1. SET ALL BASIC FIELDS FIRST
-        // Always keep event and ageGroup. Event is locked for Update flow.
+        // Always keep event. Event is locked for Update flow.
         setSelectValue(evtInput, r.event);
         if (evtInput) evtInput.disabled = (isUpdateFlow || isReadOnly);
 
-        // Clear performance fields but KEEP identity fields if not updating OR if restricted
-        const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
-        if (isUpdateFlow && !isRestricted) {
-            setSelectValue(genderInput, '');
-        } else if (!isUpdateFlow) {
-            setSelectValue(genderInput, r.gender || '');
+        // 🛡️ UNIVERSAL GENDER LOCK (v2.20.33)
+        // Gender is ALWAYS displayed and ALWAYS locked for any Edit/Update interaction.
+        if (genderInput) {
+            setSelectValue(genderInput, normalizeGender(r.gender || ''));
+            genderInput.disabled = true;
+            genderInput.style.backgroundColor = 'var(--bg-secondary)'; // Visual lock
         }
-        // If restricted update, we set it inside the setTimeout to ensure dropdowns are ready.
+
         if (trackTypeInput) {
             trackTypeInput.value = r.trackType || 'Outdoor';
             trackTypeInput.disabled = (isUpdateFlow || isReadOnly);
@@ -5048,36 +5054,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. SET DEPENDENT FIELDS (Athlete, Age Group)
         setTimeout(() => {
-            // 🛡️ v2.20.31: Move Gender/AgeGroup population here to ensure select options are stable
-            const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
+            // 🛡️ v2.20.31/33: Form Identity Population
+            const isRestrictedValue = localStorage.getItem('tf_restrict_athletes_on_edit');
+            const isRestricted = (isRestrictedValue === 'true' || isRestrictedValue === null);
 
-            if (isUpdateFlow && isRestricted) {
-                // Ensure values are set correctly BEFORE locking
-                setSelectValue(genderInput, normalizeGender(r.gender));
+            // Age Group is locked only for UPDATE flow or if it's strictly restricted
+            if (isUpdateFlow) {
                 setSelectValue(ageGroupInput, normalizeAgeGroup(r.ageGroup));
+                if (ageGroupInput) {
+                    ageGroupInput.disabled = true;
+                    ageGroupInput.style.backgroundColor = 'var(--bg-secondary)';
+                }
             } else {
                 setSelectValue(ageGroupInput, r.ageGroup);
             }
 
-            // 🛡️ ATHLETE RESTRICTION (v2.20.30/31)
-            if (isUpdateFlow && isRestricted) {
-                if (genderInput) {
-                    genderInput.disabled = true;
-                    genderInput.style.backgroundColor = 'var(--bg-secondary)'; // Visual lock
-                }
-                if (ageGroupInput) {
-                    ageGroupInput.disabled = true;
-                    ageGroupInput.style.backgroundColor = 'var(--bg-secondary)'; // Visual lock
-                }
+            // 🛡️ ATHLETE FILTERING BASELINE (v2.20.33)
+            // Even if "Restrict" is off, we filter by Gender as a safety layer for ALL edits.
+            const filterObj = { gender: r.gender };
 
-                // Re-populate athlete dropdown with strict filters based on CURRENT record date
-                const currentRecordDate = dateInput ? dateInput.value : r.date;
-                populateAthleteDropdown({
-                    gender: r.gender,
-                    ageGroup: r.ageGroup,
-                    date: currentRecordDate
-                });
+            // Layer 2: Strict Restriction adds Age Group & Date sensitivity
+            if (isUpdateFlow && isRestricted) {
+                filterObj.ageGroup = r.ageGroup;
+                filterObj.date = dateInput ? dateInput.value : r.date;
+                console.log("🛡️ Applying STRICT Athlete Restriction (Gender + Age Group + Date)");
+            } else {
+                console.log("🛡️ Applying BASELINE Athlete Restriction (Gender Only)");
             }
+
+            populateAthleteDropdown(filterObj);
 
             if (isRelay) {
                 if (relayTeamNameInput) relayTeamNameInput.value = isUpdateFlow ? '' : (r.athlete || '');

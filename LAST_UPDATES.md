@@ -1,3 +1,9 @@
+# v2.20.33
+- **Iron-Clad Category Protection**: "Restrict athletes on edit" is now enabled by default. The Gender field is now universally read-only and correctly displayed during all record edits.
+- **Multi-Layered Filtering**: Implemented a two-layer safety system: 
+    - **Layer 1 (Standard)**: Always filters the athlete dropdown by gender for any record edit.
+    - **Layer 2 (Strict)**: Automatically locks Age Group and refreshes the athlete list based on the record's date to match the target category exactly.
+
 # v2.20.32
 - **Hotfix: Syntax Error**: Fixed a critical `SyntaxError` (redeclaration of `isRestricted`) that was crashing the application for some users.
 - **Stability and Performance**: Ensured the script is error-free and loads correctly across all environments.
