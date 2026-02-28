@@ -625,6 +625,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return (Math.floor(age / 5) * 5).toString();
     }
 
+    // --- Normalization Helpers (v2.20.31) ---
+    window.normalizeAgeGroup = function (val) {
+        if (!val) return '';
+        // Extract only digits (handles M40, W40, 40, etc.)
+        const match = val.toString().match(/\d+/);
+        return match ? match[0] : val.toString().trim();
+    };
+
+    window.normalizeGender = function (val) {
+        if (!val) return '';
+        const lower = val.toString().toLowerCase().trim();
+        if (lower === 'male' || lower === 'm') return 'Male';
+        if (lower === 'female' || lower === 'f') return 'Female';
+        if (lower === 'mixed' || lower === 'x') return 'Mixed';
+        return val;
+    };
+
     // Define globally on window for Flatpickr access
     window.updateCalculatedAgeGroup = function () {
         if (isSuppressingAutoFill) return;
@@ -1447,8 +1464,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const r = records.find(item => String(item.id) === String(editingId));
                                 if (r) {
                                     populateAthleteDropdown({
-                                        gender: r.gender,
-                                        ageGroup: r.ageGroup,
+                                        gender: normalizeGender(r.gender),
+                                        ageGroup: normalizeAgeGroup(r.ageGroup),
                                         date: dateStr
                                     });
                                 }
@@ -1894,13 +1911,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (filterObj) {
             filteredAthletes = filteredAthletes.filter(a => {
-                // 1. Gender check
-                if (filterObj.gender && a.gender !== filterObj.gender) return false;
+                // 1. Gender check (Normalized v2.20.31)
+                const targetGender = normalizeGender(filterObj.gender);
+                const athleteGender = normalizeGender(a.gender);
+                if (targetGender && athleteGender !== targetGender) return false;
 
-                // 2. Age Group check (Age on the specific date)
+                // 2. Age Group check (Normalized v2.20.31)
                 if (filterObj.ageGroup && filterObj.date) {
-                    const group = calculateAgeGroup(a.dob, filterObj.date);
-                    if (group !== filterObj.ageGroup) return false;
+                    const targetGroup = normalizeAgeGroup(filterObj.ageGroup);
+                    const calculated = calculateAgeGroup(a.dob, filterObj.date);
+                    const normalizedCalc = normalizeAgeGroup(calculated);
+                    if (normalizedCalc !== targetGroup) return false;
                 }
 
                 return true;
@@ -4990,7 +5011,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Clear performance fields but KEEP identity fields if not updating OR if restricted
         const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
-        setSelectValue(genderInput, (isUpdateFlow && !isRestricted) ? '' : (r.gender || ''));
+        if (isUpdateFlow && !isRestricted) {
+            setSelectValue(genderInput, '');
+        } else if (!isUpdateFlow) {
+            setSelectValue(genderInput, r.gender || '');
+        }
+        // If restricted update, we set it inside the setTimeout to ensure dropdowns are ready.
         if (trackTypeInput) {
             trackTypeInput.value = r.trackType || 'Outdoor';
             trackTypeInput.disabled = (isUpdateFlow || isReadOnly);
@@ -5022,9 +5048,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. SET DEPENDENT FIELDS (Athlete, Age Group)
         setTimeout(() => {
-            setSelectValue(ageGroupInput, r.ageGroup);
+            // 🛡️ v2.20.31: Move Gender/AgeGroup population here to ensure select options are stable
+            const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
 
-            // 🛡️ ATHLETE RESTRICTION (v2.20.30)
+            if (isUpdateFlow && isRestricted) {
+                // Ensure values are set correctly BEFORE locking
+                setSelectValue(genderInput, normalizeGender(r.gender));
+                setSelectValue(ageGroupInput, normalizeAgeGroup(r.ageGroup));
+            } else {
+                setSelectValue(ageGroupInput, r.ageGroup);
+            }
+
+            // 🛡️ ATHLETE RESTRICTION (v2.20.30/31)
             const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
             if (isUpdateFlow && isRestricted) {
                 if (genderInput) {

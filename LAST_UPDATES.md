@@ -1,3 +1,8 @@
+# v2.20.31
+- **Smart Category Matching**: Implemented normalization logic to handle age group prefixes (M/W) and gender abbreviations (M/F).
+- **Robust Field Population**: Fixed a race condition where the Gender field could show "Select" during updates. Population of identity fields is now synchronized with dropdown stability.
+- **Enhanced Data Sync**: Improved the dynamic date listener to correctly handle all data formats during restricted updates.
+
 # v2.20.30
 - **Dynamic Date-Aware Restrictions**: Enhanced the record update flow to be fully date-sensitive. Changing the record date now instantly refreshes the athlete list to show only those eligible for that specific age group on that exact day.
 - **Fixed Identity Visibility**: Corrected a display issue where Gender was not appearing in the update form when restrictions were active. Improved visual feedback for locked fields.
