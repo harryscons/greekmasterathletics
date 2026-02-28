@@ -1,3 +1,7 @@
+# v2.20.24
+- **Precision Mark Validation**: Implemented advanced punctuation rules for the "Mark" field. It now prevents consecutive symbols (e.g., `..` or `,,`) and enforces strict maximum counts: max 1 colon, max 1 comma, and max 3 dots.
+- **Fail-Safe Formatting**: These rules apply in real-time during typing and pasting, ensuring every entry is valid for timing, distance, and point calculations.
+
 # v2.20.23
 - **Firebase Security Lockdown**: Provided and verified secure database rules that restrict write access to authorized supervisors/admins while maintaining public read access. This eliminates the vulnerability warning and protects data integrity.
 

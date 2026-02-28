@@ -2113,38 +2113,93 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
     if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
 
-    // 🔒 ABSOLUTE MARK LOCKDOWN: Use global delegation for maximum reliability
+    // 🔒 ADVANCED MARK LOCKDOWN (v2.20.24): Strict Punctuation Rules
+    window.sanitizeMarkValue = function (val) {
+        if (!val) return '';
+        // 1. Strip all except digits and allowed symbols
+        let sanitized = val.replace(/[^0-9.,:]/g, '');
+
+        // 2. Prevent consecutive symbols (any combination like .., ,, ,. ., ::)
+        sanitized = sanitized.replace(/[.,:]{2,}/g, (match) => match[0]);
+
+        // 3. Enforce maximum counts: 1 colon, 1 comma, 3 dots
+        let colonCount = 0, commaCount = 0, dotCount = 0;
+        let result = '';
+        for (let char of sanitized) {
+            if (char === ':') {
+                if (colonCount < 1) { result += char; colonCount++; }
+            } else if (char === ',') {
+                if (commaCount < 1) { result += char; commaCount++; }
+            } else if (char === '.') {
+                if (dotCount < 3) { result += char; dotCount++; }
+            } else {
+                result += char;
+            }
+        }
+        return result;
+    };
+
     document.addEventListener('keydown', (e) => {
         if (!e.target || e.target.id !== 'mark') return;
-        const allowedChars = /[0-9.,:]/;
+
+        // Allow control keys
         if (e.ctrlKey || e.metaKey || e.altKey || e.key.length > 1) return;
-        if (!allowedChars.test(e.key)) e.preventDefault();
+
+        const key = e.key;
+        const val = e.target.value;
+        const lastChar = val.slice(-1);
+
+        // Basic allowed set
+        if (!/[0-9.,:]/.test(key)) {
+            e.preventDefault();
+            return;
+        }
+
+        // --- Contextual Rules ---
+        // 1. No consecutive symbols
+        if (/[.,:]/.test(key) && /[.,:]/.test(lastChar)) {
+            e.preventDefault();
+            return;
+        }
+
+        // 2. Max Counts
+        if (key === ':' && (val.match(/:/g) || []).length >= 1) e.preventDefault();
+        if (key === ',' && (val.match(/,/g) || []).length >= 1) e.preventDefault();
+        if (key === '.' && (val.match(/\./g) || []).length >= 3) e.preventDefault();
+    }, true);
+
+    document.addEventListener('input', (e) => {
+        if (!e.target || e.target.id !== 'mark') return;
+        const original = e.target.value;
+        const sanitized = window.sanitizeMarkValue(original);
+        if (original !== sanitized) {
+            e.target.value = sanitized;
+        }
+    }, true);
+
+    document.addEventListener('paste', (e) => {
+        if (!e.target || e.target.id !== 'mark') return;
+        e.preventDefault();
+        const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+        const sanitized = window.sanitizeMarkValue(text);
+
+        const start = e.target.selectionStart;
+        const end = e.target.selectionEnd;
+        const currentVal = e.target.value;
+
+        // Insert and RE-SANITIZE the whole result to ensure context is valid
+        const nextVal = window.sanitizeMarkValue(currentVal.substring(0, start) + sanitized + currentVal.substring(end));
+        e.target.value = nextVal;
+
+        // Approximate cursor placement
+        const newPos = start + sanitized.length;
+        e.target.setSelectionRange(newPos, newPos);
     }, true);
 
     document.addEventListener('beforeinput', (e) => {
         if (!e.target || e.target.id !== 'mark') return;
         if (e.data && !/^[0-9.,:]+$/.test(e.data)) e.preventDefault();
-    }, true);
-
-    document.addEventListener('input', (e) => {
-        if (!e.target || e.target.id !== 'mark') return;
-        const val = e.target.value;
-        const filtered = val.replace(/[^0-9.,:]/g, '');
-        if (val !== filtered) e.target.value = filtered;
-    }, true);
-
-    document.addEventListener('paste', (e) => {
-        if (!e.target || e.target.id !== 'mark') return;
-        const text = (e.originalEvent || e).clipboardData.getData('text/plain');
-        if (/[^0-9.,:]/.test(text)) {
-            e.preventDefault();
-            const sanitized = text.replace(/[^0-9.,:]/g, '');
-            const start = e.target.selectionStart;
-            const end = e.target.selectionEnd;
-            const currentVal = e.target.value;
-            e.target.value = currentVal.substring(0, start) + sanitized + currentVal.substring(end);
-            e.target.setSelectionRange(start + sanitized.length, start + sanitized.length);
-        }
+        // Contextual checks for beforeinput are handled by keydown/input combination
     }, true);
 
     if (themeSelect) {
