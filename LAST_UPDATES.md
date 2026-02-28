@@ -1,3 +1,7 @@
+# v2.20.50: Advanced Import Matching
+- **Accent-Insensitive**: Fixed the bug where Greek accents on gender or event labels prevented records from being archived. The system now treats "Άνδρες" and "Ανδρες" as identical.
+- **Enhanced Reliability**: Matching logic is now much more resilient to minor discrepancies in data formatting.
+
 # v2.20.49: Normalization & Matching Fix
 - **Greek Label Support**: The system now understands "Ανδρών" and "Γυναικών" during import, allowing it to correctly match and archive existing records.
 - **Robust Matching**: Archival checks are now case-insensitive and fully normalized.
@@ -330,6 +334,12 @@
 - Implemented WMA performance aggregation per athlete (Best/Avg Pts, Record Count).
 - Added medal icons (🥇🥈🥉) and sortable headers with live sort direction arrows.
 - Implemented polling retry logic to ensure WMA scoring data is ready before rendering.
+- [x] Debugging Archival Failure (v2.20.50) <!-- id: 354 -->
+    - [x] Implement accent-insensitive matching (normalize NFD) <!-- id: 355 -->
+    - [x] Refine `isLive` check in archival filter <!-- id: 356 -->
+    - [x] Add `renderHistoryList` call to import finalization <!-- id: 357 -->
+    - [x] Verify matching for accented Greek labels <!-- id: 358 -->
+    - [x] Increment version to v2.20.50 <!-- id: 359 -->
 - [x] Import Normalization & Matching Bug-Fix (v2.20.49) <!-- id: 348 -->
     - [x] Expand `normalizeGender` with Greek support <!-- id: 349 -->
     - [x] Fix index bug in `handleMappedImport` <!-- id: 350 -->

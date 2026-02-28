@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
-    const VERSION = "v2.20.49";
+    const VERSION = "v2.20.50";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -638,12 +638,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.normalizeGender = function (val) {
         if (!val) return '';
-        const lower = val.toString().toLowerCase().trim();
+        const lower = val.toString().toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         // English & Standard
         if (lower === 'male' || lower === 'm') return 'Male';
         if (lower === 'female' || lower === 'f') return 'Female';
         if (lower === 'mixed' || lower === 'x') return 'Mixed';
-        // Greek support (v2.20.49)
+        // Greek support (v2.20.50 - accent insensitive)
         if (lower.includes('ανδ') || lower === 'α') return 'Male';
         if (lower.includes('γυν') || lower === 'γ') return 'Female';
         return val;
@@ -6886,23 +6886,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (ttVal.toLowerCase().includes('indoor') || ttVal.toLowerCase().includes('κλειστός')) ttVal = 'Indoor';
                 else ttVal = 'Outdoor';
 
-                // --- ROBUST AUTO-ARCHIVE MATCHING (v2.20.49) ---
-                const normSearchEv = eventVal.toLowerCase();
-                const normSearchGen = genVal.toLowerCase();
-                const normSearchAg = agVal.toLowerCase();
-                const normSearchTT = ttVal.toLowerCase();
+                // --- ROBUST AUTO-ARCHIVE MATCHING (v2.20.50) ---
+                const cleanKey = (s) => (s || '').toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                const normSearchEv = cleanKey(eventVal);
+                const normSearchGen = cleanKey(genVal);
+                const normSearchAg = cleanKey(agVal);
+                const normSearchTT = cleanKey(ttVal);
 
                 const matches = records.filter(r => {
-                    const rEv = (r.event || '').toString().trim().toLowerCase();
-                    const rGen = normalizeGender(r.gender || '').toLowerCase(); // Normalize live record gender too
-                    const rAg = (r.ageGroup || '').toString().trim().toLowerCase();
-                    const rTT = (r.trackType || 'Outdoor').toString().trim().toLowerCase();
+                    const rEv = cleanKey(r.event);
+                    const rGen = cleanKey(normalizeGender(r.gender));
+                    const rAg = cleanKey(r.ageGroup);
+                    const rTT = cleanKey(r.trackType || 'Outdoor');
+
+                    // Match even if approved property is missing (if it's in records array, it's live)
+                    const isLive = r.approved !== false;
 
                     return rEv === normSearchEv &&
                         rGen === normSearchGen &&
                         rAg === normSearchAg &&
                         rTT === normSearchTT &&
-                        r.approved === true;
+                        isLive;
                 });
 
                 if (matches.length > 0) {
@@ -6913,7 +6918,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             historyEntry.archivedAt = new Date().toISOString();
                             historyEntry.originalId = String(oldRecord.id);
                             historyEntry.updatedBy = 'Excel Import';
-                            historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 100000) + '-' + originalIdx);
+                            historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 1000000) + '-' + originalIdx);
                             history.unshift(historyEntry);
                         }
                         const idxInLive = records.findIndex(liveR => liveR.id === oldRecord.id);
