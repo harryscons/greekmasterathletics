@@ -40,6 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
+    const VERSION = "v2.20.45";
+    const LAST_UPDATE = "2026-02-28";
+
     function checkReady() {
         if (isDataReady) return;
         // Verify we have received snapshots for all critical data nodes
@@ -1282,6 +1285,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnNewRecord) {
             if (isAdmin) btnNewRecord.classList.remove('hidden');
             else btnNewRecord.classList.add('hidden');
+        }
+
+        // Specific Visibility for Inline Import (Supervisor only)
+        const btnImportInline = document.getElementById('btnImportRecordsInline');
+        if (btnImportInline) {
+            if (isSuper) btnImportInline.classList.remove('hidden');
+            else btnImportInline.classList.add('hidden');
         }
 
         // For now, let's just disable the Submit button in Log Record
@@ -2900,6 +2910,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return markStr;
     }
 
+    function getEventHowTo(eventName) {
+        if (!eventName) return 'Meters';
+        // 1. Check current events (Firestore) for custom formulas
+        const ev = events.find(e => e.name === eventName);
+        if (ev && ev.formula && ev.formula.trim() !== '') {
+            const h = ev.formula.match(/HOWTO:\s*([^;]+)/)?.[1]?.trim();
+            if (h) return h;
+        }
+        // 2. Check static rules
+        const r = getEventRule(eventName);
+        if (r && r.HOWTO) return r.HOWTO;
+
+        // 3. Fallback heuristic for common track terms if not found
+        const lower = eventName.toLowerCase();
+        if (lower.includes('\u03bc') || lower.includes('m') || lower.includes('walk') || lower.includes('\u03b2\u03ac\u03b4\u03b7\u03bd') || lower.includes('relay') || lower.includes('\u03c3\u03ba\u03c5\u03c4\u03ac\u03bb\u03b7')) {
+            return 'Time';
+        }
+        return 'Meters';
+    }
+
     function formatSecondsToTime(seconds) {
         if (seconds === null || seconds === undefined || isNaN(parseFloat(seconds))) return '-';
         let totalSeconds = parseFloat(seconds);
@@ -2924,22 +2954,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!markStr) return 0;
         let s = markStr.toString().trim().replace(/,/g, '.');
 
-        // 1. Resolve rule (Prioritize Event Formula > Static Rules)
-        const ev = events.find(e => e.name === eventName);
-        let ruleHowto = 'Meters';
+        const ruleHowto = getEventHowTo(eventName);
         let ruleText = '';
 
+        const ev = events.find(e => e.name === eventName);
         if (ev && ev.formula && ev.formula.trim() !== '') {
-            const f = ev.formula;
-            ruleHowto = f.match(/HOWTO:\s*([^;]+)/)?.[1]?.trim() || 'Meters';
-            ruleText = f.match(/Rule:\s*(.+)$/)?.[1]?.trim() || '';
-            if (!ruleText) ruleText = f.match(/Rule:\s*([^;]+)/)?.[1]?.trim() || '';
+            ruleText = ev.formula.match(/Rule:\s*(.+)$/)?.[1]?.trim() || '';
+            if (!ruleText) ruleText = ev.formula.match(/Rule:\s*([^;]+)/)?.[1]?.trim() || '';
         } else {
             const r = getEventRule(eventName);
-            if (r) {
-                ruleHowto = r.HOWTO || 'Meters';
-                ruleText = r.Rule || (r.RULE1 || '') + (r.RULE2 || '');
-            }
+            if (r) ruleText = r.Rule || (r.RULE1 || '') + (r.RULE2 || '');
         }
 
         if (ruleHowto === 'Points' || ruleHowto === 'Meters') {
@@ -3036,6 +3060,61 @@ document.addEventListener('DOMContentLoaded', () => {
             return parseFloat(s) || 0;
         }
         return parseFloat(s) || 0;
+    }
+
+    // --- Record Comparison Helpers (v2.20.40) ---
+    function findBestRecord(eventName, gender, ageGroup, trackType) {
+        if (!records || records.length === 0) return null;
+        const nEvent = (eventName || '').trim().toLowerCase();
+        const nGender = (gender || '').trim().toLowerCase();
+        const nAG = (ageGroup || '').trim().toLowerCase().replace(/\+/, '');
+        const nTT = (trackType || '').trim().toLowerCase();
+
+        // 1. Filter applicable records
+        const matches = records.filter(r => {
+            if (r.event.toLowerCase() !== nEvent) return false;
+            // Normalize gender check
+            const rGen = (r.gender || '').toLowerCase();
+            const targetGen = nGender === 'male' || nGender === 'ανδρων' ? 'male' : (nGender === 'female' || nGender === 'γυναικων' ? 'female' : nGender);
+            if (rGen !== targetGen) return false;
+
+            if (r.ageGroup && r.ageGroup.replace(/\+/, '').toLowerCase() !== nAG) return false;
+            if (nTT && r.trackType && r.trackType.toLowerCase() !== nTT) return false;
+            return true;
+        });
+
+        if (matches.length === 0) return null;
+
+        // 2. Identify HOWTO for comparison direction
+        const howto = getEventHowTo(eventName);
+
+        // 3. Sort to find best
+        matches.sort((a, b) => {
+            const valA = calculateRateConv(a.mark, a.event);
+            const valB = calculateRateConv(b.mark, b.event);
+            if (howto === 'Time') return valA - valB; // Lower is better
+            return valB - valA; // Higher is better (Meters/Points)
+        });
+
+        return matches[0];
+    }
+
+    function isMarkBetter(newMark, existingMark, eventName) {
+        if (!newMark) return false;
+        if (!existingMark) return true;
+
+        const howto = getEventHowTo(eventName);
+
+        const valNew = calculateRateConv(newMark, eventName);
+        const valOld = calculateRateConv(existingMark, eventName);
+
+        if (valNew <= 0) return false;
+
+        if (howto === 'Time') {
+            return valNew < valOld;
+        } else {
+            return valNew > valOld;
+        }
     }
 
     function parseMarkByRule(markStr, eventName) {
@@ -4199,6 +4278,19 @@ document.addEventListener('DOMContentLoaded', () => {
         countryInput.innerHTML = html;
     }
 
+    // 🛡️ v2.20.34: Dynamic placeholder for Select fields
+    function syncCountryPlaceholder(isReadOnly, value) {
+        if (!countryInput) return;
+        const firstOpt = countryInput.options[0];
+        if (!firstOpt) return;
+
+        if (isReadOnly && (!value || value === '')) {
+            firstOpt.textContent = ''; // Hide "Select Country" text
+        } else {
+            firstOpt.textContent = 'Select Country'; // Restore for entry/edit
+        }
+    }
+
     function handleCountrySubmit(e) {
         e.preventDefault();
         const name = newCountryName.value.trim();
@@ -4684,6 +4776,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (dateInput && dateInput.type === 'date') {
                 dateInput.valueAsDate = new Date();
             }
+
+            // 🛡️ v2.20.34: Restore placeholder text for new records
+            syncCountryPlaceholder(false, '');
         }
     };
 
@@ -4802,6 +4897,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (genderInput) genderInput.value = r.gender || '';
         if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
         if (countryInput) countryInput.value = r.country || '';
+
+        // 🛡️ v2.20.34: Handle country placeholder for read-only history view
+        syncCountryPlaceholder(isReadOnly, r.country);
 
         // Apply Read-Only logic if needed
         if (isReadOnly) {
@@ -5034,6 +5132,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (idrInput) idrInput.value = isUpdateFlow ? '' : (r.idr || '');
         if (townInput) townInput.value = isUpdateFlow ? '' : (r.town || '');
         if (countryInput) countryInput.value = isUpdateFlow ? '' : (r.country || '');
+
+        // 🛡️ v2.20.34: Dynamic country placeholder
+        syncCountryPlaceholder(isReadOnly, r.country);
 
         if (dateInput) {
             const dateToSet = isUpdateFlow ? new Date().toISOString().split('T')[0] : r.date;
@@ -6338,16 +6439,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update record count label
         if (counter) counter.textContent = `Found ${jsonData.length} records.`;
 
-        // Reset filter checkbox
-        const chk = document.getElementById('chkUnmatched');
-        if (chk) chk.checked = false;
+        // Reset filter checkboxes
+        const chkU = document.getElementById('chkUnmatched');
+        if (chkU) chkU.checked = false;
+        const chkN = document.getElementById('chkOnlyNew');
+        if (chkN) chkN.checked = false;
 
         // Build table header
         let theadHtml = '<tr>';
+        theadHtml += `<th style="padding:10px 12px; border:1px solid #e2e8f0; text-align:center; background:#f8fafc; width:40px;"><input type="checkbox" id="chkSelectAll" checked onclick="toggleAllImport(this.checked)" style="cursor:pointer; width:16px; height:16px;"></th>`;
         mappedFields.forEach(f => {
             theadHtml += `<th style="padding:10px 12px; border:1px solid #e2e8f0; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; background:#f8fafc; color:#475569; font-weight:700;">${f.label}</th>`;
         });
         theadHtml += `<th style="padding:10px 12px; border:1px solid #e2e8f0; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; background:#eef2ff; color:#4338ca; font-weight:700;">&#9998; Athlete</th>`;
+        theadHtml += `<th style="padding:10px 12px; border:1px solid #e2e8f0; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; background:#ecfdf5; color:#059669; font-weight:700;">Compare</th>`;
         theadHtml += '</tr>';
 
         // Build rows
@@ -6357,6 +6462,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const athVal = (row[mapping['athlete']] || '').toString().trim();
             const genVal = (row[mapping['gender']] || '').toString().trim();
             const ttVal = (row[mapping['trackType']] || '').toString().trim();
+            const agVal = mapping['ageGroup'] ? (row[mapping['ageGroup']] || '').toString().trim() : '';
+            const markVal = mapping['mark'] ? (row[mapping['mark']] || '').toString().trim() : '';
 
             const matchedAthlete = mapping['athlete'] && athVal ? athletes.find(a => {
                 const fl = `${a.firstName} ${a.lastName}`.toLowerCase();
@@ -6364,8 +6471,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const clean = athVal.toLowerCase().replace(/,/g, '');
                 return clean === fl || clean === lf;
             }) : null;
-
-            const agVal = mapping['ageGroup'] ? (row[mapping['ageGroup']] || '').toString().trim() : '';
 
             const fieldMatch = {
                 event: mapping['event'] ? (evVal && events.some(e => e.name.toLowerCase() === evVal.toLowerCase())) : null,
@@ -6393,13 +6498,43 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             tbodyHtml += `<tr data-has-red="${hasRed}">`;
+            tbodyHtml += `<td style="padding:8px; border:1px solid #e2e8f0; text-align:center;"><input type="checkbox" class="row-select" data-idx="${idx}" checked style="cursor:pointer; width:16px; height:16px;"></td>`;
             mappedFields.forEach(f => {
                 const val = fmtCell(f.id, row[mapping[f.id]] !== undefined ? row[mapping[f.id]] : '');
                 let bg = '#ffffff';
-                if (f.id in fieldMatch && fieldMatch[f.id] !== null) {
-                    bg = fieldMatch[f.id] ? '#dcfce7' : '#fee2e2';
+                let cursor = 'default';
+                let onclick = '';
+
+                if (f.id === 'event') {
+                    // Interactive Event Dropdown (v2.20.43)
+                    let opts = `<option value="">-- Select Event --</option>`;
+                    events.sort((a, b) => a.name.localeCompare(b.name)).forEach(ev => {
+                        const sel = ev.name.toLowerCase() === val.toLowerCase() ? 'selected' : '';
+                        opts += `<option value="${ev.name}" ${sel}>${ev.name}</option>`;
+                    });
+                    const isMatched = events.some(e => e.name.toLowerCase() === val.toLowerCase());
+                    bg = isMatched ? '#dcfce7' : '#fee2e2';
+
+                    tbodyHtml += `<td id="val_${f.id}_${idx}" style="padding:4px 6px; border:1px solid #e2e8f0; background:${bg};">
+                        <select onchange="updateImportEvent(${idx}, this.value)" style="width:100%; border:none; background:transparent; font-family:inherit; font-size:13px; font-weight:500; color:#1e1b4b; cursor:pointer; outline:none;">
+                            ${opts}
+                        </select>
+                    </td>`;
+                    return;
                 }
-                tbodyHtml += `<td style="padding:8px 12px; border:1px solid #e2e8f0; color:#334155; background:${bg};">${val}</td>`;
+
+                if (f.id in fieldMatch && fieldMatch[f.id] !== null) {
+                    if (fieldMatch[f.id]) {
+                        bg = '#dcfce7';
+                    } else {
+                        bg = '#fee2e2'; // "Instinct color" (red) for unmatched
+                        cursor = 'pointer';
+                        if (f.id === 'gender') {
+                            onclick = `genderAssociatePrompt(${idx}, '${val.replace(/'/g, "\\'")}')`;
+                        }
+                    }
+                }
+                tbodyHtml += `<td id="val_${f.id}_${idx}" style="padding:8px 12px; border:1px solid #e2e8f0; color:#334155; background:${bg}; cursor:${cursor};" onclick="${onclick}">${val}</td>`;
             });
 
             // Athlete dropdown
@@ -6412,11 +6547,8 @@ document.addEventListener('DOMContentLoaded', () => {
             athOpts += `<option value="__new__" ${showNew ? 'selected' : ''}>+ Add New Athlete</option>`;
 
             // Pre-fill new athlete form: use dedicated columns first, then parse Athlete Name
-            // --- First Name ---
             let parsedFn = mapping['firstName'] ? (row[mapping['firstName']] || '').toString().trim() : '';
-            // --- Last Name ---
             let parsedLn = mapping['lastName'] ? (row[mapping['lastName']] || '').toString().trim() : '';
-            // Fallback: parse combined Athlete Name field
             if (!parsedFn && !parsedLn && athVal) {
                 if (athVal.includes(',')) {
                     const parts = athVal.split(',');
@@ -6428,11 +6560,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     parsedLn = parts.slice(1).join(' ');
                 }
             }
-            // --- DOB ---
             const dobRaw = mapping['dob'] ? (row[mapping['dob']] || '').toString().trim() : '';
             let parsedDob = dobRaw;
             if (dobRaw && !isNaN(dobRaw) && !dobRaw.includes('-') && !dobRaw.includes('/')) {
-                // Excel serial number → convert to dd/mm/yyyy
                 const d = new Date(Math.round((parseFloat(dobRaw) - 25569) * 86400 * 1000));
                 if (!isNaN(d)) {
                     const dd = String(d.getUTCDate()).padStart(2, '0');
@@ -6441,7 +6571,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     parsedDob = `${dd}/${mm}/${yyyy}`;
                 }
             } else if (dobRaw && dobRaw.includes('-') && !dobRaw.includes('/')) {
-                // YYYY-MM-DD → convert to dd/mm/yyyy
                 const parts = dobRaw.split('-');
                 if (parts.length === 3) parsedDob = `${parts[2]}/${parts[1]}/${parts[0]}`;
             }
@@ -6455,10 +6584,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input id="ln_${idx}"  placeholder="Last Name"      value="${parsedLn}"  style="padding:4px 6px;margin:2px;width:88px; border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
                     <input id="dob_${idx}" placeholder="DOB DD/MM/YYYY" value="${parsedDob}" style="padding:4px 6px;margin:2px;width:115px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
                     <select id="gen_${idx}" style="padding:4px 6px;margin:2px;border-radius:4px;border:1px solid #cbd5e1;font-family:inherit;font-size:0.82rem;">
-                        <option value="Male">Male</option><option value="Female">Female</option>
+                        <option value="Male" ${genVal.toLowerCase() === 'male' || genVal.toLowerCase() === 'ανδρων' ? 'selected' : ''}>Male</option>
+                        <option value="Female" ${genVal.toLowerCase() === 'female' || genVal.toLowerCase() === 'γυναικων' ? 'selected' : ''}>Female</option>
                     </select>
                 </div>
             </td>`;
+
+            // Comparison Column
+            tbodyHtml += `<td id="comp_cell_${idx}" style="padding:8px 12px; border:1px solid #e2e8f0; text-align:center;">
+                <button class="btn-text" onclick="compareImportRow(${idx})" style="color:var(--primary); font-size:0.8rem; font-weight:700;">Compare</button>
+            </td>`;
+
             tbodyHtml += '</tr>';
         });
 
@@ -6469,7 +6605,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modal.style.display = 'block';
 
-        // Wire Complete Import button
+        // Store data for comparison lookups
+        window._currentImportData = jsonData;
+        window._currentImportMapping = mapping;
+
         const importBtn = document.getElementById('completeImportBtn');
         importBtn.onclick = function () {
             if (!confirm(`Confirm import of ${jsonData.length} records?`)) return;
@@ -6496,14 +6635,191 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     };
 
+    // --- Association Prompts ---
+    // --- Association & Update Callbacks (v2.20.43) ---
+    window.updateImportEvent = function (idx, newEv) {
+        if (!newEv) return;
+        window._currentImportData[idx][window._currentImportMapping['event']] = newEv;
+
+        const cell = document.getElementById(`val_event_${idx}`);
+        if (cell) {
+            cell.style.background = '#dcfce7';
+        }
+
+        // Trigger re-comparison for this row
+        compareImportRow(idx);
+    };
+
+    window.eventAssociatePrompt = function (idx, rawVal) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.zIndex = '3000';
+        modal.innerHTML = `
+            <div class="modal-content card" style="max-width:400px; padding:2rem;">
+                <h3 style="margin-bottom:0.5rem;">Associate Event</h3>
+                <p class="subtitle" style="margin-bottom:1.5rem;">The value "${rawVal}" was not recognized. Select a matching event:</p>
+                <div class="form-group">
+                    <select id="associate_event_select" style="width:100%; padding:0.75rem; border-radius:12px; border:1px solid var(--border);">
+                        <option value="">-- Select Event --</option>
+                        ${events.map(e => `<option value="${e.name}">${e.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
+                    <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                    <button id="confirmAssociateBtn" class="btn-primary">Associate</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('confirmAssociateBtn').onclick = () => {
+            const newEv = document.getElementById('associate_event_select').value;
+            if (newEv) {
+                // Update raw data and UI
+                window._currentImportData[idx][window._currentImportMapping['event']] = newEv;
+                const cell = document.getElementById(`val_event_${idx}`);
+                if (cell) {
+                    cell.textContent = newEv;
+                    cell.style.background = '#dcfce7';
+                    cell.onclick = null;
+                    cell.style.cursor = 'default';
+                }
+                modal.remove();
+            }
+        };
+    };
+
+    window.genderAssociatePrompt = function (idx, rawVal) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.zIndex = '3000';
+        modal.innerHTML = `
+            <div class="modal-content card" style="max-width:400px; padding:2rem;">
+                <h3 style="margin-bottom:0.5rem;">Associate Gender</h3>
+                <p class="subtitle" style="margin-bottom:1.5rem;">The value "${rawVal}" was not recognized.</p>
+                <div style="display:flex; gap:1rem;">
+                    <button class="btn-primary" style="flex:1;" onclick="associateGen(${idx}, 'Male')">Male</button>
+                    <button class="btn-primary" style="flex:1;" onclick="associateGen(${idx}, 'Female')">Female</button>
+                </div>
+                <button class="btn-secondary" style="width:100%; margin-top:1rem;" onclick="this.parentElement.remove()">Cancel</button>
+            </div>
+        `;
+        window.associateGen = (i, val) => {
+            window._currentImportData[i][window._currentImportMapping['gender']] = val;
+            const cell = document.getElementById(`val_gender_${i}`);
+            if (cell) {
+                cell.textContent = val;
+                cell.style.background = '#dcfce7';
+                cell.onclick = null;
+                cell.style.cursor = 'default';
+            }
+            const genSelect = document.getElementById(`gen_${i}`);
+            if (genSelect) genSelect.value = val;
+            modal.remove();
+        };
+        document.body.appendChild(modal);
+    };
+
+    window.compareImportRow = function (idx) {
+        const row = window._currentImportData[idx];
+        const mapping = window._currentImportMapping;
+        const cell = document.getElementById(`comp_cell_${idx}`);
+        if (!cell) return;
+
+        // Retrieve values (check for <select> from v2.20.43 interactive mapping)
+        const evCell = document.getElementById(`val_event_${idx}`);
+        const ev = evCell?.querySelector('select')?.value || evCell?.textContent || (row[mapping['event']] || '').toString().trim();
+
+        const genCell = document.getElementById(`val_gender_${idx}`);
+        const gen = genCell?.querySelector('select')?.value || genCell?.textContent || (row[mapping['gender']] || '').toString().trim();
+
+        const ag = (row[mapping['ageGroup']] || '').toString().trim();
+        const tt = (row[mapping['trackType']] || '').toString().trim();
+        const mark = (row[mapping['mark']] || '').toString().trim();
+
+        if (!ev || !mark) {
+            cell.innerHTML = '<span style="color:var(--danger); font-size:0.75rem;">Missing Data</span>';
+            return;
+        }
+
+        const best = findBestRecord(ev, gen, ag, tt);
+        const tr = cell.closest('tr');
+
+        if (!best) {
+            cell.innerHTML = '<span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.75rem;">NEW RECORD (Empty Category)</span>';
+            if (tr) tr.dataset.isNew = 'true';
+            return;
+        }
+
+        const isBetter = isMarkBetter(mark, best.mark, ev);
+        if (isBetter) {
+            cell.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:2px; align-items:center;">
+                    <span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.75rem;">NEW RECORD</span>
+                    <span style="font-size:0.7rem; color:#64748b;">Prev: ${best.mark}</span>
+                </div>
+            `;
+            if (tr) tr.dataset.isNew = 'true';
+        } else {
+            cell.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:2px; align-items:center;">
+                    <span style="color:#64748b; font-size:0.75rem;">Not a record</span>
+                    <span style="font-size:0.7rem; color:#94a3b8;">Best: ${best.mark}</span>
+                </div>
+            `;
+            if (tr) tr.dataset.isNew = 'false';
+        }
+    };
+
     // Global helpers for the validation modal (called from inline onchange/onclick)
-    window.filterValidationRows = function () {
-        const chk = document.getElementById('chkUnmatched');
-        if (!chk) return;
-        const onlyUnmatched = chk.checked;
-        document.querySelectorAll('#excelValidationContent tbody tr').forEach(tr => {
-            tr.style.display = (onlyUnmatched && tr.dataset.hasRed !== 'true') ? 'none' : '';
+    window.compareAllImportRows = function () {
+        const rows = document.querySelectorAll('#excelValidationContent tbody tr');
+        rows.forEach((tr, idx) => {
+            compareImportRow(idx);
         });
+        filterValidationRows();
+    };
+
+    window.toggleAllImport = function (val) {
+        document.querySelectorAll('.row-select').forEach(cb => {
+            // Only toggle visible rows if we want to be fancy, 
+            // but standard "Select All" usually targets all.
+            const tr = cb.closest('tr');
+            if (tr && tr.style.display !== 'none') {
+                cb.checked = val;
+            }
+        });
+    };
+
+    window.toggleAllImport = function (val) {
+        document.querySelectorAll('.row-select').forEach(cb => {
+            const tr = cb.closest('tr');
+            if (tr && tr.style.display !== 'none') {
+                cb.checked = val;
+            }
+        });
+    };
+
+    window.filterValidationRows = function () {
+        const chkU = document.getElementById('chkUnmatched');
+        const chkN = document.getElementById('chkOnlyNew');
+        const onlyUnmatched = chkU ? chkU.checked : false;
+        const onlyNew = chkN ? chkN.checked : false;
+
+        document.querySelectorAll('#excelValidationContent tbody tr').forEach(tr => {
+            let show = true;
+            if (onlyUnmatched && tr.dataset.hasRed !== 'true') show = false;
+            if (onlyNew && tr.dataset.isNew !== 'true') show = false;
+            tr.style.display = show ? '' : 'none';
+        });
+
+        // Sync Select All checkbox after filtering
+        const chkAll = document.getElementById('chkSelectAll');
+        if (chkAll) {
+            const visible = Array.from(document.querySelectorAll('.row-select')).filter(cb => cb.closest('tr').style.display !== 'none');
+            if (visible.length > 0) {
+                chkAll.checked = visible.every(cb => cb.checked);
+            }
+        }
     };
 
     window.toggleNew = function (idx, val) {
@@ -6515,8 +6831,12 @@ document.addEventListener('DOMContentLoaded', () => {
     window.handleMappedImport = function (jsonData, mapping, athleteOverrides) {
         athleteOverrides = athleteOverrides || {};
         try {
+            // Filter jsonData based on selected checkboxes (v2.20.45)
+            const selectedIndices = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => parseInt(cb.dataset.idx));
+            const filteredData = jsonData.filter((_, idx) => selectedIndices.includes(idx));
+
             let importedCount = 0;
-            jsonData.forEach((row, idx) => {
+            filteredData.forEach((row, idx) => {
                 const eventVal = (row[mapping['event']] || '').toString().trim();
                 const markVal = (row[mapping['mark']] || '').toString().trim();
 

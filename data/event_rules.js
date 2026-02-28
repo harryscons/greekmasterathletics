@@ -120,6 +120,18 @@ window.EVENT_RULES = [
     "null": "IF it is like number.number.number.number"
   },
   {
+    "Event": "60\u03bc",
+    "HOWTO": "Time",
+    "Rule": "FORMAT IS Seconds.Hundreds of Second",
+    "null": null
+  },
+  {
+    "Event": "60\u03bc \u0395\u03bc\u03c0\u03cc\u03b4\u03b9\u03b1",
+    "HOWTO": "Time",
+    "Rule": "FORMAT IS Seconds.Hundreds of Second",
+    "null": null
+  },
+  {
     "Event": "800\u03bc",
     "HOWTO": "Time",
     "Rule": "FORMAT IS Minutes.Seconds.Hundreds of Second",
@@ -129,6 +141,18 @@ window.EVENT_RULES = [
     "Event": "80\u03bc \u0395\u03bc\u03c0\u03cc\u03b4\u03b9\u03b1",
     "HOWTO": "Time",
     "Rule": "FORMAT IS Minutes.Seconds.Hundreds of Second",
+    "null": null
+  },
+  {
+    "Event": "5\u03c7\u03bb\u03bc",
+    "HOWTO": "Time",
+    "Rule": "FORMAT IS Minutes.Seconds",
+    "null": null
+  },
+  {
+    "Event": "10\u03c7\u03bb\u03bc",
+    "HOWTO": "Time",
+    "Rule": "FORMAT IS Minutes.Seconds",
     "null": null
   },
   {
@@ -175,14 +199,14 @@ window.EVENT_RULES = [
   },
   {
     "Event": "\u0397\u03bc\u03b9\u03bc\u03b1\u03c1\u03b1\u03b8\u03ce\u03bd\u03b9\u03bf\u03c2",
-    "HOWTO": "Meters",
-    "Rule": "Meters",
+    "HOWTO": "Time",
+    "Rule": "FORMAT IS Hours:Minutes.Seconds",
     "null": null
   },
   {
     "Event": "\u039c\u03b1\u03c1\u03b1\u03b8\u03ce\u03bd\u03b9\u03bf\u03c2",
-    "HOWTO": "Meters",
-    "Rule": "Meters",
+    "HOWTO": "Time",
+    "Rule": "FORMAT IS Hours:Minutes.Seconds",
     "null": null
   },
   {

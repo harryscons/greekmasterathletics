@@ -1,3 +1,40 @@
+# v2.20.45
+- **Selective Excel Import**: Users can now select specific records for import using checkboxes in the validation modal. A "Select All" toggle is also available to quickly manage large datasets, respecting current filters.
+
+# v2.20.44
+- **Comparison Tool Fix**: Resolved an issue where the live record comparison would display "Empty Category" due to the newly added interactive event dropdowns. The system now correctly retrieves the selected event for benchmarking.
+
+# v2.20.43
+- **Interactive Event Mapping**: The "Event" column in the Excel validation modal now features inline dropdowns. This allows supervisors to correct unrecognized event names directly in the table, with immediate record re-comparison and visual feedback.
+
+# v2.20.42
+- **Enhanced Comparison Logic**: Fixed a bug where short sprinters' times were being compared as "meters" rather than "time".
+- **Expanded Event Rules**: Added static rules for `60μ` indoor sprints and hurdles, and corrected the "HowTo" categorization for Marathon and Half Marathon events.
+- **Unified Logic Detection**: Centralized event property detection to ensure consistency between mark conversion and result benchmarking.
+
+# v2.20.41
+- **Bulk Excel Comparison**: Added a "Compare All" button to the Excel validation modal, allowing for instant benchmarking of entire datasets against existing records.
+- **Advanced Result Filtering**: Introduced a "Show only new records" filter that dynamically isolates potential record-breaking marks, making large-scale data reviews significantly faster.
+- **Dual-Mode Filtering**: Both "Show only unmatched" and "Show only new records" can be used simultaneously to find specific data points.
+
+# v2.20.40
+- **Excel Import Workspace**: Introduced a major upgrade to the Excel validation modal, transforming it into an interactive review workspace.
+- **Live Record Comparison**: Users can now click a "Compare" button on any imported row to instantly see how the mark stacks up against the current best record in that category (taking into account event type for better/worse logic).
+- **Interactive Data Correction**: Unrecognized event names or genders are highlighted in red. Clicking these cells now prompts the user to select a valid system value, which is then applied to the import session.
+- **New Record Detection**: Automatically identifies and highlights marks that would set a new record or establish one in an empty category.
+- **Smart Formatting**: Improved automatic date and gender parsing during the validation phase.
+
+# v2.20.36
+- **Access Control: Import Button Restriction**: Restricted the visibility of the new inline "Import" button to Supervisors only. Standard Admins and guests will no longer see this button in the main toolbar, ensuring critical bulk data operations are reserved for high-level accounts.
+
+# v2.20.35
+- **UI Enhancement: Inline Import Button**: Added an "Import" button next to the "+" button in the main report toolbar. This provides immediate access to bulk Excel uploads without navigating to the Data tab.
+- **Consistency**: The new button uses a standardized "tray-with-arrow" SVG icon and triggers the existing import file picker.
+
+# v2.20.34
+- **UI Refinement: Country Placeholder**: The "Select Country" placeholder is now automatically hidden in the record modal when the country field is empty, specifically for read-only viewing (double-click). This ensures a cleaner view when details are missing.
+- **Smart Placeholder Management**: Implemented `syncCountryPlaceholder` logic to dynamically toggle visibility based on whether the modal is in read-only mode or entry/edit mode.
+
 # v2.20.33
 - **Iron-Clad Category Protection**: "Restrict athletes on edit" is now enabled by default. The Gender field is now universally read-only and correctly displayed during all record edits.
 - **Multi-Layered Filtering**: Implemented a two-layer safety system: 
