@@ -5060,7 +5060,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 🛡️ ATHLETE RESTRICTION (v2.20.30/31)
-            const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
             if (isUpdateFlow && isRestricted) {
                 if (genderInput) {
                     genderInput.disabled = true;

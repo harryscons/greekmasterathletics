@@ -1,3 +1,7 @@
+# v2.20.32
+- **Hotfix: Syntax Error**: Fixed a critical `SyntaxError` (redeclaration of `isRestricted`) that was crashing the application for some users.
+- **Stability and Performance**: Ensured the script is error-free and loads correctly across all environments.
+
 # v2.20.31
 - **Smart Category Matching**: Implemented normalization logic to handle age group prefixes (M/W) and gender abbreviations (M/F).
 - **Robust Field Population**: Fixed a race condition where the Gender field could show "Select" during updates. Population of identity fields is now synchronized with dropdown stability.
