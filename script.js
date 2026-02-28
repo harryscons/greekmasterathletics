@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.59";
+    const VERSION = "v2.20.60";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -5764,12 +5764,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Create main row content
             tr.innerHTML = `
-                    <td class="expand-col" style="text-align:center;">
+                    <td class="expand-col" style="text-align:center;" data-label="Notes">
                         ${(isHideNotesChecked && hasNotes) ? `<button class="toggle-notes-btn" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1.2rem; font-weight:bold; padding:0; width:24px; height:24px; line-height:24px;">+</button>` : ''}
                     </td>
-                    <td style="font-weight:600;">${r.event}</td>
-                    <td style="white-space:nowrap;">${ageDisplay}</td>
-                    <td style="width:${athleteColWidth}px; min-width:${athleteColWidth}px;">
+                    <td style="font-weight:600;" data-label="Αγώνισμα">${r.event}</td>
+                    <td style="white-space:nowrap;" data-label="Κατηγορία">${ageDisplay}</td>
+                    <td style="width:${athleteColWidth}px; min-width:${athleteColWidth}px;" data-label="Αθλητής/τρια">
                         <div style="font-weight:500; display:flex; align-items:center; gap:5px;">
                             ${r.athlete}
                             ${(athlete && athlete.isTeam) ? '<span class="badge" style="background:var(--accent); color:white; font-size:0.7rem; padding: 2px 6px;">TEAM</span>' : ''}
@@ -5778,19 +5778,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="record-notes ${isHideNotesChecked ? 'hidden' : ''}" style="font-size:0.85em; color:var(--text-muted); font-style:italic; margin-top:2px; white-space:pre-wrap;">${r.notes}</div>
                         ` : ''}
                     </td>
-                    <td>${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
-                    <td style="font-weight:700; color:var(--accent); text-align:center;">${formatTimeMark(r.mark, r.event)}</td>
-                    <td>
+                    <td data-label="Φύλο">${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
+                    <td style="font-weight:700; color:var(--accent); text-align:center;" data-label="Επίδοση">${formatTimeMark(r.mark, r.event)}</td>
+                    <td data-label="IDR">
                         ${r.isPendingDelete ?
                     `<span class="badge-pending" style="background:var(--danger); color:white;">⚠️ Προς Διαγραφή</span>` :
                     (r.isPending ? `<span class="badge-pending">Προς Εγκριση</span>` : (r.idr || '-'))
                 }
                     </td>
-                    <td>${r.wind || '-'}</td>
-                    <td style="white-space:nowrap;">${new Date(r.date).toLocaleDateString('en-GB')}</td>
-                    <td>${r.town || ''}</td>
-                    <td style="width:${raceColWidth}px; max-width:${raceColWidth}px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.raceName || ''}">${r.raceName || ''}</td>
-                    <td class="actions-col" style="white-space:nowrap;">
+                    <td data-label="Άνεμος">${r.wind || '-'}</td>
+                    <td style="white-space:nowrap;" data-label="Ημερομηνία">${new Date(r.date).toLocaleDateString('en-GB')}</td>
+                    <td data-label="Πόλη">${r.town || ''}</td>
+                    <td style="width:${raceColWidth}px; max-width:${raceColWidth}px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.raceName || ''}" data-label="Διοργάνωση">${r.raceName || ''}</td>
+                    <td class="actions-col" style="white-space:nowrap;" data-label="Ενέργειες">
                         ${(() => {
                     if (r.isPending || r.isPendingDelete) {
                         // Pending Record Logic

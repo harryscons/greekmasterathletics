@@ -1,3 +1,7 @@
+# v2.20.60
+- **Smart Card-Based Mobile Layout**: The report table now transforms into a series of legible cards on mobile devices. Each record is displayed as a standalone card with clear labels and optimized spacing, ensuring data is perfectly aligned and easy to read on any phone.
+- **Improved Accessibility**: Added `data-label` attributes to all data points to support advanced layout techniques and future screen reader improvements.
+
 # v2.20.59
 - **Actions Column Visibility Restriction**: The "Actions" column (Edit, Delete, Update) is now hidden for regular users. It is only accessible to **Admin** and **Supervisor** roles to ensure data integrity and prevent unauthorized modifications while maintaining a cleaner interface for the general public.
 
@@ -378,6 +382,11 @@
 - **Dynamic Width Calculation**: The "Race Name" column width is now calculated on the fly as the table renders, using the second-largest string length as a baseline for the column width.
 - **Improved Truncation**: Ensures the longest race names don't expand the table excessively, maintaining high-density information layout.
 - **Full Screen Utilization**: The app now spans the full browser width, providing more room for the Athlete and Race Name columns.
+
+### v2.20.60: Mobile Card Layout Transformation
+- **Table-to-Card Transition**: Implemented a responsive design pattern that converts horizontal table rows into vertical data cards on screens under 768px.
+- **Dynamic Data Labels**: Leveraged CSS `::before` and `content: attr(data-label)` to provide context within the mobile cards without adding redundant HTML.
+- **Phone-Specific Styling**: Enhanced the visual hierarchy for mobile users, making athlete names and performances the focal points.
 
 ### v2.20.59: Actions Column Restriction
 - **Role-Based Visibility**: Implemented logic to hide the entire "Actions" column for non-privileged users.

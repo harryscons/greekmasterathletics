@@ -1502,29 +1502,103 @@ td>div {
         padding: 0.35rem 0.6rem;
     }
 
-    /* Report table: horizontal scroll with touch */
+    /* Report table: Card transformation for mobile */
     .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        border-radius: 8px;
+        overflow-x: visible;
+        background: none;
+        border: none;
+        padding: 0;
     }
 
     .report-table {
-        min-width: 620px;
-        /* prevent table from collapsing too narrow */
+        display: block;
+        width: 100%;
+        min-width: 0;
+        background: none;
+        border: none;
     }
 
-    .report-table th,
+    .report-table thead {
+        display: none;
+        /* Hide headers on mobile */
+    }
+
+    .report-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .report-table tr {
+        display: block;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+
     .report-table td {
-        padding: 0.4rem 0.4rem;
-        font-size: 0.78rem;
-        white-space: nowrap;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border: none !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
+        font-size: 0.9rem;
+        white-space: normal !important;
+        text-align: right !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
     }
 
-    /* Hide less critical table columns on tiny screens */
-    .report-table .col-wind,
-    .report-table td:nth-child(7) {
-        /* wind column */
+    .report-table td:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Column Labels via data-label */
+    .report-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        text-align: left;
+    }
+
+    /* Special styling for key mobile fields */
+    .report-table td[data-label="Αθλητής/τρια"] {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left !important;
+    }
+
+    .report-table td[data-label="Αθλητής/τρια"]::before {
+        margin-bottom: 0.2rem;
+    }
+
+    .report-table td[data-label="Επίδοση"] {
+        background: var(--primary-light);
+        border-radius: 6px;
+        margin: 0.5rem 0;
+        padding: 0.6rem;
+    }
+
+    .report-table .expand-col {
+        display: none;
+        /* Hide expansion column on mobile for now */
+    }
+
+    .report-table .actions-col {
+        justify-content: center;
+        padding-top: 1rem;
+    }
+
+    .report-table .actions-col::before {
         display: none;
     }
 
