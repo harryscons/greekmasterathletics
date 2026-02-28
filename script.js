@@ -2113,27 +2113,43 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
     if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
 
-    // 🔒 ADVANCED MARK LOCKDOWN (v2.20.24): Strict Punctuation Rules
+    // 🔒 ADVANCED MARK LOCKDOWN (v2.20.25): 2-Digit Sub-Mark Precision
     window.sanitizeMarkValue = function (val) {
         if (!val) return '';
         // 1. Strip all except digits and allowed symbols
         let sanitized = val.replace(/[^0-9.,:]/g, '');
 
-        // 2. Prevent consecutive symbols (any combination like .., ,, ,. ., ::)
+        // 2. Prevent consecutive symbols
         sanitized = sanitized.replace(/[.,:]{2,}/g, (match) => match[0]);
 
         // 3. Enforce maximum counts: 1 colon, 1 comma, 3 dots
+        // 4. Enforce 2-digit limit after punctuation
         let colonCount = 0, commaCount = 0, dotCount = 0;
         let result = '';
+        let digitsSinceSymbol = -1; // -1 means no symbol encountered yet or at start
+
         for (let char of sanitized) {
             if (char === ':') {
-                if (colonCount < 1) { result += char; colonCount++; }
+                if (colonCount < 1) {
+                    result += char; colonCount++; digitsSinceSymbol = 0;
+                }
             } else if (char === ',') {
-                if (commaCount < 1) { result += char; commaCount++; }
+                if (commaCount < 1) {
+                    result += char; commaCount++; digitsSinceSymbol = 0;
+                }
             } else if (char === '.') {
-                if (dotCount < 3) { result += char; dotCount++; }
+                if (dotCount < 3) {
+                    result += char; dotCount++; digitsSinceSymbol = 0;
+                }
             } else {
-                result += char;
+                // It's a digit
+                if (digitsSinceSymbol === -1) {
+                    result += char;
+                } else if (digitsSinceSymbol < 2) {
+                    result += char;
+                    digitsSinceSymbol++;
+                }
+                // If digitsSinceSymbol >= 2, we drop the digit
             }
         }
         return result;
@@ -2147,6 +2163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const key = e.key;
         const val = e.target.value;
+        const selectionStart = e.target.selectionStart;
         const lastChar = val.slice(-1);
 
         // Basic allowed set
@@ -2166,6 +2183,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (key === ':' && (val.match(/:/g) || []).length >= 1) e.preventDefault();
         if (key === ',' && (val.match(/,/g) || []).length >= 1) e.preventDefault();
         if (key === '.' && (val.match(/\./g) || []).length >= 3) e.preventDefault();
+
+        // 3. 2-Digit Precision Rule (at end of string for simplicity in keydown)
+        if (/[0-9]/.test(key) && selectionStart === val.length) {
+            const parts = val.split(/[.,:]/);
+            if (parts.length > 1) {
+                const lastPart = parts[parts.length - 1];
+                if (lastPart.length >= 2) {
+                    e.preventDefault();
+                }
+            }
+        }
     }, true);
 
     document.addEventListener('input', (e) => {

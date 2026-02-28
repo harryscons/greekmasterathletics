@@ -1,3 +1,6 @@
+# v2.20.25
+- **Sub-Mark Hundredths Precision**: Enhanced the "Mark" field to restrict digits after any separator (`.`, `,`, or `:`) to exactly two. This prevents invalid high-precision entries and ensures consistency for timing and distance measurements.
+
 # v2.20.24
 - **Precision Mark Validation**: Implemented advanced punctuation rules for the "Mark" field. It now prevents consecutive symbols (e.g., `..` or `,,`) and enforces strict maximum counts: max 1 colon, max 1 comma, and max 3 dots.
 - **Fail-Safe Formatting**: These rules apply in real-time during typing and pasting, ensuring every entry is valid for timing, distance, and point calculations.
