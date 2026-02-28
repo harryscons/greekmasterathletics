@@ -1,3 +1,7 @@
+# v2.20.46
+- **Improved Import Persistence**: Fixed an issue where the "Track Type" (Indoor/Outdoor) was not being saved during Excel imports.
+- **Auto-Archiving on Import**: Importing a new record now automatically moves the existing record for that event, gender, and age group into the "Records History" to maintain a clean live database.
+
 # v2.20.45
 - **Selective Excel Import**: Users can now select specific records for import using checkboxes in the validation modal. A "Select All" toggle is also available to quickly manage large datasets, respecting current filters.
 

@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
-    const VERSION = "v2.20.45";
+    const VERSION = "v2.20.46";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -6842,6 +6842,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!eventVal || !markVal) return;
 
+                // Normalize Track Type (v2.20.46)
+                let ttVal = (row[mapping['trackType']] || '').toString().trim();
+                if (ttVal.toLowerCase().includes('indoor') || ttVal.toLowerCase().includes('κλειστός')) ttVal = 'Indoor';
+                else ttVal = 'Outdoor';
+
+                const genVal = (row[mapping['gender']] || '').toString().trim();
+                const agVal = mapping['ageGroup'] ? (row[mapping['ageGroup']] || '').toString().trim() : '';
+
+                // --- AUTO-ARCHIVE EXISTING RECORDS (v2.20.46) ---
+                const existingIdx = records.findIndex(r =>
+                    r.event === eventVal &&
+                    r.gender === genVal &&
+                    (r.ageGroup || '') === agVal &&
+                    (r.trackType || 'Outdoor') === ttVal &&
+                    r.approved === true
+                );
+
+                if (existingIdx !== -1) {
+                    const oldRecord = records[existingIdx];
+                    const isHistoryEnabled = localStorage.getItem('tf_edit_history_flag') !== 'false';
+                    if (isHistoryEnabled) {
+                        const historyEntry = { ...oldRecord };
+                        historyEntry.archivedAt = new Date().toISOString();
+                        historyEntry.originalId = String(oldRecord.id);
+                        historyEntry.updatedBy = 'Excel Import';
+                        historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                        history.unshift(historyEntry);
+                    }
+                    records.splice(existingIdx, 1); // Remove from live records
+                }
+
                 // Resolve athlete from override or smart link
                 let finalAthleteName = '';
                 const override = athleteOverrides[idx];
@@ -6909,9 +6940,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: Date.now() + Math.random(),
                     event: eventVal,
                     athlete: finalAthleteName,
-                    gender: (row[mapping['gender']] || '').toString().trim(),
-                    ageGroup: mapping['ageGroup'] ? (row[mapping['ageGroup']] || '').toString().trim() : '',
-                    trackType: (row[mapping['trackType']] || '').toString().trim(),
+                    gender: genVal,
+                    ageGroup: agVal,
+                    trackType: ttVal,
                     mark: markVal,
                     wind: (row[mapping['wind']] || '').toString().trim(),
                     idr: (row[mapping['idr']] || '').toString().trim(),
@@ -6928,6 +6959,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (importedCount > 0) {
                 saveRecords();
                 saveAthletes();
+                saveHistory();
                 saveCountries();
 
                 if (filterEvent) filterEvent.value = 'all';
