@@ -1,3 +1,7 @@
+# v2.20.29
+- **Athlete Restriction Refinement**: Fixed gender display during restricted updates and updated athlete filtering logic to use the *current* date instead of the record date, ensuring only athletes currently in the target age group are listed.
+- **Improved UI Logic**: Optimized field population in the record update flow to better support the "Smart Guard" system.
+
 # v2.20.28
 - **Athlete Restriction on Edit**: Introduced a new general setting "Restrict athletes on edit". When enabled, updating a record locks the Gender and Age Group fields and automatically filters the athlete dropdown to show only those who match the record's category on that specific date.
 - **Smart Data Integrity**: Ensures that records can only be transferred between athletes who are in the same competitive class, reducing administrative errors.

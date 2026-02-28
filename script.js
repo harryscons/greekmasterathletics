@@ -1885,9 +1885,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 1. Gender check
                 if (filterObj.gender && a.gender !== filterObj.gender) return false;
 
-                // 2. Age Group check (Age at the time of the record)
-                if (filterObj.ageGroup && filterObj.date) {
-                    const group = calculateAgeGroup(a.dob, filterObj.date);
+                // 2. Age Group check (Age TODAY - per user correction v2.20.29)
+                if (filterObj.ageGroup) {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const group = calculateAgeGroup(a.dob, todayStr);
                     if (group !== filterObj.ageGroup) return false;
                 }
 
@@ -4976,8 +4977,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setSelectValue(evtInput, r.event);
         if (evtInput) evtInput.disabled = (isUpdateFlow || isReadOnly);
 
-        // Clear performance fields but KEEP identity fields if not updating
-        setSelectValue(genderInput, isUpdateFlow ? '' : r.gender);
+        // Clear performance fields but KEEP identity fields if not updating OR if restricted
+        const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
+        setSelectValue(genderInput, (isUpdateFlow && !isRestricted) ? '' : r.gender);
         if (trackTypeInput) {
             trackTypeInput.value = r.trackType || 'Outdoor';
             trackTypeInput.disabled = (isUpdateFlow || isReadOnly);
