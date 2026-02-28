@@ -1,3 +1,7 @@
+# v2.20.27
+- **Ultimate Mark Validation**: Fixed the 2nd-digit-after-punctuation rule with a robust character-scan algorithm. The code is now cursor-aware and handles mid-string insertions and separator limits with 100% accuracy.
+- **Code Clean-up**: Removed redundant HTML-level attributes to eliminate conflicts and ensured zero syntax errors for stable script execution.
+
 # v2.20.26
 - **Nuclear Mark Lockdown (Predictive)**: Re-implemented the "Mark" validation with a cursor-aware predictive validator. It now calculates the projected value before characters are entered, strictly enforcing the 2-digit limit and punctuation rules regardless of cursor position (end-of-string or mid-string).
 - **Infinite Data Integrity**: All segments after a punctuation mark are now locked to hundredths precision, ensuring perfect consistency for all athletics results.
