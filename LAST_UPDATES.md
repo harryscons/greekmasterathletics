@@ -1,3 +1,7 @@
+# v2.20.48
+- **Robust Import Auto-Archiving**: Refined the Excel import logic to move *all* existing records for the same category into the history, preventing unexpected duplicates.
+- **Improved ID Generation**: Standardized ID format for imported records for better system compatibility.
+
 # v2.20.47
 - **Interactive Track Type Mapping**: Added a dropdown for the "Track Type" column in the Excel validation modal, allowing users to manually map or correct Indoor/Outdoor status before import.
 

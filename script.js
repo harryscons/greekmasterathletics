@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
-    const VERSION = "v2.20.47";
+    const VERSION = "v2.20.48";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -6881,8 +6881,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const genVal = (row[mapping['gender']] || '').toString().trim();
                 const agVal = mapping['ageGroup'] ? (row[mapping['ageGroup']] || '').toString().trim() : '';
 
-                // --- AUTO-ARCHIVE EXISTING RECORDS (v2.20.46) ---
-                const existingIdx = records.findIndex(r =>
+                // --- AUTO-ARCHIVE EXISTING RECORDS (v2.20.48 - Multiple matches) ---
+                const matches = records.filter(r =>
                     r.event === eventVal &&
                     r.gender === genVal &&
                     (r.ageGroup || '') === agVal &&
@@ -6890,18 +6890,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     r.approved === true
                 );
 
-                if (existingIdx !== -1) {
-                    const oldRecord = records[existingIdx];
+                if (matches.length > 0) {
                     const isHistoryEnabled = localStorage.getItem('tf_edit_history_flag') !== 'false';
-                    if (isHistoryEnabled) {
-                        const historyEntry = { ...oldRecord };
-                        historyEntry.archivedAt = new Date().toISOString();
-                        historyEntry.originalId = String(oldRecord.id);
-                        historyEntry.updatedBy = 'Excel Import';
-                        historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
-                        history.unshift(historyEntry);
-                    }
-                    records.splice(existingIdx, 1); // Remove from live records
+                    matches.forEach(oldRecord => {
+                        if (isHistoryEnabled) {
+                            const historyEntry = { ...oldRecord };
+                            historyEntry.archivedAt = new Date().toISOString();
+                            historyEntry.originalId = String(oldRecord.id);
+                            historyEntry.updatedBy = 'Excel Import';
+                            historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
+                            history.unshift(historyEntry);
+                        }
+                        // Remove from live records
+                        const idxInLive = records.findIndex(liveR => liveR.id === oldRecord.id);
+                        if (idxInLive !== -1) records.splice(idxInLive, 1);
+                    });
                 }
 
                 // Resolve athlete from override or smart link
@@ -6968,7 +6971,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 records.unshift({
-                    id: Date.now() + Math.random(),
+                    id: String(Date.now() + '-' + Math.floor(Math.random() * 100000)),
                     event: eventVal,
                     athlete: finalAthleteName,
                     gender: genVal,
