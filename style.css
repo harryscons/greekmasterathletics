@@ -174,7 +174,7 @@ body.theme-lemon-pale {
     /* Rich Dark Amber Tint */
 }
 
-body.theme-emacsi-2026 {
+body.theme-championship-slate {
     --bg-dark: #f1f5f9;
     --bg-card: #ffffff;
     --bg-card-hover: #f8fafc;
@@ -196,7 +196,7 @@ body.theme-emacsi-2026 {
     --bg-primary-light: #f8fafc;
     --bg-modal: rgba(15, 23, 42, 0.4);
 
-    /* Graph Overrides for EMACSI Professional */
+    /* Graph Overrides for Championship Slate */
     --chart-grid-color: rgba(0, 0, 0, 0.05);
     --chart-text-color: #475569;
     --chart-line-color: #0f172a;

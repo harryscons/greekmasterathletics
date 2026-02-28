@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.55";
+    const VERSION = "v2.20.56";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -7947,7 +7947,13 @@ Replace ALL current data with this backup? This action is irreversible.`;
 
 
     function initThemes() {
-        const savedTheme = localStorage.getItem('tf_theme') || 'theme-default';
+        let savedTheme = localStorage.getItem('tf_theme') || 'theme-default';
+
+        // v2.20.56: Migration from old theme name
+        if (savedTheme === 'theme-emacsi-2026') {
+            savedTheme = 'theme-championship-slate';
+        }
+
         setTheme(savedTheme);
     }
 

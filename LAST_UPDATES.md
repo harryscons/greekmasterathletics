@@ -1,6 +1,14 @@
+# v2.20.56
+- **Theme Renaming**: Renamed the professional theme to **"Championship Slate"**.
+- **Seamless Migration**: Added logic to automatically migrate users from the old theme name to the new "Championship Slate" without requiring manual settings changes.
+
 # v2.20.55
 - **New EMACSI 2026 Theme**: Added a new professional theme inspired by the `emacsi-2026` athletic project. Features a clean white background with athletic navy and track red accents.
 - **Enhanced Visual Hierarchy**: The EMACSI theme includes customized chart colors and high-contrast labels for better visibility.
+
+### v2.20.56: Theme Refinement
+- **Championship Slate**: Polished the athletic theme with a more universal name and identity.
+- **Smart Migration**: Implemented automatic theme ID updates in the initialization logic.
 
 ### v2.20.55: EMACSI 2026 Theme
 - **Athletic Palette**: Imported the professional design system from the `emacsi-2026` project.
@@ -363,12 +371,16 @@
     - [x] Add EMACSI option to `themeSelect` in `index.html` <!-- id: 383 -->
     - [x] Verify theme application and consistency <!-- id: 384 -->
     - [x] Increment version to v2.20.55 <!-- id: 385 -->
+- [x] Importing EMACSI- [x] Renaming Theme (v2.20.56) <!-- id: 386 -->
+    - [x] Rename CSS class to `theme-championship-slate` <!-- id: 387 -->
+    - [x] Rename HTML option to "Championship Slate" <!-- id: 388 -->
+    - [x] Add migration logic in `script.js` <!-- id: 389 -->
+    - [x] Increment version to v2.20.56 <!-- id: 390 -->
 - [x] Debugging Archival Failure (v2.20.50) <!-- id: 354 -->
     - [x] Implement accent-insensitive matching (normalize NFD) <!-- id: 355 -->
     - [x] Refine `isLive` check in archival filter <!-- id: 356 -->
     - [x] Add `renderHistoryList` call to import finalization <!-- id: 357 -->
     - [x] Verify matching for accented Greek labels <!-- id: 358 -->
-    - [x] Increment version to v2.20.50 <!-- id: 359 -->
 - [x] Import Normalization & Matching Bug-Fix (v2.20.49) <!-- id: 348 -->
     - [x] Expand `normalizeGender` with Greek support <!-- id: 349 -->
     - [x] Fix index bug in `handleMappedImport` <!-- id: 350 -->
