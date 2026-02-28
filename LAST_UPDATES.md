@@ -1,3 +1,7 @@
+# v2.20.28
+- **Athlete Restriction on Edit**: Introduced a new general setting "Restrict athletes on edit". When enabled, updating a record locks the Gender and Age Group fields and automatically filters the athlete dropdown to show only those who match the record's category on that specific date.
+- **Smart Data Integrity**: Ensures that records can only be transferred between athletes who are in the same competitive class, reducing administrative errors.
+
 # v2.20.27
 - **Ultimate Mark Validation**: Fixed the 2nd-digit-after-punctuation rule with a robust character-scan algorithm. The code is now cursor-aware and handles mid-string insertions and separator limits with 100% accuracy.
 - **Code Clean-up**: Removed redundant HTML-level attributes to eliminate conflicts and ensured zero syntax errors for stable script execution.

@@ -205,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- UI/UX Helpers ---
     const themeSelect = document.getElementById('themeSelect');
     const hideNotesSymbol = document.getElementById('hideNotesSymbol');
+    const restrictAthletesOnEdit = document.getElementById('restrictAthletesOnEdit');
 
     // --- Cloud Status Management ---
     const cloudIcon = document.getElementById('cloudIcon');
@@ -1403,6 +1404,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        if (restrictAthletesOnEdit) {
+            const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
+            restrictAthletesOnEdit.checked = isRestricted;
+            restrictAthletesOnEdit.addEventListener('change', () => {
+                localStorage.setItem('tf_restrict_athletes_on_edit', restrictAthletesOnEdit.checked);
+            });
+        }
+
         const btnRecalculateWMA = document.getElementById('btnRecalculateWMA');
         if (btnRecalculateWMA) {
             btnRecalculateWMA.addEventListener('click', recalculateAllWMAStats);
@@ -1868,8 +1877,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function populateAthleteDropdown() {
-        athletes.sort((a, b) => {
+    function populateAthleteDropdown(filterObj = null) {
+        let filteredAthletes = [...athletes];
+
+        if (filterObj) {
+            filteredAthletes = filteredAthletes.filter(a => {
+                // 1. Gender check
+                if (filterObj.gender && a.gender !== filterObj.gender) return false;
+
+                // 2. Age Group check (Age at the time of the record)
+                if (filterObj.ageGroup && filterObj.date) {
+                    const group = calculateAgeGroup(a.dob, filterObj.date);
+                    if (group !== filterObj.ageGroup) return false;
+                }
+
+                return true;
+            });
+            console.log(`Filtered athlete list reduced to ${filteredAthletes.length} matching entries.`);
+        }
+
+        filteredAthletes.sort((a, b) => {
             const lastA = a.lastName || '';
             const lastB = b.lastName || '';
             const firstA = a.firstName || '';
@@ -1882,7 +1909,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (athleteInput) {
             const currentVal = athleteInput.value;
             athleteInput.innerHTML = '<option value="" disabled selected>Select Athlete</option>';
-            athletes.forEach(a => {
+            filteredAthletes.forEach(a => {
                 const opt = document.createElement('option');
                 const idText = a.idNumber ? ` (#${a.idNumber})` : '';
                 if (a.isTeam) {
@@ -4984,6 +5011,20 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             setSelectValue(ageGroupInput, r.ageGroup);
 
+            // 🛡️ ATHLETE RESTRICTION (v2.20.28)
+            const isRestricted = localStorage.getItem('tf_restrict_athletes_on_edit') === 'true';
+            if (isUpdateFlow && isRestricted) {
+                if (genderInput) genderInput.disabled = true;
+                if (ageGroupInput) ageGroupInput.disabled = true;
+
+                // Re-populate athlete dropdown with strict filters
+                populateAthleteDropdown({
+                    gender: r.gender,
+                    ageGroup: r.ageGroup,
+                    date: r.date
+                });
+            }
+
             if (isRelay) {
                 if (relayTeamNameInput) relayTeamNameInput.value = isUpdateFlow ? '' : (r.athlete || '');
                 const p = isUpdateFlow ? [] : (r.relayParticipants || []);
@@ -5046,7 +5087,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         toggleRelayFields(false);
         if (evtInput) evtInput.disabled = false;
+        if (genderInput) genderInput.disabled = false;
+        if (ageGroupInput) ageGroupInput.disabled = false;
         if (trackTypeInput) trackTypeInput.disabled = false;
+
+        // Reset athlete dropdown to full list
+        populateAthleteDropdown();
 
         if (datePicker) {
             datePicker.setDate(new Date());
