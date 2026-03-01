@@ -1,3 +1,7 @@
+# v2.20.77
+- **Dynamic Age Groups**: Applied the same intelligent sizing logic to the "Age Group" column. It now perfectly frames labels like "M35", "W40", or "Mixed" based on the longest value in your current view.
+- **Improved Table Balance**: Refined the column width guards to ensure a more stable and professional table layout.
+
 # v2.20.76
 - **Optimized Name Widths**: Improved the dynamic sizing of the "Athlete Name" column. It now uses a more generous spacing formula (9px per character + 45px padding) to ensure even the longest names are fully visible.
 - **Improved Layout Guard**: Added a maximum-width limit of 400px for names to ensure the table remains readable and stable on ultra-wide monitors.

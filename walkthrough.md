@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.77: Age Group Width Optimization
+- **Intelligent Category Sizing**: The Age Group column now dynamically adjusts its width to perfectly fit the labels in your current report. This removes unnecessary whitespace while ensuring no category is ever cut off.
+- **Unified Presentation**: This update brings the Age Group column into visual alignment with the Athlete Name column, creating a more professional and balanced report structure.
+
 ## v2.20.76: Athlete Width Optimization
 - **Dynamic Name Fitting**: The main report now automatically calculates the ideal width for the Athlete column based on the longest name in your current view. We've increased the character spacing to 9px with a 45px margin for a cleaner, professional look.
 - **Layout Stability**: Implemented a 400px maximum width guard to ensure that even exceptionally long names don't break the report layout on ultra-wide screens.

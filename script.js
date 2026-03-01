@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.76";
+    const VERSION = "v2.20.77";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5985,12 +5985,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Dynamic Athlete Width Calculation (v2.20.58) ---
         const athleteNames = filtered.map(r => (r.athlete || '').trim());
-        const maxAthleteLen = athleteNames.reduce((max, n) => Math.max(max, n.length), 0);
         // v2.20.76: More generous width (9px/char + 45px padding) with Max-Width Guard
         const athleteColWidth = Math.max(160, Math.min(400, (maxAthleteLen * 9) + 45));
 
+        // --- Dynamic Age Group Width Calculation (v2.20.77) ---
+        const ageGroups = filtered.map(r => (r.ageGroup || '').trim());
+        const maxAgeLen = ageGroups.reduce((max, n) => Math.max(max, n.length), 0);
+        const ageColWidth = Math.max(70, Math.min(120, (maxAgeLen * 9) + 30));
+
         // Update header widths dynamically
         if (table) {
+            const ageHeader = table.querySelector('th:nth-child(3)');
+            if (ageHeader) {
+                ageHeader.style.width = `${ageColWidth}px`;
+                ageHeader.style.minWidth = `${ageColWidth}px`;
+            }
             const athleteHeader = table.querySelector('th:nth-child(4)');
             if (athleteHeader) {
                 athleteHeader.style.width = `${athleteColWidth}px`;
