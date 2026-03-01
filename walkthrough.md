@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.80: WMA Statistics Fix
+- **Asynchronous Data Waiting**: The WMA Statistics report now intelligently waits for the large IAAF and WMA data files to finish loading. It displays a "Loading..." state before automatically populating once the data is ready.
+- **Automatic Metric Synchronization**: Metrics now refresh in real-time alongside other reports, ensuring consistent data across the entire application.
+
 ## v2.20.79: Emergency Hotfix
 - **Initialization Restoration**: Fixed a critical regression that prevented the application from loading. The "Synchronizing Data..." screen now correctly disappears as soon as data processing is complete.
 

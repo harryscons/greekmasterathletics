@@ -1,3 +1,7 @@
+# v2.20.80
+- **WMA Statistics Restoration**: Fixed an issue where the WMA statistics report would appear empty on initial load. Added a retry mechanism to wait for asynchronous data files to finish loading before rendering.
+- **Dynamic Stats Refresh**: Ensured the WMA statistics report automatically refreshes whenever the global data state changes, keeping metrics fully up-to-date.
+
 # v2.20.79
 - **Critical Initialization Fix**: Resolved an issue where the application would get stuck on the "Synchronizing Data..." overlay. Restored a missing internal variable (`maxAthleteLen`) required for dynamic column sizing.
 

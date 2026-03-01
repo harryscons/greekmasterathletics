@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.79";
+    const VERSION = "v2.20.80";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -481,6 +481,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHistoryList();
         renderReports();
         renderUserList();
+
+        // v2.20.80: Ensure WMA Stats also refreshes if active
+        if (typeof renderWMAReport === 'function') {
+            const wmaTab = document.getElementById('stats-wma');
+            if (wmaTab && wmaTab.classList.contains('active-view')) {
+                renderWMAReport();
+            }
+        }
 
         // Also populate sub-feature dropdowns
         if (typeof populateIAAFEventDropdown === 'function') populateIAAFEventDropdown();
@@ -3336,10 +3344,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return r;
     }
 
-    window.renderWMAReport = function () {
-        populateWMAReportFilters(); // Refresh dropdown options based on current selections
+    window.renderWMAReport = function (retryCount = 0) {
         const tbody = document.getElementById('wmaReportBody');
         if (!tbody) return;
+
+        // v2.20.80: Wait for async data (IAAF/WMA) before rendering
+        const wmaReady = window.WMA_2023_DATA && window.WMA_2023_DATA.length > 0;
+        const iaafReady = window.IAAF_SCORING_DATA && window.IAAF_SCORING_DATA.length > 0;
+        if ((!wmaReady || !iaafReady) && retryCount < 10) {
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:var(--text-muted);">⏳ Loading WMA data…</td></tr>';
+            setTimeout(() => renderWMAReport(retryCount + 1), 500);
+            return;
+        }
+
+        populateWMAReportFilters(); // Refresh dropdown options based on current selections
 
         // Update header classes for sorting arrows
         const table = tbody.closest('table');
