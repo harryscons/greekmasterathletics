@@ -1,3 +1,6 @@
+# v2.21.008
+- **Pending Popup Root Cause Fix**: The popup was reading from `records.filter(isPending)` but pending records are stored in a completely separate Firebase node (`pendingrecs`). Fixed to use the correct `pendingrecs` array. Also replaced the simple `isSuper` guard with a retry loop (polls up to 10 times × 500ms) because Firebase auth state often resolves after the `pendingrecs` data listener fires.
+
 # v2.21.007
 - **Version Display Fix**: Corrected stale `v2.21.004` labels and `?v=2.21.003` cache-busting parameter in `index.html` — browser was loading old cached script without the popup feature.
 - **Pending Popup Trigger Fix**: The popup was not showing because supervisor auth typically resolves *before* Firebase data finishes loading, so `isDataReady` was false at trigger time. Added a second trigger at the end of `renderAll()` (fires once on first full data load) using a `_pendingPopupShown` guard to prevent duplicate popups.

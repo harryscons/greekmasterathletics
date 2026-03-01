@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.007";
+    const VERSION = "v2.21.008";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -457,10 +457,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listen for Pending Records
         db.ref('pendingrecs').on('value', (snapshot) => {
             pendingrecs = valToArray(snapshot.val());
-            console.log("Pending Records updated from Firebase:", pendingrecs.length);
             loadedNodes.add('pendingrecs');
             checkReady();
             renderReports(); // Re-render main report to show pending changes
+
+            // Show popup once for supervisor when pending data arrives.
+            // Auth may arrive after data, so retry for up to 5 seconds.
+            if (!db._pendingPopupShown) {
+                db._pendingPopupShown = true;
+                let attempts = 0;
+                const tryPopup = () => {
+                    if (isSuper) {
+                        setTimeout(() => showPendingPopup(), 300);
+                    } else if (attempts < 10) {
+                        attempts++;
+                        setTimeout(tryPopup, 500);
+                    }
+                };
+                setTimeout(tryPopup, 500);
+            }
         });
 
         // Listen for Users
@@ -1473,7 +1488,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Respect the "Disable pending popup" setting
         if (localStorage.getItem('tf_disable_pending_popup') === 'true') return;
 
-        const pending = records.filter(r => r.isPending || r.isPendingDelete);
+        // Use the dedicated pendingrecs array (separate Firebase node)
+        const pending = Array.isArray(pendingrecs) ? pendingrecs : [];
         if (pending.length === 0) return;
 
         const overlay = document.getElementById('pendingPopupOverlay');
