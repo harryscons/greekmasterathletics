@@ -1,3 +1,6 @@
+# v2.21.003
+- **Year Dropdown Fix (Root Cause)**: Resolved the definitive root cause of the "All Years" dropdown only showing 2026. The `populateYearDropdown` function was previously only called inside `renderAll()`, which requires ALL data nodes (athletes, events, countries, history, users) to finish syncing before running. If any node was slow, the function ran with an empty `records` array showing only 2026. The function is now called immediately after records load from Firebase, independent of other data nodes.
+
 # v2.21.002
 - **Year Dropdown Diagnostics**: Added console logging inside `populateYearDropdown` to expose the exact state of `records` at call time. Also added a direct call to `populateYearDropdown` inside the Firebase records listener to ensure it fires immediately after data loads.
 
