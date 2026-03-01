@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.78: IDR & Wind Width Optimization
+- **Data-Driven Columns**: The IDR and Wind columns now perfectly frame their contents. This eliminates awkward gaps and ensures that even detailed wind readings are displayed clearly.
+- **Global Table Polish**: All primary data columns now utilize our dynamic sizing engine, resulting in the most professional and readable report layout to date.
+
 ## v2.20.77: Age Group Width Optimization
 - **Intelligent Category Sizing**: The Age Group column now dynamically adjusts its width to perfectly fit the labels in your current report. This removes unnecessary whitespace while ensuring no category is ever cut off.
 - **Unified Presentation**: This update brings the Age Group column into visual alignment with the Athlete Name column, creating a more professional and balanced report structure.

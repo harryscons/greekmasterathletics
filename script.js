@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.77";
+    const VERSION = "v2.20.78";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5993,6 +5993,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxAgeLen = ageGroups.reduce((max, n) => Math.max(max, n.length), 0);
         const ageColWidth = Math.max(70, Math.min(120, (maxAgeLen * 9) + 30));
 
+        // --- Dynamic IDR & Wind Width Calculation (v2.20.78) ---
+        const idrs = filtered.map(r => (r.idr || '').trim());
+        const maxIdrLen = idrs.reduce((max, n) => Math.max(max, n.length), 0);
+        const idrColWidth = Math.max(60, Math.min(110, (maxIdrLen * 9) + 30));
+
+        const winds = filtered.map(r => (r.wind || '').trim());
+        const maxWindLen = winds.reduce((max, n) => Math.max(max, n.length), 0);
+        const windColWidth = Math.max(60, Math.min(110, (maxWindLen * 9) + 30));
+
         // Update header widths dynamically
         if (table) {
             const ageHeader = table.querySelector('th:nth-child(3)');
@@ -6004,6 +6013,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (athleteHeader) {
                 athleteHeader.style.width = `${athleteColWidth}px`;
                 athleteHeader.style.minWidth = `${athleteColWidth}px`;
+            }
+            const idrHeader = table.querySelector('th:nth-child(7)');
+            if (idrHeader) {
+                idrHeader.style.width = `${idrColWidth}px`;
+                idrHeader.style.minWidth = `${idrColWidth}px`;
+            }
+            const windHeader = table.querySelector('th:nth-child(8)');
+            if (windHeader) {
+                windHeader.style.width = `${windColWidth}px`;
+                windHeader.style.minWidth = `${windColWidth}px`;
             }
             const raceHeader = table.querySelector('th:nth-child(11)');
             if (raceHeader) {

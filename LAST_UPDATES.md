@@ -1,3 +1,7 @@
+# v2.20.78
+- **Dynamic IDR & Wind Sizing**: Optimized the widths for IDR and Wind columns. They now automatically scale to fit their contents (like "GR" or wind readings), ensuring a clean and efficient data display.
+- **Enhanced Visual Consistency**: Every data column in the main report now uses intelligent dynamic sizing for a perfectly balanced look.
+
 # v2.20.77
 - **Dynamic Age Groups**: Applied the same intelligent sizing logic to the "Age Group" column. It now perfectly frames labels like "M35", "W40", or "Mixed" based on the longest value in your current view.
 - **Improved Table Balance**: Refined the column width guards to ensure a more stable and professional table layout.
