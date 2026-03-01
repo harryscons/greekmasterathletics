@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.85: Reliable Records Research
+- **Variable Conflict Resolution**: Fixed a deep-seated bug where the "Record History" filters remained empty due to a conflict with browser-reserved names. Filters now populate instantly with all available archive data.
+- **Tighter Header Design**: Reduced excessive vertical space in the archive tab, ensuring your filters and data are the focus.
+
 ## v2.20.84: Ultimate History Refinement
 - **Standardized Archive Interface**: The Records History tab now looks and feels like the rest of the app, using the same spacing and design components as the main report.
 - **Fail-Safe Filters**: Re-engineered the archive filters to be far more robust. They now handle your historical data with 100% reliability and feature crystal-clear labeling.
