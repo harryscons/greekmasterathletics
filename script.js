@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.006";
+    const VERSION = "v2.21.007";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -519,6 +519,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Refresh Statistics Charts
         if (typeof window.renderRecordsByYearChart === 'function') window.renderRecordsByYearChart(window.currentYearChartType);
+
+        // Show pending popup once on first full load for supervisor
+        if (!renderAll._pendingPopupShown && isSuper && typeof showPendingPopup === 'function') {
+            renderAll._pendingPopupShown = true;
+            setTimeout(() => showPendingPopup(), 600);
+        }
     }
 
     // Migration logic removed: Always trust the current cloud state

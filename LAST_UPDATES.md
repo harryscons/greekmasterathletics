@@ -1,3 +1,7 @@
+# v2.21.007
+- **Version Display Fix**: Corrected stale `v2.21.004` labels and `?v=2.21.003` cache-busting parameter in `index.html` — browser was loading old cached script without the popup feature.
+- **Pending Popup Trigger Fix**: The popup was not showing because supervisor auth typically resolves *before* Firebase data finishes loading, so `isDataReady` was false at trigger time. Added a second trigger at the end of `renderAll()` (fires once on first full data load) using a `_pendingPopupShown` guard to prevent duplicate popups.
+
 # v2.21.006
 - **Pending Records Startup Popup**: When the supervisor logs in and there are pending records awaiting approval, a popup window appears automatically listing all pending records with their athlete name, event, mark, date, and type (addition/deletion). A "Go to Pending Log" button navigates directly to the approval tab. The popup uses the existing theme/colors with no background blur, just corner shadow.
 - **Settings: Disable Pending Popup**: Added a new "Disable pending records popup on startup" checkbox in General Settings. Default is unchecked (popup shown). Setting is saved to localStorage and synced to Firebase under each user's settings profile.
