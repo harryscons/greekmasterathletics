@@ -1,3 +1,7 @@
+# v2.20.110
+- **History Record Data Integrity (Read-Only Fields)**: Corrected a bug where the History Edit window's core identity fields (`Event`, `Athlete`, `Gender`, `Age Group`, and `Track Type`) were accidentally being unlocked by a timing issue in the read-only toggle. They are now permanently locked as intended.
+- **History Expanded Details**: Added `Location` (Town, Country) and `Notes` data to the `+` expanded dropdown rows within the main History List table to provide users with full visibility of historical contexts.
+
 # v2.20.109
 - **History Record Data Integrity (Read-Only Fields)**: When editing an archived history record, the core identity fields (`Event`, `Athlete`, `Gender`, `Age Group`, and `Track Type`) are now strictly locked and Read-Only. This prevents accidental fundamental changes to a historical record's identity while still allowing edits to its results (`Mark`, `Wind`, `Location`, etc.).
 - **History Country Dropdown Fix**: Upgraded the form population logic for the Country dropdown in the History editor to dynamically recreate missing historical country options (labeled as "Archived") if they no longer exist in the active lists, ensuring the field is never blank.

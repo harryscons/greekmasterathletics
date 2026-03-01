@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.109";
+    const VERSION = "v2.20.110";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5288,7 +5288,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span style="font-weight:bold; color:var(--success);">${linkedRec.athlete}</span>
                             <span>${formatTimeMark(linkedRec.mark, r.event)} (${linkedRec.wind || '-'})</span>
                             <span>| ${new Date(linkedRec.date).toLocaleDateString('en-GB')}</span>
-                            <span>| ${linkedRec.raceName || '-'}</span>
+                            <span>| Location: ${linkedRec.town || '-'}, ${linkedRec.country || '-'}</span>
+                            <span>| Race: ${linkedRec.raceName || '-'}</span>
+                            <span>| Notes: ${linkedRec.notes || '-'}</span>
                         </div>
                     `;
                     }
@@ -5312,7 +5314,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span style="font-weight:bold; color:var(--success);">${h.athlete}</span>
                                 <span>${formatTimeMark(h.mark, r.event)} (${h.wind || '-'})</span>
                                 <span>| ${new Date(h.date).toLocaleDateString('en-GB')}</span>
-                                <span>| ${h.raceName || '-'}</span>
+                                <span>| Location: ${h.town || '-'}, ${h.country || '-'}</span>
+                                <span>| Race: ${h.raceName || '-'}</span>
+                                <span>| Notes: ${h.notes || '-'}</span>
                             </div>
                         </div>
                     `).join('');
@@ -5429,35 +5433,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (notesInput) notesInput.value = r.notes || '';
         if (relayTeamNameInput) relayTeamNameInput.value = r.relayTeamName || '';
 
+        syncCountryPlaceholder(isReadOnly, r.country);
+        applyReadOnlyMode(isReadOnly);
+
         // Lock down core identity fields when editing history
         // The user explicitly requested these not be changeable to preserve historical integrity
+        // MUST be called after applyReadOnlyMode to prevent it from resetting them to false
         if (evtInput) evtInput.disabled = true;
         if (athleteInput) athleteInput.disabled = true;
         if (genderInput) genderInput.disabled = true;
         if (ageGroupInput) ageGroupInput.disabled = true;
         if (trackTypeInput) trackTypeInput.disabled = true;
-
-        if (dateInput) {
-            if (datePicker) {
-                datePicker.setDate(r.date);
-            } else {
-                dateInput.value = r.date || '';
-            }
-        }
-
-        // Handle Relays
-        const ev = events.find(e => e.name === r.event);
-        const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
-        toggleRelayFields(isRelay);
-        if (isRelay) {
-            if (relayAthlete1) relayAthlete1.value = r.relayAthlete1 || '';
-            if (relayAthlete2) relayAthlete2.value = r.relayAthlete2 || '';
-            if (relayAthlete3) relayAthlete3.value = r.relayAthlete3 || '';
-            if (relayAthlete4) relayAthlete4.value = r.relayAthlete4 || '';
-        }
-
-        syncCountryPlaceholder(isReadOnly, r.country);
-        applyReadOnlyMode(isReadOnly);
 
         // Modal Title & UI
         const formTitle = document.getElementById('formTitle');
