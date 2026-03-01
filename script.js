@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.87";
+    const VERSION = "v2.20.88";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5110,17 +5110,21 @@ document.addEventListener('DOMContentLoaded', () => {
             displayList = [];
 
             categories.forEach(rKey => {
-                const versions = filteredHistory.filter(h => getCatKey(h) === rKey)
-                    .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt)); // Newest Archive first
+                const versions = recordHistory.filter(h => getCatKey(h) === rKey)
+                    .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
 
                 const live = records.find(curr => getCatKey(curr) === rKey);
 
+                // v2.20.88: Determine group's sort date (replaced-by date)
+                // Sort by the performance date of the current live record (or newest archive)
+                let groupSortDate = '1900-01-01';
+                if (live) groupSortDate = live.date;
+                else if (versions.length > 0) groupSortDate = versions[0].date;
+
                 if (live) {
-                    // v2.20.87: Live records always stay on top by spoofing a future archivedAt for sorting
-                    displayList.push({ ...live, isLive: true, archivedAt: '2099-12-31T23:59:59Z', historyBranch: versions });
+                    displayList.push({ ...live, isLive: true, groupSortDate, archivedAt: '2099-12-31T23:59:59Z', historyBranch: versions });
                 } else if (versions.length > 0) {
-                    const head = versions[0];
-                    displayList.push({ ...head, historyBranch: versions.slice(1) });
+                    displayList.push({ ...versions[0], groupSortDate, historyBranch: versions.slice(1) });
                 }
             });
         }
@@ -5130,11 +5134,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const dir = window.historySortDir === 'desc' ? -1 : 1;
 
         displayList.sort((a, b) => {
-            let valA = a[key];
-            let valB = b[key];
+            // v2.20.88: Use groupSortDate for primary sorting if it's the default archivedAt sort
+            let valA = (key === 'archivedAt' && a.groupSortDate) ? a.groupSortDate : a[key];
+            let valB = (key === 'archivedAt' && b.groupSortDate) ? b.groupSortDate : b[key];
 
             // Robust sorting for specific fields
-            if (key === 'date' || key === 'archivedAt') {
+            if (key === 'date' || key === 'archivedAt' || (key === 'archivedAt' && (a.groupSortDate || b.groupSortDate))) {
                 valA = new Date(valA || 0).getTime();
                 valB = new Date(valB || 0).getTime();
             } else if (key === 'mark') {
@@ -5300,9 +5305,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        openRecordModal(null, false, isReadOnly);
+        // 🛡️ v2.20.88: Ensure modal is open and reset BEFORE population
+        const modal = document.getElementById('recordModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            if (recordForm) recordForm.reset();
+        }
 
-        // Populate all fields consistently with editRecord
+        editingHistoryId = id;
+        editingId = null;
+        isReadOnlyForm = isReadOnly;
+
+        // Manual population to ensure 100% field coverage
+        console.log("✏️ Populating History Edit Form for Record:", r);
+
         if (evtInput) evtInput.value = r.event || '';
         if (athleteInput) athleteInput.value = r.athlete || '';
         if (genderInput) genderInput.value = normalizeGender(r.gender || '');
@@ -5318,8 +5335,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (relayTeamNameInput) relayTeamNameInput.value = r.relayTeamName || '';
 
         if (dateInput) {
-            if (datePicker) datePicker.setDate(r.date);
-            else dateInput.value = r.date || '';
+            if (datePicker) {
+                datePicker.setDate(r.date);
+            } else {
+                dateInput.value = r.date || '';
+            }
         }
 
         // Handle Relays
@@ -5334,11 +5354,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         syncCountryPlaceholder(isReadOnly, r.country);
+        applyReadOnlyMode(isReadOnly);
 
         // Modal Title & UI
         const formTitle = document.getElementById('formTitle');
         if (isReadOnly) {
-            applyReadOnlyMode(true);
             if (formTitle) formTitle.textContent = 'View Archived Record (Read-Only)';
         } else {
             if (formTitle) {
@@ -5353,8 +5373,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cancelBtn) cancelBtn.classList.remove('hidden');
         }
 
-        editingHistoryId = id;
-        editingId = null;
         recordForm.scrollIntoView({ behavior: 'smooth' });
     }
 

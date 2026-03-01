@@ -1,3 +1,8 @@
+# v2.20.88
+- **Smart Sorting Reborn**: The History list now sorts event categories based on the *performance date* of the current record (the record that replaced the archives). This ensures you see the most recent athletic achievements at the very top.
+- **Fail-Safe Form Loading**: Completely overhauled the `editHistory` initialization. The record modal now performs a clean reset before meticulously populating every single field from the archive, eliminating "missing field" errors.
+- **Filter Initialization Shield**: Guaranteed that history dropdowns (Event, Athlete, Year, etc.) populate immediately upon data load, preventing the "empty lists" scenario.
+
 # v2.20.87
 - **History Stability Hotfix**: Implemented robust date parsing in archive filters. Previously, a single malformed date record could crash the filter engine, leaving dropdowns empty.
 - **Form Integrity**: Verified and reinforced the history edit modal. Clicking "Edit" or "View" on an archive record now reliably populates all data fields (Mark, Wind, Race Name, IDR, etc.).
