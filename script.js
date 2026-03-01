@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.99";
+    const VERSION = "v2.20.101";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -3604,7 +3604,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td data-label="Event">${r.event}</td>
                 <td data-label="Athlete" style="font-weight:600;">${r.athlete}</td>
-                <td data-label="Gender">${normalizeGenderLookups(r.gender)}</td>
+                <td data-label="Gender">${r.gender}</td>
                 <td data-label="Age">${r.ageGroup || '-'}</td>
                 <td data-label="Mark" style="text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td>
                 <td data-label="IDR" style="font-size:0.85em; color:var(--text-muted);">${r.idr || '-'}</td>
@@ -5001,7 +5001,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- RECORD HISTORY (ARCHIVE) ---
 
-    function populateHistoryFilters() {
+    function populateHistoryFilters(oldestFirst = false) {
         // Current selections
         const selEvent = document.getElementById('historyFilterEvent')?.value || 'all';
         const selAthlete = document.getElementById('historyFilterAthlete')?.value || 'all';
@@ -5021,7 +5021,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (!exclusions.year && selYear !== 'all') {
                 try {
-                    const y = r.date ? new Date(r.date).getFullYear().toString() : '';
+                    const rDate = oldestFirst ? r.date : (r._groupSortDate || r.date);
+                    const y = rDate ? new Date(rDate).getFullYear().toString() : '';
                     if (y !== selYear) return false;
                 } catch (e) { return false; }
             }
@@ -5059,7 +5060,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSelect('historyFilterAthlete', athletesList, selAthlete, 'Athletes');
 
         // 3. Years
-        const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => r.date ? new Date(r.date).getFullYear().toString() : ''))].filter(Boolean).sort((a, b) => b - a);
+        const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => {
+            const rDate = oldestFirst ? r.date : (r._groupSortDate || r.date);
+            return rDate ? new Date(rDate).getFullYear().toString() : '';
+        }))].filter(Boolean).sort((a, b) => b - a);
         updateSelect('historyFilterYear', yearsList, selYear, 'Years');
 
         // 4. Age Groups
@@ -5074,7 +5078,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderHistoryList() {
         try {
-            populateHistoryFilters();
+            // v2.20.96: Default to Newest First (Grouped)
+            const oldestFirst = localStorage.getItem('tf_history_old_first') === 'true';
+
+            // v2.20.100: Pre-calculate _groupSortDate for filters
+            if (!oldestFirst && recordHistory.length > 0) {
+                const clean = (s) => (s || '').toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const getCatKey = (rec) => {
+                    if (!rec) return '';
+                    const g = typeof normalizeGender === 'function' ? normalizeGender(rec.gender) : rec.gender;
+                    return `${clean(rec.event)}|${clean(g)}|${clean(rec.ageGroup)}|${clean(rec.trackType || 'Outdoor')}`;
+                };
+
+                const catSortDates = {};
+                recordHistory.forEach(r => {
+                    const rKey = getCatKey(r);
+                    if (!catSortDates[rKey]) {
+                        const live = records.find(curr => getCatKey(curr) === rKey);
+                        if (live) catSortDates[rKey] = live.date;
+                        else {
+                            const versions = recordHistory.filter(h => getCatKey(h) === rKey)
+                                .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+                            if (versions.length > 0) catSortDates[rKey] = versions[0].date;
+                        }
+                    }
+                    r._groupSortDate = catSortDates[rKey] || r.date;
+                });
+            }
+
+            populateHistoryFilters(oldestFirst);
             const tbody = document.getElementById('historyListBody');
             const empty = document.getElementById('historyEmptyState');
             if (!tbody) return;
@@ -5086,8 +5118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (empty) empty.classList.add('hidden');
 
-            // v2.20.96: Default to Newest First (Grouped)
-            const oldestFirst = localStorage.getItem('tf_history_old_first') === 'true';
+            if (empty) empty.classList.add('hidden');
 
             // v2.20.82: Apply UI Filters
             const selEvent = document.getElementById('historyFilterEvent')?.value || 'all';
@@ -5108,7 +5139,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (selAgeGroup !== 'all' && r.ageGroup !== selAgeGroup) return false;
                 try {
-                    if (selYear !== 'all' && (r.date ? new Date(r.date).getFullYear().toString() : '') !== selYear) return false;
+                    const rDate = oldestFirst ? r.date : (r._groupSortDate || r.date);
+                    if (selYear !== 'all' && (rDate ? new Date(rDate).getFullYear().toString() : '') !== selYear) return false;
                     if (selArchDate !== 'all') {
                         const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : '';
                         if (d !== selArchDate) return false;
@@ -5160,12 +5192,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const dir = window.historySortDir === 'desc' ? -1 : 1;
 
             displayList.sort((a, b) => {
-                // v2.20.96: Numeric sorting by groupSortDate (Replacement Date)
-                let valA = (key === 'archivedAt') ? a.groupSortDate : a[key];
-                let valB = (key === 'archivedAt') ? b.groupSortDate : b[key];
+                let valA = a[key];
+                let valB = b[key];
+
+                // v2.20.100: Use groupSortDate for primary sorting if it's a date-based sort in grouped view
+                if (!oldestFirst && (key === 'archivedAt' || key === 'date')) {
+                    valA = a.groupSortDate || valA;
+                    valB = b.groupSortDate || valB;
+                }
 
                 // Robust sorting for specific fields
-                if (key === 'date' || key === 'archivedAt' || (key === 'archivedAt' && (a.groupSortDate || b.groupSortDate))) {
+                if (key === 'date' || key === 'archivedAt') {
                     valA = new Date(valA || 0).getTime();
                     valB = new Date(valB || 0).getTime();
                 } else if (key === 'mark') {
@@ -5293,13 +5330,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 </td>
             `;
-
-                tr.style.cursor = 'pointer';
-                tr.title = r.isLive ? 'Double-click to view Live details' : 'Double-click to view archived details';
-                tr.addEventListener('dblclick', () => {
-                    if (r.isLive) openRecordModal(r.id, false, true);
-                    else editHistory(r.id, true);
-                });
 
                 tbody.appendChild(tr);
 

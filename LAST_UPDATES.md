@@ -1,3 +1,10 @@
+# v2.20.101
+- **History UI Refinement**: Removed the double-click event listener on History rows. Users must now explicitly use the Edit/View button, preventing confusion between Live and Archived record popups.
+- **WMA Stats Gender Fix**: Restored the gender display in the WMA Statistics report from English ("Men/Women") back to the database-native Greek ("Άνδρες/Γυναίκες").
+
+# v2.20.100
+- **Year Filter Optimization**: Refactored the History filter logic to pre-calculate `groupSortDate`. The "Year" dropdown now accurately reflects the year of the *new/replacing* record rather than the strictly archived date, drastically improving filter usability.
+
 # v2.20.99
 - **Definitive Global Export**: Hard-bound `renderHistoryList` to the global `window` object after previous structural attempts silently failed. Dropdowns in the History tab will now trigger immediate updates.
 
