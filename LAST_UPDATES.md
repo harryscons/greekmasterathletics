@@ -1,3 +1,7 @@
+# v2.21.005
+- **"Προς Εγκριση" Badge Style**: Made the pending approval badge bigger (font-size 0.85em), bold green background (`#16a34a`) with a white text and green glow effect. Now clearly visible and easy to recognize at a glance.
+- **Country Dropdown Fix**: Resolved missing countries in the Add/Edit/Update record form. Countries were only being populated after all 5 data nodes synced. Now the country dropdown populates immediately when country data arrives from Firebase, matching the same fix applied earlier to the year dropdown.
+
 # v2.21.004
 - **Performance Optimization**: Removed 90 non-critical `console.log`, `console.warn`, and `console.table` debug statements from `script.js` (from 104 down to 14). These were firing on every data sync, every tab switch, every render loop, and every athlete/record edit — adding measurable overhead to every page load and interaction. Only genuine error handlers and critical sync warnings remain.
 

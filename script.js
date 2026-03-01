@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.003";
+    const VERSION = "v2.21.005";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -436,14 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listen for Countries
         db.ref('countries').on('value', (snapshot) => {
             countries = valToArray(snapshot.val());
-            console.log("Countries updated from Firebase:", countries.length);
             loadedNodes.add('countries');
             checkReady();
 
-            if (isDataReady) {
-                populateCountryDropdown();
-                renderCountryList();
-            }
+            // Populate dropdown immediately so the form is ready even before full isDataReady
+            if (typeof populateCountryDropdown === 'function') populateCountryDropdown();
+            if (isDataReady) renderCountryList();
         });
 
         // Listen for History
