@@ -1,3 +1,7 @@
+# v2.20.106
+- **History Save Firebase Error**: Fixed an error where saving an edited History record threw a `Firebase: value contains undefined` error. The internal sorting date (`_groupSortDate`) now falls back to `null` instead of `undefined` to comply with Firebase requirements.
+- **Year Dropdown Restoration**: Ensured the removal of the 2026 test-cache limitation takes full effect across all dropdown initializers.
+
 # v2.20.105
 - **Year Filter Data Load**: Removed a leftover debug limit that was accidentally causing the system to only cache records from the year 2026. All older records are now properly loaded into the application again, and the Year Dropdown reflects all available years.
 - **History Record Saving Fix**: Resolved an issue where saving edits made to an *Archived* record was silently failing. The system now accurately targets the record ID in the history array and commits the changes.

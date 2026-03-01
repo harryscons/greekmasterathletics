@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.105";
+    const VERSION = "v2.20.106";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -4849,8 +4849,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const index = recordHistory.findIndex(r => String(r.id) === idToFind);
                 if (index !== -1) {
                     // Keep original archive timestamp and sorting date
-                    newRecord.archivedAt = recordHistory[index].archivedAt;
-                    newRecord._groupSortDate = recordHistory[index]._groupSortDate;
+                    newRecord.archivedAt = recordHistory[index].archivedAt || new Date().toISOString();
+                    newRecord._groupSortDate = recordHistory[index]._groupSortDate || null; // Prevent Firebase 'undefined' crash
 
                     recordHistory[index] = newRecord;
                     saveHistory();
