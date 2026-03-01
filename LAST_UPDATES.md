@@ -1,3 +1,10 @@
+# v2.20.98
+- **Global Signal Repair**: Fixed a logic error where the History Tab refresh signal was not properly sent to the main application. High-precision export of `renderHistoryList` to the global scope ensures dropdown filters trigger immediately.
+
+# v2.20.97
+- **Real-time History Filtering Fixed**: Fixed a scope issue where `renderHistoryList` was not properly exported to the global `window` object, preventing dropdown filters from triggering automatically.
+- **Improved Global Exposure**: Verified that all critical cross-script functions are correctly attached to `window`.
+
 # v2.20.96
 - **History Filtering Fixed**: Restored the global binding for `renderHistoryList`, enabling dropdown filters to correctly refresh the archive list.
 - **Default View Optimization**: Flipped the default history view to **Newest First (Grouped)**. Categories are now sorted by the performance date of the current live record (or latest archive), ensuring recent achievements always appear at the top.
