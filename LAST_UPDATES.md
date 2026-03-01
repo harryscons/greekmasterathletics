@@ -1,3 +1,6 @@
+# v2.21.013
+- **General Settings UI Refinement**: Added "Show for" text before the pending popup role dropdown and increased the dropdown width for a cleaner, more readable layout. The "Show for" label now correctly dims when the popup is disabled.
+
 # v2.21.012
 - **CRITICAL FIX: Syntax Error in index.html**: Fixed a missing closing brace `}` in the SheetJS fallback script that was causing an "Unexpected end of script" error.
 - **Version Synchronization**: Ensured all version labels and the `script.js` cache-busting query parameter are correctly synchronized to v2.21.012.

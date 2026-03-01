@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.012";
+    const VERSION = "v2.21.013";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1706,10 +1706,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const pendingPopupRoleSel = document.getElementById('pendingPopupRole');
 
         const syncPopupDropdownState = () => {
+            const label = document.getElementById('pendingPopupRoleLabel');
             if (pendingPopupRoleSel) {
-                pendingPopupRoleSel.disabled = disablePendingPopupCb && disablePendingPopupCb.checked;
-                pendingPopupRoleSel.style.opacity = (disablePendingPopupCb && disablePendingPopupCb.checked) ? '0.4' : '1';
-                pendingPopupRoleSel.style.cursor = (disablePendingPopupCb && disablePendingPopupCb.checked) ? 'not-allowed' : 'pointer';
+                const disabled = disablePendingPopupCb && disablePendingPopupCb.checked;
+                pendingPopupRoleSel.disabled = disabled;
+                pendingPopupRoleSel.style.opacity = disabled ? '0.4' : '1';
+                pendingPopupRoleSel.style.cursor = disabled ? 'not-allowed' : 'pointer';
+                if (label) label.style.opacity = disabled ? '0.4' : '1';
             }
         };
 
