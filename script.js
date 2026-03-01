@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.013";
+    const VERSION = "v2.21.014";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1491,7 +1491,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (roleTarget === 'all' && !isAdmin && !isSuper) return;
 
         // Use the dedicated pendingrecs array (separate Firebase node)
-        const pending = Array.isArray(pendingrecs) ? pendingrecs : [];
+        let pending = Array.isArray(pendingrecs) ? [...pendingrecs] : [];
+
+        // v2.21.014: If regular Admin (not Supervisor), only show deletions (Hide Additions)
+        if (isAdmin && !isSuper) {
+            pending = pending.filter(r => r.isPendingDelete);
+        }
+
         if (pending.length === 0) return;
 
         const overlay = document.getElementById('pendingPopupOverlay');

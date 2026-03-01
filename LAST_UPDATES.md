@@ -1,3 +1,6 @@
+# v2.21.014
+- **Pending Popup Role Filtering**: Regular Admins now only see pending deletions (🗑 Διαγραφή) in the startup popup. Pending additions (➕ Προσθήκη) are now filtered out and only visible to Supervisors.
+
 # v2.21.013
 - **General Settings UI Refinement**: Added "Show for" text before the pending popup role dropdown and increased the dropdown width for a cleaner, more readable layout. The "Show for" label now correctly dims when the popup is disabled.
 
