@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.009";
+    const VERSION = "v2.21.010";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1486,6 +1486,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const subtitle = document.getElementById('pendingPopupSubtitle');
         if (!overlay || !tbody) return;
 
+        // Apply minimal (no-blur) mode consistent with the showOnlyModal setting
+        if (localStorage.getItem('tf_show_only_modal') === 'true') {
+            overlay.classList.add('minimal');
+        } else {
+            overlay.classList.remove('minimal');
+        }
+
         subtitle.textContent = `${pending.length} record${pending.length !== 1 ? 's' : ''} awaiting your approval`;
 
         tbody.innerHTML = pending.map(r => {
@@ -1627,15 +1634,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (showOnlyModalSetting && recordModalEl) {
             const isMinimal = localStorage.getItem('tf_show_only_modal') === 'true';
             showOnlyModalSetting.checked = isMinimal;
-            if (isMinimal) recordModalEl.classList.add('minimal');
+
+            // Helper: apply minimal class to all modal overlays
+            const applyMinimalToAll = (enabled) => {
+                const modals = [recordModalEl, document.getElementById('pendingPopupOverlay')];
+                modals.forEach(m => {
+                    if (!m) return;
+                    if (enabled) m.classList.add('minimal');
+                    else m.classList.remove('minimal');
+                });
+            };
+
+            applyMinimalToAll(isMinimal);
 
             showOnlyModalSetting.addEventListener('change', () => {
                 localStorage.setItem('tf_show_only_modal', showOnlyModalSetting.checked);
-                if (showOnlyModalSetting.checked) {
-                    recordModalEl.classList.add('minimal');
-                } else {
-                    recordModalEl.classList.remove('minimal');
-                }
+                applyMinimalToAll(showOnlyModalSetting.checked);
                 syncSettingsToCloud();
             });
         }

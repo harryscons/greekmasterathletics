@@ -1,3 +1,6 @@
+# v2.21.010
+- **Pending Popup respects "Show Only Modal" setting**: The pending records popup now consistently applies or removes the `minimal` class (no background blur) based on the "Show Only Modal Window (No Background Blur)" general setting — exactly like all other modal windows. Both the init startup and the `showPendingPopup()` function read from `tf_show_only_modal`.
+
 # v2.21.009
 - **Popup Trigger Fix for Cloud Supervisor**: For cloud users (e.g., cha.kons@gmail.com), the popup now fires inside `updateUIForAuth` — the exact moment the supervisor role is confirmed — rather than depending on complex timing guards. Local environment continues to use the `renderAll` guard.
 - **Popup Overlay Fix**: Removed the transparent background from the pending popup overlay. Now uses the standard dark modal overlay style consistent with all other modals.
