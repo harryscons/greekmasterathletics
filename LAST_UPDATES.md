@@ -1,3 +1,6 @@
+# v2.20.103
+- **Missing Dropdown Options Fix**: Upgraded the form population logic for both the History and Live Record editors. If an archived record contains an Event or Athlete name that has since been deleted or altered in the active database, the editor will now dynamically recreate that option (labeled as "Archived") so the form field never appears blank.
+
 # v2.20.102
 - **History Form Population Fix**: Implemented a robust value-matching helper in the History Editor to ensure Dropdowns (specifically the "Event" dropdown) populate correctly even if the archived string formatting differs slightly from the current dropdown definitions.
 

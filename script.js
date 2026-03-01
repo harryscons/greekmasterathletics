@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.102";
+    const VERSION = "v2.20.103";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5389,7 +5389,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el.value !== target) {
                 const options = Array.from(el.options);
                 const matchingOpt = options.find(o => o.text.trim() === target || o.value.trim() === target);
-                if (matchingOpt) el.value = matchingOpt.value;
+                if (matchingOpt) {
+                    el.value = matchingOpt.value;
+                } else if (target) {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = target;
+                    newOpt.textContent = `${target} (Archived)`;
+                    el.appendChild(newOpt);
+                    el.value = target;
+                }
             }
         };
 
@@ -5635,7 +5643,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el.value !== target) {
                 const options = Array.from(el.options);
                 const matchingOpt = options.find(o => o.text.trim() === target || o.value.trim() === target);
-                if (matchingOpt) el.value = matchingOpt.value;
+                if (matchingOpt) {
+                    el.value = matchingOpt.value;
+                } else if (target) {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = target;
+                    newOpt.textContent = `${target} (Archived/Unknown)`;
+                    el.appendChild(newOpt);
+                    el.value = target;
+                }
             }
         };
 
