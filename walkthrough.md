@@ -1,8 +1,16 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.84: Ultimate History Refinement
+- **Standardized Archive Interface**: The Records History tab now looks and feels like the rest of the app, using the same spacing and design components as the main report.
+- **Fail-Safe Filters**: Re-engineered the archive filters to be far more robust. They now handle your historical data with 100% reliability and feature crystal-clear labeling.
+
 ## v2.20.83: History Filter Refinement
 - **Data-Driven Filters**: Corrected the technical logic for the history archive filters. Dropdowns now correctly list all available athletes, events, and years from your records.
 - **Tighter Layout**: Refined the spacing of the archive section to ensure more data is visible without unnecessary vertical scrolling.
+
+## v2.20.82: Advanced History Filtering
+- **6-Way Archive Research**: Added a new filter bar to the Records History tab. You can now drill down through the entire archive by Event, Athlete, Gender, Age Group, Record Year, and Archive Date.
+- **Dynamic Filter Synchronization**: The filters update intelligently based on your current selection, ensuring you only see valid available options in the archive.
 
 ## v2.20.81: WMA Statistics Restoration
 - **Variable Correction**: Fixed a technical error in the statistics engine where the WMA report was looking for the wrong internal identifiers. This correction immediately restores the visibility of all WMA points and calculations.
