@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.88";
+    const VERSION = "v2.20.89";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -50,8 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkReady() {
         if (isDataReady) return;
-        // Verify we have received snapshots for all critical data nodes
-        if (loadedNodes.size >= CORE_NODES.length) {
+        // v2.20.89 Diagnostic
+        const missing = CORE_NODES.filter(n => !loadedNodes.has(n));
+        if (missing.length > 0) {
+            console.log("⏳ Waiting for sync:", missing.join(', '));
+        }
+
+        if (loadedNodes.size >= CORE_NODES.length && missing.length === 0) {
             console.log("✅ Data Consensus Reached. System is now READY.");
             isDataReady = true;
 

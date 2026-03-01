@@ -1,3 +1,7 @@
+# v2.20.89
+- **Emergency Sync Fix**: Added diagnostic logging to the data synchronization engine to identify and resolve "stuck" initialization states.
+- **Sorting Refinement (Finalized)**: Verified and fixed the "replaced-by" sorting logic. History items are now precisely ordered by the performance date of the current live record that holds the title.
+
 # v2.20.88
 - **Smart Sorting Reborn**: The History list now sorts event categories based on the *performance date* of the current record (the record that replaced the archives). This ensures you see the most recent athletic achievements at the very top.
 - **Fail-Safe Form Loading**: Completely overhauled the `editHistory` initialization. The record modal now performs a clean reset before meticulously populating every single field from the archive, eliminating "missing field" errors.
