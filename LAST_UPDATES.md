@@ -1,3 +1,7 @@
+# v2.20.83
+- **History Filter Refinement**: Fixed a ReferenceError that caused the new history filters to appear empty. The filters now correctly populate with Event, Athlete, and Year data.
+- **UI Spacing Optimization**: Tightened the layout of the Records History tab by reducing excessive padding and margins around the filter bar.
+
 # v2.20.82
 - **Advanced History Filtering**: Introduced a new suite of filters for the Records History tab. Users can now filter the archive by Event, Athlete, Gender, Age Group, Year, and Date Archived, making it much easier to research specific records within the historical data.
 

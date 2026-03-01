@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.82";
+    const VERSION = "v2.20.83";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -4993,13 +4993,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!exclusions.event && selEvent !== 'all' && r.event !== selEvent) return false;
             if (!exclusions.athlete && selAthlete !== 'all' && r.athlete !== selAthlete) return false;
             if (!exclusions.gender && selGender !== 'all') {
-                const g = normalizeGenderLookups(r.gender);
+                const g = typeof normalizeGenderLookups === 'function' ? normalizeGenderLookups(r.gender) : r.gender;
                 if (selGender === 'Male' && g !== 'men') return false;
                 if (selGender === 'Female' && g !== 'women') return false;
                 if (selGender === 'Mixed' && g !== 'mixed') return false;
             }
             if (!exclusions.year && selYear !== 'all') {
-                const y = getYearFromDate(r.date);
+                const y = r.date ? new Date(r.date).getFullYear().toString() : '';
                 if (y !== selYear) return false;
             }
             if (!exclusions.ageGroup && selAgeGroup !== 'all' && r.ageGroup !== selAgeGroup) return false;
@@ -5032,7 +5032,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSelect('historyFilterAthlete', athletesList, selAthlete);
 
         // 3. Years
-        const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => getYearFromDate(r.date)))].filter(Boolean).sort((a, b) => b - a);
+        const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => r.date ? new Date(r.date).getFullYear().toString() : ''))].filter(Boolean).sort((a, b) => b - a);
         updateSelect('historyFilterYear', yearsList, selYear);
 
         // 4. Age Groups
@@ -5072,13 +5072,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selEvent !== 'all' && r.event !== selEvent) return false;
             if (selAthlete !== 'all' && r.athlete !== selAthlete) return false;
             if (selGender !== 'all') {
-                const g = normalizeGenderLookups(r.gender);
+                const g = typeof normalizeGenderLookups === 'function' ? normalizeGenderLookups(r.gender) : r.gender;
                 if (selGender === 'Male' && g !== 'men') return false;
                 if (selGender === 'Female' && g !== 'women') return false;
                 if (selGender === 'Mixed' && g !== 'mixed') return false;
             }
             if (selAgeGroup !== 'all' && r.ageGroup !== selAgeGroup) return false;
-            if (selYear !== 'all' && getYearFromDate(r.date) !== selYear) return false;
+            if (selYear !== 'all' && (r.date ? new Date(r.date).getFullYear().toString() : '') !== selYear) return false;
             if (selArchDate !== 'all') {
                 const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : '';
                 if (d !== selArchDate) return false;
