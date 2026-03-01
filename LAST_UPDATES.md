@@ -1,3 +1,6 @@
+# v2.21.021
+- **DIAGNOSTIC UPDATE: Pending Popup for Admins**: Added detailed "🕵️" console logging to the startup sequence and simplified the role-based logic in `showPendingPopup`. This will help identify if the popup is being suppressed by a settings conflict, a data synchronization delay, or a role detection error.
+
 # v2.21.020
 - **FIX: Pending Popup for Admins (Final)**: Resolved a variable synchronization issue where the startup popup would fail to identify the user's role because it fired before the global role flags were updated. The retry loop now correctly synchronizes these flags after the cloud data sync is complete.
 

@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.020";
+    const VERSION = "v2.21.021";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1508,10 +1508,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // (local env is covered by renderAll guard)
         if (!isLocalEnvironment()) {
             const tryTriggerPopup = () => {
+                const isLocal = isLocalEnvironment();
                 // Re-calculate flags locally to avoid stale context during retries
-                const currentRole = user ? getUserRole(user.email) : null;
+                const currentRole = user ? getUserRole(user.email) : (isLocal ? 'Supervisor' : null);
                 const currentIsAdmin = currentRole === 'Admin' || currentRole === 'Supervisor' || isLocal;
                 const currentIsSuper = currentRole === 'Supervisor' || isLocal;
+
+                console.log(`🕵️ Popup Trigger Check: usersLoaded=${loadedNodes.has('users')}, recsLoaded=${loadedNodes.has('pendingrecs')}, role=${currentRole}`);
 
                 if (loadedNodes.has('users') && loadedNodes.has('pendingrecs')) {
                     // CRITICAL: Synchronize global role flags so showPendingPopup() can see them correctly
@@ -1519,12 +1522,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     isSuper = currentIsSuper;
 
                     if (isAdmin || isSuper) {
-                        console.log("🔔 Triggering pending popup check...");
+                        console.log(`🔔 Triggering pending popup check... (Admin=${isAdmin}, Super=${isSuper})`);
                         setTimeout(() => showPendingPopup(), 1000);
+                    } else {
+                        console.log("🕵️ Popup skipped: User is neither Admin nor Supervisor.");
                     }
                 } else {
                     // Wait for both user data and pending records to sync before triggering
-                    setTimeout(tryTriggerPopup, 500);
+                    setTimeout(tryTriggerPopup, 1000);
                 }
             };
             tryTriggerPopup();
@@ -1532,13 +1537,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showPendingPopup() {
+        console.log("🕵️ showPendingPopup() called.");
         // Respect the "Disable pending popup" setting
-        if (localStorage.getItem('tf_disable_pending_popup') === 'true') return;
+        if (localStorage.getItem('tf_disable_pending_popup') === 'true') {
+            console.log("🕵️ Popup aborted: Disabled in settings.");
+            return;
+        }
 
         // Respect the role setting: 'supervisor' = only isSuper, 'all' = isAdmin or isSuper
         const roleTarget = localStorage.getItem('tf_pending_popup_role') || 'all';
-        if (roleTarget === 'supervisor' && !isSuper) return;
-        if (roleTarget === 'all' && !isAdmin && !isSuper) return;
+        console.log(`🕵️ Role Check: roleTarget=${roleTarget}, isAdmin=${isAdmin}, isSuper=${isSuper}`);
+
+        if (roleTarget === 'supervisor' && !isSuper) {
+            console.log("🕵️ Popup aborted: Restricted to Supervisors only.");
+            return;
+        }
+        if (roleTarget === 'all' && !(isAdmin || isSuper)) {
+            console.log("🕵️ Popup aborted: User has no Admin/Super privileges.");
+            return;
+        }
 
         // Use the dedicated pendingrecs array (separate Firebase node)
         let pending = Array.isArray(pendingrecs) ? [...pendingrecs] : [];
