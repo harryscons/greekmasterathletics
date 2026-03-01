@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.71: Unified History Lineage
+- **Live Version Visibility**: The Record History tab now intelligently displays current live records when using the "Newest First" sort order.
+- **Perfect Continuity**: Expanding the "LIVE RECORD" row instantly reveals the previous archive, ensuring you can trace any result from its current state all the way back to its origin.
+
 ## v2.20.70: UI Stability & Sync Optimization
 - **Permission Persistence**: Fixed the core issue where theme changes were resetting user permissions in the browser. You now retain access to all tabs regardless of your visual settings.
 - **Improved Performance**: Optimized the cloud sync logic to be faster and more reliable, ensuring your profile is always current without unnecessary network traffic.

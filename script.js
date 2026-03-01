@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.70";
+    const VERSION = "v2.20.71";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -4950,53 +4950,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // v2.20.67: Apply sorting preference
         const oldestFirst = localStorage.getItem('tf_history_old_first') !== 'false';
-        const sortedHistory = [...history].sort((a, b) => {
+
+        // v2.20.71: v2.20.71: Inclusion of Live records in history view for Newest First
+        let displayList = [...history];
+
+        const clean = (s) => (s || '').toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const getCatKey = (rec) => {
+            if (!rec) return '';
+            const g = typeof normalizeGender === 'function' ? normalizeGender(rec.gender) : rec.gender;
+            return `${clean(rec.event)}|${clean(g)}|${clean(rec.ageGroup)}|${clean(rec.trackType || 'Outdoor')}`;
+        };
+
+        if (!oldestFirst) {
+            // Find unique categories in history
+            const categories = [...new Set(history.map(h => getCatKey(h)))];
+            categories.forEach(rKey => {
+                const live = records.find(curr => getCatKey(curr) === rKey);
+                if (live && !history.some(h => h.id === live.id)) {
+                    // Inject live record with a virtual archivedAt (now)
+                    displayList.push({ ...live, isLive: true, archivedAt: new Date().toISOString() });
+                }
+            });
+        }
+
+        displayList.sort((a, b) => {
             const timeA = new Date(a.archivedAt).getTime();
             const timeB = new Date(b.archivedAt).getTime();
             return oldestFirst ? timeA - timeB : timeB - timeA;
         });
 
-        sortedHistory.forEach(r => {
+        displayList.forEach(r => {
             const tr = document.createElement('tr');
-            // v2.20.54: Robust Successor Matching via Category Key
-            // This ensures the "+" button works even if IDs change (e.g. during imports)
-            const clean = (s) => (s || '').toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const getCatKey = (rec) => {
-                if (!rec) return '';
-                // Use normalized values consistent with handleMappedImport
-                const g = typeof normalizeGender === 'function' ? normalizeGender(rec.gender) : rec.gender;
-                return `${clean(rec.event)}|${clean(g)}|${clean(rec.ageGroup)}|${clean(rec.trackType || 'Outdoor')}`;
-            };
+            if (r.isLive) {
+                tr.style.background = 'rgba(var(--primary-rgb), 0.05)';
+                tr.classList.add('live-record-row');
+            }
 
             const rKey = getCatKey(r);
 
             // 1. Find all history versions for this category
             const versions = history.filter(h => getCatKey(h) === rKey)
                 .sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
-            const currentIndex = versions.findIndex(v => v.id === r.id);
+
+            // Check if Live record exists for this category
+            const liveRec = records.find(curr => getCatKey(curr) === rKey);
+            const fullVersions = [...versions];
+            if (liveRec && !versions.some(v => v.id === liveRec.id)) {
+                fullVersions.push(liveRec);
+            }
+
+            const currentIndex = fullVersions.findIndex(v => v.id === r.id);
 
             let linkedRec = null;
             let linkedLabel = '';
 
             if (oldestFirst) {
                 // v2.20.69: If Oldest First, expansion shows the successor (newer)
-                if (currentIndex !== -1 && currentIndex < versions.length - 1) {
-                    linkedRec = versions[currentIndex + 1];
-                    linkedLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
-                } else {
-                    // Look for the live record
-                    linkedRec = records.find(curr => getCatKey(curr) === rKey);
-                    linkedLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
-                    if (linkedRec && linkedRec.id === r.id) linkedRec = null;
+                if (currentIndex !== -1 && currentIndex < fullVersions.length - 1) {
+                    linkedRec = fullVersions[currentIndex + 1];
+                    const isNextLive = !history.some(h => h.id === linkedRec.id);
+                    linkedLabel = isNextLive ? 'REPLACED BY (CURRENT LIVE VERSION)' : 'REPLACED BY (INTERMEDIATE VERSION)';
                 }
             } else {
                 // v2.20.69: If Newest First, expansion shows the predecessor (older)
                 if (currentIndex > 0) {
-                    linkedRec = versions[currentIndex - 1];
+                    linkedRec = fullVersions[currentIndex - 1];
                     linkedLabel = 'REPLACED PREVIOUS VERSION (ARCHIVED)';
-                } else {
-                    // This is the absolute oldest version in history, no predecessor.
-                    linkedRec = null;
                 }
             }
 
@@ -5017,18 +5036,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
                 <td>${r.raceName || '-'}</td>
                 <td>${r.updatedBy || 'N/A'}</td>
-                <td style="font-size:0.85em; color:var(--text-muted);">${new Date(r.archivedAt).toLocaleString('en-GB')}</td>
+                <td style="font-size:0.85em; color:var(--text-muted);">
+                    ${r.isLive ? '<span style="color:var(--success); font-weight:bold;">LIVE RECORD</span>' : new Date(r.archivedAt).toLocaleString('en-GB')}
+                </td>
                  <td class="history-actions-col" style="${isSup ? '' : 'display:none;'}">
-                    <button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
-                    <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>
+                    ${r.isLive
+                    ? `<button class="btn-icon edit" onclick="editRecord('${r.id}')" title="Edit Live">✏️</button>`
+                    : `<button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
+                           <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>`
+                }
                 </td>
             `;
 
             // Add double-click listener for Read-Only view
             tr.style.cursor = 'pointer';
-            tr.title = 'Double-click to view archived details';
+            tr.title = r.isLive ? 'Double-click to view Live details' : 'Double-click to view archived details';
             tr.addEventListener('dblclick', () => {
-                editHistory(r.id, true);
+                if (r.isLive) openRecordModal(r.id, false, true);
+                else editHistory(r.id, true);
             });
 
             tbody.appendChild(tr);

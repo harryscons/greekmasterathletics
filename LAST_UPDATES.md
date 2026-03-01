@@ -1,3 +1,7 @@
+# v2.20.71
+- **Live-Archive Unified History**: When "Newest First" is enabled, the Record History tab now includes the current Live record at the top of each lineage stack.
+- **Smart Stacking**: Expanding a Live record now correctly shows the latest archived version it replaced, creating a complete chronological chain from current to oldest.
+
 # v2.20.70
 - **Critical UI Fix**: Fixed a bug where switching themes or loading cloud settings accidentally hid the Supervisor/Admin tabs. Permission-based status is now correctly preserved.
 - **Sync Optimization**: Improved the cloud synchronization engine with smart guards to prevent redundant data writes and circular updates.
@@ -61,7 +65,7 @@
 - **Athletic Palette**: Imported the professional design system from the `emacsi-2026` project.
 - **Improved Charting**: Added theme-specific chart overrides to ensure data visualization matches the professional aesthetic.
 
-### v2.20.54: Robust History Lineage
+# v2.20.54: Robust History Lineage
 - **Restored History Expansion**: Fixed the issue where the "+" symbol was missing for many archived records. Lineage tracking now uses category-based matching (Event, Gender, Age Group), which is much more reliable than ID-based matching.
 - **Improved Detail Transparency**: Expansion rows now clearly state whether a record was replaced by an "Intermediate Version" or the "Current Live Version".
 
