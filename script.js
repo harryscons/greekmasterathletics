@@ -41,8 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.72";
-    const LAST_UPDATE = "2026-02-28";
+    const VERSION = "v2.20.73";
+    const LAST_UPDATE = "2026-03-01";
+
+    // v2.20.73: Persistent History Sort State
+    window.historySortKey = 'archivedAt';
+    window.historySortDir = 'desc';
 
     function checkReady() {
         if (isDataReady) return;
@@ -2551,6 +2555,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (delBtn) deleteHistory(delBtn.dataset.id);
             if (editBtn) editHistory(editBtn.dataset.id);
         });
+
+        // v2.20.73: History Header Sorting Listeners
+        const historyTable = historyListBody.closest('table');
+        if (historyTable) {
+            historyTable.querySelectorAll('thead th.sortable').forEach(th => {
+                th.addEventListener('click', () => {
+                    const key = th.dataset.sortKey;
+                    if (window.historySortKey === key) {
+                        window.historySortDir = window.historySortDir === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        window.historySortKey = key;
+                        window.historySortDir = 'asc';
+                    }
+                    renderHistoryList();
+                });
+            });
+        }
     }
 
     function switchTab(tabId) {
@@ -4961,30 +4982,58 @@ document.addEventListener('DOMContentLoaded', () => {
             return `${clean(rec.event)}|${clean(g)}|${clean(rec.ageGroup)}|${clean(rec.trackType || 'Outdoor')}`;
         };
 
-        if (oldestFirst) {
-            // v2.20.72: Traditional Flat List for Oldest First
-            displayList.sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
-        } else {
-            // v2.20.72: Grouped View for Newest First (Avoids Duplication)
-            const categories = [...new Set(history.map(h => getCatKey(h)))];
-            displayList = []; // Rebuild for grouping
+        // v2.20.72: Grouped View (Avoids Duplication)
+        const categories = [...new Set(history.map(h => getCatKey(h)))];
+        displayList = [];
 
-            categories.forEach(rKey => {
-                const versions = history.filter(h => getCatKey(h) === rKey)
-                    .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt)); // Newest Archive first
+        categories.forEach(rKey => {
+            const versions = history.filter(h => getCatKey(h) === rKey)
+                .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
 
-                const live = records.find(curr => getCatKey(curr) === rKey);
+            const live = records.find(curr => getCatKey(curr) === rKey);
 
-                // The "Head" is the Live record if it exists, otherwise the Newest Archive
-                if (live) {
-                    displayList.push({ ...live, isLive: true, archivedAt: new Date().toISOString(), historyBranch: versions });
-                } else if (versions.length > 0) {
-                    const head = versions[0];
-                    displayList.push({ ...head, historyBranch: versions.slice(1) });
+            if (live) {
+                displayList.push({ ...live, isLive: true, archivedAt: new Date().toISOString(), historyBranch: versions });
+            } else if (versions.length > 0) {
+                const head = versions[0];
+                displayList.push({ ...head, historyBranch: versions.slice(1) });
+            }
+        });
+
+        // v2.20.73: Apply Dynamic Sorting
+        const key = window.historySortKey || 'archivedAt';
+        const dir = window.historySortDir === 'desc' ? -1 : 1;
+
+        displayList.sort((a, b) => {
+            let valA = a[key];
+            let valB = b[key];
+
+            // Robust sorting for specific fields
+            if (key === 'date' || key === 'archivedAt') {
+                valA = new Date(valA || 0).getTime();
+                valB = new Date(valB || 0).getTime();
+            } else if (key === 'mark') {
+                valA = parseMarkByRule(valA, a.event);
+                valB = parseMarkByRule(valB, b.event);
+            } else {
+                valA = (valA || '').toString().toLowerCase();
+                valB = (valB || '').toString().toLowerCase();
+            }
+
+            if (valA < valB) return -1 * dir;
+            if (valA > valB) return 1 * dir;
+            return 0;
+        });
+
+        // v2.20.73: Inject Sort Arrows into Headers
+        const table = tbody.closest('table');
+        if (table) {
+            table.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('asc', 'desc');
+                if (th.dataset.sortKey === key) {
+                    th.classList.add(window.historySortDir);
                 }
             });
-
-            displayList.sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
         }
 
         displayList.forEach(r => {

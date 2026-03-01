@@ -1,5 +1,13 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.73: Interactive History Sorting
+- **Clickable Columns**: Every column in the Record History tab is now interactive. Click a header to instantly sort your archives by that field.
+- **Smart Default Sorting**: The system now remembers your lineage grouping and defaults to showing the most recent updates on top for a faster workflow.
+
+## v2.20.72: Grouped History & Zero Duplication
+- **Clean Overview**: We've optimized the "Newest First" view to group records by event. No more seeing the same result twice!
+- **Deep Historical Access**: The expansion button now unlocks the complete lineage of an event, stacking every historical change in a neatly organized sub-list.
+
 ## v2.20.71: Unified History Lineage
 - **Live Version Visibility**: The Record History tab now intelligently displays current live records when using the "Newest First" sort order.
 - **Perfect Continuity**: Expanding the "LIVE RECORD" row instantly reveals the previous archive, ensuring you can trace any result from its current state all the way back to its origin.
