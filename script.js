@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.008";
+    const VERSION = "v2.21.009";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -462,20 +462,8 @@ document.addEventListener('DOMContentLoaded', () => {
             renderReports(); // Re-render main report to show pending changes
 
             // Show popup once for supervisor when pending data arrives.
-            // Auth may arrive after data, so retry for up to 5 seconds.
-            if (!db._pendingPopupShown) {
-                db._pendingPopupShown = true;
-                let attempts = 0;
-                const tryPopup = () => {
-                    if (isSuper) {
-                        setTimeout(() => showPendingPopup(), 300);
-                    } else if (attempts < 10) {
-                        attempts++;
-                        setTimeout(tryPopup, 500);
-                    }
-                };
-                setTimeout(tryPopup, 500);
-            }
+            // For cloud users: auth arrives after data, so updateUIForAuth drives the popup.
+            // For local users: renderAll guard handles it.
         });
 
         // Listen for Users
@@ -1478,9 +1466,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const submitBtn = document.getElementById('submitBtn');
         if (submitBtn) submitBtn.disabled = !isAdmin;
 
-        // Show pending popup for supervisors on login
-        if (isSuper && isDataReady) {
-            setTimeout(() => showPendingPopup(), 800);
+        // Show pending popup for cloud supervisor login
+        // (local env is covered by renderAll guard)
+        if (isSuper && !isLocalEnvironment()) {
+            setTimeout(() => showPendingPopup(), 1000);
         }
     }
 

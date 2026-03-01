@@ -1,3 +1,7 @@
+# v2.21.009
+- **Popup Trigger Fix for Cloud Supervisor**: For cloud users (e.g., cha.kons@gmail.com), the popup now fires inside `updateUIForAuth` — the exact moment the supervisor role is confirmed — rather than depending on complex timing guards. Local environment continues to use the `renderAll` guard.
+- **Popup Overlay Fix**: Removed the transparent background from the pending popup overlay. Now uses the standard dark modal overlay style consistent with all other modals.
+
 # v2.21.008
 - **Pending Popup Root Cause Fix**: The popup was reading from `records.filter(isPending)` but pending records are stored in a completely separate Firebase node (`pendingrecs`). Fixed to use the correct `pendingrecs` array. Also replaced the simple `isSuper` guard with a retry loop (polls up to 10 times × 500ms) because Firebase auth state often resolves after the `pendingrecs` data listener fires.
 
