@@ -672,9 +672,16 @@ select:focus {
 .report-table th {
     position: sticky;
     top: 0;
-    z-index: 10;
-    background-color: var(--bg-card);
-    /* Ensure solid background so rows don't show through */
+    z-index: 50;
+    background: var(--bg-dropdown);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    white-space: nowrap;
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+    transition: background 0.2s;
 }
 
 /* Compact style for management tables */
@@ -753,20 +760,7 @@ select:focus {
     text-align: right;
 }
 
-.report-table th {
-    background: var(--bg-dropdown);
-    /* solid color */
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 0.85rem;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    transition: background 0.2s;
-    white-space: nowrap;
-    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
-    /* visual separation */
-}
+/* Standardized header sorting and padding moved to .report-table th above */
 
 .report-table th.sortable {
     cursor: pointer;

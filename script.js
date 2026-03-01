@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.62";
+    const VERSION = "v2.20.63";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -2764,11 +2764,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (thead) {
             thead.innerHTML = colDefs.map(col => {
                 const active = col.field === rankingsSortField;
-                const arrow = active ? (rankingsSortOrder === 'asc' ? ' ▲' : ' ▼') : ' <span style="opacity:0.35">↕</span>';
                 const alignStyle = col.align === 'right' ? 'text-align:right;' : (col.align === 'center' ? 'text-align:center;' : '');
                 const widthStyle = col.width ? `width:${col.width};` : '';
                 const activeStyle = active ? 'color:var(--accent);' : '';
-                return `<th onclick="sortRankings('${col.field}')" style="cursor:pointer; ${widthStyle} ${alignStyle} ${activeStyle}">${col.label}${arrow}</th>`;
+                const sortClass = active ? (rankingsSortOrder === 'asc' ? 'sortable asc' : 'sortable desc') : 'sortable';
+                return `<th onclick="sortRankings('${col.field}')" class="${sortClass}" style="${widthStyle} ${alignStyle} ${activeStyle}">${col.label}</th>`;
             }).join('');
         }
 
@@ -2778,13 +2778,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const genderLabel = item.gender === 'Male' ? 'Άνδρες' : (item.gender === 'Female' ? 'Γυναίκες' : (item.gender || '-'));
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="text-align:center; font-weight:bold; color:var(--text-muted);">${rankDisplay}</td>
-                <td style="font-weight:600;">${item.name}</td>
-                <td>${genderLabel}</td>
-                <td>${item.ageGroup || '-'}</td>
-                <td style="text-align:right; font-weight:700; color:var(--accent);">${item.bestPts.toFixed(1)}</td>
-                <td style="text-align:right; color:var(--text-muted);">${item.avgPts.toFixed(1)}</td>
-                <td style="text-align:right;">${item.count}</td>
+                <td data-label="#">${rankDisplay}</td>
+                <td data-label="Athlete" style="font-weight:600;">${item.name}</td>
+                <td data-label="Gender">${genderLabel}</td>
+                <td data-label="Age Group">${item.ageGroup || '-'}</td>
+                <td data-label="Best WMA Pts" style="text-align:right;"><b>${item.bestPts.toFixed(2)}</b></td>
+                <td data-label="Avg WMA Pts" style="text-align:right;">${item.avgPts.toFixed(2)}</td>
+                <td data-label="Records" style="text-align:right;">${item.count}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -3812,6 +3812,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderAthleteList() {
         if (!athleteListBody) return;
+
+        // Update header classes for sorting arrows
+        const table = athleteListBody.closest('table');
+        if (table) {
+            table.querySelectorAll('thead th.sortable').forEach(th => {
+                th.classList.remove('asc', 'desc');
+                const onclickStr = th.getAttribute('onclick') || '';
+                if (onclickStr.includes(`'${athleteSortField}'`)) {
+                    th.classList.add(athleteSortOrder === 'asc' ? 'asc' : 'desc');
+                }
+            });
+        }
+
         athleteListBody.innerHTML = '';
 
         try {
@@ -3851,12 +3864,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 sorted.forEach(a => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${a.idNumber || '-'}</td>
-                        <td style="font-weight:600;">${a.lastName}</td>
-                        <td>${a.firstName}</td>
-                        <td>${a.dob ? new Date(a.dob).toLocaleDateString('en-GB') : '-'}</td>
-                        <td>${a.gender || '-'}</td>
-                        <td class="actions-col">
+                        <td data-label="ID">${a.idNumber || '-'}</td>
+                        <td data-label="Last Name" style="font-weight:600;">${a.lastName}</td>
+                        <td data-label="First Name">${a.firstName}</td>
+                        <td data-label="DOB">${a.dob ? new Date(a.dob).toLocaleDateString('en-GB') : '-'}</td>
+                        <td data-label="Gender">${a.gender || '-'}</td>
+                        <td class="actions-col" data-label="Actions">
                             <button class="btn-icon edit edit-athlete-btn" data-id="${a.id}" title="Edit">✏️</button>
                             <button class="btn-icon delete delete-athlete-btn" data-id="${a.id}" title="Delete">🗑️</button>
                         </td>
@@ -3978,10 +3991,10 @@ document.addEventListener('DOMContentLoaded', () => {
         displayUsers.forEach(u => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${u.name || 'N/A'}</td>
-                <td><span class="badge" style="background:var(--primary); color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${u.role || 'User'}</span></td>
-                <td>${u.email || 'N/A'}</td>
-                <td style="text-align:center;">
+                <td data-label="Name">${u.name || 'N/A'}</td>
+                <td data-label="Role"><span class="badge" style="background:var(--primary); color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${u.role || 'User'}</span></td>
+                <td data-label="Email">${u.email || 'N/A'}</td>
+                <td class="actions-col" data-label="Actions" style="text-align:center;">
                     ${isSuper ? `
                     <div style="display:flex; gap:0.5rem; justify-content:center;">
                         <button class="edit-user-btn btn-text" data-id="${u.id}" title="Edit">✏️</button>
@@ -4374,17 +4387,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             tr.innerHTML = `
-                <td style="text-align:center; white-space:nowrap;">
+                <td data-label="Order" style="text-align:center; white-space:nowrap;">
                     <button class="btn-icon move-event-up" data-id="${ev.id}" title="Move Up" ${index === 0 ? 'disabled' : ''}>⬆️</button>
                     <button class="btn-icon move-event-down" data-id="${ev.id}" title="Move Down" ${index === events.length - 1 ? 'disabled' : ''}>⬇️</button>
                 </td>
-                <td style="font-weight:600;">${ev.name}</td>
-                <td style="font-size:0.85em; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${ev.formula || ''}">${ev.formula || '-'}</td>
-                <td style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.specs || '-'}</td>
-                <td style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.notes || '-'}</td>
-            <td style="font-size:0.85rem; color:var(--accent);">${ev.iaafEvent || '-'} / ${ev.wmaEvent || '-'}</td>
-            <td>${typeBadge}</td>
-                <td style="white-space:nowrap;">
+                <td data-label="Event Name" style="font-weight:600;">${ev.name}</td>
+                <td data-label="Formula" style="font-size:0.85em; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${ev.formula || ''}">${ev.formula || '-'}</td>
+                <td data-label="Tech Specs" style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.specs || '-'}</td>
+                <td data-label="Notes" style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.notes || '-'}</td>
+                <td data-label="IAAF/WMA" style="font-size:0.85rem; color:var(--accent);">${ev.iaafEvent || '-'} / ${ev.wmaEvent || '-'}</td>
+                <td data-label="Type">${typeBadge}</td>
+                <td class="actions-col" data-label="Actions" style="white-space:nowrap;">
                     <button class="btn-icon edit edit-event-btn" data-id="${ev.id}" title="Edit">✏️</button>
                     <button class="btn-icon delete delete-event-btn" data-id="${ev.id}" 
                         title="${isUsed ? 'In use' : 'Delete'}" ${isUsed ? 'disabled' : ''}>🗑️</button>

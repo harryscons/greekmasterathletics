@@ -1,3 +1,8 @@
+# v2.20.63
+- **Unified Table Styles**: Standardized all application tables (Statistics, Athletes, Events, Users) to use the "soft style" of the main report, including consistent headers and fonts.
+- **Global Mobile Card View**: Enabled the compact card-based layout for all tables when viewed on mobile devices, ensuring data is perfectly legible and aligned everywhere.
+- **CSS-Based Sorting arrows**: Removed manual arrow characters in favor of sleek, CSS-based sorting indicators that toggle automatically.
+
 # v2.20.62
 - **Compact Mobile Layout**: Tightened the card-based mobile view by reducing redundant padding, margins, and font sizes. This allows significantly more records to be visible on phones while maintaining perfect alignment and readability.
 
