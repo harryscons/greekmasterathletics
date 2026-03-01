@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.73";
+    const VERSION = "v2.20.74";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -4982,23 +4982,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return `${clean(rec.event)}|${clean(g)}|${clean(rec.ageGroup)}|${clean(rec.trackType || 'Outdoor')}`;
         };
 
-        // v2.20.72: Grouped View (Avoids Duplication)
-        const categories = [...new Set(history.map(h => getCatKey(h)))];
-        displayList = [];
+        if (oldestFirst) {
+            // v2.20.74: Flat List for Oldest First (Traditional Detail)
+            displayList = [...history];
+        } else {
+            // v2.20.72: Grouped View for Newest First (Avoids Duplication)
+            const categories = [...new Set(history.map(h => getCatKey(h)))];
+            displayList = [];
 
-        categories.forEach(rKey => {
-            const versions = history.filter(h => getCatKey(h) === rKey)
-                .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+            categories.forEach(rKey => {
+                const versions = history.filter(h => getCatKey(h) === rKey)
+                    .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt)); // Newest Archive first
 
-            const live = records.find(curr => getCatKey(curr) === rKey);
+                const live = records.find(curr => getCatKey(curr) === rKey);
 
-            if (live) {
-                displayList.push({ ...live, isLive: true, archivedAt: new Date().toISOString(), historyBranch: versions });
-            } else if (versions.length > 0) {
-                const head = versions[0];
-                displayList.push({ ...head, historyBranch: versions.slice(1) });
-            }
-        });
+                if (live) {
+                    displayList.push({ ...live, isLive: true, archivedAt: new Date().toISOString(), historyBranch: versions });
+                } else if (versions.length > 0) {
+                    const head = versions[0];
+                    displayList.push({ ...head, historyBranch: versions.slice(1) });
+                }
+            });
+        }
 
         // v2.20.73: Apply Dynamic Sorting
         const key = window.historySortKey || 'archivedAt';

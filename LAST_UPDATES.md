@@ -1,3 +1,7 @@
+# v2.20.74
+- **History Detail Restoration**: Fixed the missing `+` expansion buttons in the "Oldest First" view. Every historical record is now visible again as a standalone row with its successor expansion.
+- **Hybrid History Logic**: The application now intelligently switches between a Flat List (for chronological history) and a Grouped View (for newest-first summaries) based on your settings.
+
 # v2.20.73
 - **Interactive History Sorting**: Added clickable headers to the Records History table. You can now sort by Event, Athlete, Date, or any other column by clicking its title.
 - **Improved Default View**: The history list now defaults to sorting by the most recent activity (Archived At), ensuring you always see the latest changes first.

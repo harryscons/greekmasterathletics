@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.74: History Expansion Restoration
+- **Chronological Detail**: We've restored the individual row expansion buttons for the "Oldest First" view. You can once again trace every single archival step in chronological order.
+- **Smart Adaptive Mode**: The system now perfectly switches between flat chronological lists and grouped newest-first summaries based on your personal workflow preferences.
+
 ## v2.20.73: Interactive History Sorting
 - **Clickable Columns**: Every column in the Record History tab is now interactive. Click a header to instantly sort your archives by that field.
 - **Smart Default Sorting**: The system now remembers your lineage grouping and defaults to showing the most recent updates on top for a faster workflow.
