@@ -1,3 +1,7 @@
+# v2.20.65
+- **Sticky Management Headers**: Fixed the "Manage Athletes" table so that headers (labels and search boxes) stay fixed at the top while scrolling the list.
+- **Improved Scroll Containment**: Refined the flexbox container logic to ensure internal scrolling works reliably across all settings tabs.
+
 # v2.20.64
 - **Absolute Header Uniformity**: Synchronized heights, fonts, and padding for all table headers across the app (Main, Stats, Athletes, Events, Users).
 - **Balanced Athlete Layout**: Implemented an even column distribution for the Athlete management table (ID, Name, DOB, Gender) while keeping Actions compact.

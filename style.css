@@ -684,6 +684,15 @@ select:focus {
     transition: background 0.2s;
 }
 
+/* Fix for multi-row sticky headers (e.g. Labels + Filters) */
+.report-table thead tr:nth-child(2) th {
+    top: 2.3rem;
+    /* Sticks below the first row of headers */
+    z-index: 49;
+    background: var(--bg-hover);
+    /* Slightly different background to distinguish filter row */
+}
+
 /* Compact style for management tables */
 .compact-rows td {
     padding: 0.4rem 0.6rem !important;
@@ -1147,6 +1156,8 @@ select:focus {
 .setting-section.setting-fill {
     flex: 1;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .setting-section.setting-fill .card {
