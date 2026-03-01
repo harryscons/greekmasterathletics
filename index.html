@@ -140,7 +140,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.21.015</span>
+                        <span class="version-label">v2.21.016</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -471,7 +471,7 @@
                         <button class="sub-tab" data-subtab="wma">WMA Conversion Tables</button>
                         <button class="sub-tab" data-subtab="general">General Settings</button>
                         <button id="subtab-users" class="sub-tab" data-subtab="users">Users</button>
-                        <button class="sub-tab" data-subtab="data">Data Management</button>
+                        <button class="sub-tab hidden" data-subtab="data">Data Management</button>
                     </nav>
                 </div>
 
@@ -981,7 +981,7 @@
                                     Window (No Background Blur)</label>
                             </div>
 
-                            <div class="form-group"
+                            <div class="form-group hidden"
                                 style="flex: 1; flex-direction: row; align-items: center; gap: 0.75rem; margin-bottom: 0;">
                                 <input type="checkbox" id="editHistorySetting"
                                     style="width: 20px; height: 20px; cursor: pointer;">
@@ -989,7 +989,7 @@
                                     edited records to history</label>
                             </div>
 
-                            <div class="form-group"
+                            <div class="form-group hidden"
                                 style="flex: 1; flex-direction: row; align-items: center; gap: 0.75rem; margin-bottom: 0;">
                                 <input type="checkbox" id="restrictAthletesOnEdit"
                                     style="width: 20px; height: 20px; cursor: pointer;">
@@ -997,7 +997,7 @@
                                     athletes on edit (Match Gender & Age Group)</label>
                             </div>
 
-                            <div class="form-group"
+                            <div class="form-group hidden"
                                 style="flex: 1; flex-direction: row; align-items: center; gap: 0.75rem; margin-bottom: 0;">
                                 <input type="checkbox" id="historyOldestFirst"
                                     style="width: 20px; height: 20px; cursor: pointer;">
@@ -1005,7 +1005,7 @@
                                     record first</label>
                             </div>
 
-                            <div class="form-group"
+                            <div class="form-group hidden"
                                 style="flex: 1; flex-direction: row; align-items: center; gap: 0.75rem; margin-bottom: 0; flex-wrap: wrap;">
                                 <input type="checkbox" id="disablePendingPopup"
                                     style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
@@ -1022,7 +1022,8 @@
                                 </select>
                             </div>
 
-                            <div class="form-group" style="padding-top: 1rem; border-top: 1px solid var(--border);">
+                            <div class="form-group hidden"
+                                style="padding-top: 1rem; border-top: 1px solid var(--border);">
                                 <label>Maintenance</label>
                                 <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
                                     <button id="btnRecalculateWMA" class="btn-secondary" style="font-size: 0.9rem;">
@@ -1140,7 +1141,7 @@
                 <section class="card">
                     <div class="section-header">
                         <h2>View Historic Context</h2>
-                        <span class="version-label">v2.21.015</span>
+                        <span class="version-label">v2.21.016</span>
                     </div>
                     <p class="subtitle" style="margin-top: -0.25rem; margin-bottom: 0.75rem;">View and manage previous
                         versions of edited records.</p>

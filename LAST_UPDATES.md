@@ -1,3 +1,6 @@
+# v2.21.016
+- **UI Simplification**: Hid the "Data Management" sub-tab and several advanced options in "General Settings" (Move to History, Restrict Athletes, History Order, Pending Popup, and Maintenance) for a more streamlined user experience.
+
 # v2.21.015
 - **FIX: Access Denied on Refresh**: Resolved a race condition where valid Admins were being logged out on refresh because the app checked their authorization before the cloud user list loaded. The check now waits for the user data node to sync.
 - **FIX: Startup Popup Visibility for Admins**: Improved the trigger logic in `updateUIForAuth` to ensure the popup re-evaluates its role check once cloud data arrives. This ensures Admins correctly see the popup if the setting allows it.
