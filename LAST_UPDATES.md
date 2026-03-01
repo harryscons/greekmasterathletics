@@ -1,3 +1,10 @@
+# v2.21.011
+- **Popup Body Opacity**: Made the pending records popup body fully opaque (using `var(--bg-dropdown)`) to match the look of the record update window and improve readability.
+- **Role Selection for Startup Popup**: Added a new dropdown in General Settings next to the "Disable pending records popup" checkbox.
+    - Options: **"Only Supervisor"** (default) or **"Supervisor / Admins"**.
+    - If the "Disable" checkbox is checked, the dropdown is disabled and dimmed.
+    - If unchecked, the dropdown is enabled and controls whether only Supervisors or both Supervisors and Admins see the startup popup.
+
 # v2.21.010
 - **Pending Popup respects "Show Only Modal" setting**: The pending records popup now consistently applies or removes the `minimal` class (no background blur) based on the "Show Only Modal Window (No Background Blur)" general setting — exactly like all other modal windows. Both the init startup and the `showPendingPopup()` function read from `tf_show_only_modal`.
 

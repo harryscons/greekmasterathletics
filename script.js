@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.010";
+    const VERSION = "v2.21.011";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -523,8 +523,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Refresh Statistics Charts
         if (typeof window.renderRecordsByYearChart === 'function') window.renderRecordsByYearChart(window.currentYearChartType);
 
-        // Show pending popup once on first full load for supervisor
-        if (!renderAll._pendingPopupShown && isSuper && typeof showPendingPopup === 'function') {
+        // Show pending popup once on first full load for supervisor/admin
+        if (!renderAll._pendingPopupShown && (isSuper || isAdmin) && typeof showPendingPopup === 'function') {
             renderAll._pendingPopupShown = true;
             setTimeout(() => showPendingPopup(), 600);
         }
@@ -1309,6 +1309,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tf_restrict_athletes_on_edit: localStorage.getItem('tf_restrict_athletes_on_edit') !== 'false',
             tf_history_old_first: localStorage.getItem('tf_history_old_first') !== 'false',
             tf_disable_pending_popup: localStorage.getItem('tf_disable_pending_popup') === 'true',
+            tf_pending_popup_role: localStorage.getItem('tf_pending_popup_role') || 'supervisor',
             lastSync: Date.now()
         };
 
@@ -1384,6 +1385,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('tf_disable_pending_popup', cloudSettings.tf_disable_pending_popup ? 'true' : 'false');
                 const cb = document.getElementById('disablePendingPopup');
                 if (cb) cb.checked = cloudSettings.tf_disable_pending_popup;
+            }
+
+            // Apply Pending Popup Role
+            if (cloudSettings.tf_pending_popup_role !== undefined) {
+                localStorage.setItem('tf_pending_popup_role', cloudSettings.tf_pending_popup_role);
+                const sel = document.getElementById('pendingPopupRole');
+                if (sel) sel.value = cloudSettings.tf_pending_popup_role;
             }
 
             // Final refreshes to apply logic
@@ -1466,9 +1474,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const submitBtn = document.getElementById('submitBtn');
         if (submitBtn) submitBtn.disabled = !isAdmin;
 
-        // Show pending popup for cloud supervisor login
+        // Show pending popup for cloud supervisor/admin login
         // (local env is covered by renderAll guard)
-        if (isSuper && !isLocalEnvironment()) {
+        if ((isSuper || isAdmin) && !isLocalEnvironment()) {
             setTimeout(() => showPendingPopup(), 1000);
         }
     }
@@ -1476,6 +1484,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function showPendingPopup() {
         // Respect the "Disable pending popup" setting
         if (localStorage.getItem('tf_disable_pending_popup') === 'true') return;
+
+        // Respect the role setting: 'supervisor' = only isSuper, 'all' = isAdmin or isSuper
+        const roleTarget = localStorage.getItem('tf_pending_popup_role') || 'supervisor';
+        if (roleTarget === 'supervisor' && !isSuper) return;
+        if (roleTarget === 'all' && !isAdmin && !isSuper) return;
 
         // Use the dedicated pendingrecs array (separate Firebase node)
         const pending = Array.isArray(pendingrecs) ? pendingrecs : [];
@@ -1688,15 +1701,36 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Disable Pending Popup setting (default: false = popup IS shown)
+        // Disable Pending Popup + Role selector
         const disablePendingPopupCb = document.getElementById('disablePendingPopup');
+        const pendingPopupRoleSel = document.getElementById('pendingPopupRole');
+
+        const syncPopupDropdownState = () => {
+            if (pendingPopupRoleSel) {
+                pendingPopupRoleSel.disabled = disablePendingPopupCb && disablePendingPopupCb.checked;
+                pendingPopupRoleSel.style.opacity = (disablePendingPopupCb && disablePendingPopupCb.checked) ? '0.4' : '1';
+                pendingPopupRoleSel.style.cursor = (disablePendingPopupCb && disablePendingPopupCb.checked) ? 'not-allowed' : 'pointer';
+            }
+        };
+
         if (disablePendingPopupCb) {
             disablePendingPopupCb.checked = localStorage.getItem('tf_disable_pending_popup') === 'true';
+            syncPopupDropdownState();
             disablePendingPopupCb.addEventListener('change', () => {
                 localStorage.setItem('tf_disable_pending_popup', disablePendingPopupCb.checked);
+                syncPopupDropdownState();
                 syncSettingsToCloud();
             });
         }
+
+        if (pendingPopupRoleSel) {
+            pendingPopupRoleSel.value = localStorage.getItem('tf_pending_popup_role') || 'supervisor';
+            pendingPopupRoleSel.addEventListener('change', () => {
+                localStorage.setItem('tf_pending_popup_role', pendingPopupRoleSel.value);
+                syncSettingsToCloud();
+            });
+        }
+
 
         // Pending popup close buttons
         ['closePendingPopup', 'closePendingPopupBtn'].forEach(id => {

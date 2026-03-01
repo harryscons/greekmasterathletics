@@ -140,7 +140,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.21.010</span>
+                        <span class="version-label">v2.21.011</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -1006,12 +1006,17 @@
                             </div>
 
                             <div class="form-group"
-                                style="flex: 1; flex-direction: row; align-items: center; gap: 0.75rem; margin-bottom: 0;">
+                                style="flex: 1; flex-direction: row; align-items: center; gap: 0.75rem; margin-bottom: 0; flex-wrap: wrap;">
                                 <input type="checkbox" id="disablePendingPopup"
-                                    style="width: 20px; height: 20px; cursor: pointer;">
+                                    style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
                                 <label for="disablePendingPopup" style="cursor: pointer; margin-bottom: 0;">Disable
                                     pending
                                     records popup on startup</label>
+                                <select id="pendingPopupRole"
+                                    style="margin-left: 0.5rem; padding: 0.3rem 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dropdown); color: var(--text-main); font-size: 0.88rem; cursor: pointer;">
+                                    <option value="supervisor">Only Supervisor</option>
+                                    <option value="all">Supervisor / Admins</option>
+                                </select>
                             </div>
 
                             <div class="form-group" style="padding-top: 1rem; border-top: 1px solid var(--border);">
@@ -1132,7 +1137,7 @@
                 <section class="card">
                     <div class="section-header">
                         <h2>View Historic Context</h2>
-                        <span class="version-label">v2.21.010</span>
+                        <span class="version-label">v2.21.011</span>
                     </div>
                     <p class="subtitle" style="margin-top: -0.25rem; margin-bottom: 0.75rem;">View and manage previous
                         versions of edited records.</p>
@@ -1494,7 +1499,7 @@
         // Fallback: load from CDN if local file failed
         if (typeof XLSX === 'undefined') {
             document.write('<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"><\/script>');
-        }
+     
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="data/wma_data_2023.js"></script>
@@ -1572,7 +1577,7 @@
     <!-- Pending Records Startup Popup -->
     <div id="pendingPopupOverlay" class="modal-overlay hidden">
         <div class="modal-content"
-            style="width: 90%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column;">
+            style="width: 90%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column; background: var(--bg-dropdown);">
             <div
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-shrink: 0;">
                 <div>
