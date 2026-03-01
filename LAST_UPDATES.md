@@ -1,3 +1,6 @@
+# v2.21.001
+- **Version Bump**: Incremented version to `v2.21.001`. Established a new pattern convention to automatically increment the build suffix iteratively.
+
 # v2.20.113
 - **Forced Browser Cache Refresh**: Added a versioning query parameter (`?v=2.20.113`) to the main application script import. The critical Year Dropdown sorting fixes released in v2.20.111 and v2.20.112 were heavily cached by browsers resulting in the `NaN` errors continuing uninterrupted. This cache breaker ensures the new array mechanics properly load onto devices.
 
