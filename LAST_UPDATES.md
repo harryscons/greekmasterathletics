@@ -1,3 +1,7 @@
+# v2.20.76
+- **Optimized Name Widths**: Improved the dynamic sizing of the "Athlete Name" column. It now uses a more generous spacing formula (9px per character + 45px padding) to ensure even the longest names are fully visible.
+- **Improved Layout Guard**: Added a maximum-width limit of 400px for names to ensure the table remains readable and stable on ultra-wide monitors.
+
 # v2.20.75
 - **History Management Restoration**: Restored the edit (✏️) and delete (🗑️) icons for historical records within the Grouped View. You can now manage individual archives even when they are nested under a primary event.
 

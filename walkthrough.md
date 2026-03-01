@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.76: Athlete Width Optimization
+- **Dynamic Name Fitting**: The main report now automatically calculates the ideal width for the Athlete column based on the longest name in your current view. We've increased the character spacing to 9px with a 45px margin for a cleaner, professional look.
+- **Layout Stability**: Implemented a 400px maximum width guard to ensure that even exceptionally long names don't break the report layout on ultra-wide screens.
+
 ## v2.20.75: Grouped Action Restoration
 - **Tucked Action Access**: We've restored the missing Edit and Delete icons for historical sub-rows in the "Newest First" view. Expanding an event now gives you full administrative control over every version in the chain.
 
