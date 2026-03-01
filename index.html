@@ -1124,6 +1124,65 @@
                     <h2>Record History (Archive)</h2>
                     <p class="subtitle" style="margin-bottom: 1rem;">View and manage previous versions of edited
                         records.</p>
+
+                    <div class="filters history-filters"
+                        style="display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center; background: rgba(0,0,0,0.05); padding: 15px; border-radius: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label
+                                style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Event</label>
+                            <select id="historyFilterEvent" class="form-control" style="width:180px;"
+                                onchange="renderHistoryList()">
+                                <option value="all">All Events</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label
+                                style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Athlete</label>
+                            <select id="historyFilterAthlete" class="form-control" style="width:200px;"
+                                onchange="renderHistoryList()">
+                                <option value="all">All Athletes</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label
+                                style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Gender</label>
+                            <select id="historyFilterGender" class="form-control" style="width:110px;"
+                                onchange="renderHistoryList()">
+                                <option value="all">All Genders</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Mixed">Mixed</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label
+                                style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Age
+                                Group</label>
+                            <select id="historyFilterAgeGroup" class="form-control" style="width:130px;"
+                                onchange="renderHistoryList()">
+                                <option value="all">All Ages</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label
+                                style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Year
+                                (Record)</label>
+                            <select id="historyFilterYear" class="form-control" style="width:120px;"
+                                onchange="renderHistoryList()">
+                                <option value="all">All Years</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label
+                                style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Archived
+                                At</label>
+                            <select id="historyFilterArchiveDate" class="form-control" style="width:140px;"
+                                onchange="renderHistoryList()">
+                                <option value="all">All Dates</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="table-container">
                         <table class="report-table">
                             <thead>

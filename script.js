@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.81";
+    const VERSION = "v2.20.82";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -4975,7 +4975,77 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelEdit();
     };
 
-    function renderHistoryList() {
+    // --- RECORD HISTORY (ARCHIVE) ---
+
+    function populateHistoryFilters() {
+        // Current selections
+        const selEvent = document.getElementById('historyFilterEvent')?.value || 'all';
+        const selAthlete = document.getElementById('historyFilterAthlete')?.value || 'all';
+        const selGender = document.getElementById('historyFilterGender')?.value || 'all';
+        const selAgeGroup = document.getElementById('historyFilterAgeGroup')?.value || 'all';
+        const selYear = document.getElementById('historyFilterYear')?.value || 'all';
+        const selArchDate = document.getElementById('historyFilterArchiveDate')?.value || 'all';
+
+        // Base records (history items)
+        const baseRecords = [...history];
+
+        const matches = (r, exclusions = {}) => {
+            if (!exclusions.event && selEvent !== 'all' && r.event !== selEvent) return false;
+            if (!exclusions.athlete && selAthlete !== 'all' && r.athlete !== selAthlete) return false;
+            if (!exclusions.gender && selGender !== 'all') {
+                const g = normalizeGenderLookups(r.gender);
+                if (selGender === 'Male' && g !== 'men') return false;
+                if (selGender === 'Female' && g !== 'women') return false;
+                if (selGender === 'Mixed' && g !== 'mixed') return false;
+            }
+            if (!exclusions.year && selYear !== 'all') {
+                const y = getYearFromDate(r.date);
+                if (y !== selYear) return false;
+            }
+            if (!exclusions.ageGroup && selAgeGroup !== 'all' && r.ageGroup !== selAgeGroup) return false;
+            if (!exclusions.archDate && selArchDate !== 'all') {
+                const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : ''; // en-CA gives YYYY-MM-DD
+                if (d !== selArchDate) return false;
+            }
+            return true;
+        };
+
+        const updateSelect = (id, list, currentVal) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const originalHtml = el.innerHTML;
+            const newListHtml = `<option value="all">All ${id.replace('historyFilter', '')}s</option>` +
+                list.map(item => `<option value="${item}">${item}</option>`).join('');
+            if (originalHtml !== newListHtml) {
+                el.innerHTML = newListHtml;
+                el.value = currentVal;
+                if (el.value !== currentVal) el.value = 'all';
+            }
+        };
+
+        // 1. Events
+        const eventsList = [...new Set(baseRecords.filter(r => matches(r, { event: true })).map(r => r.event))].filter(Boolean).sort();
+        updateSelect('historyFilterEvent', eventsList, selEvent);
+
+        // 2. Athletes
+        const athletesList = [...new Set(baseRecords.filter(r => matches(r, { athlete: true })).map(r => r.athlete))].filter(Boolean).sort();
+        updateSelect('historyFilterAthlete', athletesList, selAthlete);
+
+        // 3. Years
+        const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => getYearFromDate(r.date)))].filter(Boolean).sort((a, b) => b - a);
+        updateSelect('historyFilterYear', yearsList, selYear);
+
+        // 4. Age Groups
+        const ageList = [...new Set(baseRecords.filter(r => matches(r, { ageGroup: true })).map(r => r.ageGroup))].filter(Boolean).sort();
+        updateSelect('historyFilterAgeGroup', ageList, selAgeGroup);
+
+        // 5. Archive Dates
+        const dateList = [...new Set(baseRecords.filter(r => matches(r, { archDate: true })).map(r => r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : null))].filter(Boolean).sort((a, b) => b.localeCompare(a));
+        updateSelect('historyFilterArchiveDate', dateList, selArchDate);
+    }
+
+    window.renderHistoryList = function () {
+        populateHistoryFilters();
         const tbody = document.getElementById('historyListBody');
         const empty = document.getElementById('historyEmptyState');
         if (!tbody) return;
@@ -4990,8 +5060,34 @@ document.addEventListener('DOMContentLoaded', () => {
         // v2.20.67: Apply sorting preference
         const oldestFirst = localStorage.getItem('tf_history_old_first') !== 'false';
 
+        // v2.20.82: Apply UI Filters
+        const selEvent = document.getElementById('historyFilterEvent')?.value || 'all';
+        const selAthlete = document.getElementById('historyFilterAthlete')?.value || 'all';
+        const selGender = document.getElementById('historyFilterGender')?.value || 'all';
+        const selAgeGroup = document.getElementById('historyFilterAgeGroup')?.value || 'all';
+        const selYear = document.getElementById('historyFilterYear')?.value || 'all';
+        const selArchDate = document.getElementById('historyFilterArchiveDate')?.value || 'all';
+
+        let filteredHistory = history.filter(r => {
+            if (selEvent !== 'all' && r.event !== selEvent) return false;
+            if (selAthlete !== 'all' && r.athlete !== selAthlete) return false;
+            if (selGender !== 'all') {
+                const g = normalizeGenderLookups(r.gender);
+                if (selGender === 'Male' && g !== 'men') return false;
+                if (selGender === 'Female' && g !== 'women') return false;
+                if (selGender === 'Mixed' && g !== 'mixed') return false;
+            }
+            if (selAgeGroup !== 'all' && r.ageGroup !== selAgeGroup) return false;
+            if (selYear !== 'all' && getYearFromDate(r.date) !== selYear) return false;
+            if (selArchDate !== 'all') {
+                const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : '';
+                if (d !== selArchDate) return false;
+            }
+            return true;
+        });
+
         // v2.20.71: Inclusion of Live records in history view for Newest First
-        let displayList = [...history];
+        let displayList = [...filteredHistory];
 
         const clean = (s) => (s || '').toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const getCatKey = (rec) => {
@@ -5002,14 +5098,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (oldestFirst) {
             // v2.20.74: Flat List for Oldest First (Traditional Detail)
-            displayList = [...history];
+            displayList = [...filteredHistory];
         } else {
             // v2.20.72: Grouped View for Newest First (Avoids Duplication)
-            const categories = [...new Set(history.map(h => getCatKey(h)))];
+            const categories = [...new Set(filteredHistory.map(h => getCatKey(h)))];
             displayList = [];
 
             categories.forEach(rKey => {
-                const versions = history.filter(h => getCatKey(h) === rKey)
+                const versions = filteredHistory.filter(h => getCatKey(h) === rKey)
                     .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt)); // Newest Archive first
 
                 const live = records.find(curr => getCatKey(curr) === rKey);
