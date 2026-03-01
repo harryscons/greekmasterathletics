@@ -1,3 +1,6 @@
+# v2.20.102
+- **History Form Population Fix**: Implemented a robust value-matching helper in the History Editor to ensure Dropdowns (specifically the "Event" dropdown) populate correctly even if the archived string formatting differs slightly from the current dropdown definitions.
+
 # v2.20.101
 - **History UI Refinement**: Removed the double-click event listener on History rows. Users must now explicitly use the Edit/View button, preventing confusion between Live and Archived record popups.
 - **WMA Stats Gender Fix**: Restored the gender display in the WMA Statistics report from English ("Men/Women") back to the database-native Greek ("Άνδρες/Γυναίκες").

@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.101";
+    const VERSION = "v2.20.102";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5380,11 +5380,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // Manual population to ensure 100% field coverage
         console.log("✏️ Populating History Edit Form for Record:", r);
 
-        if (evtInput) evtInput.value = r.event || '';
-        if (athleteInput) athleteInput.value = r.athlete || '';
-        if (genderInput) genderInput.value = normalizeGender(r.gender || '');
-        if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
-        if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
+        // Helper to set select value more robustly (matches editRecord logic)
+        const setSelectValue = (el, val) => {
+            if (!el) return;
+            const target = String(val || '').trim();
+            el.value = target;
+
+            if (el.value !== target) {
+                const options = Array.from(el.options);
+                const matchingOpt = options.find(o => o.text.trim() === target || o.value.trim() === target);
+                if (matchingOpt) el.value = matchingOpt.value;
+            }
+        };
+
+        if (evtInput) setSelectValue(evtInput, r.event);
+        if (athleteInput) setSelectValue(athleteInput, r.athlete);
+        if (genderInput) setSelectValue(genderInput, normalizeGender(r.gender || ''));
+        if (ageGroupInput) setSelectValue(ageGroupInput, r.ageGroup);
+        if (trackTypeInput) setSelectValue(trackTypeInput, r.trackType || 'Outdoor');
         if (raceNameInput) raceNameInput.value = r.raceName || '';
         if (markInput) markInput.value = r.mark || '';
         if (windInput) windInput.value = r.wind || '';
