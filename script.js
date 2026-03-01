@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.93";
+    const VERSION = "v2.20.96";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500);
         }
     }
+
+    window.hideInitialOverlay = hideInitialOverlay;
 
     function checkReady(force = false) {
         if (isDataReady) return;
@@ -78,10 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Now safe to render
             rebuildPerformanceIndexes();
-            renderAll();
             hideInitialOverlay();
         }
     }
+    window.checkReady = (force) => checkReady(force); // Export for timer
 
     // --- Fast Pass Removed: System now waits for Firebase consensus ---
     console.log("📡 Initializing Cloud-Only Data Model...");
@@ -5068,6 +5070,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateList = [...new Set(baseRecords.filter(r => matches(r, { archDate: true })).map(r => r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : null))].filter(Boolean).sort((a, b) => b.localeCompare(a));
         updateSelect('historyFilterArchiveDate', dateList, selArchDate, 'Dates');
     }
+    window.populateHistoryFilters = populateHistoryFilters;
+    window.populateHistoryFilters = populateHistoryFilters;
 
     function renderHistoryList() {
         try {
@@ -5083,8 +5087,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (empty) empty.classList.add('hidden');
 
-            // v2.20.67: Apply sorting preference
-            const oldestFirst = localStorage.getItem('tf_history_old_first') !== 'false';
+            // v2.20.96: Default to Newest First (Grouped)
+            const oldestFirst = localStorage.getItem('tf_history_old_first') === 'true';
 
             // v2.20.82: Apply UI Filters
             const selEvent = document.getElementById('historyFilterEvent')?.value || 'all';
@@ -5157,9 +5161,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const dir = window.historySortDir === 'desc' ? -1 : 1;
 
             displayList.sort((a, b) => {
-                // v2.20.88: Use groupSortDate for primary sorting if it's the default archivedAt sort
-                let valA = (key === 'archivedAt' && a.groupSortDate) ? a.groupSortDate : a[key];
-                let valB = (key === 'archivedAt' && b.groupSortDate) ? b.groupSortDate : b[key];
+                // v2.20.96: Numeric sorting by groupSortDate (Replacement Date)
+                let valA = (key === 'archivedAt') ? a.groupSortDate : a[key];
+                let valB = (key === 'archivedAt') ? b.groupSortDate : b[key];
 
                 // Robust sorting for specific fields
                 if (key === 'date' || key === 'archivedAt' || (key === 'archivedAt' && (a.groupSortDate || b.groupSortDate))) {
@@ -5967,7 +5971,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mVal = filterAgeMismatch ? filterAgeMismatch.value : 'all';
         const ttVal = filterTrackType ? filterTrackType.value : 'all';
 
-        const archivedIds = new Set(history.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
+        const archivedIds = new Set(recordHistory.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
 
         // Merge records and pendingrecs for unified display
         const mergedRecords = [...records, ...(pendingrecs || [])];

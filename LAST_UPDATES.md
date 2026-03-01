@@ -1,3 +1,15 @@
+# v2.20.96
+- **History Filtering Fixed**: Restored the global binding for `renderHistoryList`, enabling dropdown filters to correctly refresh the archive list.
+- **Default View Optimization**: Flipped the default history view to **Newest First (Grouped)**. Categories are now sorted by the performance date of the current live record (or latest archive), ensuring recent achievements always appear at the top.
+- **Improved Date Sorting**: Implemented numeric date comparisons for `groupSortDate` to ensure perfectly accurate chronological ordering.
+
+# v2.20.95
+- **Variable Name Collision Fix**: Resolved a `TypeError` where a local variable named `history` was conflicting with the browser's `window.history` object. Corrected this to `recordHistory` at line 5973.
+
+# v2.20.94
+- **Global Scope Restoration**: Explicitly exported `renderHistoryList`, `populateHistoryFilters`, and `checkReady` to the global `window` object. This resolves `ReferenceError` issues caused by external script calls during initialization and tab switching.
+- **Robust Loading Logic**: Ensured that the 15-second loading failsafe is correctly linked to the global overlay management system.
+
 # v2.20.93
 - **Initialization Hoisting Fix**: Standardized `renderHistoryList` as a hoisted function to prevent `ReferenceError` crashes during the application's startup sequence. This ensures the UI loads correctly even if data sync triggers an immediate refresh.
 
