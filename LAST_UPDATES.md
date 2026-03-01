@@ -1,3 +1,7 @@
+# v2.20.84
+- **Ultimate History Filter Fix**: Completely redesigned the History tab layout using standardized application components (`.section-header`, `.report-toolbar`). This permanently resolves spacing inconsistencies.
+- **Robust Data Population**: Enhanced the history filtering engine to be more resilient to data variations. Dropdowns are now reliably populated with clean, descriptive labels (e.g., "All Athletes" instead of technical IDs).
+
 # v2.20.83
 - **History Filter Refinement**: Fixed a ReferenceError that caused the new history filters to appear empty. The filters now correctly populate with Event, Athlete, and Year data.
 - **UI Spacing Optimization**: Tightened the layout of the Records History tab by reducing excessive padding and margins around the filter bar.

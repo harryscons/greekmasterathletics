@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.83";
+    const VERSION = "v2.20.84";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -4987,7 +4987,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const selArchDate = document.getElementById('historyFilterArchiveDate')?.value || 'all';
 
         // Base records (history items)
-        const baseRecords = [...history];
 
         const matches = (r, exclusions = {}) => {
             if (!exclusions.event && selEvent !== 'all' && r.event !== selEvent) return false;
@@ -5010,11 +5009,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         };
 
-        const updateSelect = (id, list, currentVal) => {
+        const updateSelect = (id, list, currentVal, label) => {
             const el = document.getElementById(id);
             if (!el) return;
             const originalHtml = el.innerHTML;
-            const newListHtml = `<option value="all">All ${id.replace('historyFilter', '')}s</option>` +
+            const newListHtml = `<option value="all">All ${label}</option>` +
                 list.map(item => `<option value="${item}">${item}</option>`).join('');
             if (originalHtml !== newListHtml) {
                 el.innerHTML = newListHtml;
@@ -5023,25 +5022,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // Base records - convert to robust array
+        const baseRecords = Array.isArray(history) ? [...history] : [];
+        if (baseRecords.length === 0) return;
+
         // 1. Events
         const eventsList = [...new Set(baseRecords.filter(r => matches(r, { event: true })).map(r => r.event))].filter(Boolean).sort();
-        updateSelect('historyFilterEvent', eventsList, selEvent);
+        updateSelect('historyFilterEvent', eventsList, selEvent, 'Events');
 
         // 2. Athletes
         const athletesList = [...new Set(baseRecords.filter(r => matches(r, { athlete: true })).map(r => r.athlete))].filter(Boolean).sort();
-        updateSelect('historyFilterAthlete', athletesList, selAthlete);
+        updateSelect('historyFilterAthlete', athletesList, selAthlete, 'Athletes');
 
         // 3. Years
         const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => r.date ? new Date(r.date).getFullYear().toString() : ''))].filter(Boolean).sort((a, b) => b - a);
-        updateSelect('historyFilterYear', yearsList, selYear);
+        updateSelect('historyFilterYear', yearsList, selYear, 'Years');
 
         // 4. Age Groups
         const ageList = [...new Set(baseRecords.filter(r => matches(r, { ageGroup: true })).map(r => r.ageGroup))].filter(Boolean).sort();
-        updateSelect('historyFilterAgeGroup', ageList, selAgeGroup);
+        updateSelect('historyFilterAgeGroup', ageList, selAgeGroup, 'Ages');
 
         // 5. Archive Dates
         const dateList = [...new Set(baseRecords.filter(r => matches(r, { archDate: true })).map(r => r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : null))].filter(Boolean).sort((a, b) => b.localeCompare(a));
-        updateSelect('historyFilterArchiveDate', dateList, selArchDate);
+        updateSelect('historyFilterArchiveDate', dateList, selArchDate, 'Dates');
     }
 
     window.renderHistoryList = function () {
