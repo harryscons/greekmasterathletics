@@ -1,3 +1,6 @@
+# v2.20.107
+- **History Save Firebase Crash**: Addressed the root cause of the "value contains undefined" Firebase crash. The rendering loop for the History UI was actively mutating old history records in memory to give them a temporary sorting date, occasionally injecting `undefined` if the record lacked a date. When the user saved a record, the entire mutated history array was sent to Firebase, causing a crash. The array is now strictly sanitized before upload to guarantee all `undefined` properties are destroyed.
+
 # v2.20.106
 - **History Save Firebase Error**: Fixed an error where saving an edited History record threw a `Firebase: value contains undefined` error. The internal sorting date (`_groupSortDate`) now falls back to `null` instead of `undefined` to comply with Firebase requirements.
 - **Year Dropdown Restoration**: Ensured the removal of the 2026 test-cache limitation takes full effect across all dropdown initializers.

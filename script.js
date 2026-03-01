@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.106";
+    const VERSION = "v2.20.107";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -4708,7 +4708,9 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('tf_history', JSON.stringify(recordHistory));
 
         if (!isDataReady) return;
-        if (db) db.ref('history').set(recordHistory);
+        // Strip out any accidental 'undefined' properties injected by UI loops before pushing to Firebase
+        const sanitizedHistory = JSON.parse(JSON.stringify(recordHistory));
+        if (db) db.ref('history').set(sanitizedHistory);
     }
 
     function savePendingRecs() {
@@ -5114,7 +5116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (versions.length > 0) catSortDates[rKey] = versions[0].date;
                         }
                     }
-                    r._groupSortDate = catSortDates[rKey] || r.date;
+                    r._groupSortDate = catSortDates[rKey] || r.date || null;
                 });
             }
 
