@@ -1,3 +1,6 @@
+# v2.21.004
+- **Performance Optimization**: Removed 90 non-critical `console.log`, `console.warn`, and `console.table` debug statements from `script.js` (from 104 down to 14). These were firing on every data sync, every tab switch, every render loop, and every athlete/record edit — adding measurable overhead to every page load and interaction. Only genuine error handlers and critical sync warnings remain.
+
 # v2.21.003
 - **Year Dropdown Fix (Root Cause)**: Resolved the definitive root cause of the "All Years" dropdown only showing 2026. The `populateYearDropdown` function was previously only called inside `renderAll()`, which requires ALL data nodes (athletes, events, countries, history, users) to finish syncing before running. If any node was slow, the function ran with an empty `records` array showing only 2026. The function is now called immediately after records load from Firebase, independent of other data nodes.
 
