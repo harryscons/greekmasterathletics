@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let events = [];
     let athletes = [];
     let countries = [];
-    let history = [];
+    let recordHistory = [];
     let appUsers = [];
     let pendingrecs = []; // NEW: Staging area for Admin submissions
     const recentlyRejected = new Set(JSON.parse(localStorage.getItem('tf_tombstones') || '[]'));
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.84";
+    const VERSION = "v2.20.85";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -423,8 +423,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listen for History
         db.ref('history').on('value', (snapshot) => {
-            history = valToArray(snapshot.val());
-            console.log("History updated from Firebase:", history.length);
+            recordHistory = valToArray(snapshot.val());
+            console.log("History updated from Firebase:", recordHistory.length);
             loadedNodes.add('history');
             checkReady();
 
@@ -2793,7 +2793,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tbody.innerHTML = '';
 
-        const archivedIds = new Set(history.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
+        const archivedIds = new Set(recordHistory.map(h => String(h.originalId)).filter(id => id && id !== 'undefined'));
 
         // Filter approved, non-relay records with valid WMA points
         const fTrackType = document.getElementById('rankingsFilterTrackType')?.value || 'all';
@@ -3686,7 +3686,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 changed = true;
             }
         });
-        history.forEach(h => {
+        recordHistory.forEach(h => {
             if (h.ageGroup && h.ageGroup.includes('-')) {
                 h.ageGroup = h.ageGroup.split('-')[0];
                 changed = true;
@@ -3694,7 +3694,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (changed) {
             saveRecords();
-            localStorage.setItem('tf_history', JSON.stringify(history));
+            localStorage.setItem('tf_history', JSON.stringify(recordHistory));
             console.log("Migrated Age Groups to Start Age format.");
         }
     }
@@ -3763,7 +3763,7 @@ document.addEventListener('DOMContentLoaded', () => {
             records.forEach(r => { if (updateRecord(r)) count++; });
 
             // 2. Update History
-            history.forEach(r => { if (updateRecord(r)) count++; });
+            recordHistory.forEach(r => { if (updateRecord(r)) count++; });
 
             // 3. Update Pending Records
             pendingrecs.forEach(r => { if (updateRecord(r)) count++; });
@@ -4677,10 +4677,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Records ---
     function saveHistory() {
         // ALWAYS save to LocalStorage first (Synchronous Backup)
-        localStorage.setItem('tf_history', JSON.stringify(history));
+        localStorage.setItem('tf_history', JSON.stringify(recordHistory));
 
         if (!isDataReady) return;
-        if (db) db.ref('history').set(history);
+        if (db) db.ref('history').set(recordHistory);
     }
 
     function savePendingRecs() {
@@ -4817,11 +4817,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (editingHistoryId) {
                 // Update History Record
-                const index = history.findIndex(r => r.id === editingHistoryId);
+                const index = recordHistory.findIndex(r => r.id === editingHistoryId);
                 if (index !== -1) {
                     // Keep original archive timestamp
-                    newRecord.archivedAt = history[index].archivedAt;
-                    history[index] = newRecord;
+                    newRecord.archivedAt = recordHistory[index].archivedAt;
+                    recordHistory[index] = newRecord;
                     saveHistory();
                     renderHistoryList();
                 }
@@ -4852,7 +4852,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 oldRecordData.updatedBy = getCurrentUsername();
                                 oldRecordData.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
 
-                                history.unshift(oldRecordData);
+                                recordHistory.unshift(oldRecordData);
                                 saveHistory();
                             }
 
@@ -4986,8 +4986,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const selYear = document.getElementById('historyFilterYear')?.value || 'all';
         const selArchDate = document.getElementById('historyFilterArchiveDate')?.value || 'all';
 
-        // Base records (history items)
-
         const matches = (r, exclusions = {}) => {
             if (!exclusions.event && selEvent !== 'all' && r.event !== selEvent) return false;
             if (!exclusions.athlete && selAthlete !== 'all' && r.athlete !== selAthlete) return false;
@@ -5012,19 +5010,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const updateSelect = (id, list, currentVal, label) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const originalHtml = el.innerHTML;
             const newListHtml = `<option value="all">All ${label}</option>` +
                 list.map(item => `<option value="${item}">${item}</option>`).join('');
-            if (originalHtml !== newListHtml) {
-                el.innerHTML = newListHtml;
-                el.value = currentVal;
-                if (el.value !== currentVal) el.value = 'all';
-            }
+
+            el.innerHTML = newListHtml;
+            el.value = currentVal;
+            if (el.value !== currentVal) el.value = 'all';
         };
 
         // Base records - convert to robust array
-        const baseRecords = Array.isArray(history) ? [...history] : [];
-        if (baseRecords.length === 0) return;
+        const baseRecords = Array.isArray(recordHistory) ? [...recordHistory] : [];
 
         // 1. Events
         const eventsList = [...new Set(baseRecords.filter(r => matches(r, { event: true })).map(r => r.event))].filter(Boolean).sort();
@@ -5054,7 +5049,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
 
         tbody.innerHTML = '';
-        if (history.length === 0) {
+        if (recordHistory.length === 0) {
             if (empty) empty.classList.remove('hidden');
             return;
         }
@@ -5071,7 +5066,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selYear = document.getElementById('historyFilterYear')?.value || 'all';
         const selArchDate = document.getElementById('historyFilterArchiveDate')?.value || 'all';
 
-        let filteredHistory = history.filter(r => {
+        let filteredHistory = recordHistory.filter(r => {
             if (selEvent !== 'all' && r.event !== selEvent) return false;
             if (selAthlete !== 'all' && r.athlete !== selAthlete) return false;
             if (selGender !== 'all') {
@@ -5369,7 +5364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (!confirm('Permanently delete this archived record?')) return;
         const idStr = String(id);
-        history = history.filter(h => String(h.id) !== idStr);
+        recordHistory = recordHistory.filter(h => String(h.id) !== idStr);
         saveHistory();
         renderHistoryList();
     }
@@ -7394,7 +7389,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         historyEntry.originalId = String(oldRecord.id);
                         historyEntry.updatedBy = 'Excel Import';
                         historyEntry.id = String(Date.now() + '-' + Math.floor(Math.random() * 1000000) + '-' + originalIdx);
-                        history.unshift(historyEntry);
+                        recordHistory.unshift(historyEntry);
 
                         const idxInLive = records.findIndex(liveR => liveR.id === oldRecord.id);
                         if (idxInLive !== -1) records.splice(idxInLive, 1);
@@ -8562,7 +8557,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
                         historyRecord.id = String(Date.now() + '-' + Math.floor(Math.random() * 10000));
                         if (!historyRecord.updatedBy) historyRecord.updatedBy = 'Initial Import';
 
-                        history.unshift(historyRecord);
+                        recordHistory.unshift(historyRecord);
                         saveHistory();
                     }
 

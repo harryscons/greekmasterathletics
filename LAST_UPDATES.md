@@ -1,3 +1,7 @@
+# v2.20.85
+- **Reserved Keyword Fix**: Renamed the internal `history` variable to `recordHistory`. This critical update resolves a hidden conflict with the browser's `window.history` object, which was causing the dropdown filters to remain unpopulated.
+- **UI Spacing Polish**: Refined the Record History tab layout by tightening subtitle and toolbar margins, creating a more professional and data-rich view.
+
 # v2.20.84
 - **Ultimate History Filter Fix**: Completely redesigned the History tab layout using standardized application components (`.section-header`, `.report-toolbar`). This permanently resolves spacing inconsistencies.
 - **Robust Data Population**: Enhanced the history filtering engine to be more resilient to data variations. Dropdowns are now reliably populated with clean, descriptive labels (e.g., "All Athletes" instead of technical IDs).
