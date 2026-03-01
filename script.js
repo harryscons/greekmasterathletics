@@ -41,14 +41,14 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.90";
+    const VERSION = "v2.20.91";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
     window.historySortKey = 'archivedAt';
     window.historySortDir = 'desc';
 
-    function checkReady() {
+    function checkReady(force = false) {
         if (isDataReady) return;
         // v2.20.89 Diagnostic
         const missing = CORE_NODES.filter(n => !loadedNodes.has(n));
@@ -56,7 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("⏳ Waiting for sync:", missing.join(', '));
         }
 
-        if (loadedNodes.size >= CORE_NODES.length && missing.length === 0) {
+        const isActuallyReady = (loadedNodes.size >= CORE_NODES.length && missing.length === 0);
+
+        if (isActuallyReady || force) {
+            if (force && !isActuallyReady) {
+                console.warn("⚠️ Initialization FORCED after timeout. Missing nodes:", missing.join(', '));
+            }
             console.log("✅ Data Consensus Reached. System is now READY.");
             isDataReady = true;
 
