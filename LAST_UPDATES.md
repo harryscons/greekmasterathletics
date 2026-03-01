@@ -1,3 +1,6 @@
+# v2.21.019
+- **ROBUST FIX: Pending Popup for Admins**: Resolved a race condition where the startup popup would fail to appear because it fired before the "Pending Records" data node had fully synchronized. The app now explicitly waits for both User roles and Pending Records to be ready before triggering the popup.
+
 # v2.21.018
 - **FIX: Pending Popup for Admins**: Changed the default "Show for" role for pending records from "Only Supervisor" to "Supervisor / Admins". This ensures Admins correctly see the startup popup when there are pending deletions awaiting approval.
 

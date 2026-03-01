@@ -35,13 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Data Protection ---
     let isDataReady = false; // Flag to prevent saving over cloud until sync is verified
     const loadedNodes = new Set();
-    const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users'];
+    const CORE_NODES = ['records', 'athletes', 'events', 'countries', 'history', 'users', 'pendingrecs'];
     let isSuppressingAutoFill = false; // Prevents change events from overwriting edit form data
     let isReadOnlyForm = false; // GLOBAL FLAG for Read-Only Modal Mode
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.018";
+    const VERSION = "v2.21.019";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1508,10 +1508,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // (local env is covered by renderAll guard)
         if (!isLocalEnvironment()) {
             const tryTriggerPopup = () => {
-                if (isSuper || isAdmin) {
-                    setTimeout(() => showPendingPopup(), 1000);
-                } else if (!loadedNodes.has('users')) {
-                    // Wait for users node to load if it hasn't yet, then retry
+                // Re-calculate flags locally to avoid stale context during retries
+                const currentRole = user ? getUserRole(user.email) : null;
+                const currentIsAdmin = currentRole === 'Admin' || currentRole === 'Supervisor' || isLocal;
+                const currentIsSuper = currentRole === 'Supervisor' || isLocal;
+
+                if (loadedNodes.has('users') && loadedNodes.has('pendingrecs')) {
+                    if (currentIsSuper || currentIsAdmin) {
+                        console.log("🔔 Triggering pending popup check...");
+                        setTimeout(() => showPendingPopup(), 1000);
+                    }
+                } else {
+                    // Wait for both user data and pending records to sync before triggering
                     setTimeout(tryTriggerPopup, 500);
                 }
             };
