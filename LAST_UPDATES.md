@@ -1,3 +1,7 @@
+# v2.21.012
+- **CRITICAL FIX: Syntax Error in index.html**: Fixed a missing closing brace `}` in the SheetJS fallback script that was causing an "Unexpected end of script" error.
+- **Version Synchronization**: Ensured all version labels and the `script.js` cache-busting query parameter are correctly synchronized to v2.21.012.
+
 # v2.21.011
 - **Popup Body Opacity**: Made the pending records popup body fully opaque (using `var(--bg-dropdown)`) to match the look of the record update window and improve readability.
 - **Role Selection for Startup Popup**: Added a new dropdown in General Settings next to the "Disable pending records popup" checkbox.
