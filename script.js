@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.016";
+    const VERSION = "v2.21.017";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1446,12 +1446,27 @@ document.addEventListener('DOMContentLoaded', () => {
             else el.classList.add('hidden');
         });
 
-        // Specific Visibility for User Management (Supervisor only)
+        // Specific Visibility for User Management and Data Management (Supervisor only)
         const userManagementBtn = document.getElementById('subtab-users');
         if (userManagementBtn) {
             if (isSuper) userManagementBtn.classList.remove('hidden');
             else userManagementBtn.classList.add('hidden');
         }
+        const dataManagementBtn = document.getElementById('subtab-data');
+        if (dataManagementBtn) {
+            if (isSuper) dataManagementBtn.classList.remove('hidden');
+            else dataManagementBtn.classList.add('hidden');
+        }
+
+        // Supervisor-only General Settings rows
+        const supervisorSettings = ['settingRowHistory', 'settingRowRestrict', 'settingRowSort', 'settingRowPending', 'settingSectionMaintenance'];
+        supervisorSettings.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (isSuper) el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            }
+        });
 
         // Re-render data tables now that auth state is explicitly known
         // (Solves race condition where data loads faster than auth, leaving conditional buttons out)

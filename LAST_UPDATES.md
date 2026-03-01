@@ -1,3 +1,9 @@
+# v2.21.017
+- **Role-Based Settings Access**:
+    - **Supervisors**: Maintain full access to all "General Settings" and the "Data Management" sub-tab.
+    - **Admins**: Now see the "Settings" tab but with restricted access: only **Color Theme**, **Hide Notes Symbol**, and **Show Only Modal Window** are visible. Advanced settings and "Data Management" are hidden for Admins.
+- **Dynamic UI Logic**: Visibility is now managed dynamically via JavaScript (`updateUIForAuth`) for better consistency.
+
 # v2.21.016
 - **UI Simplification**: Hid the "Data Management" sub-tab and several advanced options in "General Settings" (Move to History, Restrict Athletes, History Order, Pending Popup, and Maintenance) for a more streamlined user experience.
 
