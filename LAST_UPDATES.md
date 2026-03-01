@@ -1,3 +1,6 @@
+# v2.20.104
+- **Main Report Filters Fixed**: Restored the critical data initialization sequence that was accidentally removed in a previous update. The "Event" and "Athlete" dropdown lists on the Main Report will now properly populate with all active names when the application loads.
+
 # v2.20.103
 - **Missing Dropdown Options Fix**: Upgraded the form population logic for both the History and Live Record editors. If an archived record contains an Event or Athlete name that has since been deleted or altered in the active database, the editor will now dynamically recreate that option (labeled as "Archived") so the form field never appears blank.
 

@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.103";
+    const VERSION = "v2.20.104";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -78,8 +78,18 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("✅ Data Consensus Reached. System is now READY.");
             isDataReady = true;
 
-            // Now safe to render
+            // First time render all components
             rebuildPerformanceIndexes();
+            populateEventDropdowns();
+            populateAthleteDropdown();
+            populateAthleteFilter();
+            populateHistoryFilters();
+            renderReports();
+            renderAthleteList();
+            renderEventList();
+            renderUserList();
+            renderWMAReport();
+
             hideInitialOverlay();
         }
     }
