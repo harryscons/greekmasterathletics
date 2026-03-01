@@ -1,5 +1,10 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.68: Cloud Settings Synchronization
+- **Sync Everywhere**: Your personal settings (themes, toggle preferences, etc.) are now automatically saved to your cloud profile.
+- **Instant Setup**: Logging into a new device instantly applies your preferred color palette and workflow settings.
+- **Intelligent Loading**: Settings are fetched and applied immediately upon authentication, ensuring a consistent experience globally.
+
 ## v2.20.67: History Sorting Preference
 - **Customizable Archive View**: Introduced a new toggle in General Settings that lets users decide the sort order of the Record History list.
 - **Improved Versatility**: Defaulting to "Old first" preserves the traditional view, while switching to "New first" places the most recent edits at the top for faster access.

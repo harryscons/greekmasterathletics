@@ -1,3 +1,6 @@
+# v2.20.68
+- **Cloud Settings Synchronization**: Implemented automatic synchronization of personal preferences (theme, sorting, safety restrictions) to the cloud for registered users. Settings are now preserved across all devices and sessions.
+
 # v2.20.67
 - **History Sorting Preference**: Added a new "History: Old record first" setting in General Settings. This allows users to toggle between chronological (Oldest first) and reverse-chronological (Newest first) views in the Record History tab.
 

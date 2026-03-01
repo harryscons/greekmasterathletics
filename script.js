@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.67";
+    const VERSION = "v2.20.68";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -1204,6 +1204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("User logged in:", user.displayName);
                 currentUser = user;
                 updateUIForAuth(user);
+                loadSettingsFromCloud(); // v2.20.68: Fetch cloud preferences
 
                 if (userProfile && btnLogin) {
                     btnLogin.classList.add('hidden');
@@ -1227,6 +1228,90 @@ document.addEventListener('DOMContentLoaded', () => {
                     userProfile.classList.add('hidden');
                 }
             }
+        });
+    }
+
+    // --- v2.20.68: Settings Synchronization Core ---
+
+    function syncSettingsToCloud() {
+        if (!currentUser || !db) return;
+        const uid = currentUser.uid;
+        if (!uid) return;
+
+        const settings = {
+            tf_theme: localStorage.getItem('tf_theme') || 'theme-default',
+            tf_hide_notes_symbol: localStorage.getItem('tf_hide_notes_symbol') === 'true',
+            tf_show_only_modal: localStorage.getItem('tf_show_only_modal') === 'true',
+            tf_edit_history_flag: localStorage.getItem('tf_edit_history_flag') !== 'false',
+            tf_restrict_athletes_on_edit: localStorage.getItem('tf_restrict_athletes_on_edit') !== 'false',
+            tf_history_old_first: localStorage.getItem('tf_history_old_first') !== 'false',
+            lastSync: Date.now()
+        };
+
+        db.ref(`usersettings/${uid}`).set(settings)
+            .then(() => console.log("Settings synced to cloud successfully."))
+            .catch(err => console.error("Error syncing settings:", err));
+    }
+
+    function loadSettingsFromCloud() {
+        if (!currentUser || !db) return;
+        const uid = currentUser.uid;
+        if (!uid) return;
+
+        db.ref(`usersettings/${uid}`).once('value', (snapshot) => {
+            const cloudSettings = snapshot.val();
+            if (!cloudSettings) return;
+
+            console.log("Loading user settings from cloud...");
+
+            // Apply Theme
+            if (cloudSettings.tf_theme) {
+                setTheme(cloudSettings.tf_theme);
+            }
+
+            // Apply Hide Notes Symbol
+            if (cloudSettings.tf_hide_notes_symbol !== undefined) {
+                localStorage.setItem('tf_hide_notes_symbol', cloudSettings.tf_hide_notes_symbol);
+                const cb = document.getElementById('hideNotesSymbol');
+                if (cb) cb.checked = cloudSettings.tf_hide_notes_symbol;
+            }
+
+            // Apply Modal Preference
+            if (cloudSettings.tf_show_only_modal !== undefined) {
+                localStorage.setItem('tf_show_only_modal', cloudSettings.tf_show_only_modal);
+                const cb = document.getElementById('showOnlyModal');
+                if (cb) cb.checked = cloudSettings.tf_show_only_modal;
+                const recordModalEl = document.getElementById('recordModal');
+                if (recordModalEl) {
+                    if (cloudSettings.tf_show_only_modal) recordModalEl.classList.add('minimal');
+                    else recordModalEl.classList.remove('minimal');
+                }
+            }
+
+            // Apply Edit History Flag
+            if (cloudSettings.tf_edit_history_flag !== undefined) {
+                localStorage.setItem('tf_edit_history_flag', cloudSettings.tf_edit_history_flag);
+                const cb = document.getElementById('editHistorySetting');
+                if (cb) cb.checked = cloudSettings.tf_edit_history_flag;
+            }
+
+            // Apply Athlete Restriction
+            if (cloudSettings.tf_restrict_athletes_on_edit !== undefined) {
+                localStorage.setItem('tf_restrict_athletes_on_edit', cloudSettings.tf_restrict_athletes_on_edit ? 'true' : 'false');
+                const cb = document.getElementById('restrictAthletesOnEdit');
+                if (cb) cb.checked = cloudSettings.tf_restrict_athletes_on_edit;
+            }
+
+            // Apply History Sorting
+            if (cloudSettings.tf_history_old_first !== undefined) {
+                localStorage.setItem('tf_history_old_first', cloudSettings.tf_history_old_first ? 'true' : 'false');
+                const cb = document.getElementById('historyOldestFirst');
+                if (cb) cb.checked = cloudSettings.tf_history_old_first;
+            }
+
+            // Final refreshes to apply logic
+            renderReports();
+            renderHistoryList();
         });
     }
 
@@ -1407,6 +1492,7 @@ document.addEventListener('DOMContentLoaded', () => {
             hideNotesSymbol.addEventListener('change', () => {
                 localStorage.setItem('tf_hide_notes_symbol', hideNotesSymbol.checked);
                 renderReports();
+                syncSettingsToCloud();
             });
         }
 
@@ -1424,6 +1510,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     recordModalEl.classList.remove('minimal');
                 }
+                syncSettingsToCloud();
             });
         }
 
@@ -1433,6 +1520,7 @@ document.addEventListener('DOMContentLoaded', () => {
             editHistorySetting.checked = isEnabled;
             editHistorySetting.addEventListener('change', () => {
                 localStorage.setItem('tf_edit_history_flag', editHistorySetting.checked);
+                syncSettingsToCloud();
             });
         }
 
@@ -1445,6 +1533,7 @@ document.addEventListener('DOMContentLoaded', () => {
             restrictAthletesOnEdit.checked = (isRestricted === 'true');
             restrictAthletesOnEdit.addEventListener('change', () => {
                 localStorage.setItem('tf_restrict_athletes_on_edit', restrictAthletesOnEdit.checked);
+                syncSettingsToCloud();
             });
         }
 
@@ -1455,6 +1544,7 @@ document.addEventListener('DOMContentLoaded', () => {
             historyOldestFirstBtn.addEventListener('change', () => {
                 localStorage.setItem('tf_history_old_first', historyOldestFirstBtn.checked);
                 renderHistoryList();
+                syncSettingsToCloud();
             });
         }
 
@@ -8052,6 +8142,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
         if (themeSelect && themeSelect.value !== themeName) {
             themeSelect.value = themeName;
         }
+        syncSettingsToCloud();
     }
 
 
