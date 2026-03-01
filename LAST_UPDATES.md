@@ -1,3 +1,7 @@
+# v2.20.90
+- **Force Sync Safety Valve**: Implemented a mandatory 12-second timeout that releases the initialization phase even if Firebase synchronization is slow or hanging. This prevents the "Stuck on Synchronizing..." screen from blocking users.
+- **Archive Sorting Finalized**: Categories in the Record History tab are now accurately sorted by the *Performance Date* of their replacing (live) records.
+
 # v2.20.89
 - **Emergency Sync Fix**: Added diagnostic logging to the data synchronization engine to identify and resolve "stuck" initialization states.
 - **Sorting Refinement (Finalized)**: Verified and fixed the "replaced-by" sorting logic. History items are now precisely ordered by the performance date of the current live record that holds the title.
