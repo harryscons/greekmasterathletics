@@ -1,3 +1,6 @@
+# v2.20.99
+- **Definitive Global Export**: Hard-bound `renderHistoryList` to the global `window` object after previous structural attempts silently failed. Dropdowns in the History tab will now trigger immediate updates.
+
 # v2.20.98
 - **Global Signal Repair**: Fixed a logic error where the History Tab refresh signal was not properly sent to the main application. High-precision export of `renderHistoryList` to the global scope ensures dropdown filters trigger immediately.
 

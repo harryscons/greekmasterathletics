@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.98";
+    const VERSION = "v2.20.99";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5320,6 +5320,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("🔥 Error in renderHistoryList:", err);
         }
     }
+    window.renderHistoryList = renderHistoryList;
+
     function editHistory(id, isReadOnly = false) {
         if (!isSupervisor(currentUser ? currentUser.email : null) && !isReadOnly) {
             alert("Only Supervisors can edit history.");
