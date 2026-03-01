@@ -41,11 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.85";
+    const VERSION = "v2.20.86";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
-    window.historySortKey = 'archivedAt';
+    window.historySortKey = 'date';
     window.historySortDir = 'desc';
 
     function checkReady() {
@@ -5020,6 +5020,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Base records - convert to robust array
         const baseRecords = Array.isArray(recordHistory) ? [...recordHistory] : [];
+        console.log("📊 populateHistoryFilters: recordHistory size =", baseRecords.length);
 
         // 1. Events
         const eventsList = [...new Set(baseRecords.filter(r => matches(r, { event: true })).map(r => r.event))].filter(Boolean).sort();
@@ -5169,7 +5170,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (oldestFirst) {
                 // Pre-existing expansion logic for Oldest First (One step forward)
-                const versions = history.filter(h => getCatKey(h) === rKey)
+                const versions = recordHistory.filter(h => getCatKey(h) === rKey)
                     .sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
                 const currentIndex = versions.findIndex(v => v.id === r.id);
                 let linkedRec = null;
@@ -5284,36 +5285,68 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Only Supervisors can edit history.");
             return;
         }
-        openRecordModal(null, false, isReadOnly);
-        // Use strict string comparison for robust ID matching
+
         const idStr = String(id);
-        const r = history.find(item => String(item.id) === idStr);
-        if (!r) return;
+        const r = recordHistory.find(item => String(item.id) === idStr);
+        if (!r) {
+            console.error("❌ History Record not found:", id);
+            return;
+        }
 
-        if (evtInput) evtInput.value = r.event;
-        if (athleteInput) athleteInput.value = r.athlete;
-        if (genderInput) genderInput.value = r.gender || '';
+        openRecordModal(null, false, isReadOnly);
+
+        // Populate all fields consistently with editRecord
+        if (evtInput) evtInput.value = r.event || '';
+        if (athleteInput) athleteInput.value = r.athlete || '';
+        if (genderInput) genderInput.value = normalizeGender(r.gender || '');
         if (ageGroupInput) ageGroupInput.value = r.ageGroup || '';
+        if (trackTypeInput) trackTypeInput.value = r.trackType || 'Outdoor';
+        if (raceNameInput) raceNameInput.value = r.raceName || '';
+        if (markInput) markInput.value = r.mark || '';
+        if (windInput) windInput.value = r.wind || '';
+        if (idrInput) idrInput.value = r.idr || '';
+        if (townInput) townInput.value = r.town || '';
         if (countryInput) countryInput.value = r.country || '';
+        if (notesInput) notesInput.value = r.notes || '';
+        if (relayTeamNameInput) relayTeamNameInput.value = r.relayTeamName || '';
 
-        // 🛡️ v2.20.34: Handle country placeholder for read-only history view
+        if (dateInput) {
+            if (datePicker) datePicker.setDate(r.date);
+            else dateInput.value = r.date || '';
+        }
+
+        // Handle Relays
+        const ev = events.find(e => e.name === r.event);
+        const isRelay = ev ? (ev.eventType === 'Relay' || ev.isRelay === true) : false;
+        toggleRelayFields(isRelay);
+        if (isRelay) {
+            if (relayAthlete1) relayAthlete1.value = r.relayAthlete1 || '';
+            if (relayAthlete2) relayAthlete2.value = r.relayAthlete2 || '';
+            if (relayAthlete3) relayAthlete3.value = r.relayAthlete3 || '';
+            if (relayAthlete4) relayAthlete4.value = r.relayAthlete4 || '';
+        }
+
         syncCountryPlaceholder(isReadOnly, r.country);
 
-        // Apply Read-Only logic if needed
+        // Modal Title & UI
+        const formTitle = document.getElementById('formTitle');
         if (isReadOnly) {
             applyReadOnlyMode(true);
-            const formTitle = document.getElementById('formTitle');
             if (formTitle) formTitle.textContent = 'View Archived Record (Read-Only)';
         } else {
-            formTitle.textContent = 'Edit Archived Record';
-            formTitle.style.color = 'var(--text-muted)';
-            submitBtn.querySelector('span').textContent = 'Update Archive';
-            submitBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)'; // Purple for history
-            cancelBtn.classList.remove('hidden');
+            if (formTitle) {
+                formTitle.textContent = 'Edit Archived Record';
+                formTitle.style.color = 'var(--text-muted)';
+            }
+            if (submitBtn) {
+                submitBtn.querySelector('span').textContent = 'Update Archive';
+                submitBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)';
+            }
+            if (cancelBtn) cancelBtn.classList.remove('hidden');
         }
 
         editingHistoryId = id;
-        editingId = null; // Ensure we are not editing a live record
+        editingId = null;
         recordForm.scrollIntoView({ behavior: 'smooth' });
     }
 

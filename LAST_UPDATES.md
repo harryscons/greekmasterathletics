@@ -1,3 +1,8 @@
+# v2.20.86
+- **History Edit Form Fix**: Fully populated all fields (Mark, Wind, Date, Location, Relays, etc.) when editing or viewing a historical record. This ensures that the "Edit Archived Record" window is complete and accurate.
+- **Filtering Stability**: Added internal debug logging and fixed remaining variable conflicts to ensure History dropdown filters populate reliably.
+- **Sorting Optimization**: Defaulted the History tab to sort by the performance *Date* (Newest First), as requested.
+
 # v2.20.85
 - **Reserved Keyword Fix**: Renamed the internal `history` variable to `recordHistory`. This critical update resolves a hidden conflict with the browser's `window.history` object, which was causing the dropdown filters to remain unpopulated.
 - **UI Spacing Polish**: Refined the Record History tab layout by tightening subtitle and toolbar margins, creating a more professional and data-rich view.
