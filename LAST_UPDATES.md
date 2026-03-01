@@ -1,3 +1,6 @@
+# v2.20.66
+- **Maximum Mobile Compression**: Drastically reduced vertical spacing in the card-based mobile view. Reduced card margins and padding, tightened cell spacing, and optimized font sizes to maximize information density on small screens.
+
 # v2.20.65
 - **Sticky Management Headers**: Fixed the "Manage Athletes" table so that headers (labels and search boxes) stay fixed at the top while scrolling the list.
 - **Improved Scroll Containment**: Refined the flexbox container logic to ensure internal scrolling works reliably across all settings tabs.
@@ -338,7 +341,7 @@
 - **Minimalist Mode**: Enabling this removes background blur and glassmorphism, displaying the modal as a focused window with distinct shadows for better clarity on busy reports.
 
 # v2.15.083
-- **Final Tab Visibility Fix**: Corrected a second missing closing `</div>` tag in the modal structure that was still causing "Record History", "Settings", and "Statistics" to be hidden.
+- **Tab Visibility Fix**: Corrected a second missing closing `</div>` tag in the modal structure that was still causing "Record History", "Settings", and "Statistics" to be hidden.
 - **Structural Integrity**: Verified all HTML containers are properly closed to ensure reliable tab switching.
 
 # v2.15.082
