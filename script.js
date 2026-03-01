@@ -41,11 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.86";
+    const VERSION = "v2.20.87";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
-    window.historySortKey = 'date';
+    window.historySortKey = 'archivedAt';
     window.historySortDir = 'desc';
 
     function checkReady() {
@@ -4996,13 +4996,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (selGender === 'Mixed' && g !== 'mixed') return false;
             }
             if (!exclusions.year && selYear !== 'all') {
-                const y = r.date ? new Date(r.date).getFullYear().toString() : '';
-                if (y !== selYear) return false;
+                try {
+                    const y = r.date ? new Date(r.date).getFullYear().toString() : '';
+                    if (y !== selYear) return false;
+                } catch (e) { return false; }
             }
             if (!exclusions.ageGroup && selAgeGroup !== 'all' && r.ageGroup !== selAgeGroup) return false;
             if (!exclusions.archDate && selArchDate !== 'all') {
-                const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : ''; // en-CA gives YYYY-MM-DD
-                if (d !== selArchDate) return false;
+                try {
+                    const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : '';
+                    if (d !== selArchDate) return false;
+                } catch (e) { return false; }
             }
             return true;
         };
@@ -5077,11 +5081,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (selGender === 'Mixed' && g !== 'mixed') return false;
             }
             if (selAgeGroup !== 'all' && r.ageGroup !== selAgeGroup) return false;
-            if (selYear !== 'all' && (r.date ? new Date(r.date).getFullYear().toString() : '') !== selYear) return false;
-            if (selArchDate !== 'all') {
-                const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : '';
-                if (d !== selArchDate) return false;
-            }
+            try {
+                if (selYear !== 'all' && (r.date ? new Date(r.date).getFullYear().toString() : '') !== selYear) return false;
+                if (selArchDate !== 'all') {
+                    const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : '';
+                    if (d !== selArchDate) return false;
+                }
+            } catch (e) { return false; }
             return true;
         });
 
@@ -5110,7 +5116,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const live = records.find(curr => getCatKey(curr) === rKey);
 
                 if (live) {
-                    displayList.push({ ...live, isLive: true, archivedAt: new Date().toISOString(), historyBranch: versions });
+                    // v2.20.87: Live records always stay on top by spoofing a future archivedAt for sorting
+                    displayList.push({ ...live, isLive: true, archivedAt: '2099-12-31T23:59:59Z', historyBranch: versions });
                 } else if (versions.length > 0) {
                     const head = versions[0];
                     displayList.push({ ...head, historyBranch: versions.slice(1) });
@@ -5339,7 +5346,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 formTitle.style.color = 'var(--text-muted)';
             }
             if (submitBtn) {
-                submitBtn.querySelector('span').textContent = 'Update Archive';
+                const span = submitBtn.querySelector('span');
+                if (span) span.textContent = 'Update Archive';
                 submitBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)';
             }
             if (cancelBtn) cancelBtn.classList.remove('hidden');

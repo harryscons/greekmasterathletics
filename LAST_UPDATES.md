@@ -1,3 +1,8 @@
+# v2.20.87
+- **History Stability Hotfix**: Implemented robust date parsing in archive filters. Previously, a single malformed date record could crash the filter engine, leaving dropdowns empty.
+- **Form Integrity**: Verified and reinforced the history edit modal. Clicking "Edit" or "View" on an archive record now reliably populates all data fields (Mark, Wind, Race Name, IDR, etc.).
+- **Smart Replacement Sorting**: Reverted default sort to *Archived Date* (Desc) to prioritize the most recent record replacements. Added a "Live-Record pinning" logic to ensure current winners always head their historical groups.
+
 # v2.20.86
 - **History Edit Form Fix**: Fully populated all fields (Mark, Wind, Date, Location, Relays, etc.) when editing or viewing a historical record. This ensures that the "Edit Archived Record" window is complete and accurate.
 - **Filtering Stability**: Added internal debug logging and fixed remaining variable conflicts to ensure History dropdown filters populate reliably.
