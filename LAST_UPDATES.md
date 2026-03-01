@@ -1,3 +1,7 @@
+# v2.21.024
+- **Refined Admin Permissions**: The "+Add Record" button is now hidden for Admins (Supervisor-only).
+- **Popup Clarity**: Admins now only see "Deletions" in the startup popup again. If only "Additions" are pending, the popup will show a summary notice: *"Pending additions are awaiting Supervisor approval."*
+
 # v2.21.023
 - **FIX: Pending Popup for Admins (Restored)**: Removed the "Deletion-only" filter for Admins in the startup popup. Admins now see ALL pending records (Additions and Deletions) just like Supervisors, ensuring the popup correctly appears when any staging records are present.
 - **FIX: Auth Stability (Refresh Logic)**: Resolved the "Access Denied" message occurring on page refresh. The security check is now deferred until the application is 100% confident that the cloud-based user list has finished synchronizing, preventing premature logouts for authorized Admins.
