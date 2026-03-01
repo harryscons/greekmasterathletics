@@ -1,3 +1,6 @@
+# v2.21.022
+- **DEEP DIAGNOSTICS: Pending Popup for Admins**: Added data-level "🕵️ DATA" logging to `showPendingPopup` to inspect the actual content of the pending records array and the filtering process. This will help determine if records are missing from the cloud sync or being filtered out by the logic.
+
 # v2.21.021
 - **DIAGNOSTIC UPDATE: Pending Popup for Admins**: Added detailed "🕵️" console logging to the startup sequence and simplified the role-based logic in `showPendingPopup`. This will help identify if the popup is being suppressed by a settings conflict, a data synchronization delay, or a role detection error.
 

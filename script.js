@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.021";
+    const VERSION = "v2.21.022";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1559,21 +1559,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Use the dedicated pendingrecs array (separate Firebase node)
         let pending = Array.isArray(pendingrecs) ? [...pendingrecs] : [];
+        console.log(`🕵️ DATA: pendingrecs total count = ${pending.length}`);
+        if (pending.length > 0) {
+            console.log("🕵️ DATA: Sample record[0] flags:", {
+                isPending: pending[0].isPending,
+                isPendingDelete: pending[0].isPendingDelete,
+                athlete: pending[0].athlete
+            });
+        }
 
         // v2.21.014: If regular Admin (not Supervisor), only show deletions (Hide Additions)
         if (isAdmin && !isSuper) {
             pending = pending.filter(r => r.isPendingDelete);
+            console.log(`🕵️ DATA: Count after Admin (Delete-only) filter = ${pending.length}`);
         }
 
-        if (pending.length === 0) return;
+        if (pending.length === 0) {
+            console.log("🕵️ Popup aborted: No matching pending records to display.");
+            return;
+        }
 
         const overlay = document.getElementById('pendingPopupOverlay');
         const tbody = document.getElementById('pendingPopupTableBody');
         const subtitle = document.getElementById('pendingPopupSubtitle');
+        console.log(`🕵️ DOM Check: overlay=${!!overlay}, tbody=${!!tbody}`);
+
         if (!overlay || !tbody) return;
 
         // Apply minimal (no-blur) mode consistent with the showOnlyModal setting
-        if (localStorage.getItem('tf_show_only_modal') === 'true') {
+        const isMinimal = localStorage.getItem('tf_show_only_modal') === 'true';
+        console.log(`🕵️ UI: minimalMode=${isMinimal}`);
+
+        if (isMinimal) {
             overlay.classList.add('minimal');
         } else {
             overlay.classList.remove('minimal');
