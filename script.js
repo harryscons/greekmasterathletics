@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.014";
+    const VERSION = "v2.21.015";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -507,6 +507,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHistoryList();
         renderReports();
         renderUserList();
+
+        // v2.21.015: Final check once users are loaded
+        if (firebase.auth().currentUser && !isUserAllowed(firebase.auth().currentUser.email)) {
+            console.warn("User unauthorized after data load. Signing out.");
+            alert(`Access Denied: The email ${firebase.auth().currentUser.email} is not authorized.`);
+            firebase.auth().signOut();
+            return;
+        }
 
         // v2.20.80: Ensure WMA Stats also refreshes if active
         if (typeof renderWMAReport === 'function') {
@@ -1131,7 +1139,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function isUserAllowed(email) {
         if (!email) return false;
         if (allowedEmails.includes(email)) return true;
-        return appUsers.some(u => u.email.toLowerCase() === email.toLowerCase());
+
+        // v2.21.015: If users data hasn't loaded yet, assume allowed to prevent logout on refresh
+        if (!loadedNodes.has('users')) return true;
+
+        return appUsers.some(u => (u.email || '').toLowerCase() === email.toLowerCase());
     }
 
     function getUserRole(email) {
@@ -1257,7 +1269,10 @@ document.addEventListener('DOMContentLoaded', () => {
         auth.onAuthStateChanged((user) => {
             if (user) {
                 // Check if user is allowed
-                if (!isUserAllowed(user.email)) {
+                const isAllowed = isUserAllowed(user.email);
+                const usersLoaded = loadedNodes.has('users');
+
+                if (!isAllowed && usersLoaded) {
                     console.warn(`User ${user.email} is not in the allowed list.`);
                     alert(`Access Denied: The email ${user.email} is not authorized to edit records.`);
                     auth.signOut();
@@ -1476,8 +1491,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show pending popup for cloud supervisor/admin login
         // (local env is covered by renderAll guard)
-        if ((isSuper || isAdmin) && !isLocalEnvironment()) {
-            setTimeout(() => showPendingPopup(), 1000);
+        if (!isLocalEnvironment()) {
+            const tryTriggerPopup = () => {
+                if (isSuper || isAdmin) {
+                    setTimeout(() => showPendingPopup(), 1000);
+                } else if (!loadedNodes.has('users')) {
+                    // Wait for users node to load if it hasn't yet, then retry
+                    setTimeout(tryTriggerPopup, 500);
+                }
+            };
+            tryTriggerPopup();
         }
     }
 
