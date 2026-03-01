@@ -1,5 +1,8 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.79: Emergency Hotfix
+- **Initialization Restoration**: Fixed a critical regression that prevented the application from loading. The "Synchronizing Data..." screen now correctly disappears as soon as data processing is complete.
+
 ## v2.20.78: IDR & Wind Width Optimization
 - **Data-Driven Columns**: The IDR and Wind columns now perfectly frame their contents. This eliminates awkward gaps and ensures that even detailed wind readings are displayed clearly.
 - **Global Table Polish**: All primary data columns now utilize our dynamic sizing engine, resulting in the most professional and readable report layout to date.

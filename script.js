@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.78";
+    const VERSION = "v2.20.79";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5985,6 +5985,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Dynamic Athlete Width Calculation (v2.20.58) ---
         const athleteNames = filtered.map(r => (r.athlete || '').trim());
+        const maxAthleteLen = athleteNames.reduce((max, n) => Math.max(max, n.length), 0);
         // v2.20.76: More generous width (9px/char + 45px padding) with Max-Width Guard
         const athleteColWidth = Math.max(160, Math.min(400, (maxAthleteLen * 9) + 45));
 

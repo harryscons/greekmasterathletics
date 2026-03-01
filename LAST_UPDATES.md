@@ -1,3 +1,6 @@
+# v2.20.79
+- **Critical Initialization Fix**: Resolved an issue where the application would get stuck on the "Synchronizing Data..." overlay. Restored a missing internal variable (`maxAthleteLen`) required for dynamic column sizing.
+
 # v2.20.78
 - **Dynamic IDR & Wind Sizing**: Optimized the widths for IDR and Wind columns. They now automatically scale to fit their contents (like "GR" or wind readings), ensuring a clean and efficient data display.
 - **Enhanced Visual Consistency**: Every data column in the main report now uses intelligent dynamic sizing for a perfectly balanced look.
