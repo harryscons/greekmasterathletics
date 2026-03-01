@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.67: History Sorting Preference
+- **Customizable Archive View**: Introduced a new toggle in General Settings that lets users decide the sort order of the Record History list.
+- **Improved Versatility**: Defaulting to "Old first" preserves the traditional view, while switching to "New first" places the most recent edits at the top for faster access.
+
 ## v2.20.66: Maximum Mobile Compression
 - **Peak Data Density**: Shrunk card margins from `0.6rem` to `0.35rem` and internal padding from `0.75rem` to `0.45rem`.
 - **Tighter Information Rows**: Reduced field padding and optimized font sizes to ensure as many records as possible are visible on a single screen.

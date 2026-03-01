@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.66";
+    const VERSION = "v2.20.67";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -1445,6 +1445,16 @@ document.addEventListener('DOMContentLoaded', () => {
             restrictAthletesOnEdit.checked = (isRestricted === 'true');
             restrictAthletesOnEdit.addEventListener('change', () => {
                 localStorage.setItem('tf_restrict_athletes_on_edit', restrictAthletesOnEdit.checked);
+            });
+        }
+
+        const historyOldestFirstBtn = document.getElementById('historyOldestFirst');
+        if (historyOldestFirstBtn) {
+            const isEnabled = localStorage.getItem('tf_history_old_first') !== 'false'; // Default TRUE
+            historyOldestFirstBtn.checked = isEnabled;
+            historyOldestFirstBtn.addEventListener('change', () => {
+                localStorage.setItem('tf_history_old_first', historyOldestFirstBtn.checked);
+                renderHistoryList();
             });
         }
 
@@ -4841,7 +4851,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (empty) empty.classList.add('hidden');
 
-        history.forEach(r => {
+        // v2.20.67: Apply sorting preference
+        const oldestFirst = localStorage.getItem('tf_history_old_first') !== 'false';
+        const sortedHistory = [...history].sort((a, b) => {
+            const timeA = new Date(a.archivedAt).getTime();
+            const timeB = new Date(b.archivedAt).getTime();
+            return oldestFirst ? timeA - timeB : timeB - timeA;
+        });
+
+        sortedHistory.forEach(r => {
             const tr = document.createElement('tr');
             // v2.20.54: Robust Successor Matching via Category Key
             // This ensures the "+" button works even if IDs change (e.g. during imports)
