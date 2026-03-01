@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.017";
+    const VERSION = "v2.21.018";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1524,7 +1524,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (localStorage.getItem('tf_disable_pending_popup') === 'true') return;
 
         // Respect the role setting: 'supervisor' = only isSuper, 'all' = isAdmin or isSuper
-        const roleTarget = localStorage.getItem('tf_pending_popup_role') || 'supervisor';
+        const roleTarget = localStorage.getItem('tf_pending_popup_role') || 'all';
         if (roleTarget === 'supervisor' && !isSuper) return;
         if (roleTarget === 'all' && !isAdmin && !isSuper) return;
 
@@ -1771,7 +1771,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (pendingPopupRoleSel) {
-            pendingPopupRoleSel.value = localStorage.getItem('tf_pending_popup_role') || 'supervisor';
+            pendingPopupRoleSel.value = localStorage.getItem('tf_pending_popup_role') || 'all';
             pendingPopupRoleSel.addEventListener('change', () => {
                 localStorage.setItem('tf_pending_popup_role', pendingPopupRoleSel.value);
                 syncSettingsToCloud();

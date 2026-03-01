@@ -1,3 +1,6 @@
+# v2.21.018
+- **FIX: Pending Popup for Admins**: Changed the default "Show for" role for pending records from "Only Supervisor" to "Supervisor / Admins". This ensures Admins correctly see the startup popup when there are pending deletions awaiting approval.
+
 # v2.21.017
 - **Role-Based Settings Access**:
     - **Supervisors**: Maintain full access to all "General Settings" and the "Data Management" sub-tab.
