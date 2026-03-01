@@ -1,3 +1,7 @@
+# v2.21.025
+- **REVERT: Admin Permissions**: Reverted the restrictions from v2.21.024. Admins now have the "+Add Record" button restored and full visibility of all pending records in the startup popup.
+- **MAINTAINED: Auth Stability**: Kept the fix from v2.21.023 to prevent "Access Denied" errors on refresh.
+
 # v2.21.024
 - **Refined Admin Permissions**: The "+Add Record" button is now hidden for Admins (Supervisor-only).
 - **Popup Clarity**: Admins now only see "Deletions" in the startup popup again. If only "Additions" are pending, the popup will show a summary notice: *"Pending additions are awaiting Supervisor approval."*

@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.024";
+    const VERSION = "v2.21.025";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1487,10 +1487,10 @@ document.addEventListener('DOMContentLoaded', () => {
             else navSave.style.display = 'none';
         }
 
-        // Add Record Button Visibility (Supervisor Only)
+        // Add Record Button Visibility
         const btnNewRecord = document.getElementById('btnNewRecordInline');
         if (btnNewRecord) {
-            if (isSuper) btnNewRecord.classList.remove('hidden');
+            if (isAdmin) btnNewRecord.classList.remove('hidden');
             else btnNewRecord.classList.add('hidden');
         }
 
@@ -1561,13 +1561,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Use the dedicated pendingrecs array (separate Firebase node)
         let pending = Array.isArray(pendingrecs) ? [...pendingrecs] : [];
         console.log(`🕵️ DATA: pendingrecs total count = ${pending.length}`);
-        // v2.21.014: If regular Admin (not Supervisor), only show deletions (Hide Additions)
-        const isActuallySuper = isSupervisor(currentUser ? currentUser.email : null) || isLocalEnvironment();
-        if (isAdmin && !isActuallySuper) {
-            pending = pending.filter(r => r.isPendingDelete);
-            console.log(`🕵️ DATA: Count after Admin (Delete-only) filter = ${pending.length}`);
-        }
-
+        // v2.21.023 State: Admin sees all records in the popup
         const overlay = document.getElementById('pendingPopupOverlay');
         const tbody = document.getElementById('pendingPopupTableBody');
         const subtitle = document.getElementById('pendingPopupSubtitle');
@@ -1576,14 +1570,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!overlay || !tbody) return;
 
         if (pending.length === 0) {
-            if (pendingrecs.length > 0) {
-                // v2.21.024: Show summary notice for Admins if only additions are pending
-                subtitle.textContent = "Pending additions are awaiting Supervisor approval.";
-                tbody.innerHTML = '';
-                overlay.classList.remove('hidden');
-                console.log("🕵️ Popup shown: Summary notice for Admins.");
-                return;
-            }
             console.log("🕵️ Popup aborted: No matching pending records to display.");
             return;
         }
