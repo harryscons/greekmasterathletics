@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.74";
+    const VERSION = "v2.20.75";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5096,9 +5096,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     hasExpansion = true;
                     expansionHTML = r.historyBranch.map((h, idx) => `
                         <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: ${idx < r.historyBranch.length - 1 ? '12px' : '0'}; padding-bottom: ${idx < r.historyBranch.length - 1 ? '8px' : '0'}; border-bottom: ${idx < r.historyBranch.length - 1 ? '1px dashed rgba(var(--primary-rgb), 0.1)' : 'none'};">
-                            <div style="font-size:0.85em; color:var(--text-muted); display:flex; justify-content:space-between;">
+                            <div style="font-size:0.85em; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
                                 <span><strong>REPLACED PREVIOUS VERSION ${idx === 0 ? '(LATEST ARCHIVE)' : '(HISTORICAL)'}</strong></span>
-                                <span><strong>Archived:</strong> ${new Date(h.archivedAt).toLocaleString('en-GB')} | <strong>By:</strong> ${h.updatedBy || 'N/A'}</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span><strong>Archived:</strong> ${new Date(h.archivedAt).toLocaleString('en-GB')} | <strong>By:</strong> ${h.updatedBy || 'N/A'}</span>
+                                    <div class="expansion-actions" style="${isSup ? 'display:flex; gap:4px;' : 'display:none;'}">
+                                        <button class="btn-icon edit edit-history-btn" data-id="${h.id}" title="Edit Archived" style="padding: 2px; font-size: 0.9em;">✏️</button>
+                                        <button class="btn-icon delete delete-history-btn" data-id="${h.id}" title="Delete Permanent" style="padding: 2px; font-size: 0.9em;">🗑️</button>
+                                    </div>
+                                </div>
                             </div>
                             <div style="display:flex; gap:1rem; align-items:center;">
                                 <span style="font-weight:bold; color:var(--success);">${h.athlete}</span>

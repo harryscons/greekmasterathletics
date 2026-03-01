@@ -1,5 +1,8 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.75: Grouped Action Restoration
+- **Tucked Action Access**: We've restored the missing Edit and Delete icons for historical sub-rows in the "Newest First" view. Expanding an event now gives you full administrative control over every version in the chain.
+
 ## v2.20.74: History Expansion Restoration
 - **Chronological Detail**: We've restored the individual row expansion buttons for the "Oldest First" view. You can once again trace every single archival step in chronological order.
 - **Smart Adaptive Mode**: The system now perfectly switches between flat chronological lists and grouped newest-first summaries based on your personal workflow preferences.

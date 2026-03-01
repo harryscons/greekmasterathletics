@@ -1,3 +1,6 @@
+# v2.20.75
+- **History Management Restoration**: Restored the edit (✏️) and delete (🗑️) icons for historical records within the Grouped View. You can now manage individual archives even when they are nested under a primary event.
+
 # v2.20.74
 - **History Detail Restoration**: Fixed the missing `+` expansion buttons in the "Oldest First" view. Every historical record is now visible again as a standalone row with its successor expansion.
 - **Hybrid History Logic**: The application now intelligently switches between a Flat List (for chronological history) and a Grouped View (for newest-first summaries) based on your settings.
