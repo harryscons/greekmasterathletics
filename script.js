@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.108";
+    const VERSION = "v2.20.109";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5425,9 +5425,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (windInput) windInput.value = r.wind || '';
         if (idrInput) idrInput.value = r.idr || '';
         if (townInput) townInput.value = r.town || '';
-        if (countryInput) countryInput.value = r.country || '';
+        if (countryInput) setSelectValue(countryInput, r.country || ''); // Use setSelectValue for history safety
         if (notesInput) notesInput.value = r.notes || '';
         if (relayTeamNameInput) relayTeamNameInput.value = r.relayTeamName || '';
+
+        // Lock down core identity fields when editing history
+        // The user explicitly requested these not be changeable to preserve historical integrity
+        if (evtInput) evtInput.disabled = true;
+        if (athleteInput) athleteInput.disabled = true;
+        if (genderInput) genderInput.disabled = true;
+        if (ageGroupInput) ageGroupInput.disabled = true;
+        if (trackTypeInput) trackTypeInput.disabled = true;
 
         if (dateInput) {
             if (datePicker) {

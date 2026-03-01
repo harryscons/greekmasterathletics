@@ -1,3 +1,7 @@
+# v2.20.109
+- **History Record Data Integrity (Read-Only Fields)**: When editing an archived history record, the core identity fields (`Event`, `Athlete`, `Gender`, `Age Group`, and `Track Type`) are now strictly locked and Read-Only. This prevents accidental fundamental changes to a historical record's identity while still allowing edits to its results (`Mark`, `Wind`, `Location`, etc.).
+- **History Country Dropdown Fix**: Upgraded the form population logic for the Country dropdown in the History editor to dynamically recreate missing historical country options (labeled as "Archived") if they no longer exist in the active lists, ensuring the field is never blank.
+
 # v2.20.108
 - **Forced Browser Cache Refresh**: Added a versioning query parameter (`?v=2.20.108`) to the main application script import to permanently break stubborn browser caching. This ensures all users automatically receive the critical fixes implemented in v2.20.107 without needing to manually clear their browser data.
 
