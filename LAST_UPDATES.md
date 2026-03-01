@@ -1,3 +1,6 @@
+# v2.20.112
+- **Year Dropdown Array Fix**: Corrected a JavaScript data-sorting crash where the "All Years" dropdown would evaluate missing dates as `NaN` (Not a Number) before adding them to the list array. This completely broke the application's ability to mathematically sort history years, forcing it to only display the hardcoded `2026` option. The sorter is now protected.
+
 # v2.20.111
 - **Year Dropdown Populating Fix**: Corrected a date parsing logic error where the "All Years" filter failed to read very old date formats (e.g. `15/05/99`) or raw Excel serial numbers. The system can now interpret these natively, ensuring every historical year properly displays in report filters.
 

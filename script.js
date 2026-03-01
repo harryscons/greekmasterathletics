@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseDateRobust(s) {
         if (!s) return new Date(NaN);
         const str = s.toString().trim();
-        
+
         // Try raw Excel Serial (e.g., 45430)
         if (/^\d{5}$/.test(str)) {
             const excelEpoch = new Date(Date.UTC(1899, 11, 30));
@@ -590,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Try YYYY-MM-DD
         if (/^\d{4}-\d{2}-\d{2}/.test(str)) return new Date(str);
-        
+
         // Try dd/mm/yyyy OR dd/mm/yy OR dd.mm.yy OR dd-mm-yyyy
         const euroMatch = str.match(/^(\d{1,2})[/\.-](\d{1,2})[/\.-](\d{2,4})/);
         if (euroMatch) {
@@ -600,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (y < 100) y += (y < 50 ? 2000 : 1900); // Assume 00-49 is 20xx, 50-99 is 19xx
             return new Date(y, m - 1, d);
         }
-        
+
         // Fallback
         const dObj = new Date(str);
         if (!isNaN(dObj.getTime())) return dObj;
@@ -620,14 +620,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Regex fallback as ultimate secondary
         const match = dateStr.toString().match(/\b(20\d{2}|19\d{2})\b/);
         if (match) return match[1];
-        
+
         // Try loose 2-digit at the end (e.g. DD/MM/YY) safely
         const endYrMatch = dateStr.toString().match(/\b(\d{2})$/);
         if (endYrMatch) {
             let yr = parseInt(endYrMatch[1], 10);
             return (yr < 50 ? 2000 + yr : 1900 + yr).toString();
         }
-        
+
         return "";
     }
 
@@ -2043,7 +2043,10 @@ document.addEventListener('DOMContentLoaded', () => {
         records.forEach(r => {
             const y = getYearFromDate(r.date);
             if (y) {
-                years.add(parseInt(y));
+                const parsedYear = parseInt(y);
+                if (!isNaN(parsedYear)) {
+                    years.add(parsedYear);
+                }
             }
         });
 
@@ -5095,8 +5098,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Years
         const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => {
             const rDate = oldestFirst ? r.date : (r._groupSortDate || r.date);
-            return rDate ? new Date(rDate).getFullYear().toString() : '';
-        }))].filter(Boolean).sort((a, b) => b - a);
+            const yStr = getYearFromDate(rDate);
+            return yStr ? parseInt(yStr) : null;
+        }))].filter(y => y !== null && !isNaN(y)).sort((a, b) => b - a).map(String);
         updateSelect('historyFilterYear', yearsList, selYear, 'Years');
 
         // 4. Age Groups
