@@ -1,3 +1,8 @@
+# v2.20.64
+- **Absolute Header Uniformity**: Synchronized heights, fonts, and padding for all table headers across the app (Main, Stats, Athletes, Events, Users).
+- **Balanced Athlete Layout**: Implemented an even column distribution for the Athlete management table (ID, Name, DOB, Gender) while keeping Actions compact.
+- **Enhanced Statistics UI**: Integrated CSS-based sorting arrows and mobile card support into "Annual Progress" and "WMA Stats" reports.
+
 # v2.20.63
 - **Unified Table Styles**: Standardized all application tables (Statistics, Athletes, Events, Users) to use the "soft style" of the main report, including consistent headers and fonts.
 - **Global Mobile Card View**: Enabled the compact card-based layout for all tables when viewed on mobile devices, ensuring data is perfectly legible and aligned everywhere.
@@ -378,72 +383,6 @@
 - UI Refinements: Reduced widths for Age Group, IDR, and Wind columns in the main report.
 - Icon Update: Replaced "Update" button SVG with a matching 🔄 emoji and tightened action button spacing.
 - Cascaded Name Updates: Renaming an athlete now automatically propagates the change across all Records, History, and Pending submissions.
-
-# Celestial Plasma - Savepoint 104 Updates
-
-## Recent Accomplishments (v2.15.004 - v2.15.014)
-
-### 🏆 Rankings Tab
-- Added a new "Rankings" sub-tab to the Statistics section.
-- Implemented WMA performance aggregation per athlete (Best/Avg Pts, Record Count).
-- Added medal icons (🥇🥈🥉) and sortable headers with live sort direction arrows.
-- Implemented polling retry logic to ensure WMA scoring data is ready before rendering.
-
-## v2.20.57: Dynamic Race Name Sizing & Fluid Layout
-- **Dynamic Width Calculation**: The "Race Name" column width is now calculated on the fly as the table renders, using the second-largest string length as a baseline for the column width.
-- **Improved Truncation**: Ensures the longest race names don't expand the table excessively, maintaining high-density information layout.
-- **Full Screen Utilization**: The app now spans the full browser width, providing more room for the Athlete and Race Name columns.
-
-### v2.20.60: Mobile Card Layout Transformation
-- **Table-to-Card Transition**: Implemented a responsive design pattern that converts horizontal table rows into vertical data cards on screens under 768px.
-- **Dynamic Data Labels**: Leveraged CSS `::before` and `content: attr(data-label)` to provide context within the mobile cards without adding redundant HTML.
-- **Phone-Specific Styling**: Enhanced the visual hierarchy for mobile users, making athlete names and performances the focal points.
-
-### v2.20.59: Actions Column Restriction
-- **Role-Based Visibility**: Implemented logic to hide the entire "Actions" column for non-privileged users.
-- **Enhanced Data Security**: Restricted operational buttons (Update, Edit, Delete) to Admin and Supervisor roles only.
-- **Simplified Public UI**: Regular visitors now see a cleaner report table focused solely on athletic records.
-
-### v2.20.58: Dynamic Athlete & Race Name Sizing
-- **Dual-Column Adaptation**: Both the Athlete and Race Name columns now use real-time character length analysis to set their widths.
-- **Maximum Length Prioritization**: The Athlete column expands to fit the longest entry, while the Race Name follows the refined second-largest rule for optimal density.
-- [x] Importing EMACSI- [x] Dynamic Athlete Sizing (v2.20.58) <!-- id: 391 -->
-    - [x] Calculate maximum athlete length in `renderReports` <!-- id: 392 -->
-    - [x] Apply dynamic width to Athlete column <!-- id: 393 -->
-    - [x] Remove `width: auto` from CSS priority list <!-- id: 394 -->
-    - [x] Increment version to v2.20.58 <!-- id: 395 -->
-- [x] Importing EMACSI-2026 Theme (v2.20.55) <!-- id: 381 -->
-    - [x] Create `body.theme-emacsi-2026` in `style.css` <!-- id: 382 -->
-    - [x] Add EMACSI option to `themeSelect` in `index.html` <!-- id: 383 -->
-    - [x] Verify theme application and consistency <!-- id: 384 -->
-    - [x] Increment version to v2.20.55 <!-- id: 385 -->
-- [x] Importing EMACSI- [x] Renaming Theme (v2.20.56) <!-- id: 386 -->
-    - [x] Rename CSS class to `theme-championship-slate` <!-- id: 387 -->
-    - [x] Rename HTML option to "Championship Slate" <!-- id: 388 -->
-    - [x] Add migration logic in `script.js` <!-- id: 389 -->
-    - [x] Increment version to v2.20.56 <!-- id: 390 -->
-- [x] Debugging Archival Failure (v2.20.50) <!-- id: 354 -->
-    - [x] Implement accent-insensitive matching (normalize NFD) <!-- id: 355 -->
-    - [x] Refine `isLive` check in archival filter <!-- id: 356 -->
-    - [x] Add `renderHistoryList` call to import finalization <!-- id: 357 -->
-    - [x] Verify matching for accented Greek labels <!-- id: 358 -->
-- [x] Import Normalization & Matching Bug-Fix (v2.20.49) <!-- id: 348 -->
-    - [x] Expand `normalizeGender` with Greek support <!-- id: 349 -->
-    - [x] Fix index bug in `handleMappedImport` <!-- id: 350 -->
-    - [x] Implement robust normalized matching in archival check <!-- id: 351 -->
-    - [x] Verify fix for Greek/Case-mismatched records <!-- id: 352 -->
-    - [x] Increment version to v2.20.49 <!-- id: 353 -->
-
-### 📊 WMA Calculation & UI Refinement
-- **Track & Road Decimal Fix**: Updated `calculateRateConv` so marks like `14.9` are correctly interpreted as `14.90` (tenths/hundredths) for both **Track** and **Road** events.
-- **Age Mark Formatting**: The "Age Mark" in WMA Statistics reports is now formatted as a **time string** (e.g., `3:49.68`) for all Track and Road events.
-- **Improved Sorting**: Enhanced the `getNumeric` helper to correctly parse formatted time strings, ensuring "Age Mark" sorting remains accurate.
-- **Default Sorting**: Changed the WMA Statistics report default sort order to **Pts** (Points) descending.
-- **Label Rename**: Renamed **"Medal Statistics"** to **"National Holder Statistics"**.
-
-### 🛠️ Stability & Performance
-- Integrated `getExactAge()` for consistent DOB parsing across all Statistics views.
-- Switched to `athleteLookupMap` for faster performance.
 
 ---
 *Created on 2026-02-21*

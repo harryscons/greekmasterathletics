@@ -140,7 +140,7 @@
                 <section class="card reports-section">
                     <div class="section-header">
                         <h2>Greek Master Track & Field Records</h2>
-                        <span class="version-label">v2.20.63</span>
+                        <span class="version-label">v2.20.64</span>
                     </div>
 
                     <div class="report-toolbar">
@@ -553,7 +553,7 @@
                         </form>
 
                         <div class="table-container">
-                            <table class="report-table compact-table">
+                            <table class="report-table balanced-table">
                                 <thead>
                                     <tr>
                                         <th onclick="sortAthletes('idNumber')" class="sortable" style="width: 80px;">ID
@@ -1220,21 +1220,16 @@
                             <table class="report-table">
                                 <thead>
                                     <tr>
-                                        <th onclick="sortStats('generalRank')"
-                                            style="width:7%; text-align:center; cursor:pointer;">Gen Rank ↕</th>
-                                        <th onclick="sortStats('name')" style="cursor:pointer; width:58%;">Athlete
-                                            Name
-                                            ↕
+                                        <th onclick="sortStats('generalRank')" class="sortable"
+                                            style="width:7%; text-align:center;">Gen Rank</th>
+                                        <th onclick="sortStats('name')" class="sortable" style="width:55%;">Athlete Name
                                         </th>
-                                        <th onclick="sortStats('ratio')"
-                                            style="cursor:pointer; width:10%; text-align:right;">
-                                            Ratio % ↕</th>
-                                        <th onclick="sortStats('ageRank')"
-                                            style="width:15%; text-align:right; cursor:pointer;">
-                                            Age Rank (Medal) ↕</th>
-                                        <th onclick="sortStats('count')"
-                                            style="cursor:pointer; width:10%; text-align:right;">
-                                            Record Count ↕</th>
+                                        <th onclick="sortStats('ratio')" class="sortable"
+                                            style="width:10%; text-align:right;">Ratio %</th>
+                                        <th onclick="sortStats('ageRank')" class="sortable"
+                                            style="width:18%; text-align:right;">Age Rank (Medal)</th>
+                                        <th onclick="sortStats('count')" class="sortable"
+                                            style="width:10%; text-align:right;">Record Count</th>
                                     </tr>
                                 </thead>
                                 <tbody id="statsTableBody">
@@ -1302,19 +1297,17 @@
                             <table class="report-table">
                                 <thead>
                                     <tr>
-                                        <th onclick="sortWMAReport('event')" style="cursor:pointer">Event ↕</th>
-                                        <th onclick="sortWMAReport('athlete')" style="cursor:pointer">Athlete ↕</th>
-                                        <th onclick="sortWMAReport('gender')" style="cursor:pointer">Gender ↕</th>
-                                        <th onclick="sortWMAReport('age')" style="cursor:pointer">Age ↕</th>
-                                        <th onclick="sortWMAReport('mark')" style="cursor:pointer">Mark ↕</th>
-                                        <th onclick="sortWMAReport('idr')" style="cursor:pointer">IDR ↕</th>
-                                        <th onclick="sortWMAReport('rateConv')" style="cursor:pointer">RateConv ↕
-                                        </th>
-                                        <th onclick="sortWMAReport('ageMark')" style="cursor:pointer">AgeMark ↕</th>
-                                        <th onclick="sortWMAReport('pts')" style="cursor:pointer">Pts ↕</th>
-                                        <th onclick="sortWMAReport('date')" style="cursor:pointer">Date ↕</th>
-                                        <th onclick="sortWMAReport('raceName')" style="cursor:pointer">Race Name ↕
-                                        </th>
+                                        <th onclick="sortWMAReport('event')" class="sortable">Event</th>
+                                        <th onclick="sortWMAReport('athlete')" class="sortable">Athlete</th>
+                                        <th onclick="sortWMAReport('gender')" class="sortable">Gender</th>
+                                        <th onclick="sortWMAReport('age')" class="sortable">Age</th>
+                                        <th onclick="sortWMAReport('mark')" class="sortable">Mark</th>
+                                        <th onclick="sortWMAReport('idr')" class="sortable">IDR</th>
+                                        <th onclick="sortWMAReport('rateConv')" class="sortable">RateConv</th>
+                                        <th onclick="sortWMAReport('ageMark')" class="sortable">AgeMark</th>
+                                        <th onclick="sortWMAReport('pts')" class="sortable">Pts</th>
+                                        <th onclick="sortWMAReport('date')" class="sortable">Date</th>
+                                        <th onclick="sortWMAReport('raceName')" class="sortable">Race Name</th>
                                     </tr>
                                 </thead>
                                 <tbody id="wmaReportBody">

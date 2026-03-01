@@ -717,12 +717,22 @@ select:focus {
     border-bottom: 1px solid var(--border);
 }
 
-.compact-table th,
-.compact-table td {
-    padding: 0.35rem 0.6rem;
-    line-height: 1.2;
-    font-size: 0.85rem;
+/* Balanced layout for athlete management: Evenly distribute columns except Actions */
+.balanced-table {
+    table-layout: fixed;
 }
+
+.balanced-table th:not(.actions-col),
+.balanced-table td:not(.actions-col) {
+    width: auto !important;
+    /* Allow browser to distribute evenly */
+}
+
+.balanced-table .actions-col {
+    width: 120px !important;
+}
+
+/* compact-table removed to preserve standard header heights and fonts across the app */
 
 .table-filter-input {
     width: 100%;

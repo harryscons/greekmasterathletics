@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.63";
+    const VERSION = "v2.20.64";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -3211,6 +3211,20 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderWMAReport = function () {
         populateWMAReportFilters(); // Refresh dropdown options based on current selections
         const tbody = document.getElementById('wmaReportBody');
+        if (!tbody) return;
+
+        // Update header classes for sorting arrows
+        const table = tbody.closest('table');
+        if (table) {
+            table.querySelectorAll('thead th.sortable').forEach(th => {
+                th.classList.remove('asc', 'desc');
+                const onclickStr = th.getAttribute('onclick') || '';
+                if (onclickStr.includes(`'${wmaReportSortField}'`)) {
+                    th.classList.add(wmaReportSortOrder === 'asc' ? 'asc' : 'desc');
+                }
+            });
+        }
+
         tbody.innerHTML = '';
 
         // Filter and Sort Records
@@ -3415,21 +3429,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 displayAgeMark = formatSecondsToTime(displayAgeMark);
             }
 
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${r.event}</td>
-                <td>${athleteName}</td>
-                <td>${gender}</td>
-                <td>${ageAtEvent > 0 ? ageAtEvent : '-'}</td>
-                <td style="text-align:center;">${formatTimeMark(r.mark, r.event)}</td>
-                <td>${r.idr || '-'}</td>
-                <td>${rateConv || '-'}</td>
-                <td>${displayAgeMark || '-'}</td>
-                <td>${pts || '-'}</td>
-                <td>${r.date}</td>
-                <td>${r.raceName || '-'}</td>
+            const dateDisplay = r.date ? new Date(r.date).toLocaleDateString('en-GB') : '-';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td data-label="Event">${r.event}</td>
+                <td data-label="Athlete" style="font-weight:600;">${r.athlete}</td>
+                <td data-label="Gender">${normalizeGenderLookups(r.gender)}</td>
+                <td data-label="Age">${r.ageGroup || '-'}</td>
+                <td data-label="Mark" style="text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td>
+                <td data-label="IDR" style="font-size:0.85em; color:var(--text-muted);">${r.idr || '-'}</td>
+                <td data-label="RateConv" style="font-size:0.85em; color:var(--text-muted);">${rateConv || '-'}</td>
+                <td data-label="AgeMark" style="font-size:0.85em; color:var(--text-muted);">${displayAgeMark || '-'}</td>
+                <td data-label="Pts" style="text-align:right; font-weight:700; color:var(--accent);">${pts || '-'}</td>
+                <td data-label="Date">${dateDisplay}</td>
+                <td data-label="Race Name" style="font-size:0.85em; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.raceName || ''}">${r.raceName || '-'}</td>
             `;
-            tbody.appendChild(row);
+            tbody.appendChild(tr);
         });
     }
 
@@ -7195,6 +7210,19 @@ Replace ALL current data with this backup? This action is irreversible.`;
 
     function renderStats() {
         if (!statsTableBody) return;
+
+        // Update header classes for sorting arrows
+        const table = statsTableBody.closest('table');
+        if (table) {
+            table.querySelectorAll('thead th.sortable').forEach(th => {
+                th.classList.remove('asc', 'desc');
+                const onclickStr = th.getAttribute('onclick') || '';
+                if (onclickStr.includes(`'${statsSortField}'`)) {
+                    th.classList.add(statsSortOrder === 'asc' ? 'asc' : 'desc');
+                }
+            });
+        }
+
         statsTableBody.innerHTML = '';
 
         // Prioritize loading from persistent stats
@@ -7471,7 +7499,13 @@ Replace ALL current data with this backup? This action is irreversible.`;
             detailsHtml += `</tbody></table></div>`;
 
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td style="text-align:center; font-weight:bold; color:var(--text-muted); vertical-align:top; padding-top:12px;">${genRankDisplay}</td><td style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')"><div style="display:flex; align-items:center;"><span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>${ageDisplay}</div>${yearBadgesHtml}${detailsHtml}</td><td style="text-align:right; vertical-align:top; padding-top:12px;">${item.ratio}</td><td style="text-align:right; vertical-align:top; padding-top:12px;">${ageRankDisplay}</td><td style="text-align:right; padding-right:15px; vertical-align:top; padding-top:12px;">${item.count}</td>`;
+            tr.innerHTML = `
+                <td data-label="Gen Rank" style="text-align:center; font-weight:bold; color:var(--text-muted); vertical-align:top; padding-top:12px;">${genRankDisplay}</td>
+                <td data-label="Athlete" style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')"><div style="display:flex; align-items:center;"><span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>${ageDisplay}</div>${yearBadgesHtml}${detailsHtml}</td>
+                <td data-label="Ratio %" style="text-align:right; vertical-align:top; padding-top:12px;">${item.ratio}</td>
+                <td data-label="Age Rank" style="text-align:right; vertical-align:top; padding-top:12px;">${ageRankDisplay}</td>
+                <td data-label="Count" style="text-align:right; padding-right:15px; vertical-align:top; padding-top:12px;">${item.count}</td>
+            `;
             statsTableBody.appendChild(tr);
         });
     }
