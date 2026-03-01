@@ -1,3 +1,6 @@
+# v2.21.020
+- **FIX: Pending Popup for Admins (Final)**: Resolved a variable synchronization issue where the startup popup would fail to identify the user's role because it fired before the global role flags were updated. The retry loop now correctly synchronizes these flags after the cloud data sync is complete.
+
 # v2.21.019
 - **ROBUST FIX: Pending Popup for Admins**: Resolved a race condition where the startup popup would fail to appear because it fired before the "Pending Records" data node had fully synchronized. The app now explicitly waits for both User roles and Pending Records to be ready before triggering the popup.
 

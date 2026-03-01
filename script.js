@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.019";
+    const VERSION = "v2.21.020";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1514,7 +1514,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const currentIsSuper = currentRole === 'Supervisor' || isLocal;
 
                 if (loadedNodes.has('users') && loadedNodes.has('pendingrecs')) {
-                    if (currentIsSuper || currentIsAdmin) {
+                    // CRITICAL: Synchronize global role flags so showPendingPopup() can see them correctly
+                    isAdmin = currentIsAdmin;
+                    isSuper = currentIsSuper;
+
+                    if (isAdmin || isSuper) {
                         console.log("🔔 Triggering pending popup check...");
                         setTimeout(() => showPendingPopup(), 1000);
                     }
