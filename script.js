@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.104";
+    const VERSION = "v2.20.105";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -368,12 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 records = valToArray(snapshot.val());
                 console.log("Records updated from Firebase:", records.length);
-
-                // Diagnostic: Are 2026 records in the state?
-                const final2026 = records.filter(r => r.date && r.date.includes('2026'));
-                if (final2026.length > 0) {
-                    console.log(`📊 2026 records now in state: ${final2026.length}`, final2026.map(r => r.athlete));
-                }
 
                 loadedNodes.add('records');
                 checkReady();
@@ -4851,17 +4845,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (editingHistoryId) {
                 // Update History Record
-                const index = recordHistory.findIndex(r => r.id === editingHistoryId);
+                const idToFind = String(editingHistoryId);
+                const index = recordHistory.findIndex(r => String(r.id) === idToFind);
                 if (index !== -1) {
-                    // Keep original archive timestamp
+                    // Keep original archive timestamp and sorting date
                     newRecord.archivedAt = recordHistory[index].archivedAt;
+                    newRecord._groupSortDate = recordHistory[index]._groupSortDate;
+
                     recordHistory[index] = newRecord;
                     saveHistory();
+
+                    // Force a re-calculation of filters immediately
+                    populateHistoryFilters(localStorage.getItem('tf_history_sort_oldest') === 'true');
                     renderHistoryList();
                 }
                 submitBtn.querySelector('span').textContent = 'History Updated! ✓';
                 setTimeout(() => {
                     cancelEdit();
+
+                    // Switch back to History tab and re-render to reflect changes
                     switchTab('history');
                 }, 1000);
             } else if (editingId) {
