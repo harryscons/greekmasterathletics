@@ -1,3 +1,7 @@
+# v2.21.023
+- **FIX: Pending Popup for Admins (Restored)**: Removed the "Deletion-only" filter for Admins in the startup popup. Admins now see ALL pending records (Additions and Deletions) just like Supervisors, ensuring the popup correctly appears when any staging records are present.
+- **FIX: Auth Stability (Refresh Logic)**: Resolved the "Access Denied" message occurring on page refresh. The security check is now deferred until the application is 100% confident that the cloud-based user list has finished synchronizing, preventing premature logouts for authorized Admins.
+
 # v2.21.022
 - **DEEP DIAGNOSTICS: Pending Popup for Admins**: Added data-level "🕵️ DATA" logging to `showPendingPopup` to inspect the actual content of the pending records array and the filtering process. This will help determine if records are missing from the cloud sync or being filtered out by the logic.
 

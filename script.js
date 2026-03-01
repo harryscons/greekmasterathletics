@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.022";
+    const VERSION = "v2.21.023";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1272,7 +1272,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isAllowed = isUserAllowed(user.email);
                 const usersLoaded = loadedNodes.has('users');
 
-                if (!isAllowed && usersLoaded) {
+                // v2.21.023: Be more patient with unauthorized check to avoid refresh logouts
+                if (!isAllowed && usersLoaded && isDataReady) {
                     console.warn(`User ${user.email} is not in the allowed list.`);
                     alert(`Access Denied: The email ${user.email} is not authorized to edit records.`);
                     auth.signOut();
@@ -1569,10 +1570,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // v2.21.014: If regular Admin (not Supervisor), only show deletions (Hide Additions)
+        // v2.21.023: REMOVED - Admin should see everything in the popup to avoid missing it
+        /*
         if (isAdmin && !isSuper) {
             pending = pending.filter(r => r.isPendingDelete);
             console.log(`🕵️ DATA: Count after Admin (Delete-only) filter = ${pending.length}`);
         }
+        */
 
         if (pending.length === 0) {
             console.log("🕵️ Popup aborted: No matching pending records to display.");
