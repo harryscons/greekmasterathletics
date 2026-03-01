@@ -1,3 +1,6 @@
+# v2.20.111
+- **Year Dropdown Populating Fix**: Corrected a date parsing logic error where the "All Years" filter failed to read very old date formats (e.g. `15/05/99`) or raw Excel serial numbers. The system can now interpret these natively, ensuring every historical year properly displays in report filters.
+
 # v2.20.110
 - **History Record Data Integrity (Read-Only Fields)**: Corrected a bug where the History Edit window's core identity fields (`Event`, `Athlete`, `Gender`, `Age Group`, and `Track Type`) were accidentally being unlocked by a timing issue in the read-only toggle. They are now permanently locked as intended.
 - **History Expanded Details**: Added `Location` (Town, Country) and `Notes` data to the `+` expanded dropdown rows within the main History List table to provide users with full visibility of historical contexts.

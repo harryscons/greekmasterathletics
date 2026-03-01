@@ -581,19 +581,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseDateRobust(s) {
         if (!s) return new Date(NaN);
         const str = s.toString().trim();
+        
+        // Try raw Excel Serial (e.g., 45430)
+        if (/^\d{5}$/.test(str)) {
+            const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+            return new Date(excelEpoch.getTime() + parseInt(str) * 86400000);
+        }
+
         // Try YYYY-MM-DD
         if (/^\d{4}-\d{2}-\d{2}/.test(str)) return new Date(str);
-        // Try dd/mm/yyyy
-        if (/^(\d{1,2})\/(\d{1,2})\/(\d{4})/.test(str)) {
-            const match = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-            const d = parseInt(match[1], 10);
-            const m = parseInt(match[2], 10);
-            const y = parseInt(match[3], 10);
+        
+        // Try dd/mm/yyyy OR dd/mm/yy OR dd.mm.yy OR dd-mm-yyyy
+        const euroMatch = str.match(/^(\d{1,2})[/\.-](\d{1,2})[/\.-](\d{2,4})/);
+        if (euroMatch) {
+            const d = parseInt(euroMatch[1], 10);
+            const m = parseInt(euroMatch[2], 10);
+            let y = parseInt(euroMatch[3], 10);
+            if (y < 100) y += (y < 50 ? 2000 : 1900); // Assume 00-49 is 20xx, 50-99 is 19xx
             return new Date(y, m - 1, d);
         }
+        
         // Fallback
-        const d = new Date(str);
-        if (!isNaN(d.getTime())) return d;
+        const dObj = new Date(str);
+        if (!isNaN(dObj.getTime())) return dObj;
 
         // Final attempt: search for 4-digit year blindly
         const yearMatch = str.match(/\b(20\d{2}|19\d{2})\b/);
@@ -609,7 +619,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Regex fallback as ultimate secondary
         const match = dateStr.toString().match(/\b(20\d{2}|19\d{2})\b/);
-        return match ? match[1] : "";
+        if (match) return match[1];
+        
+        // Try loose 2-digit at the end (e.g. DD/MM/YY) safely
+        const endYrMatch = dateStr.toString().match(/\b(\d{2})$/);
+        if (endYrMatch) {
+            let yr = parseInt(endYrMatch[1], 10);
+            return (yr < 50 ? 2000 + yr : 1900 + yr).toString();
+        }
+        
+        return "";
     }
 
     function findAthleteByNormalizedName(rawName) {
