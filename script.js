@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.001";
+    const VERSION = "v2.21.002";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -367,11 +367,20 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref('records').on('value', (snapshot) => {
             try {
                 records = valToArray(snapshot.val());
-                console.log("Records updated from Firebase:", records.length);
+                console.log("📋 Records loaded from Firebase. Count:", records.length);
+
+                // Debug: sample what dates look like
+                const sampleDates = records.slice(0, 5).map(r => r.date || 'NO DATE');
+                console.log("📅 Sample record dates:", sampleDates);
 
                 loadedNodes.add('records');
                 checkReady();
-                if (isDataReady) renderAll();
+                if (isDataReady) {
+                    renderAll();
+                } else {
+                    // Even before isDataReady, populate the year dropdown now that records are loaded
+                    if (typeof populateYearDropdown === 'function') populateYearDropdown();
+                }
             } catch (e) {
                 console.error("🔥 Error in Validating/Loading Records:", e);
                 alert("Data Sync Error: " + e.message);
@@ -2034,11 +2043,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!filterYear) return;
 
         const currentVal = filterYear.value;
-
-        // Extract unique years from records
         const years = new Set();
         const currentYear = new Date().getFullYear();
         years.add(currentYear);
+
+        console.log(`📆 populateYearDropdown called. records.length = ${records.length}`);
 
         records.forEach(r => {
             const y = getYearFromDate(r.date);
@@ -2050,10 +2059,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        console.log(`📆 Years extracted:`, Array.from(years).sort((a, b) => b - a));
+
         const sortedYears = Array.from(years).sort((a, b) => b - a);
 
         filterYear.innerHTML = '<option value="all" style="color:black;">All Years</option>';
-
         sortedYears.forEach(y => {
             const opt = document.createElement('option');
             opt.value = y.toString();
@@ -2062,7 +2072,6 @@ document.addEventListener('DOMContentLoaded', () => {
             filterYear.appendChild(opt);
         });
 
-        // Restore value if it still exists
         if (Array.from(filterYear.options).some(opt => opt.value === currentVal)) {
             filterYear.value = currentVal;
         } else {
@@ -2095,6 +2104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentVal) filterEvent.value = currentVal;
         }
     }
+
 
     function populateAthleteDropdown(filterObj = null) {
         let filteredAthletes = [...athletes];

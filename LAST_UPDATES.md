@@ -1,3 +1,6 @@
+# v2.21.002
+- **Year Dropdown Diagnostics**: Added console logging inside `populateYearDropdown` to expose the exact state of `records` at call time. Also added a direct call to `populateYearDropdown` inside the Firebase records listener to ensure it fires immediately after data loads.
+
 # v2.21.001
 - **Version Bump**: Incremented version to `v2.21.001`. Established a new pattern convention to automatically increment the build suffix iteratively.
 
