@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.005";
+    const VERSION = "v2.21.006";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -1299,6 +1299,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tf_edit_history_flag: localStorage.getItem('tf_edit_history_flag') !== 'false',
             tf_restrict_athletes_on_edit: localStorage.getItem('tf_restrict_athletes_on_edit') !== 'false',
             tf_history_old_first: localStorage.getItem('tf_history_old_first') !== 'false',
+            tf_disable_pending_popup: localStorage.getItem('tf_disable_pending_popup') === 'true',
             lastSync: Date.now()
         };
 
@@ -1367,6 +1368,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('tf_history_old_first', cloudSettings.tf_history_old_first ? 'true' : 'false');
                 const cb = document.getElementById('historyOldestFirst');
                 if (cb) cb.checked = cloudSettings.tf_history_old_first;
+            }
+
+            // Apply Disable Pending Popup
+            if (cloudSettings.tf_disable_pending_popup !== undefined) {
+                localStorage.setItem('tf_disable_pending_popup', cloudSettings.tf_disable_pending_popup ? 'true' : 'false');
+                const cb = document.getElementById('disablePendingPopup');
+                if (cb) cb.checked = cloudSettings.tf_disable_pending_popup;
             }
 
             // Final refreshes to apply logic
@@ -1448,6 +1456,43 @@ document.addEventListener('DOMContentLoaded', () => {
         // For now, let's just disable the Submit button in Log Record
         const submitBtn = document.getElementById('submitBtn');
         if (submitBtn) submitBtn.disabled = !isAdmin;
+
+        // Show pending popup for supervisors on login
+        if (isSuper && isDataReady) {
+            setTimeout(() => showPendingPopup(), 800);
+        }
+    }
+
+    function showPendingPopup() {
+        // Respect the "Disable pending popup" setting
+        if (localStorage.getItem('tf_disable_pending_popup') === 'true') return;
+
+        const pending = records.filter(r => r.isPending || r.isPendingDelete);
+        if (pending.length === 0) return;
+
+        const overlay = document.getElementById('pendingPopupOverlay');
+        const tbody = document.getElementById('pendingPopupTableBody');
+        const subtitle = document.getElementById('pendingPopupSubtitle');
+        if (!overlay || !tbody) return;
+
+        subtitle.textContent = `${pending.length} record${pending.length !== 1 ? 's' : ''} awaiting your approval`;
+
+        tbody.innerHTML = pending.map(r => {
+            const type = r.isPendingDelete ? '<span style="color:#ef4444;font-weight:700;">🗑 Διαγραφή</span>' : '<span style="color:#16a34a;font-weight:700;">➕ Προσθήκη</span>';
+            const athlete = r.athlete || '-';
+            const event = r.event || '-';
+            const mark = r.mark || '-';
+            const date = r.date || '-';
+            return `<tr>
+                <td style="padding:0.45rem 0.75rem;">${athlete}</td>
+                <td style="padding:0.45rem 0.75rem;">${event}</td>
+                <td style="padding:0.45rem 0.75rem;font-weight:700;">${mark}</td>
+                <td style="padding:0.45rem 0.75rem;">${date}</td>
+                <td style="padding:0.45rem 0.75rem;">${type}</td>
+            </tr>`;
+        }).join('');
+
+        overlay.classList.remove('hidden');
     }
 
 
@@ -1615,6 +1660,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('tf_history_old_first', historyOldestFirstBtn.checked);
                 renderHistoryList();
                 syncSettingsToCloud();
+            });
+        }
+
+        // Disable Pending Popup setting (default: false = popup IS shown)
+        const disablePendingPopupCb = document.getElementById('disablePendingPopup');
+        if (disablePendingPopupCb) {
+            disablePendingPopupCb.checked = localStorage.getItem('tf_disable_pending_popup') === 'true';
+            disablePendingPopupCb.addEventListener('change', () => {
+                localStorage.setItem('tf_disable_pending_popup', disablePendingPopupCb.checked);
+                syncSettingsToCloud();
+            });
+        }
+
+        // Pending popup close buttons
+        ['closePendingPopup', 'closePendingPopupBtn'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.addEventListener('click', () => {
+                const overlay = document.getElementById('pendingPopupOverlay');
+                if (overlay) overlay.classList.add('hidden');
+            });
+        });
+
+        const goToLogBtn = document.getElementById('pendingPopupGoToLog');
+        if (goToLogBtn) {
+            goToLogBtn.addEventListener('click', () => {
+                const overlay = document.getElementById('pendingPopupOverlay');
+                if (overlay) overlay.classList.add('hidden');
+                // Switch to the log/pending tab
+                const logTab = document.querySelector('.nav-tab[data-tab="log"]');
+                if (logTab) logTab.click();
             });
         }
 

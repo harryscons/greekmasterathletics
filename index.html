@@ -1005,6 +1005,15 @@
                                     record first</label>
                             </div>
 
+                            <div class="form-group"
+                                style="flex: 1; flex-direction: row; align-items: center; gap: 0.75rem; margin-bottom: 0;">
+                                <input type="checkbox" id="disablePendingPopup"
+                                    style="width: 20px; height: 20px; cursor: pointer;">
+                                <label for="disablePendingPopup" style="cursor: pointer; margin-bottom: 0;">Disable
+                                    pending
+                                    records popup on startup</label>
+                            </div>
+
                             <div class="form-group" style="padding-top: 1rem; border-top: 1px solid var(--border);">
                                 <label>Maintenance</label>
                                 <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
@@ -1557,6 +1566,45 @@
                 </div>
             </div>
             <div style="padding:2rem; overflow-x:auto;" id="excelValidationContent"></div>
+        </div>
+    </div>
+
+    <!-- Pending Records Startup Popup -->
+    <div id="pendingPopupOverlay" class="modal-overlay hidden"
+        style="background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; pointer-events: none;">
+        <div class="modal-content"
+            style="pointer-events: auto; width: 90%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 0 0 2000px rgba(0,0,0,0.25), 0 30px 70px -10px rgba(0,0,0,0.6); border: 1px solid var(--border);">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-shrink: 0;">
+                <div>
+                    <h2 style="margin: 0; font-size: 1.3rem;">⏳ Pending Records</h2>
+                    <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-muted);"
+                        id="pendingPopupSubtitle"></p>
+                </div>
+                <button class="modal-close" id="closePendingPopup" style="flex-shrink: 0;" title="Close">✕</button>
+            </div>
+            <div style="overflow-y: auto; flex: 1; min-height: 0;">
+                <table class="report-table" style="width: 100%; font-size: 0.88rem;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 0.5rem 0.75rem;">Αθλητής/τρια</th>
+                            <th style="padding: 0.5rem 0.75rem;">Αγώνισμα</th>
+                            <th style="padding: 0.5rem 0.75rem;">Επίδοση</th>
+                            <th style="padding: 0.5rem 0.75rem;">Ημ/νία</th>
+                            <th style="padding: 0.5rem 0.75rem;">Τύπος</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingPopupTableBody"></tbody>
+                </table>
+            </div>
+            <div
+                style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem; flex-shrink: 0; padding-top: 1rem; border-top: 1px solid var(--border);">
+                <button id="pendingPopupGoToLog" class="btn-primary"
+                    style="padding: 0.55rem 1.3rem; border-radius: 10px; font-weight: 600; cursor: pointer; font-family: inherit;">Go
+                    to Pending Log</button>
+                <button id="closePendingPopupBtn" class="btn-secondary"
+                    style="padding: 0.55rem 1.3rem; border-radius: 10px; font-weight: 600; cursor: pointer; font-family: inherit;">Close</button>
+            </div>
         </div>
     </div>
 

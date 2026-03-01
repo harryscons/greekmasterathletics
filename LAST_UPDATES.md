@@ -1,3 +1,7 @@
+# v2.21.006
+- **Pending Records Startup Popup**: When the supervisor logs in and there are pending records awaiting approval, a popup window appears automatically listing all pending records with their athlete name, event, mark, date, and type (addition/deletion). A "Go to Pending Log" button navigates directly to the approval tab. The popup uses the existing theme/colors with no background blur, just corner shadow.
+- **Settings: Disable Pending Popup**: Added a new "Disable pending records popup on startup" checkbox in General Settings. Default is unchecked (popup shown). Setting is saved to localStorage and synced to Firebase under each user's settings profile.
+
 # v2.21.005
 - **"Προς Εγκριση" Badge Style**: Made the pending approval badge bigger (font-size 0.85em), bold green background (`#16a34a`) with a white text and green glow effect. Now clearly visible and easy to recognize at a glance.
 - **Country Dropdown Fix**: Resolved missing countries in the Add/Edit/Update record form. Countries were only being populated after all 5 data nodes synced. Now the country dropdown populates immediately when country data arrives from Firebase, matching the same fix applied earlier to the year dropdown.
