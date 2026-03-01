@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.71";
+    const VERSION = "v2.20.72";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -4951,7 +4951,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // v2.20.67: Apply sorting preference
         const oldestFirst = localStorage.getItem('tf_history_old_first') !== 'false';
 
-        // v2.20.71: v2.20.71: Inclusion of Live records in history view for Newest First
+        // v2.20.71: Inclusion of Live records in history view for Newest First
         let displayList = [...history];
 
         const clean = (s) => (s || '').toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -4961,23 +4961,31 @@ document.addEventListener('DOMContentLoaded', () => {
             return `${clean(rec.event)}|${clean(g)}|${clean(rec.ageGroup)}|${clean(rec.trackType || 'Outdoor')}`;
         };
 
-        if (!oldestFirst) {
-            // Find unique categories in history
+        if (oldestFirst) {
+            // v2.20.72: Traditional Flat List for Oldest First
+            displayList.sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
+        } else {
+            // v2.20.72: Grouped View for Newest First (Avoids Duplication)
             const categories = [...new Set(history.map(h => getCatKey(h)))];
+            displayList = []; // Rebuild for grouping
+
             categories.forEach(rKey => {
+                const versions = history.filter(h => getCatKey(h) === rKey)
+                    .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt)); // Newest Archive first
+
                 const live = records.find(curr => getCatKey(curr) === rKey);
-                if (live && !history.some(h => h.id === live.id)) {
-                    // Inject live record with a virtual archivedAt (now)
-                    displayList.push({ ...live, isLive: true, archivedAt: new Date().toISOString() });
+
+                // The "Head" is the Live record if it exists, otherwise the Newest Archive
+                if (live) {
+                    displayList.push({ ...live, isLive: true, archivedAt: new Date().toISOString(), historyBranch: versions });
+                } else if (versions.length > 0) {
+                    const head = versions[0];
+                    displayList.push({ ...head, historyBranch: versions.slice(1) });
                 }
             });
-        }
 
-        displayList.sort((a, b) => {
-            const timeA = new Date(a.archivedAt).getTime();
-            const timeB = new Date(b.archivedAt).getTime();
-            return oldestFirst ? timeA - timeB : timeB - timeA;
-        });
+            displayList.sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+        }
 
         displayList.forEach(r => {
             const tr = document.createElement('tr');
@@ -4987,44 +4995,71 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const rKey = getCatKey(r);
+            const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
-            // 1. Find all history versions for this category
-            const versions = history.filter(h => getCatKey(h) === rKey)
-                .sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
-
-            // Check if Live record exists for this category
-            const liveRec = records.find(curr => getCatKey(curr) === rKey);
-            const fullVersions = [...versions];
-            if (liveRec && !versions.some(v => v.id === liveRec.id)) {
-                fullVersions.push(liveRec);
-            }
-
-            const currentIndex = fullVersions.findIndex(v => v.id === r.id);
-
-            let linkedRec = null;
-            let linkedLabel = '';
+            // Expansion Logic
+            let hasExpansion = false;
+            let expansionHTML = '';
 
             if (oldestFirst) {
-                // v2.20.69: If Oldest First, expansion shows the successor (newer)
-                if (currentIndex !== -1 && currentIndex < fullVersions.length - 1) {
-                    linkedRec = fullVersions[currentIndex + 1];
-                    const isNextLive = !history.some(h => h.id === linkedRec.id);
-                    linkedLabel = isNextLive ? 'REPLACED BY (CURRENT LIVE VERSION)' : 'REPLACED BY (INTERMEDIATE VERSION)';
+                // Pre-existing expansion logic for Oldest First (One step forward)
+                const versions = history.filter(h => getCatKey(h) === rKey)
+                    .sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
+                const currentIndex = versions.findIndex(v => v.id === r.id);
+                let linkedRec = null;
+                let linkedLabel = '';
+
+                if (currentIndex !== -1 && currentIndex < versions.length - 1) {
+                    linkedRec = versions[currentIndex + 1];
+                    linkedLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
+                } else if (currentIndex === versions.length - 1 || currentIndex === -1) {
+                    linkedRec = records.find(curr => getCatKey(curr) === rKey);
+                    if (linkedRec && linkedRec.id !== r.id) {
+                        linkedLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
+                    } else {
+                        linkedRec = null;
+                    }
+                }
+
+                if (linkedRec) {
+                    hasExpansion = true;
+                    expansionHTML = `
+                        <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
+                            <span><strong>${linkedLabel}</strong></span>
+                            <span><strong>By:</strong> ${linkedRec.updatedBy || 'N/A'}</span>
+                        </div>
+                        <div style="display:flex; gap:1rem; align-items:center;">
+                            <span style="font-weight:bold; color:var(--success);">${linkedRec.athlete}</span>
+                            <span>${formatTimeMark(linkedRec.mark, r.event)} (${linkedRec.wind || '-'})</span>
+                            <span>| ${new Date(linkedRec.date).toLocaleDateString('en-GB')}</span>
+                            <span>| ${linkedRec.raceName || '-'}</span>
+                        </div>
+                    `;
                 }
             } else {
-                // v2.20.69: If Newest First, expansion shows the predecessor (older)
-                if (currentIndex > 0) {
-                    linkedRec = fullVersions[currentIndex - 1];
-                    linkedLabel = 'REPLACED PREVIOUS VERSION (ARCHIVED)';
+                // Grouped Expansion logic for Newest First (Full lineage)
+                if (r.historyBranch && r.historyBranch.length > 0) {
+                    hasExpansion = true;
+                    expansionHTML = r.historyBranch.map((h, idx) => `
+                        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: ${idx < r.historyBranch.length - 1 ? '12px' : '0'}; padding-bottom: ${idx < r.historyBranch.length - 1 ? '8px' : '0'}; border-bottom: ${idx < r.historyBranch.length - 1 ? '1px dashed rgba(var(--primary-rgb), 0.1)' : 'none'};">
+                            <div style="font-size:0.85em; color:var(--text-muted); display:flex; justify-content:space-between;">
+                                <span><strong>REPLACED PREVIOUS VERSION ${idx === 0 ? '(LATEST ARCHIVE)' : '(HISTORICAL)'}</strong></span>
+                                <span><strong>Archived:</strong> ${new Date(h.archivedAt).toLocaleString('en-GB')} | <strong>By:</strong> ${h.updatedBy || 'N/A'}</span>
+                            </div>
+                            <div style="display:flex; gap:1rem; align-items:center;">
+                                <span style="font-weight:bold; color:var(--success);">${h.athlete}</span>
+                                <span>${formatTimeMark(h.mark, r.event)} (${h.wind || '-'})</span>
+                                <span>| ${new Date(h.date).toLocaleDateString('en-GB')}</span>
+                                <span>| ${h.raceName || '-'}</span>
+                            </div>
+                        </div>
+                    `).join('');
                 }
             }
-
-            // Note: Local Admin is considered Supervisor based on isSupervisor logic
-            const isSup = isSupervisor(currentUser ? currentUser.email : null);
 
             tr.innerHTML = `
                 <td style="text-align:center;">
-                    ${linkedRec ? `<button class="btn-icon expand-btn" data-id="${r.id}" style="font-weight:bold; color:var(--primary); cursor:pointer;">+</button>` : ''}
+                    ${hasExpansion ? `<button class="btn-icon expand-btn" data-id="${r.id}" style="font-weight:bold; color:var(--primary); cursor:pointer;">+</button>` : ''}
                 </td>
                 <td>${r.event}</td>
                 <td style="font-weight:600;">${r.athlete}</td>
@@ -5048,7 +5083,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
             `;
 
-            // Add double-click listener for Read-Only view
             tr.style.cursor = 'pointer';
             tr.title = r.isLive ? 'Double-click to view Live details' : 'Double-click to view archived details';
             tr.addEventListener('dblclick', () => {
@@ -5058,25 +5092,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tbody.appendChild(tr);
 
-            if (linkedRec) {
+            if (hasExpansion) {
                 const trDetail = document.createElement('tr');
                 trDetail.className = 'detail-row hidden';
                 trDetail.id = `detail-hist-${r.id}`;
                 trDetail.innerHTML = `
                     <td colspan="1" style="border-top:none; background:transparent;"></td>
-                    <td colspan="11" style="padding: 8px 10px; border-top:none; background: rgba(16, 185, 129, 0.1);">
-                        <div style="display:flex; flex-direction:column; gap:4px;">
-                            <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
-                                <span><strong>${linkedLabel}</strong></span>
-                                <span><strong>By:</strong> ${linkedRec.updatedBy || 'N/A'}</span>
-                            </div>
-                            <div style="display:flex; gap:1rem; align-items:center;">
-                                <span style="font-weight:bold; color:var(--success);">${linkedRec.athlete}</span>
-                                <span>${formatTimeMark(linkedRec.mark, r.event)} (${linkedRec.wind || '-'})</span>
-                                <span>| ${new Date(linkedRec.date).toLocaleDateString('en-GB')}</span>
-                                <span>| ${linkedRec.raceName || '-'}</span>
-                            </div>
-                        </div>
+                    <td colspan="11" style="padding: 10px 12px; border-top:none; background: rgba(var(--primary-rgb), 0.04); border-radius: 0 0 8px 8px;">
+                        ${expansionHTML}
                     </td>
                 `;
                 tbody.appendChild(trDetail);

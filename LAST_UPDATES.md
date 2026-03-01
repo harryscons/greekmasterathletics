@@ -1,3 +1,7 @@
+# v2.20.72
+- **Grouped History View**: Resolved record duplication in the history tab. When "Newest First" is enabled, each event now only appears once as a "Head" row (Live or newest record).
+- **Full Lineage Expansion**: Clicking `+` now reveals the *entire* historical chain for that specific event, providing a much cleaner and more professional overview without redundant entries.
+
 # v2.20.71
 - **Live-Archive Unified History**: When "Newest First" is enabled, the Record History tab now includes the current Live record at the top of each lineage stack.
 - **Smart Stacking**: Expanding a Live record now correctly shows the latest archived version it replaced, creating a complete chronological chain from current to oldest.
