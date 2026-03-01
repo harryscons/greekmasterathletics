@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.70: UI Stability & Sync Optimization
+- **Permission Persistence**: Fixed the core issue where theme changes were resetting user permissions in the browser. You now retain access to all tabs regardless of your visual settings.
+- **Improved Performance**: Optimized the cloud sync logic to be faster and more reliable, ensuring your profile is always current without unnecessary network traffic.
+
 ## v2.20.69: Logical History Expansion
 - **Context-Aware Links**: The expansion rows in Record History now intelligently toggle between showing "Successors" (newer records) and "Predecessors" (older records) based on your chosen sorting order.
 - **Improved Traceability**: This makes it much easier to trace a record's history backwards when using the "New Records First" view.

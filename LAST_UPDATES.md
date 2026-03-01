@@ -1,3 +1,7 @@
+# v2.20.70
+- **Critical UI Fix**: Fixed a bug where switching themes or loading cloud settings accidentally hid the Supervisor/Admin tabs. Permission-based status is now correctly preserved.
+- **Sync Optimization**: Improved the cloud synchronization engine with smart guards to prevent redundant data writes and circular updates.
+
 # v2.20.69
 - **History Expansion Refinement**: The "Record History" expansion logic (the `+` symbol) now respects the sorting preference. If "Newest First" is selected, expanding a record will now show the older predecessor it replaced, ensuring a consistent logical flow in both view modes.
 

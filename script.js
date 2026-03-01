@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.69";
+    const VERSION = "v2.20.70";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -1234,7 +1234,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- v2.20.68: Settings Synchronization Core ---
 
     function syncSettingsToCloud() {
-        if (!currentUser || !db) return;
+        if (!currentUser || !db || isManualSettingsLoading) return;
         const uid = currentUser.uid;
         if (!uid) return;
 
@@ -1253,20 +1253,26 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(err => console.error("Error syncing settings:", err));
     }
 
+    let isManualSettingsLoading = false; // Guard for loadSettingsFromCloud
+
     function loadSettingsFromCloud() {
         if (!currentUser || !db) return;
         const uid = currentUser.uid;
         if (!uid) return;
 
+        isManualSettingsLoading = true;
         db.ref(`usersettings/${uid}`).once('value', (snapshot) => {
             const cloudSettings = snapshot.val();
-            if (!cloudSettings) return;
+            if (!cloudSettings) {
+                isManualSettingsLoading = false;
+                return;
+            }
 
             console.log("Loading user settings from cloud...");
 
             // Apply Theme
             if (cloudSettings.tf_theme) {
-                setTheme(cloudSettings.tf_theme);
+                setTheme(cloudSettings.tf_theme, true); // true = skipSync
             }
 
             // Apply Hide Notes Symbol
@@ -1312,6 +1318,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Final refreshes to apply logic
             renderReports();
             renderHistoryList();
+            isManualSettingsLoading = false;
         });
     }
 
@@ -8141,9 +8148,17 @@ Replace ALL current data with this backup? This action is irreversible.`;
         }
     };
 
-    function setTheme(themeName) {
-        // Apply theme class directly to body
-        document.body.className = themeName;
+    function setTheme(themeName, skipSync = false) {
+        // v2.20.70: BUG FIX - preserves is-admin / is-supervisor classes
+        // 1. Find all theme-related classes
+        const classes = Array.from(document.body.classList);
+        const themeClasses = classes.filter(c => c.startsWith('theme-'));
+
+        // 2. Remove old themes
+        themeClasses.forEach(c => document.body.classList.remove(c));
+
+        // 3. Add new theme
+        document.body.classList.add(themeName);
 
         // Save to localStorage
         localStorage.setItem('tf_theme', themeName);
@@ -8152,7 +8167,8 @@ Replace ALL current data with this backup? This action is irreversible.`;
         if (themeSelect && themeSelect.value !== themeName) {
             themeSelect.value = themeName;
         }
-        syncSettingsToCloud();
+
+        if (!skipSync) syncSettingsToCloud();
     }
 
 
