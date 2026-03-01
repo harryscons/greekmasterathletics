@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.92";
+    const VERSION = "v2.20.93";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -5069,7 +5069,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSelect('historyFilterArchiveDate', dateList, selArchDate, 'Dates');
     }
 
-    window.renderHistoryList = function () {
+    function renderHistoryList() {
         try {
             populateHistoryFilters();
             const tbody = document.getElementById('historyListBody');

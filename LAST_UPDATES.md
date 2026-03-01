@@ -1,3 +1,6 @@
+# v2.20.93
+- **Initialization Hoisting Fix**: Standardized `renderHistoryList` as a hoisted function to prevent `ReferenceError` crashes during the application's startup sequence. This ensures the UI loads correctly even if data sync triggers an immediate refresh.
+
 # v2.20.92
 - **Global Load Guarantee**: Introduced a high-level failsafe that forces the application to open after 15 seconds regardless of network or synchronization status.
 - **Fallback Recovery Fix**: Resolved a critical bug where the application would stay hidden if it failed to sync with the cloud and switched to local data.
