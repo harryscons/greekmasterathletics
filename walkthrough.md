@@ -1,5 +1,9 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.69: Logical History Expansion
+- **Context-Aware Links**: The expansion rows in Record History now intelligently toggle between showing "Successors" (newer records) and "Predecessors" (older records) based on your chosen sorting order.
+- **Improved Traceability**: This makes it much easier to trace a record's history backwards when using the "New Records First" view.
+
 ## v2.20.68: Cloud Settings Synchronization
 - **Sync Everywhere**: Your personal settings (themes, toggle preferences, etc.) are now automatically saved to your cloud profile.
 - **Instant Setup**: Logging into a new device instantly applies your preferred color palette and workflow settings.

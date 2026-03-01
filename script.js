@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.68";
+    const VERSION = "v2.20.69";
     const LAST_UPDATE = "2026-02-28";
 
     function checkReady() {
@@ -4968,19 +4968,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 .sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
             const currentIndex = versions.findIndex(v => v.id === r.id);
 
-            let successor = null;
-            let successorLabel = '';
+            let linkedRec = null;
+            let linkedLabel = '';
 
-            if (currentIndex !== -1 && currentIndex < versions.length - 1) {
-                successor = versions[currentIndex + 1];
-                successorLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
+            if (oldestFirst) {
+                // v2.20.69: If Oldest First, expansion shows the successor (newer)
+                if (currentIndex !== -1 && currentIndex < versions.length - 1) {
+                    linkedRec = versions[currentIndex + 1];
+                    linkedLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
+                } else {
+                    // Look for the live record
+                    linkedRec = records.find(curr => getCatKey(curr) === rKey);
+                    linkedLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
+                    if (linkedRec && linkedRec.id === r.id) linkedRec = null;
+                }
             } else {
-                // If this is the latest in history, look for the live record
-                successor = records.find(curr => getCatKey(curr) === rKey);
-                successorLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
-
-                // Safety: Hide if the "live" record is exactly the same one (shouldn't happen in history)
-                if (successor && successor.id === r.id) successor = null;
+                // v2.20.69: If Newest First, expansion shows the predecessor (older)
+                if (currentIndex > 0) {
+                    linkedRec = versions[currentIndex - 1];
+                    linkedLabel = 'REPLACED PREVIOUS VERSION (ARCHIVED)';
+                } else {
+                    // This is the absolute oldest version in history, no predecessor.
+                    linkedRec = null;
+                }
             }
 
             // Note: Local Admin is considered Supervisor based on isSupervisor logic
@@ -4988,7 +4998,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tr.innerHTML = `
                 <td style="text-align:center;">
-                    ${successor ? `<button class="btn-icon expand-btn" data-id="${r.id}" style="font-weight:bold; color:var(--primary); cursor:pointer;">+</button>` : ''}
+                    ${linkedRec ? `<button class="btn-icon expand-btn" data-id="${r.id}" style="font-weight:bold; color:var(--primary); cursor:pointer;">+</button>` : ''}
                 </td>
                 <td>${r.event}</td>
                 <td style="font-weight:600;">${r.athlete}</td>
@@ -5016,7 +5026,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tbody.appendChild(tr);
 
-            if (successor) {
+            if (linkedRec) {
                 const trDetail = document.createElement('tr');
                 trDetail.className = 'detail-row hidden';
                 trDetail.id = `detail-hist-${r.id}`;
@@ -5025,14 +5035,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td colspan="11" style="padding: 8px 10px; border-top:none; background: rgba(16, 185, 129, 0.1);">
                         <div style="display:flex; flex-direction:column; gap:4px;">
                             <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
-                                <span><strong>${successorLabel}</strong></span>
-                                <span><strong>Edited by:</strong> ${successor.updatedBy || 'N/A'}</span>
+                                <span><strong>${linkedLabel}</strong></span>
+                                <span><strong>By:</strong> ${linkedRec.updatedBy || 'N/A'}</span>
                             </div>
                             <div style="display:flex; gap:1rem; align-items:center;">
-                                <span style="font-weight:bold; color:var(--success);">${successor.athlete}</span>
-                                <span>${formatTimeMark(successor.mark, r.event)} (${successor.wind || '-'})</span>
-                                <span>| ${new Date(successor.date).toLocaleDateString('en-GB')}</span>
-                                <span>| ${successor.raceName || '-'}</span>
+                                <span style="font-weight:bold; color:var(--success);">${linkedRec.athlete}</span>
+                                <span>${formatTimeMark(linkedRec.mark, r.event)} (${linkedRec.wind || '-'})</span>
+                                <span>| ${new Date(linkedRec.date).toLocaleDateString('en-GB')}</span>
+                                <span>| ${linkedRec.raceName || '-'}</span>
                             </div>
                         </div>
                     </td>

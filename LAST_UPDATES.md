@@ -1,3 +1,6 @@
+# v2.20.69
+- **History Expansion Refinement**: The "Record History" expansion logic (the `+` symbol) now respects the sorting preference. If "Newest First" is selected, expanding a record will now show the older predecessor it replaced, ensuring a consistent logical flow in both view modes.
+
 # v2.20.68
 - **Cloud Settings Synchronization**: Implemented automatic synchronization of personal preferences (theme, sorting, safety restrictions) to the cloud for registered users. Settings are now preserved across all devices and sessions.
 
