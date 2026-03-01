@@ -1,3 +1,6 @@
+# v2.20.113
+- **Forced Browser Cache Refresh**: Added a versioning query parameter (`?v=2.20.113`) to the main application script import. The critical Year Dropdown sorting fixes released in v2.20.111 and v2.20.112 were heavily cached by browsers resulting in the `NaN` errors continuing uninterrupted. This cache breaker ensures the new array mechanics properly load onto devices.
+
 # v2.20.112
 - **Year Dropdown Array Fix**: Corrected a JavaScript data-sorting crash where the "All Years" dropdown would evaluate missing dates as `NaN` (Not a Number) before adding them to the list array. This completely broke the application's ability to mathematically sort history years, forcing it to only display the hardcoded `2026` option. The sorter is now protected.
 
