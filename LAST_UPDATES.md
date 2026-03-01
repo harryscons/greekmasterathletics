@@ -1,3 +1,6 @@
+# v2.20.108
+- **Forced Browser Cache Refresh**: Added a versioning query parameter (`?v=2.20.108`) to the main application script import to permanently break stubborn browser caching. This ensures all users automatically receive the critical fixes implemented in v2.20.107 without needing to manually clear their browser data.
+
 # v2.20.107
 - **History Save Firebase Crash**: Addressed the root cause of the "value contains undefined" Firebase crash. The rendering loop for the History UI was actively mutating old history records in memory to give them a temporary sorting date, occasionally injecting `undefined` if the record lacked a date. When the user saved a record, the entire mutated history array was sent to Firebase, causing a crash. The array is now strictly sanitized before upload to guarantee all `undefined` properties are destroyed.
 
