@@ -1,5 +1,8 @@
 # Walkthrough - Celestial Plasma
 
+## v2.20.81: WMA Statistics Restoration
+- **Variable Correction**: Fixed a technical error in the statistics engine where the WMA report was looking for the wrong internal identifiers. This correction immediately restores the visibility of all WMA points and calculations.
+
 ## v2.20.80: WMA Statistics Fix
 - **Asynchronous Data Waiting**: The WMA Statistics report now intelligently waits for the large IAAF and WMA data files to finish loading. It displays a "Loading..." state before automatically populating once the data is ready.
 - **Automatic Metric Synchronization**: Metrics now refresh in real-time alongside other reports, ensuring consistent data across the entire application.

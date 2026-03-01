@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.80";
+    const VERSION = "v2.20.81";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -3365,8 +3365,8 @@ document.addEventListener('DOMContentLoaded', () => {
             table.querySelectorAll('thead th.sortable').forEach(th => {
                 th.classList.remove('asc', 'desc');
                 const onclickStr = th.getAttribute('onclick') || '';
-                if (onclickStr.includes(`'${wmaReportSortField}'`)) {
-                    th.classList.add(wmaReportSortOrder === 'asc' ? 'asc' : 'desc');
+                if (onclickStr.includes(`'${wmaSortField}'`)) {
+                    th.classList.add(wmaSortOrder === 'asc' ? 'asc' : 'desc');
                 }
             });
         }

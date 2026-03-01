@@ -1,3 +1,6 @@
+# v2.20.81
+- **WMA Statistics Reference Fix**: Resolved a critical ReferenceError in the WMA statistics report. Corrected the internal sorting variable names to match the global application state, restoring data visibility.
+
 # v2.20.80
 - **WMA Statistics Restoration**: Fixed an issue where the WMA statistics report would appear empty on initial load. Added a retry mechanism to wait for asynchronous data files to finish loading before rendering.
 - **Dynamic Stats Refresh**: Ensured the WMA statistics report automatically refreshes whenever the global data state changes, keeping metrics fully up-to-date.
