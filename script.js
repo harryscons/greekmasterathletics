@@ -41,16 +41,27 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.20.91";
+    const VERSION = "v2.20.92";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
     window.historySortKey = 'archivedAt';
     window.historySortDir = 'desc';
 
+    function hideInitialOverlay() {
+        const overlay = document.getElementById('initial-loading-overlay');
+        if (overlay && overlay.style.display !== 'none') {
+            console.log("🙈 Hiding initial loading overlay...");
+            overlay.classList.add('fade-out');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+        }
+    }
+
     function checkReady(force = false) {
         if (isDataReady) return;
-        // v2.20.89 Diagnostic
+
         const missing = CORE_NODES.filter(n => !loadedNodes.has(n));
         if (missing.length > 0) {
             console.log("⏳ Waiting for sync:", missing.join(', '));
@@ -68,15 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Now safe to render
             rebuildPerformanceIndexes();
             renderAll();
-
-            // Hide Initial Loading Overlay
-            const overlay = document.getElementById('initial-loading-overlay');
-            if (overlay) {
-                overlay.classList.add('fade-out');
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                }, 500);
-            }
+            hideInitialOverlay();
         }
     }
 
@@ -1424,6 +1427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isDataReady = true;
         rebuildPerformanceIndexes();
         renderAll();
+        hideInitialOverlay(); // v2.20.92: Fix - Ensure overlay hides on fallback
     }
 
     // Initialize Firebase
@@ -1446,8 +1450,14 @@ document.addEventListener('DOMContentLoaded', () => {
             migrateLocalToCloud(db).then(() => {
                 console.log("Migration check complete. Starting cloud listeners...");
                 loadInitialData(db);
-                // v2.20.90: Emergency Safety Valve
-                setTimeout(() => checkReady(true), 12000);
+                // v2.20.92: Global Initialization Failsafe
+                // High-level timeout to ensure app opens even if all internal timers fail
+                setTimeout(() => {
+                    if (!isDataReady) {
+                        console.error("🏁 Global Initialization Failsafe Triggered!");
+                        checkReady(true);
+                    }
+                }, 15000);
             }).catch(err => {
                 console.error("Migration/Init failed:", err);
                 loadLocalDataOnly();
@@ -5060,161 +5070,162 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.renderHistoryList = function () {
-        populateHistoryFilters();
-        const tbody = document.getElementById('historyListBody');
-        const empty = document.getElementById('historyEmptyState');
-        if (!tbody) return;
+        try {
+            populateHistoryFilters();
+            const tbody = document.getElementById('historyListBody');
+            const empty = document.getElementById('historyEmptyState');
+            if (!tbody) return;
 
-        tbody.innerHTML = '';
-        if (recordHistory.length === 0) {
-            if (empty) empty.classList.remove('hidden');
-            return;
-        }
-        if (empty) empty.classList.add('hidden');
-
-        // v2.20.67: Apply sorting preference
-        const oldestFirst = localStorage.getItem('tf_history_old_first') !== 'false';
-
-        // v2.20.82: Apply UI Filters
-        const selEvent = document.getElementById('historyFilterEvent')?.value || 'all';
-        const selAthlete = document.getElementById('historyFilterAthlete')?.value || 'all';
-        const selGender = document.getElementById('historyFilterGender')?.value || 'all';
-        const selAgeGroup = document.getElementById('historyFilterAgeGroup')?.value || 'all';
-        const selYear = document.getElementById('historyFilterYear')?.value || 'all';
-        const selArchDate = document.getElementById('historyFilterArchiveDate')?.value || 'all';
-
-        let filteredHistory = recordHistory.filter(r => {
-            if (selEvent !== 'all' && r.event !== selEvent) return false;
-            if (selAthlete !== 'all' && r.athlete !== selAthlete) return false;
-            if (selGender !== 'all') {
-                const g = typeof normalizeGenderLookups === 'function' ? normalizeGenderLookups(r.gender) : r.gender;
-                if (selGender === 'Male' && g !== 'men') return false;
-                if (selGender === 'Female' && g !== 'women') return false;
-                if (selGender === 'Mixed' && g !== 'mixed') return false;
+            tbody.innerHTML = '';
+            if (recordHistory.length === 0) {
+                if (empty) empty.classList.remove('hidden');
+                return;
             }
-            if (selAgeGroup !== 'all' && r.ageGroup !== selAgeGroup) return false;
-            try {
-                if (selYear !== 'all' && (r.date ? new Date(r.date).getFullYear().toString() : '') !== selYear) return false;
-                if (selArchDate !== 'all') {
-                    const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : '';
-                    if (d !== selArchDate) return false;
+            if (empty) empty.classList.add('hidden');
+
+            // v2.20.67: Apply sorting preference
+            const oldestFirst = localStorage.getItem('tf_history_old_first') !== 'false';
+
+            // v2.20.82: Apply UI Filters
+            const selEvent = document.getElementById('historyFilterEvent')?.value || 'all';
+            const selAthlete = document.getElementById('historyFilterAthlete')?.value || 'all';
+            const selGender = document.getElementById('historyFilterGender')?.value || 'all';
+            const selAgeGroup = document.getElementById('historyFilterAgeGroup')?.value || 'all';
+            const selYear = document.getElementById('historyFilterYear')?.value || 'all';
+            const selArchDate = document.getElementById('historyFilterArchiveDate')?.value || 'all';
+
+            let filteredHistory = recordHistory.filter(r => {
+                if (selEvent !== 'all' && r.event !== selEvent) return false;
+                if (selAthlete !== 'all' && r.athlete !== selAthlete) return false;
+                if (selGender !== 'all') {
+                    const g = typeof normalizeGenderLookups === 'function' ? normalizeGenderLookups(r.gender) : r.gender;
+                    if (selGender === 'Male' && g !== 'men') return false;
+                    if (selGender === 'Female' && g !== 'women') return false;
+                    if (selGender === 'Mixed' && g !== 'mixed') return false;
                 }
-            } catch (e) { return false; }
-            return true;
-        });
-
-        // v2.20.71: Inclusion of Live records in history view for Newest First
-        let displayList = [...filteredHistory];
-
-        const clean = (s) => (s || '').toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const getCatKey = (rec) => {
-            if (!rec) return '';
-            const g = typeof normalizeGender === 'function' ? normalizeGender(rec.gender) : rec.gender;
-            return `${clean(rec.event)}|${clean(g)}|${clean(rec.ageGroup)}|${clean(rec.trackType || 'Outdoor')}`;
-        };
-
-        if (oldestFirst) {
-            // v2.20.74: Flat List for Oldest First (Traditional Detail)
-            displayList = [...filteredHistory];
-        } else {
-            // v2.20.72: Grouped View for Newest First (Avoids Duplication)
-            const categories = [...new Set(filteredHistory.map(h => getCatKey(h)))];
-            displayList = [];
-
-            categories.forEach(rKey => {
-                const versions = recordHistory.filter(h => getCatKey(h) === rKey)
-                    .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
-
-                const live = records.find(curr => getCatKey(curr) === rKey);
-
-                // v2.20.88: Determine group's sort date (replaced-by date)
-                // Sort by the performance date of the current live record (or newest archive)
-                let groupSortDate = '1900-01-01';
-                if (live) groupSortDate = live.date;
-                else if (versions.length > 0) groupSortDate = versions[0].date;
-
-                if (live) {
-                    displayList.push({ ...live, isLive: true, groupSortDate, archivedAt: '2099-12-31T23:59:59Z', historyBranch: versions });
-                } else if (versions.length > 0) {
-                    displayList.push({ ...versions[0], groupSortDate, historyBranch: versions.slice(1) });
-                }
+                if (selAgeGroup !== 'all' && r.ageGroup !== selAgeGroup) return false;
+                try {
+                    if (selYear !== 'all' && (r.date ? new Date(r.date).getFullYear().toString() : '') !== selYear) return false;
+                    if (selArchDate !== 'all') {
+                        const d = r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : '';
+                        if (d !== selArchDate) return false;
+                    }
+                } catch (e) { return false; }
+                return true;
             });
-        }
 
-        // v2.20.73: Apply Dynamic Sorting
-        const key = window.historySortKey || 'archivedAt';
-        const dir = window.historySortDir === 'desc' ? -1 : 1;
+            // v2.20.71: Inclusion of Live records in history view for Newest First
+            let displayList = [...filteredHistory];
 
-        displayList.sort((a, b) => {
-            // v2.20.88: Use groupSortDate for primary sorting if it's the default archivedAt sort
-            let valA = (key === 'archivedAt' && a.groupSortDate) ? a.groupSortDate : a[key];
-            let valB = (key === 'archivedAt' && b.groupSortDate) ? b.groupSortDate : b[key];
-
-            // Robust sorting for specific fields
-            if (key === 'date' || key === 'archivedAt' || (key === 'archivedAt' && (a.groupSortDate || b.groupSortDate))) {
-                valA = new Date(valA || 0).getTime();
-                valB = new Date(valB || 0).getTime();
-            } else if (key === 'mark') {
-                valA = parseMarkByRule(valA, a.event);
-                valB = parseMarkByRule(valB, b.event);
-            } else {
-                valA = (valA || '').toString().toLowerCase();
-                valB = (valB || '').toString().toLowerCase();
-            }
-
-            if (valA < valB) return -1 * dir;
-            if (valA > valB) return 1 * dir;
-            return 0;
-        });
-
-        // v2.20.73: Inject Sort Arrows into Headers
-        const table = tbody.closest('table');
-        if (table) {
-            table.querySelectorAll('th.sortable').forEach(th => {
-                th.classList.remove('asc', 'desc');
-                if (th.dataset.sortKey === key) {
-                    th.classList.add(window.historySortDir);
-                }
-            });
-        }
-
-        displayList.forEach(r => {
-            const tr = document.createElement('tr');
-            if (r.isLive) {
-                tr.style.background = 'rgba(var(--primary-rgb), 0.05)';
-                tr.classList.add('live-record-row');
-            }
-
-            const rKey = getCatKey(r);
-            const isSup = isSupervisor(currentUser ? currentUser.email : null);
-
-            // Expansion Logic
-            let hasExpansion = false;
-            let expansionHTML = '';
+            const clean = (s) => (s || '').toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const getCatKey = (rec) => {
+                if (!rec) return '';
+                const g = typeof normalizeGender === 'function' ? normalizeGender(rec.gender) : rec.gender;
+                return `${clean(rec.event)}|${clean(g)}|${clean(rec.ageGroup)}|${clean(rec.trackType || 'Outdoor')}`;
+            };
 
             if (oldestFirst) {
-                // Pre-existing expansion logic for Oldest First (One step forward)
-                const versions = recordHistory.filter(h => getCatKey(h) === rKey)
-                    .sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
-                const currentIndex = versions.findIndex(v => v.id === r.id);
-                let linkedRec = null;
-                let linkedLabel = '';
+                // v2.20.74: Flat List for Oldest First (Traditional Detail)
+                displayList = [...filteredHistory];
+            } else {
+                // v2.20.72: Grouped View for Newest First (Avoids Duplication)
+                const categories = [...new Set(filteredHistory.map(h => getCatKey(h)))];
+                displayList = [];
 
-                if (currentIndex !== -1 && currentIndex < versions.length - 1) {
-                    linkedRec = versions[currentIndex + 1];
-                    linkedLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
-                } else if (currentIndex === versions.length - 1 || currentIndex === -1) {
-                    linkedRec = records.find(curr => getCatKey(curr) === rKey);
-                    if (linkedRec && linkedRec.id !== r.id) {
-                        linkedLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
-                    } else {
-                        linkedRec = null;
+                categories.forEach(rKey => {
+                    const versions = recordHistory.filter(h => getCatKey(h) === rKey)
+                        .sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+
+                    const live = records.find(curr => getCatKey(curr) === rKey);
+
+                    // v2.20.88: Determine group's sort date (replaced-by date)
+                    // Sort by the performance date of the current live record (or newest archive)
+                    let groupSortDate = '1900-01-01';
+                    if (live) groupSortDate = live.date;
+                    else if (versions.length > 0) groupSortDate = versions[0].date;
+
+                    if (live) {
+                        displayList.push({ ...live, isLive: true, groupSortDate, archivedAt: '2099-12-31T23:59:59Z', historyBranch: versions });
+                    } else if (versions.length > 0) {
+                        displayList.push({ ...versions[0], groupSortDate, historyBranch: versions.slice(1) });
                     }
+                });
+            }
+
+            // v2.20.73: Apply Dynamic Sorting
+            const key = window.historySortKey || 'archivedAt';
+            const dir = window.historySortDir === 'desc' ? -1 : 1;
+
+            displayList.sort((a, b) => {
+                // v2.20.88: Use groupSortDate for primary sorting if it's the default archivedAt sort
+                let valA = (key === 'archivedAt' && a.groupSortDate) ? a.groupSortDate : a[key];
+                let valB = (key === 'archivedAt' && b.groupSortDate) ? b.groupSortDate : b[key];
+
+                // Robust sorting for specific fields
+                if (key === 'date' || key === 'archivedAt' || (key === 'archivedAt' && (a.groupSortDate || b.groupSortDate))) {
+                    valA = new Date(valA || 0).getTime();
+                    valB = new Date(valB || 0).getTime();
+                } else if (key === 'mark') {
+                    valA = parseMarkByRule(valA, a.event);
+                    valB = parseMarkByRule(valB, b.event);
+                } else {
+                    valA = (valA || '').toString().toLowerCase();
+                    valB = (valB || '').toString().toLowerCase();
                 }
 
-                if (linkedRec) {
-                    hasExpansion = true;
-                    expansionHTML = `
+                if (valA < valB) return -1 * dir;
+                if (valA > valB) return 1 * dir;
+                return 0;
+            });
+
+            // v2.20.73: Inject Sort Arrows into Headers
+            const table = tbody.closest('table');
+            if (table) {
+                table.querySelectorAll('th.sortable').forEach(th => {
+                    th.classList.remove('asc', 'desc');
+                    if (th.dataset.sortKey === key) {
+                        th.classList.add(window.historySortDir);
+                    }
+                });
+            }
+
+            displayList.forEach(r => {
+                const tr = document.createElement('tr');
+                if (r.isLive) {
+                    tr.style.background = 'rgba(var(--primary-rgb), 0.05)';
+                    tr.classList.add('live-record-row');
+                }
+
+                const rKey = getCatKey(r);
+                const isSup = isSupervisor(currentUser ? currentUser.email : null);
+
+                // Expansion Logic
+                let hasExpansion = false;
+                let expansionHTML = '';
+
+                if (oldestFirst) {
+                    // Pre-existing expansion logic for Oldest First (One step forward)
+                    const versions = recordHistory.filter(h => getCatKey(h) === rKey)
+                        .sort((a, b) => new Date(a.archivedAt) - new Date(b.archivedAt));
+                    const currentIndex = versions.findIndex(v => v.id === r.id);
+                    let linkedRec = null;
+                    let linkedLabel = '';
+
+                    if (currentIndex !== -1 && currentIndex < versions.length - 1) {
+                        linkedRec = versions[currentIndex + 1];
+                        linkedLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
+                    } else if (currentIndex === versions.length - 1 || currentIndex === -1) {
+                        linkedRec = records.find(curr => getCatKey(curr) === rKey);
+                        if (linkedRec && linkedRec.id !== r.id) {
+                            linkedLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
+                        } else {
+                            linkedRec = null;
+                        }
+                    }
+
+                    if (linkedRec) {
+                        hasExpansion = true;
+                        expansionHTML = `
                         <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
                             <span><strong>${linkedLabel}</strong></span>
                             <span><strong>By:</strong> ${linkedRec.updatedBy || 'N/A'}</span>
@@ -5226,12 +5237,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span>| ${linkedRec.raceName || '-'}</span>
                         </div>
                     `;
-                }
-            } else {
-                // Grouped Expansion logic for Newest First (Full lineage)
-                if (r.historyBranch && r.historyBranch.length > 0) {
-                    hasExpansion = true;
-                    expansionHTML = r.historyBranch.map((h, idx) => `
+                    }
+                } else {
+                    // Grouped Expansion logic for Newest First (Full lineage)
+                    if (r.historyBranch && r.historyBranch.length > 0) {
+                        hasExpansion = true;
+                        expansionHTML = r.historyBranch.map((h, idx) => `
                         <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: ${idx < r.historyBranch.length - 1 ? '12px' : '0'}; padding-bottom: ${idx < r.historyBranch.length - 1 ? '8px' : '0'}; border-bottom: ${idx < r.historyBranch.length - 1 ? '1px dashed rgba(var(--primary-rgb), 0.1)' : 'none'};">
                             <div style="font-size:0.85em; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
                                 <span><strong>REPLACED PREVIOUS VERSION ${idx === 0 ? '(LATEST ARCHIVE)' : '(HISTORICAL)'}</strong></span>
@@ -5251,10 +5262,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     `).join('');
+                    }
                 }
-            }
 
-            tr.innerHTML = `
+                tr.innerHTML = `
                 <td style="text-align:center;">
                     ${hasExpansion ? `<button class="btn-icon expand-btn" data-id="${r.id}" style="font-weight:bold; color:var(--primary); cursor:pointer;">+</button>` : ''}
                 </td>
@@ -5273,37 +5284,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
                  <td class="history-actions-col" style="${isSup ? '' : 'display:none;'}">
                     ${r.isLive
-                    ? `<button class="btn-icon edit" onclick="editRecord('${r.id}')" title="Edit Live">✏️</button>`
-                    : `<button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
+                        ? `<button class="btn-icon edit" onclick="editRecord('${r.id}')" title="Edit Live">✏️</button>`
+                        : `<button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
                            <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>`
-                }
+                    }
                 </td>
             `;
 
-            tr.style.cursor = 'pointer';
-            tr.title = r.isLive ? 'Double-click to view Live details' : 'Double-click to view archived details';
-            tr.addEventListener('dblclick', () => {
-                if (r.isLive) openRecordModal(r.id, false, true);
-                else editHistory(r.id, true);
-            });
+                tr.style.cursor = 'pointer';
+                tr.title = r.isLive ? 'Double-click to view Live details' : 'Double-click to view archived details';
+                tr.addEventListener('dblclick', () => {
+                    if (r.isLive) openRecordModal(r.id, false, true);
+                    else editHistory(r.id, true);
+                });
 
-            tbody.appendChild(tr);
+                tbody.appendChild(tr);
 
-            if (hasExpansion) {
-                const trDetail = document.createElement('tr');
-                trDetail.className = 'detail-row hidden';
-                trDetail.id = `detail-hist-${r.id}`;
-                trDetail.innerHTML = `
+                if (hasExpansion) {
+                    const trDetail = document.createElement('tr');
+                    trDetail.className = 'detail-row hidden';
+                    trDetail.id = `detail-hist-${r.id}`;
+                    trDetail.innerHTML = `
                     <td colspan="1" style="border-top:none; background:transparent;"></td>
                     <td colspan="11" style="padding: 10px 12px; border-top:none; background: rgba(var(--primary-rgb), 0.04); border-radius: 0 0 8px 8px;">
                         ${expansionHTML}
                     </td>
                 `;
-                tbody.appendChild(trDetail);
-            }
-        });
+                    tbody.appendChild(trDetail);
+                }
+            });
+        } catch (err) {
+            console.error("🔥 Error in renderHistoryList:", err);
+        }
     }
-
     function editHistory(id, isReadOnly = false) {
         if (!isSupervisor(currentUser ? currentUser.email : null) && !isReadOnly) {
             alert("Only Supervisors can edit history.");

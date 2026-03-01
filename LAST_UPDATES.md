@@ -1,3 +1,8 @@
+# v2.20.92
+- **Global Load Guarantee**: Introduced a high-level failsafe that forces the application to open after 15 seconds regardless of network or synchronization status.
+- **Fallback Recovery Fix**: Resolved a critical bug where the application would stay hidden if it failed to sync with the cloud and switched to local data.
+- **Rendering Protection**: Wrapped History rendering in a safety catch to prevent unexpected data errors from blocking the entire application UI.
+
 # v2.20.91
 - **Definitive Loading Fix**: Resolved a logic error where the 12-second "Safety Valve" was ignored by the system. The application will now correctly bypass long synchronization waits, ensuring the "Synchronizing Data" screen never persists indefinitely.
 - **Sorting & Form Integrity**: Verified that the Record History tab correctly sorts by replacement date and that the edit modal is fully populated with all archived data.
