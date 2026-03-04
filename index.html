@@ -140,9 +140,34 @@
         <main>
             <!-- REPORTS VIEW (First/Default) -->
             <div id="view-reports" class="view-section active-view">
-                <section class="card reports-section">
-                    <div class="section-header">
+                    <div class="section-header" style="align-items: center;">
                         <h2>Greek Master Track & Field Records</h2>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem;">
+                            <button id="APPLYNEWREC" class="btn-small btn-primary"
+                                style="padding: 0.4rem 0.9rem; font-size: 0.82rem; font-weight: 600; border-radius: 6px; white-space: nowrap;"
+                                title="Αίτημα για νέο Ρεκόρ">Αίτημα για νεο Ρεκορ</button>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <button id="btnNewRecordInline" class="btn-small btn-icon" title="Log New Record" onclick="openRecordModal()"
+                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20px" height="20px" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                                <button id="btnImportRecordsInline" class="btn-small btn-icon hidden" title="Import Records (xlsx)" onclick="document.getElementById('recordImportFile').click()"
+                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20px" height="20px" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                </button>
+                                <div style="width: 1px; height: 24px; background: var(--border); margin: 0 0.25rem;"></div>
+                                <button id="exportExcel" class="btn-small btn-icon" title="Export to MS Excel"
+                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px"><path fill="#4CAF50" d="M41,10H25v28h16c0.553,0,1-0.447,1-1V11C42,10.447,41.553,10,41,10z" /><path fill="#E8F5E9" d="M32,15h7v2.5h-7V15z M32,20h7v2.5h-7V20z M32,25h7v2.5h-7V25z M32,30h7v2.5h-7V30z" /><path fill="#2E7D32" d="M25,10h-2L6,13v22l17,3h2V10z M17.063,29l-2.071-4.708l-2.158,4.708H9.728l3.655-7.013l-3.321-6.987h3.048l1.791,4.407L16.883,15h3.181l-3.267,6.804L20.446,29H17.063z" /></svg>
+                                </button>
+                                <button id="exportHTML" class="btn-small btn-icon" title="View as HTML Report"
+                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; min-width: 32px; min-height: 32px;">🌐</button>
+                                <button id="exportPDF" class="btn-small btn-icon" title="Export to PDF"
+                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20px" height="20px" fill="none" stroke="#F44336" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M10 14v4"></path><path d="M10 16h2"></path><path d="M10 18h2"></path><path d="M16 14v4a2 2 0 0 0 2-2v-2"></path><path d="M6 14v4"></path><path d="M6 14h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H6"></path></svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="report-toolbar">
@@ -184,102 +209,35 @@
                             </select>
                         </div>
 
-                        <div class="actions-bar"
-                            style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem;">
-                            <!-- Top row: Apply New Record button -->
-                            <button id="APPLYNEWREC" class="btn-small btn-primary"
-                                style="padding: 0.4rem 0.9rem; font-size: 0.82rem; font-weight: 600; border-radius: 6px; white-space: nowrap;"
-                                title="Αίτημα για νέο Ρεκόρ">
-                                Αίτημα για νεο Ρεκορ
-                            </button>
-                            <!-- Bottom row: Icon buttons, right-aligned -->
-                            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <button id="btnNewRecordInline" class="btn-small btn-icon" title="Log New Record"
-                                    onclick="openRecordModal()"
-                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20px"
-                                        height="20px" fill="none" stroke="currentColor" stroke-width="2.5"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                </button>
-                                <button id="btnImportRecordsInline" class="btn-small btn-icon hidden"
-                                    title="Import Records (xlsx)"
-                                    onclick="document.getElementById('recordImportFile').click()"
-                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20px"
-                                        height="20px" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                </button>
-                                <div style="width: 1px; height: 24px; background: var(--border); margin: 0 0.25rem;">
-                                </div>
-                                <button id="exportExcel" class="btn-small btn-icon" title="Export to MS Excel"
-                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px"
-                                        height="20px">
-                                        <path fill="#4CAF50"
-                                            d="M41,10H25v28h16c0.553,0,1-0.447,1-1V11C42,10.447,41.553,10,41,10z" />
-                                        <path fill="#E8F5E9"
-                                            d="M32,15h7v2.5h-7V15z M32,20h7v2.5h-7V20z M32,25h7v2.5h-7V25z M32,30h7v2.5h-7V30z" />
-                                        <path fill="#2E7D32"
-                                            d="M25,10h-2L6,13v22l17,3h2V10z M17.063,29l-2.071-4.708l-2.158,4.708H9.728l3.655-7.013l-3.321-6.987h3.048l1.791,4.407L16.883,15h3.181l-3.267,6.804L20.446,29H17.063z" />
-                                    </svg>
-                                </button>
-                                <button id="exportHTML" class="btn-small btn-icon" title="View as HTML Report"
-                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; min-width: 32px; min-height: 32px;">🌐</button>
-                                <button id="exportPDF" class="btn-small btn-icon" title="Export to PDF"
-                                    style="padding: 0.4rem; background: transparent; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20px"
-                                        height="20px" fill="none" stroke="#F44336" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                        <path d="M10 14v4"></path>
-                                        <path d="M10 16h2"></path>
-                                        <path d="M10 18h2"></path>
-                                        <path d="M16 14v4a2 2 0 0 0 2-2v-2"></path>
-                                        <path d="M6 14v4"></path>
-                                        <path d="M6 14h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H6"></path>
-                                    </svg>
-                                </button>
-                            </div>
+                        <div class="table-container">
+                            <table id="reportTable" class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th class="expand-col" style="width: 40px;"></th>
+                                        <th class="sortable" data-sort="event">Αγώνισμα</th>
+                                        <th class="sortable" data-sort="ageGroup"
+                                            style="width: 1%; white-space: nowrap; padding-left: 0.8rem; padding-right: 0.8rem;">
+                                            Κατηγ.</th>
+                                        <th class="sortable" data-sort="athlete">Αθλητής/τρια</th>
+                                        <th class="sortable" data-sort="gender" style="width: 5%;">Φύλο</th>
+                                        <th class="sortable" data-sort="mark" style="text-align: center;">Επίδοση</th>
+                                        <th class="sortable" data-sort="idr"
+                                            style="width: 1%; white-space: nowrap; padding-left: 0.8rem; padding-right: 0.8rem;">
+                                            IDR</th>
+                                        <th class="sortable" data-sort="wind"
+                                            style="width: 1%; white-space: nowrap; padding-left: 0.8rem; padding-right: 0.8rem;">
+                                            Άνεμος</th>
+                                        <th class="sortable" data-sort="date">Ημερομηνία</th>
+                                        <th class="sortable" data-sort="town">Πόλη</th>
+                                        <th class="sortable" data-sort="raceName">Διοργάνωση</th>
+                                        <th class="actions-col">Ενέργειες</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody">
+                                    <!-- Rows injected here -->
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-
-                    <div class="table-container">
-                        <table id="reportTable" class="report-table">
-                            <thead>
-                                <tr>
-                                    <th class="expand-col" style="width: 40px;"></th>
-                                    <th class="sortable" data-sort="event">Αγώνισμα</th>
-                                    <th class="sortable" data-sort="ageGroup"
-                                        style="width: 1%; white-space: nowrap; padding-left: 0.8rem; padding-right: 0.8rem;">
-                                        Κατηγ.</th>
-                                    <th class="sortable" data-sort="athlete">Αθλητής/τρια</th>
-                                    <th class="sortable" data-sort="gender" style="width: 5%;">Φύλο</th>
-                                    <th class="sortable" data-sort="mark" style="text-align: center;">Επίδοση</th>
-                                    <th class="sortable" data-sort="idr"
-                                        style="width: 1%; white-space: nowrap; padding-left: 0.8rem; padding-right: 0.8rem;">
-                                        IDR</th>
-                                    <th class="sortable" data-sort="wind"
-                                        style="width: 1%; white-space: nowrap; padding-left: 0.8rem; padding-right: 0.8rem;">
-                                        Άνεμος</th>
-                                    <th class="sortable" data-sort="date">Ημερομηνία</th>
-                                    <th class="sortable" data-sort="town">Πόλη</th>
-                                    <th class="sortable" data-sort="raceName">Διοργάνωση</th>
-                                    <th class="actions-col">Ενέργειες</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reportTableBody">
-                                <!-- Rows injected here -->
-                            </tbody>
-                        </table>
-                    </div>
                 </section>
             </div>
 
