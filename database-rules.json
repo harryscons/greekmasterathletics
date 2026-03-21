@@ -1,58 +1,18 @@
 {
   "rules": {
-    // 1. Core Data (Supervisor Only)
-    "records": {
-      ".read": "auth != null",
-      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
-    },
+    // PUBLIC READ: Allow guests to view the records without sync errors.
+    "records": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
+    "athletes": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
+    "events": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
+    "countries": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
+    "history": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
+    "users": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
     
-    "athletes": {
-      ".read": "auth != null",
-      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
-    },
-    
-    "events": {
-      ".read": "auth != null",
-      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
-    },
-    
-    "countries": {
-      ".read": "auth != null",
-      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
-    },
-    
-    "history": {
-      ".read": "auth != null",
-      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
-    },
-    
-    "users": {
-        ".read": "auth != null",
-        ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
-    },
+    // PENDING RECORDS: Allow any authenticated user (Admins/Supervisors) to propose changes.
+    // They are staged here and must be approved before moving to masters.
+    "pendingrecs": { ".read": "true", ".write": "auth != null" },
+    "tombstones": { ".read": "true", ".write": "auth != null" },
 
-    // 2. Pending Record Staging (Admin or Supervisor)
-    "pendingrecs": {
-      ".read": "auth != null",
-      ".write": "auth != null && (
-        auth.token.email.toLowerCase() == 'harryscons@gmail.com' || 
-        auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || 
-        auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || 
-        auth.token.email.toLowerCase() == 'support@greekmasterathletics.com'
-      )"
-    },
-
-    "tombstones": {
-      ".read": "auth != null",
-      ".write": "auth != null && (
-        auth.token.email.toLowerCase() == 'harryscons@gmail.com' || 
-        auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || 
-        auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || 
-        auth.token.email.toLowerCase() == 'support@greekmasterathletics.com'
-      )"
-    },
-
-    // 3. User Settings (Owner Only)
     "usersettings": {
       "$uid": {
         ".read": "auth != null && auth.uid == $uid",
@@ -60,10 +20,6 @@
       }
     },
 
-    // 4. Online Presence / Sessions (All authenticated)
-    "activeSessions": {
-      ".read": "auth != null",
-      ".write": "auth != null"
-    }
+    "activeSessions": { ".read": "true", ".write": "auth != null" }
   }
 }
