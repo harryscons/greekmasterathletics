@@ -1282,6 +1282,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 console.log("User logged in:", user.displayName);
                 currentUser = user;
+                const role = getUserRole(user.email);
+                if (db && user.uid) {
+                    db.ref(`roles/${user.uid}`).set(role)
+                        .then(() => console.log("✅ Role synced to cloud for UID:", user.uid))
+                        .catch(err => console.error("❌ Role sync failed:", err));
+                }
                 updateUIForAuth(user);
                 loadSettingsFromCloud(); // v2.20.68: Fetch cloud preferences
 

@@ -1,25 +1,33 @@
 {
   "rules": {
-    // PUBLIC READ: Allow guests to view the records without sync errors.
-    "records": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
-    "athletes": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
-    "events": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
-    "countries": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
-    "history": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
-    "users": { ".read": "true", ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')" },
+    "records":      { ".read": "true", ".write": "auth != null && root.child('roles').child(auth.uid).val() == 'Supervisor'" },
+    "athletes":     { ".read": "true", ".write": "auth != null && root.child('roles').child(auth.uid).val() == 'Supervisor'" },
+    "events":       { ".read": "true", ".write": "auth != null && root.child('roles').child(auth.uid).val() == 'Supervisor'" },
+    "countries":    { ".read": "true", ".write": "auth != null && root.child('roles').child(auth.uid).val() == 'Supervisor'" },
+    "history":      { ".read": "true", ".write": "auth != null && root.child('roles').child(auth.uid).val() == 'Supervisor'" },
+    "users":        { ".read": "true", ".write": "auth != null && root.child('roles').child(auth.uid).val() == 'Supervisor'" },
+    "stats":        { ".read": "true", ".write": "auth != null && root.child('roles').child(auth.uid).val() == 'Supervisor'" },
+    "tombstones":   { ".read": "true", ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'Admin' || root.child('roles').child(auth.uid).val() == 'Supervisor')" },
     
-    // PENDING RECORDS: Allow any authenticated user (Admins/Supervisors) to propose changes.
-    // They are staged here and must be approved before moving to masters.
-    "pendingrecs": { ".read": "true", ".write": "auth != null" },
-    "tombstones": { ".read": "true", ".write": "auth != null" },
+    "pendingrecs": { 
+      ".read": "true", 
+      ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'Admin' || root.child('roles').child(auth.uid).val() == 'Supervisor')"
+    },
+
+    "activeSessions": { ".read": "true", ".write": "auth != null" },
+
+    "roles": {
+      "$uid": {
+        ".read": "true",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
 
     "usersettings": {
       "$uid": {
         ".read": "auth != null && auth.uid == $uid",
         ".write": "auth != null && auth.uid == $uid"
       }
-    },
-
-    "activeSessions": { ".read": "true", ".write": "auth != null" }
+    }
   }
 }
