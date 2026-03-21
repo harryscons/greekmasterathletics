@@ -1,0 +1,78 @@
+{
+  "rules": {
+    // Helper function to check if user email matches recognized Supervisors
+    "isSupervisor": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')",
+    
+    // Helper function to check if user email matches recognized Admins
+    "isAdmin": "auth != null && (auth.token.email.toLowerCase() == 'harryscons@gmail.com')",
+
+    // 1. Core Data (Supervisor Only)
+    "records": {
+      ".read": "auth != null",
+      ".write": "root.child('isSupervisor').val() == true", // Note: Rules helper vars aren't directly available like this, will rewrite
+      // Correct way to use logic in nodes:
+      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
+    },
+    
+    "athletes": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
+    },
+    
+    "events": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
+    },
+    
+    "countries": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
+    },
+    
+    "history": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
+    },
+    
+    "users": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
+    },
+
+    // 2. Pending Record Staging (Admin or Supervisor)
+    "pendingrecs": {
+      ".read": "auth != null",
+      ".write": "auth != null && (
+        auth.token.email.toLowerCase() == 'harryscons@gmail.com' || 
+        auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || 
+        auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || 
+        auth.token.email.toLowerCase() == 'support@greekmasterathletics.com'
+      )"
+    },
+
+    "tombstones": {
+      ".read": "auth != null",
+      ".write": "auth != null && (
+        auth.token.email.toLowerCase() == 'harryscons@gmail.com' || 
+        auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || 
+        auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || 
+        auth.token.email.toLowerCase() == 'support@greekmasterathletics.com'
+      )"
+    },
+
+    // 3. User Settings (Owner Only)
+    "usersettings": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+
+    // 4. Online Presence / Sessions (All authenticated)
+    "activeSessions": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+
+  }
+}
