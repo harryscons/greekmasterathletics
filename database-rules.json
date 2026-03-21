@@ -1,16 +1,8 @@
 {
   "rules": {
-    // Helper function to check if user email matches recognized Supervisors
-    "isSupervisor": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')",
-    
-    // Helper function to check if user email matches recognized Admins
-    "isAdmin": "auth != null && (auth.token.email.toLowerCase() == 'harryscons@gmail.com')",
-
     // 1. Core Data (Supervisor Only)
     "records": {
       ".read": "auth != null",
-      ".write": "root.child('isSupervisor').val() == true", // Note: Rules helper vars aren't directly available like this, will rewrite
-      // Correct way to use logic in nodes:
       ".write": "auth != null && (auth.token.email.toLowerCase() == 'cha.kons@gmail.com' || auth.token.email.toLowerCase() == 'admin@greekmasterathletics.com' || auth.token.email.toLowerCase() == 'support@greekmasterathletics.com')"
     },
     
@@ -73,6 +65,5 @@
       ".read": "auth != null",
       ".write": "auth != null"
     }
-
   }
 }
