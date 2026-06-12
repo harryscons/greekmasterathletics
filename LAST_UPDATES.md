@@ -1,3 +1,6 @@
+# v2.21.028
+- **New Theme: World Athletics (Official)**: Inspired by the worldathletics.org records page — light gray page background (`#f5f5f5`), white card surfaces, WA brand red (`#d4001e`) as primary accent, deep navy (`#14142b`) header/nav, and clean `#1e1e1e` body text. Professional athletic federation aesthetic.
+
 # v2.21.027
 - **New Theme: Dark Racing (Black/Yellow/Red)**: Bold near-black background (`#0a0a0a`) with electric yellow (`#facc15`) as primary accent, vivid red (`#ef4444`) as secondary, and a yellow→red gradient title. High-energy racing aesthetic.
 

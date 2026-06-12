@@ -237,6 +237,38 @@ body.theme-midnight-black {
     --chart-point-border: #ef4444;
 }
 
+body.theme-world-athletics {
+    /* World Athletics — worldathletics.org records page style */
+    --bg-dark: #f5f5f5;            /* WA page background */
+    --bg-card: #ffffff;            /* white cards/table surfaces */
+    --bg-card-hover: #f0f0f2;
+    --primary: #d4001e;            /* WA brand red */
+    --primary-glow: rgba(212, 0, 30, 0.12);
+    --accent: #14142b;             /* WA dark navy */
+    --text-main: #1e1e1e;          /* WA body text */
+    --text-muted: #6b7280;
+    --border: #e5e5e5;
+    --h1-gradient: linear-gradient(to right, #14142b, #d4001e);
+
+    --bg-input: #ffffff;
+    --text-input: #1e1e1e;
+    --bg-nav: #14142b;             /* WA dark navy nav */
+    --bg-hover: #f0f0f2;
+    --bg-dropdown: #ffffff;
+    --bg-danger-light: rgba(212, 0, 30, 0.08);
+    --text-danger-light: #b91c1c;
+    --bg-primary-light: rgba(212, 0, 30, 0.05);
+    --bg-modal: rgba(20, 20, 43, 0.55);
+
+    /* Graph Overrides for World Athletics */
+    --chart-grid-color: rgba(0, 0, 0, 0.07);
+    --chart-text-color: #6b7280;
+    --chart-line-color: #d4001e;
+    --chart-fill-color: rgba(212, 0, 30, 0.1);
+    --chart-point-bg: #ffffff;
+    --chart-point-border: #d4001e;
+}
+
 * {
     margin: 0;
     padding: 0;
