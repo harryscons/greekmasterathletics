@@ -1,3 +1,6 @@
+# v2.21.027
+- **New Theme: Dark Racing (Black/Yellow/Red)**: Bold near-black background (`#0a0a0a`) with electric yellow (`#facc15`) as primary accent, vivid red (`#ef4444`) as secondary, and a yellow→red gradient title. High-energy racing aesthetic.
+
 # v2.21.026
 - **Default Guest Theme**: Supervisors can now set a default color theme for all guest / non-admin users from General Settings → "Default Guest Theme" dropdown. This theme is saved globally in Firebase (`appsettings/guestTheme`) and applied automatically when a guest or non-admin opens the app. Guests can still override it locally by choosing from the Color Theme selector — their personal preference is respected on future visits (`tf_theme_guest_overridden` flag).
 - **Database Rules**: Added the `appsettings` node (public read, supervisor-write) to support the global guest theme setting.
