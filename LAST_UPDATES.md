@@ -1,3 +1,6 @@
+# v2.21.032
+- **Typography Fix**: Removed the forced uppercase styling from the main window's header subtitle, allowing it to display with natural mixed-case letters (e.g. "Ομοσπονδία Ελλήνων Βετεράνων Αθλητών Στίβου").
+
 # v2.21.031
 - **Theme Enhancements**: Modified the World Athletics theme header elements and main reports table:
   - The main header title is now solid black instead of a color gradient.

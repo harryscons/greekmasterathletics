@@ -400,6 +400,10 @@ h1 {
     text-transform: uppercase;
 }
 
+header .subtitle {
+    text-transform: none;
+}
+
 /* Navigation Tabs Container */
 .nav-tabs {
     display: flex;
