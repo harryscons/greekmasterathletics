@@ -1,3 +1,9 @@
+# v2.21.031
+- **Theme Enhancements**: Modified the World Athletics theme header elements and main reports table:
+  - The main header title is now solid black instead of a color gradient.
+  - The header subtitle ("by Greekathletics.gr") is now blue (`#1d4ed8`).
+  - The performance values (marks) in the table columns are now blue (`#1d4ed8`).
+
 # v2.21.030
 - **Active Tab Styling**: Updated the selected navigation tab to use a solid, non-transparent background with the theme's primary color and high-contrast white (or dark) text (e.g. solid blue with white text in the World Athletics theme) for maximum legibility.
 

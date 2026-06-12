@@ -272,6 +272,20 @@ body.theme-world-athletics {
     --chart-point-border: #d4001e;
 }
 
+body.theme-world-athletics h1 {
+    background: none !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+}
+
+body.theme-world-athletics header .subtitle {
+    color: var(--primary) !important;
+}
+
+body.theme-world-athletics #reportTableBody td[data-label="Επίδοση"] {
+    color: var(--primary) !important;
+}
+
 * {
     margin: 0;
     padding: 0;
