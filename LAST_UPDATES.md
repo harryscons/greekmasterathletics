@@ -1,3 +1,9 @@
+# v2.21.030
+- **Active Tab Styling**: Updated the selected navigation tab to use a solid, non-transparent background with the theme's primary color and high-contrast white (or dark) text (e.g. solid blue with white text in the World Athletics theme) for maximum legibility.
+
+# v2.21.029
+- **Theme Polish**: Refined the World Athletics theme color scheme, switching the header, title, and tabs to use athletic blue (`#1d4ed8`) and the primary action buttons to use brand red (`#d4001e`).
+
 # v2.21.028
 - **New Theme: World Athletics (Official)**: Inspired by the worldathletics.org records page — light gray page background (`#f5f5f5`), white card surfaces, WA brand red (`#d4001e`) as primary accent, deep navy (`#14142b`) header/nav, and clean `#1e1e1e` body text. Professional athletic federation aesthetic.
 
