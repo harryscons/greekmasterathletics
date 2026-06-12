@@ -19,3 +19,4 @@ functions/
 public/
 track_data_backup_*.json
 savepoints/
+.agents/brain/

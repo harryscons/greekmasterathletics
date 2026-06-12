@@ -943,7 +943,7 @@
                             and
                             appearance.</p>
 
-                        <div class="row">
+                        <div class="row" style="flex-wrap: wrap; gap: 1.5rem;">
                             <div class="form-group" style="flex: 1; max-width: 400px;">
                                 <label for="themeSelect">Color Theme</label>
                                 <select id="themeSelect">
@@ -958,8 +958,25 @@
                                 </select>
                                 <p class="help-text"
                                     style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
-                                    Select your
-                                    preferred color palette for the application.</p>
+                                    Select your preferred color palette for the application.</p>
+                            </div>
+
+                            <!-- Supervisor-only: Default theme for guest / non-admin users -->
+                            <div id="settingRowGuestTheme" class="form-group hidden" style="flex: 1; max-width: 400px;">
+                                <label for="guestThemeSelect">Default Guest Theme <span style="font-size:0.75rem; color: var(--text-muted); font-weight: normal;">(Supervisor only)</span></label>
+                                <select id="guestThemeSelect">
+                                    <option value="theme-default">Default (Nebula)</option>
+                                    <option value="theme-clean-white">Clean White (Light)</option>
+                                    <option value="theme-mint-pale">Mint Pale (Pastel)</option>
+                                    <option value="theme-rose-pale">Rose Pale (Pastel)</option>
+                                    <option value="theme-sky-pale">Sky Pale (Pastel)</option>
+                                    <option value="theme-lavender-pale">Lavender Pale (Pastel)</option>
+                                    <option value="theme-lemon-pale">Lemon Pale (Pastel)</option>
+                                    <option value="theme-championship-slate">Championship Slate (Professional)</option>
+                                </select>
+                                <p class="help-text"
+                                    style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                                    Sets the default theme for visitors who are not logged in or have no admin role. They can still change it locally.</p>
                             </div>
                         </div>
 
@@ -1511,7 +1528,7 @@
     <script src="data/event_rules.js"></script>
     <script src="seed_data.js"></script>
     <!-- Application Script -->
-    <script src="script.js?v=2.21.025"></script>
+    <script src="script.js?v=2.21.026"></script>
 
     <!-- Excel Import Step 1: Column Mapping Modal -->
     <div id="excelMappingModal"

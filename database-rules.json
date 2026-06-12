@@ -28,6 +28,11 @@
         ".read": "auth != null && auth.uid == $uid",
         ".write": "auth != null && auth.uid == $uid"
       }
+    },
+
+    "appsettings": {
+      ".read": "true",
+      ".write": "auth != null && root.child('roles').child(auth.uid).val() == 'Supervisor'"
     }
   }
 }

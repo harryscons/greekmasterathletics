@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.21.025";
+    const VERSION = "v2.21.026";
     const LAST_UPDATE = "2026-03-01";
 
     // v2.20.73: Persistent History Sort State
@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI/UX Helpers ---
     const themeSelect = document.getElementById('themeSelect');
+    const guestThemeSelect = document.getElementById('guestThemeSelect');
     const hideNotesSymbol = document.getElementById('hideNotesSymbol');
     const restrictAthletesOnEdit = document.getElementById('restrictAthletesOnEdit');
 
@@ -1466,7 +1467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Supervisor-only General Settings rows
-        const supervisorSettings = ['settingRowHistory', 'settingRowRestrict', 'settingRowSort', 'settingRowPending', 'settingSectionMaintenance'];
+        const supervisorSettings = ['settingRowHistory', 'settingRowRestrict', 'settingRowSort', 'settingRowPending', 'settingSectionMaintenance', 'settingRowGuestTheme'];
         supervisorSettings.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -1474,6 +1475,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 else el.classList.add('hidden');
             }
         });
+
+        // When a non-admin/guest loads, apply the supervisor-set default guest theme
+        // (only if the guest hasn't already set their own local override)
+        if (!isAdmin && !isSuper) {
+            loadGuestThemeFromCloud();
+        }
+
+        // When a supervisor logs in, populate the guest theme dropdown with the current cloud value
+        if (isSuper) {
+            loadGuestThemeSelectValue();
+        }
 
         // Re-render data tables now that auth state is explicitly known
         // (Solves race condition where data loads faster than auth, leaving conditional buttons out)
@@ -2690,7 +2702,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (themeSelect) {
         themeSelect.addEventListener('change', () => {
+            // Mark that this user has set their own theme preference
+            localStorage.setItem('tf_theme_guest_overridden', 'true');
             setTheme(themeSelect.value);
+        });
+    }
+
+    // Supervisor: Save the guest default theme to Firebase appsettings
+    if (guestThemeSelect) {
+        guestThemeSelect.addEventListener('change', () => {
+            const chosen = guestThemeSelect.value;
+            if (db) {
+                db.ref('appsettings/guestTheme').set(chosen)
+                    .then(() => console.log('Guest default theme saved to cloud:', chosen))
+                    .catch(err => console.error('Error saving guest theme:', err));
+            }
         });
     }
 
@@ -8831,6 +8857,33 @@ Replace ALL current data with this backup? This action is irreversible.`;
         }
 
         setTheme(savedTheme);
+    }
+
+    // v2.21.026: Load the supervisor-set default guest theme from Firebase.
+    // Only applies for non-admin / non-supervisor users who haven't picked their own theme.
+    function loadGuestThemeFromCloud() {
+        if (!db) return;
+        const hasOverride = localStorage.getItem('tf_theme_guest_overridden') === 'true';
+        if (hasOverride) return; // Guest already has their own preference — respect it
+
+        db.ref('appsettings/guestTheme').once('value', (snapshot) => {
+            const guestTheme = snapshot.val();
+            if (guestTheme) {
+                console.log('Applying supervisor-set guest theme:', guestTheme);
+                setTheme(guestTheme, true); // skipSync — we don\'t save to their own usersettings
+            }
+        });
+    }
+
+    // v2.21.026: Load current guest theme setting into the supervisor's dropdown on page load.
+    function loadGuestThemeSelectValue() {
+        if (!db || !guestThemeSelect) return;
+        db.ref('appsettings/guestTheme').once('value', (snapshot) => {
+            const val = snapshot.val();
+            if (val && guestThemeSelect.value !== val) {
+                guestThemeSelect.value = val;
+            }
+        });
     }
 
     window.runDiagnostics = async function () {
