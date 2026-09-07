@@ -1,3 +1,6 @@
+# v2.22.000
+- **Minor Version Bump**: Bumping application minor version to `v2.22.000` for GitHub release deployment.
+
 # v2.21.032
 - **Typography Fix**: Removed the forced uppercase styling from the main window's header subtitle, allowing it to display with natural mixed-case letters (e.g. "Ομοσπονδία Ελλήνων Βετεράνων Αθλητών Στίβου").
 

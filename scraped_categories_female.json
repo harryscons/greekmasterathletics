@@ -1,0 +1,1042 @@
+[
+  {
+    "id": "rs-initial-mr-0",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W35 | ",
+    "eventName": "100m",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-1",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W40 | ",
+    "eventName": "100m",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-2",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W45 | ",
+    "eventName": "100m",
+    "ageGroup": "W45"
+  },
+  {
+    "id": "rs-initial-mr-3",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W50 | ",
+    "eventName": "100m",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-4",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W55 | ",
+    "eventName": "100m",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-5",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W60 | ",
+    "eventName": "100m",
+    "ageGroup": "W60"
+  },
+  {
+    "id": "rs-initial-mr-6",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W65 | ",
+    "eventName": "100m",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-7",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W70 | ",
+    "eventName": "100m",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-8",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W75 | ",
+    "eventName": "100m",
+    "ageGroup": "W75"
+  },
+  {
+    "id": "rs-initial-mr-9",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W80 | ",
+    "eventName": "100m",
+    "ageGroup": "W80"
+  },
+  {
+    "id": "rs-initial-mr-10",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W85 | ",
+    "eventName": "100m",
+    "ageGroup": "W85"
+  },
+  {
+    "id": "rs-initial-mr-11",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W90 | ",
+    "eventName": "100m",
+    "ageGroup": "W90"
+  },
+  {
+    "id": "rs-initial-mr-12",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W95 | ",
+    "eventName": "100m",
+    "ageGroup": "W95"
+  },
+  {
+    "id": "rs-initial-mr-13",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m | W100 | ",
+    "eventName": "100m",
+    "ageGroup": "W100"
+  },
+  {
+    "id": "rs-initial-mr-14",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W35 | ",
+    "eventName": "200m",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-15",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W40 | ",
+    "eventName": "200m",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-16",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W45 | ",
+    "eventName": "200m",
+    "ageGroup": "W45"
+  },
+  {
+    "id": "rs-initial-mr-17",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W50 | ",
+    "eventName": "200m",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-18",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W55 | ",
+    "eventName": "200m",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-19",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W60 | ",
+    "eventName": "200m",
+    "ageGroup": "W60"
+  },
+  {
+    "id": "rs-initial-mr-20",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W65 | ",
+    "eventName": "200m",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-21",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W70 | ",
+    "eventName": "200m",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-22",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W75 | ",
+    "eventName": "200m",
+    "ageGroup": "W75"
+  },
+  {
+    "id": "rs-initial-mr-23",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W80 | ",
+    "eventName": "200m",
+    "ageGroup": "W80"
+  },
+  {
+    "id": "rs-initial-mr-24",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W85 | ",
+    "eventName": "200m",
+    "ageGroup": "W85"
+  },
+  {
+    "id": "rs-initial-mr-25",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W90 | ",
+    "eventName": "200m",
+    "ageGroup": "W90"
+  },
+  {
+    "id": "rs-initial-mr-26",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W95 | ",
+    "eventName": "200m",
+    "ageGroup": "W95"
+  },
+  {
+    "id": "rs-initial-mr-27",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m | W100 | ",
+    "eventName": "200m",
+    "ageGroup": "W100"
+  },
+  {
+    "id": "rs-initial-mr-28",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "400m | W35 | ",
+    "eventName": "400m",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-29",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "400m | W40 | ",
+    "eventName": "400m",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-30",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "400m | W55 | ",
+    "eventName": "400m",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-31",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "400m | W70 | ",
+    "eventName": "400m",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-32",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W35 | ",
+    "eventName": "800m",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-33",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W40 | ",
+    "eventName": "800m",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-34",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W45 | ",
+    "eventName": "800m",
+    "ageGroup": "W45"
+  },
+  {
+    "id": "rs-initial-mr-35",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W50 | ",
+    "eventName": "800m",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-36",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W55 | ",
+    "eventName": "800m",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-37",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W60 | ",
+    "eventName": "800m",
+    "ageGroup": "W60"
+  },
+  {
+    "id": "rs-initial-mr-38",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W65 | ",
+    "eventName": "800m",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-39",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W70 | ",
+    "eventName": "800m",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-40",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W75 | ",
+    "eventName": "800m",
+    "ageGroup": "W75"
+  },
+  {
+    "id": "rs-initial-mr-41",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W80 | ",
+    "eventName": "800m",
+    "ageGroup": "W80"
+  },
+  {
+    "id": "rs-initial-mr-42",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W85 | ",
+    "eventName": "800m",
+    "ageGroup": "W85"
+  },
+  {
+    "id": "rs-initial-mr-43",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W90 | ",
+    "eventName": "800m",
+    "ageGroup": "W90"
+  },
+  {
+    "id": "rs-initial-mr-44",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W95 | ",
+    "eventName": "800m",
+    "ageGroup": "W95"
+  },
+  {
+    "id": "rs-initial-mr-45",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "800m | W100 | ",
+    "eventName": "800m",
+    "ageGroup": "W100"
+  },
+  {
+    "id": "rs-initial-mr-46",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "1500m | W35 | ",
+    "eventName": "1500m",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-47",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "1500m | W70 | ",
+    "eventName": "1500m",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-48",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m | W40 | ",
+    "eventName": "5000m",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-49",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m | W70 | ",
+    "eventName": "5000m",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-50",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (68.6cm / 7m) | W60 | ",
+    "eventName": "80m Hurdles (68.6cm / 7m)",
+    "ageGroup": "W60"
+  },
+  {
+    "id": "rs-initial-mr-51",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (68.6cm / 7m) | W65 | ",
+    "eventName": "80m Hurdles (68.6cm / 7m)",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-52",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (68.6cm / 6m) | W70 | ",
+    "eventName": "80m Hurdles (68.6cm / 6m)",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-53",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (68.6cm / 6m) | W75 | ",
+    "eventName": "80m Hurdles (68.6cm / 6m)",
+    "ageGroup": "W75"
+  },
+  {
+    "id": "rs-initial-mr-54",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (68.6cm / 6m) | W80 | ",
+    "eventName": "80m Hurdles (68.6cm / 6m)",
+    "ageGroup": "W80"
+  },
+  {
+    "id": "rs-initial-mr-55",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (68.6cm / 6m) | W85 | ",
+    "eventName": "80m Hurdles (68.6cm / 6m)",
+    "ageGroup": "W85"
+  },
+  {
+    "id": "rs-initial-mr-56",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (68.6cm / 6m) | W90 | ",
+    "eventName": "80m Hurdles (68.6cm / 6m)",
+    "ageGroup": "W90"
+  },
+  {
+    "id": "rs-initial-mr-57",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (68.6cm / 6m) | W95 | ",
+    "eventName": "80m Hurdles (68.6cm / 6m)",
+    "ageGroup": "W95"
+  },
+  {
+    "id": "rs-initial-mr-58",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (68.6cm / 6m) | W100 | ",
+    "eventName": "80m Hurdles (68.6cm / 6m)",
+    "ageGroup": "W100"
+  },
+  {
+    "id": "rs-initial-mr-59",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (76.2cm / 8m) | W40 | ",
+    "eventName": "80m Hurdles (76.2cm / 8m)",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-60",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (76.2cm / 8m) | W45 | ",
+    "eventName": "80m Hurdles (76.2cm / 8m)",
+    "ageGroup": "W45"
+  },
+  {
+    "id": "rs-initial-mr-61",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (76.2cm / 7m) | W50 | ",
+    "eventName": "80m Hurdles (76.2cm / 7m)",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-62",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "80m Hurdles (76.2cm / 7m) | W55 | ",
+    "eventName": "80m Hurdles (76.2cm / 7m)",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-63",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "100m Hurdles (83.8cm / 8.5m) | W35 | ",
+    "eventName": "100m Hurdles (83.8cm / 8.5m)",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-64",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m Hurdles (68.6cm / 35m) | W70 | ",
+    "eventName": "200m Hurdles (68.6cm / 35m)",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-65",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m Hurdles (68.6cm / 35m) | W75 | ",
+    "eventName": "200m Hurdles (68.6cm / 35m)",
+    "ageGroup": "W75"
+  },
+  {
+    "id": "rs-initial-mr-66",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m Hurdles (68.6cm / 35m) | W80 | ",
+    "eventName": "200m Hurdles (68.6cm / 35m)",
+    "ageGroup": "W80"
+  },
+  {
+    "id": "rs-initial-mr-67",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m Hurdles (68.6cm / 35m) | W85 | ",
+    "eventName": "200m Hurdles (68.6cm / 35m)",
+    "ageGroup": "W85"
+  },
+  {
+    "id": "rs-initial-mr-68",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m Hurdles (68.6cm / 35m) | W90 | ",
+    "eventName": "200m Hurdles (68.6cm / 35m)",
+    "ageGroup": "W90"
+  },
+  {
+    "id": "rs-initial-mr-69",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m Hurdles (68.6cm / 35m) | W95 | ",
+    "eventName": "200m Hurdles (68.6cm / 35m)",
+    "ageGroup": "W95"
+  },
+  {
+    "id": "rs-initial-mr-70",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "200m Hurdles (68.6cm / 35m) | W100 | ",
+    "eventName": "200m Hurdles (68.6cm / 35m)",
+    "ageGroup": "W100"
+  },
+  {
+    "id": "rs-initial-mr-71",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "300m Hurdles (68.6cm / 35m) | W60 | ",
+    "eventName": "300m Hurdles (68.6cm / 35m)",
+    "ageGroup": "W60"
+  },
+  {
+    "id": "rs-initial-mr-72",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "300m Hurdles (68.6cm / 35m) | W65 | ",
+    "eventName": "300m Hurdles (68.6cm / 35m)",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-73",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "300m Hurdles (76.2cm / 35m) | W50 | ",
+    "eventName": "300m Hurdles (76.2cm / 35m)",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-74",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "300m Hurdles (76.2cm / 35m) | W55 | ",
+    "eventName": "300m Hurdles (76.2cm / 35m)",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-75",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "400m Hurdles (76.2cm / 35m) | W35 | ",
+    "eventName": "400m Hurdles (76.2cm / 35m)",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-76",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "400m Hurdles (76.2cm / 35m) | W40 | ",
+    "eventName": "400m Hurdles (76.2cm / 35m)",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-77",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "400m Hurdles (76.2cm / 35m) | W45 | ",
+    "eventName": "400m Hurdles (76.2cm / 35m)",
+    "ageGroup": "W45"
+  },
+  {
+    "id": "rs-initial-mr-78",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "High Jump | W65 | ",
+    "eventName": "High Jump",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-79",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W35 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-80",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W40 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-81",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W45 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W45"
+  },
+  {
+    "id": "rs-initial-mr-82",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W50 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-83",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W55 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-84",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W60 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W60"
+  },
+  {
+    "id": "rs-initial-mr-85",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W65 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-86",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W70 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-87",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W75 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W75"
+  },
+  {
+    "id": "rs-initial-mr-88",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W80 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W80"
+  },
+  {
+    "id": "rs-initial-mr-89",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W85 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W85"
+  },
+  {
+    "id": "rs-initial-mr-90",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W90 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W90"
+  },
+  {
+    "id": "rs-initial-mr-91",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W95 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W95"
+  },
+  {
+    "id": "rs-initial-mr-92",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Pole Vault | W100 | ",
+    "eventName": "Pole Vault",
+    "ageGroup": "W100"
+  },
+  {
+    "id": "rs-initial-mr-93",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Long Jump | W40 | ",
+    "eventName": "Long Jump",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-94",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Long Jump | W55 | ",
+    "eventName": "Long Jump",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-95",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Long Jump | W65 | ",
+    "eventName": "Long Jump",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-96",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Shot Put (3kg) | W50 | ",
+    "eventName": "Shot Put (3kg)",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-97",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Shot Put (3kg) | W55 | ",
+    "eventName": "Shot Put (3kg)",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-98",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Shot Put (3kg) | W65 | ",
+    "eventName": "Shot Put (3kg)",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-99",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Discus Throw (1kg) | W65 | ",
+    "eventName": "Discus Throw (1kg)",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-100",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (2kg) | W75 | ",
+    "eventName": "Hammer Throw (2kg)",
+    "ageGroup": "W75"
+  },
+  {
+    "id": "rs-initial-mr-101",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (2kg) | W80 | ",
+    "eventName": "Hammer Throw (2kg)",
+    "ageGroup": "W80"
+  },
+  {
+    "id": "rs-initial-mr-102",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (2kg) | W85 | ",
+    "eventName": "Hammer Throw (2kg)",
+    "ageGroup": "W85"
+  },
+  {
+    "id": "rs-initial-mr-103",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (2kg) | W90 | ",
+    "eventName": "Hammer Throw (2kg)",
+    "ageGroup": "W90"
+  },
+  {
+    "id": "rs-initial-mr-104",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (2kg) | W95 | ",
+    "eventName": "Hammer Throw (2kg)",
+    "ageGroup": "W95"
+  },
+  {
+    "id": "rs-initial-mr-105",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (2kg) | W100 | ",
+    "eventName": "Hammer Throw (2kg)",
+    "ageGroup": "W100"
+  },
+  {
+    "id": "rs-initial-mr-106",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (3kg) | W50 | ",
+    "eventName": "Hammer Throw (3kg)",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-107",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (3kg) | W55 | ",
+    "eventName": "Hammer Throw (3kg)",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-108",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (3kg) | W60 | ",
+    "eventName": "Hammer Throw (3kg)",
+    "ageGroup": "W60"
+  },
+  {
+    "id": "rs-initial-mr-109",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (3kg) | W65 | ",
+    "eventName": "Hammer Throw (3kg)",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-110",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (3kg) | W70 | ",
+    "eventName": "Hammer Throw (3kg)",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-111",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (4kg) | W35 | ",
+    "eventName": "Hammer Throw (4kg)",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-112",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (4kg) | W40 | ",
+    "eventName": "Hammer Throw (4kg)",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-113",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Hammer Throw (4kg) | W45 | ",
+    "eventName": "Hammer Throw (4kg)",
+    "ageGroup": "W45"
+  },
+  {
+    "id": "rs-initial-mr-114",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Javelin Throw (500g) | W50 | ",
+    "eventName": "Javelin Throw (500g)",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-115",
+    "placeholder": "MM.mm",
+    "value": "",
+    "rowText": "Weight Throw (12lbs / 5.45kg) | W60 | ",
+    "eventName": "Weight Throw (12lbs / 5.45kg)",
+    "ageGroup": "W60"
+  },
+  {
+    "id": "rs-initial-mr-116",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W35 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W35"
+  },
+  {
+    "id": "rs-initial-mr-117",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W40 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W40"
+  },
+  {
+    "id": "rs-initial-mr-118",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W45 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W45"
+  },
+  {
+    "id": "rs-initial-mr-119",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W50 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W50"
+  },
+  {
+    "id": "rs-initial-mr-120",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W55 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W55"
+  },
+  {
+    "id": "rs-initial-mr-121",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W60 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W60"
+  },
+  {
+    "id": "rs-initial-mr-122",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W65 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W65"
+  },
+  {
+    "id": "rs-initial-mr-123",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W70 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W70"
+  },
+  {
+    "id": "rs-initial-mr-124",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W75 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W75"
+  },
+  {
+    "id": "rs-initial-mr-125",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W80 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W80"
+  },
+  {
+    "id": "rs-initial-mr-126",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W85 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W85"
+  },
+  {
+    "id": "rs-initial-mr-127",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W90 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W90"
+  },
+  {
+    "id": "rs-initial-mr-128",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W95 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W95"
+  },
+  {
+    "id": "rs-initial-mr-129",
+    "placeholder": "HH:MM:SS.ss",
+    "value": "",
+    "rowText": "5000m Race Walk | W100 | ",
+    "eventName": "5000m Race Walk",
+    "ageGroup": "W100"
+  }
+]

@@ -1,0 +1,2022 @@
+{
+  "Male": {
+    "100m | M35": {
+      "ra_event": "100m",
+      "age_group": "M35",
+      "db_event": "100μ",
+      "athlete": "Τερζιάν, Αλέξανδρος",
+      "mark": "00:00:10.34",
+      "date": "2003-07-06"
+    },
+    "100m | M40": {
+      "ra_event": "100m",
+      "age_group": "M40",
+      "db_event": "100μ",
+      "athlete": "Ζογλοπίτης, Ιωάννης",
+      "mark": "00:00:11.00",
+      "date": "2011-06-19"
+    },
+    "100m | M45": {
+      "ra_event": "100m",
+      "age_group": "M45",
+      "db_event": "100μ",
+      "athlete": "Γιανναδάκης, Νικόλαος",
+      "mark": "00:00:11.52",
+      "date": "2025-06-01"
+    },
+    "100m | M50": {
+      "ra_event": "100m",
+      "age_group": "M50",
+      "db_event": "100μ",
+      "athlete": "Χριστοφορίδης, Μάριος",
+      "mark": "00:00:11.62",
+      "date": "2018-06-23"
+    },
+    "100m | M55": {
+      "ra_event": "100m",
+      "age_group": "M55",
+      "db_event": "100μ",
+      "athlete": "Χριστοφορίδης, Μάριος",
+      "mark": "00:00:11.91",
+      "date": "2024-07-06"
+    },
+    "100m | M60": {
+      "ra_event": "100m",
+      "age_group": "M60",
+      "db_event": "100μ",
+      "athlete": "Καπασακάλης, Κοσμάς",
+      "mark": "00:00:12.89",
+      "date": "1994-09-17"
+    },
+    "100m | M65": {
+      "ra_event": "100m",
+      "age_group": "M65",
+      "db_event": "100μ",
+      "athlete": "Ανδρέασσον, Μανώλης",
+      "mark": "00:00:13.41",
+      "date": "2026-05-02"
+    },
+    "100m | M70": {
+      "ra_event": "100m",
+      "age_group": "M70",
+      "db_event": "100μ",
+      "athlete": "Χαραλαμπίδης, Παύλος",
+      "mark": "00:00:14.17",
+      "date": "2019-05-12"
+    },
+    "100m | M75": {
+      "ra_event": "100m",
+      "age_group": "M75",
+      "db_event": "100μ",
+      "athlete": "Γρανίτσας, Ιωάννης",
+      "mark": "00:00:15.15",
+      "date": "1999-01-01"
+    },
+    "100m | M80": {
+      "ra_event": "100m",
+      "age_group": "M80",
+      "db_event": "100μ",
+      "athlete": "Μπιλιούρης, Χρύσανθος",
+      "mark": "00:00:15.40",
+      "date": "1998-06-13"
+    },
+    "100m | M85": {
+      "ra_event": "100m",
+      "age_group": "M85",
+      "db_event": "100μ",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "00:00:18.72",
+      "date": "2022-07-16"
+    },
+    "100m | M90": {
+      "ra_event": "100m",
+      "age_group": "M90",
+      "db_event": "100μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:00:21.84",
+      "date": "2019-06-01"
+    },
+    "100m | M95": {
+      "ra_event": "100m",
+      "age_group": "M95",
+      "db_event": "100μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:00:24.10",
+      "date": "2025-07-06"
+    },
+    "100m | M100": {
+      "ra_event": "100m",
+      "age_group": "M100",
+      "db_event": "100μ",
+      "athlete": "Σκαμαντζούρας, Οδυσσέας",
+      "mark": "00:01:04.80",
+      "date": "2016-06-11"
+    },
+    "200m | M35": {
+      "ra_event": "200m",
+      "age_group": "M35",
+      "db_event": "200μ",
+      "athlete": "Τριβυζάς, Παναγιώτης",
+      "mark": "00:00:21.37",
+      "date": "2023-05-06"
+    },
+    "200m | M40": {
+      "ra_event": "200m",
+      "age_group": "M40",
+      "db_event": "200μ",
+      "athlete": "Κοκκίνης, Αλέξανδρος",
+      "mark": "00:00:22.54",
+      "date": "2025-10-16"
+    },
+    "200m | M45": {
+      "ra_event": "200m",
+      "age_group": "M45",
+      "db_event": "200μ",
+      "athlete": "Καταντωνάκης, Αντώνιος",
+      "mark": "00:00:23.16",
+      "date": "2025-05-31"
+    },
+    "200m | M50": {
+      "ra_event": "200m",
+      "age_group": "M50",
+      "db_event": "200μ",
+      "athlete": "Χριστοφορίδης, Μάριος",
+      "mark": "00:00:24.00",
+      "date": "2018-06-24"
+    },
+    "200m | M55": {
+      "ra_event": "200m",
+      "age_group": "M55",
+      "db_event": "200μ",
+      "athlete": "Χριστοφορίδης, Μάριος",
+      "mark": "00:00:24.59",
+      "date": "2024-06-08"
+    },
+    "200m | M60": {
+      "ra_event": "200m",
+      "age_group": "M60",
+      "db_event": "200μ",
+      "athlete": "Χουλίδης, Ιωάννης",
+      "mark": "00:00:27.20",
+      "date": "2012-06-24"
+    },
+    "200m | M65": {
+      "ra_event": "200m",
+      "age_group": "M65",
+      "db_event": "200μ",
+      "athlete": "Μόρφης, Αντώνιος",
+      "mark": "00:00:27.93",
+      "date": "2018-02-24"
+    },
+    "200m | M70": {
+      "ra_event": "200m",
+      "age_group": "M70",
+      "db_event": "200μ",
+      "athlete": "Καπασακάλης, Κοσμάς",
+      "mark": "00:00:28.10",
+      "date": "2004-10-24"
+    },
+    "200m | M75": {
+      "ra_event": "200m",
+      "age_group": "M75",
+      "db_event": "200μ",
+      "athlete": "Καπασακάλης, Κοσμάς",
+      "mark": "00:00:31.90",
+      "date": "2011-06-19"
+    },
+    "200m | M80": {
+      "ra_event": "200m",
+      "age_group": "M80",
+      "db_event": "200μ",
+      "athlete": "Καπασακάλης, Κοσμάς",
+      "mark": "00:00:33.34",
+      "date": "2014-08-30"
+    },
+    "200m | M85": {
+      "ra_event": "200m",
+      "age_group": "M85",
+      "db_event": "200μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:00:41.23",
+      "date": "2014-08-30"
+    },
+    "200m | M90": {
+      "ra_event": "200m",
+      "age_group": "M90",
+      "db_event": "200μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:00:49.51",
+      "date": "2019-09-12"
+    },
+    "200m | M95": {
+      "ra_event": "200m",
+      "age_group": "M95",
+      "db_event": "200μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:00:56.74",
+      "date": "2025-07-06"
+    },
+    "400m | M35": {
+      "ra_event": "400m",
+      "age_group": "M35",
+      "db_event": "400μ",
+      "athlete": "Δημότσιος, Στυλιανός",
+      "mark": "00:00:48.45",
+      "date": "2009-04-26"
+    },
+    "400m | M40": {
+      "ra_event": "400m",
+      "age_group": "M40",
+      "db_event": "400μ",
+      "athlete": "Κοκκίνης, Αλέξανδρος",
+      "mark": "00:00:49.26",
+      "date": "2025-10-11"
+    },
+    "400m | M45": {
+      "ra_event": "400m",
+      "age_group": "M45",
+      "db_event": "400μ",
+      "athlete": "Καταντωνάκης, Αντώνιος",
+      "mark": "00:00:51.43",
+      "date": "2023-09-26"
+    },
+    "400m | M50": {
+      "ra_event": "400m",
+      "age_group": "M50",
+      "db_event": "400μ",
+      "athlete": "Ελευθεριάδης, Βλαδίμηρος",
+      "mark": "00:00:53.72",
+      "date": "2010-01-01"
+    },
+    "400m | M55": {
+      "ra_event": "400m",
+      "age_group": "M55",
+      "db_event": "400μ",
+      "athlete": "Κόκκος, Νικόλαος",
+      "mark": "00:00:56.30",
+      "date": "2025-06-07"
+    },
+    "400m | M60": {
+      "ra_event": "400m",
+      "age_group": "M60",
+      "db_event": "400μ",
+      "athlete": "Ανδρεάδης, Βασίλειος",
+      "mark": "00:01:01.10",
+      "date": "2014-06-01"
+    },
+    "400m | M65": {
+      "ra_event": "400m",
+      "age_group": "M65",
+      "db_event": "400μ",
+      "athlete": "Κανακάρης, Παναγιώτης",
+      "mark": "00:01:05.70",
+      "date": "1996-01-01"
+    },
+    "400m | M70": {
+      "ra_event": "400m",
+      "age_group": "M70",
+      "db_event": "400μ",
+      "athlete": "Καπασακάλης, Κοσμάς",
+      "mark": "00:01:08.80",
+      "date": "2004-01-01"
+    },
+    "400m | M75": {
+      "ra_event": "400m",
+      "age_group": "M75",
+      "db_event": "400μ",
+      "athlete": "Μπιλιούρης, Χρύσανθος",
+      "mark": "00:01:14.30",
+      "date": "1993-01-01"
+    },
+    "400m | M80": {
+      "ra_event": "400m",
+      "age_group": "M80",
+      "db_event": "400μ",
+      "athlete": "Καπασακάλης, Κοσμάς",
+      "mark": "00:01:19.31",
+      "date": "2015-08-15"
+    },
+    "400m | M85": {
+      "ra_event": "400m",
+      "age_group": "M85",
+      "db_event": "400μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:01:41.63",
+      "date": "2014-08-22"
+    },
+    "400m | M90": {
+      "ra_event": "400m",
+      "age_group": "M90",
+      "db_event": "400μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:01:58.69",
+      "date": "2021-06-19"
+    },
+    "400m | M95": {
+      "ra_event": "400m",
+      "age_group": "M95",
+      "db_event": "400μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:02:26.98",
+      "date": "2024-07-06"
+    },
+    "800m | M35": {
+      "ra_event": "800m",
+      "age_group": "M35",
+      "db_event": "800μ",
+      "athlete": "Κούρτης, Φώτιος",
+      "mark": "00:01:54.18",
+      "date": "1989-06-03"
+    },
+    "800m | M40": {
+      "ra_event": "800m",
+      "age_group": "M40",
+      "db_event": "800μ",
+      "athlete": "Αρμάος, Ιούλιος",
+      "mark": "00:02:04.40",
+      "date": "2018-07-07"
+    },
+    "800m | M45": {
+      "ra_event": "800m",
+      "age_group": "M45",
+      "db_event": "800μ",
+      "athlete": "Παπαντωνιάδης, Ευκλίδης",
+      "mark": "00:02:04.38",
+      "date": "1989-01-01"
+    },
+    "800m | M50": {
+      "ra_event": "800m",
+      "age_group": "M50",
+      "db_event": "800μ",
+      "athlete": "Κωνσταντινίδης, Χαράλαμπος",
+      "mark": "00:02:10.32",
+      "date": "2025-10-17"
+    },
+    "800m | M55": {
+      "ra_event": "800m",
+      "age_group": "M55",
+      "db_event": "800μ",
+      "athlete": "Σκορδίλης, Σπυρίδων",
+      "mark": "00:02:19.70",
+      "date": "2016-06-26"
+    },
+    "800m | M60": {
+      "ra_event": "800m",
+      "age_group": "M60",
+      "db_event": "800μ",
+      "athlete": "Κομματάς, Κωνσταντίνος",
+      "mark": "00:02:25.36",
+      "date": "2017-09-22"
+    },
+    "800m | M65": {
+      "ra_event": "800m",
+      "age_group": "M65",
+      "db_event": "800μ",
+      "athlete": "Θεοδωσίου, Γεώργιος",
+      "mark": "00:02:33.02",
+      "date": "2001-01-01"
+    },
+    "800m | M70": {
+      "ra_event": "800m",
+      "age_group": "M70",
+      "db_event": "800μ",
+      "athlete": "Βενετιάδης, Απόστολος",
+      "mark": "00:02:50.19",
+      "date": "2016-06-12"
+    },
+    "800m | M75": {
+      "ra_event": "800m",
+      "age_group": "M75",
+      "db_event": "800μ",
+      "athlete": "Βενετιάδης, Απόστολος",
+      "mark": "00:03:01.25",
+      "date": "2019-06-16"
+    },
+    "800m | M80": {
+      "ra_event": "800m",
+      "age_group": "M80",
+      "db_event": "800μ",
+      "athlete": "Γάκης, Παναγιώτης",
+      "mark": "00:03:42.10",
+      "date": "1996-01-01"
+    },
+    "800m | M85": {
+      "ra_event": "800m",
+      "age_group": "M85",
+      "db_event": "800μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:04:29.09",
+      "date": "2016-01-01"
+    },
+    "800m | M90": {
+      "ra_event": "800m",
+      "age_group": "M90",
+      "db_event": "800μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:04:45.63",
+      "date": "2019-09-20"
+    },
+    "800m | M95": {
+      "ra_event": "800m",
+      "age_group": "M95",
+      "db_event": "800μ",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "00:05:46.82",
+      "date": "2024-08-15"
+    },
+    "1500m | M35": {
+      "ra_event": "1500m",
+      "age_group": "M35",
+      "db_event": "1500μ",
+      "athlete": "Κούρτης, Φώτιος",
+      "mark": "00:03:50.12",
+      "date": "1989-01-01"
+    },
+    "1500m | M40": {
+      "ra_event": "1500m",
+      "age_group": "M40",
+      "db_event": "1500μ",
+      "athlete": "Αναγνώστου, Θεόδωρος",
+      "mark": "00:04:10.55",
+      "date": "2017-05-21"
+    },
+    "1500m | M45": {
+      "ra_event": "1500m",
+      "age_group": "M45",
+      "db_event": "1500μ",
+      "athlete": "Κωνσταντινίδης, Χαράλαμπος",
+      "mark": "00:04:19.93",
+      "date": "2022-05-29"
+    },
+    "1500m | M50": {
+      "ra_event": "1500m",
+      "age_group": "M50",
+      "db_event": "1500μ",
+      "athlete": "Κωνσταντινίδης, Χαράλαμπος",
+      "mark": "00:04:19.11",
+      "date": "2024-09-28"
+    },
+    "1500m | M55": {
+      "ra_event": "1500m",
+      "age_group": "M55",
+      "db_event": "1500μ",
+      "athlete": "Κονταράτος, Αλέξιος",
+      "mark": "00:04:42.05",
+      "date": "2022-05-29"
+    },
+    "1500m | M60": {
+      "ra_event": "1500m",
+      "age_group": "M60",
+      "db_event": "1500μ",
+      "athlete": "Βαγγελάκης, Νικόλαος",
+      "mark": "00:05:00.20",
+      "date": "2004-01-01"
+    },
+    "1500m | M65": {
+      "ra_event": "1500m",
+      "age_group": "M65",
+      "db_event": "1500μ",
+      "athlete": "Θεοδωσίου, Γεώργιος",
+      "mark": "00:05:21.06",
+      "date": "1999-01-01"
+    },
+    "1500m | M70": {
+      "ra_event": "1500m",
+      "age_group": "M70",
+      "db_event": "1500μ",
+      "athlete": "Καστερίδης, Ευστράτιος",
+      "mark": "00:05:33.55",
+      "date": "2025-05-31"
+    },
+    "1500m | M75": {
+      "ra_event": "1500m",
+      "age_group": "M75",
+      "db_event": "1500μ",
+      "athlete": "Βενετιάδης, Απόστολος",
+      "mark": "00:06:05.02",
+      "date": "2019-06-15"
+    },
+    "1500m | M80": {
+      "ra_event": "1500m",
+      "age_group": "M80",
+      "db_event": "1500μ",
+      "athlete": "Γάκης, Παναγιώτης",
+      "mark": "00:06:48.56",
+      "date": "1995-07-22"
+    },
+    "1500m | M85": {
+      "ra_event": "1500m",
+      "age_group": "M85",
+      "db_event": "1500μ",
+      "athlete": "Δούσης, Παναγιώτης",
+      "mark": "00:09:22.31",
+      "date": "2019-09-21"
+    },
+    "1500m | M90": {
+      "ra_event": "1500m",
+      "age_group": "M90",
+      "db_event": "1500μ",
+      "athlete": "Δούσης, Παναγιώτης",
+      "mark": "00:09:13.02",
+      "date": "2025-08-31"
+    },
+    "5000m | M40": {
+      "ra_event": "5000m",
+      "age_group": "M40",
+      "db_event": "5000μ",
+      "athlete": "Παπανδρεόπουλος, Παναγιώτης",
+      "mark": "00:15:00.62",
+      "date": "2009-01-01"
+    },
+    "5000m | M45": {
+      "ra_event": "5000m",
+      "age_group": "M45",
+      "db_event": "5000μ",
+      "athlete": "Παπανδρεόπουλος, Παναγιώτης",
+      "mark": "00:15:57.85",
+      "date": "2014-01-01"
+    },
+    "5000m | M60": {
+      "ra_event": "5000m",
+      "age_group": "M60",
+      "db_event": "5000μ",
+      "athlete": "Σαριδάκης, Ιωάννης",
+      "mark": "00:18:05.65",
+      "date": "2016-09-23"
+    },
+    "5000m | M75": {
+      "ra_event": "5000m",
+      "age_group": "M75",
+      "db_event": "5000μ",
+      "athlete": "Γάκης, Παναγιώτης",
+      "mark": "00:22:11.44",
+      "date": "1991-07-22"
+    },
+    "80m Hurdles (68.6cm / 6m) | M80": {
+      "ra_event": "80m Hurdles (68.6cm / 6m)",
+      "age_group": "M80",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "00:00:16.87",
+      "date": "2017-09-23"
+    },
+    "80m Hurdles (76.2cm / 7m) | M70": {
+      "ra_event": "80m Hurdles (76.2cm / 7m)",
+      "age_group": "M70",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "00:00:13.86",
+      "date": "2006-09-24"
+    },
+    "80m Hurdles (76.2cm / 7m) | M75": {
+      "ra_event": "80m Hurdles (76.2cm / 7m)",
+      "age_group": "M75",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "00:00:15.42",
+      "date": "2012-01-01"
+    },
+    "100m Hurdles (83.8cm / 8m) | M60": {
+      "ra_event": "100m Hurdles (83.8cm / 8m)",
+      "age_group": "M60",
+      "db_event": "100μ Εμπόδια",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "00:00:16.10",
+      "date": "1996-09-28"
+    },
+    "100m Hurdles (83.8cm / 8m) | M65": {
+      "ra_event": "100m Hurdles (83.8cm / 8m)",
+      "age_group": "M65",
+      "db_event": "100μ Εμπόδια",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "00:00:17.20",
+      "date": "2002-01-01"
+    },
+    "100m Hurdles (91.4cm / 8.5m) | M50": {
+      "ra_event": "100m Hurdles (91.4cm / 8.5m)",
+      "age_group": "M50",
+      "db_event": "100μ Εμπόδια",
+      "athlete": "Μαλατίδης, Μιχαήλ",
+      "mark": "00:00:14.50",
+      "date": "1997-01-01"
+    },
+    "100m Hurdles (91.4cm / 8.5m) | M55": {
+      "ra_event": "100m Hurdles (91.4cm / 8.5m)",
+      "age_group": "M55",
+      "db_event": "100μ Εμπόδια",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "00:00:16.27",
+      "date": "1991-07-31"
+    },
+    "110m Hurdles (99.1cm / 9.14m) | M35": {
+      "ra_event": "110m Hurdles (99.1cm / 9.14m)",
+      "age_group": "M35",
+      "db_event": "110μ Εμπόδια",
+      "athlete": "Δουβαλίδης, Κωνσταντίνος",
+      "mark": "00:00:13.61",
+      "date": "2023-07-08"
+    },
+    "110m Hurdles (99.1cm / 9.14m) | M40": {
+      "ra_event": "110m Hurdles (99.1cm / 9.14m)",
+      "age_group": "M40",
+      "db_event": "110μ Εμπόδια",
+      "athlete": "Μαλατίδης, Μιχαήλ",
+      "mark": "00:00:14.60",
+      "date": "1986-01-01"
+    },
+    "110m Hurdles (99.1cm / 9.14m) | M45": {
+      "ra_event": "110m Hurdles (99.1cm / 9.14m)",
+      "age_group": "M45",
+      "db_event": "110μ Εμπόδια",
+      "athlete": "Μαλατίδης, Μιχαήλ",
+      "mark": "00:00:14.90",
+      "date": "1990-01-01"
+    },
+    "200m Hurdles (68.6cm / 35m) | M80": {
+      "ra_event": "200m Hurdles (68.6cm / 35m)",
+      "age_group": "M80",
+      "db_event": "200μ Εμπόδια",
+      "athlete": "Μαραβέλιας, Βασίλειος",
+      "mark": "00:00:49.64",
+      "date": "2025-10-13"
+    },
+    "300m Hurdles (68.6cm / 35m) | M70": {
+      "ra_event": "300m Hurdles (68.6cm / 35m)",
+      "age_group": "M70",
+      "db_event": "300μ Εμπόδια",
+      "athlete": "Χρυσοχός, Παντελής",
+      "mark": "00:00:54.75",
+      "date": "2023-09-21"
+    },
+    "300m Hurdles (68.6cm / 35m) | M75": {
+      "ra_event": "300m Hurdles (68.6cm / 35m)",
+      "age_group": "M75",
+      "db_event": "300μ Εμπόδια",
+      "athlete": "Μαραβέλιας, Βασίλειος",
+      "mark": "00:01:15.83",
+      "date": "2022-09-23"
+    },
+    "300m Hurdles (76.2cm / 35m) | M60": {
+      "ra_event": "300m Hurdles (76.2cm / 35m)",
+      "age_group": "M60",
+      "db_event": "300μ Εμπόδια",
+      "athlete": "Ανδρεάδης, Βασίλειος",
+      "mark": "00:00:46.94",
+      "date": "2015-05-30"
+    },
+    "300m Hurdles (76.2cm / 35m) | M65": {
+      "ra_event": "300m Hurdles (76.2cm / 35m)",
+      "age_group": "M65",
+      "db_event": "300μ Εμπόδια",
+      "athlete": "Ανδρεάδης, Βασίλειος",
+      "mark": "00:00:51.27",
+      "date": "2019-09-22"
+    },
+    "400m Hurdles (83.8cm / 35m) | M50": {
+      "ra_event": "400m Hurdles (83.8cm / 35m)",
+      "age_group": "M50",
+      "db_event": "400μ Εμπόδια",
+      "athlete": "Μαλατίδης, Μιχαήλ",
+      "mark": "00:01:01.27",
+      "date": "1995-01-01"
+    },
+    "400m Hurdles (83.8cm / 35m) | M55": {
+      "ra_event": "400m Hurdles (83.8cm / 35m)",
+      "age_group": "M55",
+      "db_event": "400μ Εμπόδια",
+      "athlete": "Ανδρεάδης, Βασίλειος",
+      "mark": "00:01:08.61",
+      "date": "2010-01-01"
+    },
+    "400m Hurdles (91.4cm / 35m) | M35": {
+      "ra_event": "400m Hurdles (91.4cm / 35m)",
+      "age_group": "M35",
+      "db_event": "400μ Εμπόδια",
+      "athlete": "Ιακωβάκης, Περικλής",
+      "mark": "00:00:50.84",
+      "date": "2015-06-13"
+    },
+    "400m Hurdles (91.4cm / 35m) | M40": {
+      "ra_event": "400m Hurdles (91.4cm / 35m)",
+      "age_group": "M40",
+      "db_event": "400μ Εμπόδια",
+      "athlete": "Μαλατίδης, Μιχαήλ",
+      "mark": "00:00:56.30",
+      "date": "1984-01-01"
+    },
+    "400m Hurdles (91.4cm / 35m) | M45": {
+      "ra_event": "400m Hurdles (91.4cm / 35m)",
+      "age_group": "M45",
+      "db_event": "400μ Εμπόδια",
+      "athlete": "Μαλατίδης, Μιχαήλ",
+      "mark": "00:01:00.97",
+      "date": "1992-01-01"
+    },
+    "Pole Vault | M35": {
+      "ra_event": "Pole Vault",
+      "age_group": "M35",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Τζίβας, Κωνσταντίνος",
+      "mark": "5.40",
+      "date": "1997-01-01"
+    },
+    "Pole Vault | M40": {
+      "ra_event": "Pole Vault",
+      "age_group": "M40",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Ευαγγέλου, Μάριος",
+      "mark": "4.75",
+      "date": "2023-06-10"
+    },
+    "Pole Vault | M45": {
+      "ra_event": "Pole Vault",
+      "age_group": "M45",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Ευαγγέλου, Μάριος",
+      "mark": "4.40",
+      "date": "2026-05-16"
+    },
+    "Pole Vault | M50": {
+      "ra_event": "Pole Vault",
+      "age_group": "M50",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Σακελλαριάδης, Ηλίας",
+      "mark": "3.80",
+      "date": "2001-01-01"
+    },
+    "Pole Vault | M55": {
+      "ra_event": "Pole Vault",
+      "age_group": "M55",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Ρίζος, Ανδρέας",
+      "mark": "3.60",
+      "date": "2021-05-26"
+    },
+    "Pole Vault | M60": {
+      "ra_event": "Pole Vault",
+      "age_group": "M60",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Ευσταθιάδης, Ρήγας",
+      "mark": "3.30",
+      "date": "1994-01-01"
+    },
+    "Pole Vault | M65": {
+      "ra_event": "Pole Vault",
+      "age_group": "M65",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Ευσταθιάδης, Ρήγας",
+      "mark": "3.10",
+      "date": "1995-06-25"
+    },
+    "Pole Vault | M70": {
+      "ra_event": "Pole Vault",
+      "age_group": "M70",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Δέδες, Νικόλαος",
+      "mark": "2.70",
+      "date": "2012-01-01"
+    },
+    "Pole Vault | M75": {
+      "ra_event": "Pole Vault",
+      "age_group": "M75",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Δέδες, Νικόλαος",
+      "mark": "2.55",
+      "date": "2016-01-01"
+    },
+    "Pole Vault | M80": {
+      "ra_event": "Pole Vault",
+      "age_group": "M80",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Συμεωνίδης, Συμεών",
+      "mark": "2.40",
+      "date": "2014-08-24"
+    },
+    "Long Jump | M35": {
+      "ra_event": "Long Jump",
+      "age_group": "M35",
+      "db_event": "Μήκος",
+      "athlete": "Τσιάμης, Δημήτριος",
+      "mark": "7.53",
+      "date": "2019-05-11"
+    },
+    "Long Jump | M40": {
+      "ra_event": "Long Jump",
+      "age_group": "M40",
+      "db_event": "Μήκος",
+      "athlete": "Τσιάμης, Δημήτριος",
+      "mark": "7.38",
+      "date": "2024-04-27"
+    },
+    "Long Jump | M45": {
+      "ra_event": "Long Jump",
+      "age_group": "M45",
+      "db_event": "Μήκος",
+      "athlete": "Ανδρέογλου, Ευθύμιος",
+      "mark": "6.37",
+      "date": "2018-01-01"
+    },
+    "Long Jump | M50": {
+      "ra_event": "Long Jump",
+      "age_group": "M50",
+      "db_event": "Μήκος",
+      "athlete": "Ζησόπουλος, Δημήτριος",
+      "mark": "5.92",
+      "date": "2022-09-24"
+    },
+    "Long Jump | M55": {
+      "ra_event": "Long Jump",
+      "age_group": "M55",
+      "db_event": "Μήκος",
+      "athlete": "Δημητρακόπουλος, Δημήτριος",
+      "mark": "5.63",
+      "date": "2024-06-22"
+    },
+    "Long Jump | M60": {
+      "ra_event": "Long Jump",
+      "age_group": "M60",
+      "db_event": "Μήκος",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "5.28",
+      "date": "1997-01-01"
+    },
+    "Long Jump | M65": {
+      "ra_event": "Long Jump",
+      "age_group": "M65",
+      "db_event": "Μήκος",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "4.83",
+      "date": "2002-01-01"
+    },
+    "Long Jump | M70": {
+      "ra_event": "Long Jump",
+      "age_group": "M70",
+      "db_event": "Μήκος",
+      "athlete": "Χρυσοχός, Παντελής",
+      "mark": "4.66",
+      "date": "2024-04-27"
+    },
+    "Long Jump | M75": {
+      "ra_event": "Long Jump",
+      "age_group": "M75",
+      "db_event": "Μήκος",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "4.08",
+      "date": "2012-09-23"
+    },
+    "Long Jump | M80": {
+      "ra_event": "Long Jump",
+      "age_group": "M80",
+      "db_event": "Μήκος",
+      "athlete": "Ομηρίδης, Δημήτριος",
+      "mark": "3.63",
+      "date": "2025-05-31"
+    },
+    "Long Jump | M85": {
+      "ra_event": "Long Jump",
+      "age_group": "M85",
+      "db_event": "Μήκος",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "3.24",
+      "date": "2022-05-28"
+    },
+    "Long Jump | M90": {
+      "ra_event": "Long Jump",
+      "age_group": "M90",
+      "db_event": "Μήκος",
+      "athlete": "Χατζηεμμανουήλ, Κωνσταντίνος",
+      "mark": "2.37",
+      "date": "2020-09-20"
+    },
+    "Long Jump | M95": {
+      "ra_event": "Long Jump",
+      "age_group": "M95",
+      "db_event": "Μήκος",
+      "athlete": "Πολυχρονόπουλος, Ανδρέας",
+      "mark": "1.46",
+      "date": "2017-11-04"
+    },
+    "Triple Jump | M45": {
+      "ra_event": "Triple Jump",
+      "age_group": "M45",
+      "db_event": "Τριπλούν",
+      "athlete": "Σκαματζούρας, Οδυσσέας",
+      "mark": "13.60",
+      "date": "2012-08-19"
+    },
+    "Triple Jump | M50": {
+      "ra_event": "Triple Jump",
+      "age_group": "M50",
+      "db_event": "Τριπλούν",
+      "athlete": "Σκαματζούρας, Οδυσσέας",
+      "mark": "12.88",
+      "date": "2017-07-01"
+    },
+    "Shot Put (3kg) | M80": {
+      "ra_event": "Shot Put (3kg)",
+      "age_group": "M80",
+      "db_event": "Σφαίρα",
+      "athlete": "Ντέμος, Ναπολέων",
+      "mark": "9.96",
+      "date": "2015-01-01"
+    },
+    "Shot Put (3kg) | M85": {
+      "ra_event": "Shot Put (3kg)",
+      "age_group": "M85",
+      "db_event": "Σφαίρα",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "8.96",
+      "date": "2022-05-28"
+    },
+    "Shot Put (3kg) | M90": {
+      "ra_event": "Shot Put (3kg)",
+      "age_group": "M90",
+      "db_event": "Σφαίρα",
+      "athlete": "Πετράκης, Στέφανος",
+      "mark": "6.42",
+      "date": "2014-06-21"
+    },
+    "Shot Put (3kg) | M95": {
+      "ra_event": "Shot Put (3kg)",
+      "age_group": "M95",
+      "db_event": "Σφαίρα",
+      "athlete": "Πολυχρονόπουλος, Ανδρέας",
+      "mark": "3.85",
+      "date": "2017-11-04"
+    },
+    "Shot Put (3kg) | M100": {
+      "ra_event": "Shot Put (3kg)",
+      "age_group": "M100",
+      "db_event": "Σφαίρα",
+      "athlete": "Σκαμαντζούρας, Οδυσσέας",
+      "mark": "3.65",
+      "date": "2016-01-01"
+    },
+    "Shot Put (4kg) | M70": {
+      "ra_event": "Shot Put (4kg)",
+      "age_group": "M70",
+      "db_event": "Σφαίρα",
+      "athlete": "Αυγουστάτος, Διονύσιος",
+      "mark": "13.36",
+      "date": "2017-06-04"
+    },
+    "Shot Put (4kg) | M75": {
+      "ra_event": "Shot Put (4kg)",
+      "age_group": "M75",
+      "db_event": "Σφαίρα",
+      "athlete": "Μπουφίδης, Μιλτιάδης",
+      "mark": "10.70",
+      "date": "2015-01-01"
+    },
+    "Shot Put (5kg) | M60": {
+      "ra_event": "Shot Put (5kg)",
+      "age_group": "M60",
+      "db_event": "Σφαίρα",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "15.44",
+      "date": "2014-06-21"
+    },
+    "Shot Put (5kg) | M65": {
+      "ra_event": "Shot Put (5kg)",
+      "age_group": "M65",
+      "db_event": "Σφαίρα",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "13.79",
+      "date": "2019-06-30"
+    },
+    "Shot Put (6kg) | M50": {
+      "ra_event": "Shot Put (6kg)",
+      "age_group": "M50",
+      "db_event": "Σφαίρα",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "16.51",
+      "date": "2004-06-20"
+    },
+    "Shot Put (6kg) | M55": {
+      "ra_event": "Shot Put (6kg)",
+      "age_group": "M55",
+      "db_event": "Σφαίρα",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "15.44",
+      "date": "2010-05-29"
+    },
+    "Shot Put (7.26kg) | M35": {
+      "ra_event": "Shot Put (7.26kg)",
+      "age_group": "M35",
+      "db_event": "Σφαίρα",
+      "athlete": "Σταματόγιαννης, Μιχαήλ",
+      "mark": "18.92",
+      "date": "2017-05-23"
+    },
+    "Shot Put (7.26kg) | M40": {
+      "ra_event": "Shot Put (7.26kg)",
+      "age_group": "M40",
+      "db_event": "Σφαίρα",
+      "athlete": "Φαναρτζής, Ιμπράιμ",
+      "mark": "16.89",
+      "date": "2010-01-01"
+    },
+    "Shot Put (7.26kg) | M45": {
+      "ra_event": "Shot Put (7.26kg)",
+      "age_group": "M45",
+      "db_event": "Σφαίρα",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "16.18",
+      "date": "2001-07-06"
+    },
+    "Discus Throw (1kg) | M60": {
+      "ra_event": "Discus Throw (1kg)",
+      "age_group": "M60",
+      "db_event": "Δίσκος",
+      "athlete": "Φρουδάκης, Μιχάλης",
+      "mark": "49.07",
+      "date": "2022-09-24"
+    },
+    "Discus Throw (1kg) | M65": {
+      "ra_event": "Discus Throw (1kg)",
+      "age_group": "M65",
+      "db_event": "Δίσκος",
+      "athlete": "Αγγλούπας, Στυλιανός",
+      "mark": "47.20",
+      "date": "2012-10-16"
+    },
+    "Discus Throw (1kg) | M70": {
+      "ra_event": "Discus Throw (1kg)",
+      "age_group": "M70",
+      "db_event": "Δίσκος",
+      "athlete": "Ροντογιάννης, Σπυρίδων",
+      "mark": "36.71",
+      "date": "2019-06-15"
+    },
+    "Discus Throw (1kg) | M75": {
+      "ra_event": "Discus Throw (1kg)",
+      "age_group": "M75",
+      "db_event": "Δίσκος",
+      "athlete": "Μπίλιος, Μιχαήλ",
+      "mark": "32.42",
+      "date": "2010-01-01"
+    },
+    "Discus Throw (1kg) | M80": {
+      "ra_event": "Discus Throw (1kg)",
+      "age_group": "M80",
+      "db_event": "Δίσκος",
+      "athlete": "Κυριακίδης, Βασίλειος",
+      "mark": "26.80",
+      "date": "2024-04-27"
+    },
+    "Discus Throw (1kg) | M85": {
+      "ra_event": "Discus Throw (1kg)",
+      "age_group": "M85",
+      "db_event": "Δίσκος",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "19.47",
+      "date": "2022-02-20"
+    },
+    "Discus Throw (1kg) | M90": {
+      "ra_event": "Discus Throw (1kg)",
+      "age_group": "M90",
+      "db_event": "Δίσκος",
+      "athlete": "Πετράκης, Στέφανος",
+      "mark": "11.59",
+      "date": "2015-09-19"
+    },
+    "Discus Throw (1.5kg) | M50": {
+      "ra_event": "Discus Throw (1.5kg)",
+      "age_group": "M50",
+      "db_event": "Δίσκος",
+      "athlete": "Αγγλούπας, Στυλιανός",
+      "mark": "55.95",
+      "date": "1999-01-01"
+    },
+    "Discus Throw (1.5kg) | M55": {
+      "ra_event": "Discus Throw (1.5kg)",
+      "age_group": "M55",
+      "db_event": "Δίσκος",
+      "athlete": "Νικολάιδης, Άγγελος",
+      "mark": "48.80",
+      "date": "2013-09-22"
+    },
+    "Discus Throw (2kg) | M35": {
+      "ra_event": "Discus Throw (2kg)",
+      "age_group": "M35",
+      "db_event": "Δίσκος",
+      "athlete": "Τσιάρας, Νικόλαος",
+      "mark": "58.50",
+      "date": "1978-01-01"
+    },
+    "Discus Throw (2kg) | M40": {
+      "ra_event": "Discus Throw (2kg)",
+      "age_group": "M40",
+      "db_event": "Δίσκος",
+      "athlete": "Νικολάιδης, Άγγελος",
+      "mark": "56.74",
+      "date": "1996-01-01"
+    },
+    "Discus Throw (2kg) | M45": {
+      "ra_event": "Discus Throw (2kg)",
+      "age_group": "M45",
+      "db_event": "Δίσκος",
+      "athlete": "Νικολάιδης, Άγγελος",
+      "mark": "46.72",
+      "date": "2001-01-01"
+    },
+    "Hammer Throw (4kg) | M70": {
+      "ra_event": "Hammer Throw (4kg)",
+      "age_group": "M70",
+      "db_event": "Σφύρα",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "48.93",
+      "date": "2024-07-05"
+    },
+    "Hammer Throw (5kg) | M65": {
+      "ra_event": "Hammer Throw (5kg)",
+      "age_group": "M65",
+      "db_event": "Σφύρα",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "54.80",
+      "date": "2019-06-30"
+    },
+    "Hammer Throw (6kg) | M50": {
+      "ra_event": "Hammer Throw (6kg)",
+      "age_group": "M50",
+      "db_event": "Σφύρα",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "58.96",
+      "date": "2004-06-26"
+    },
+    "Javelin Throw (400g) | M80": {
+      "ra_event": "Javelin Throw (400g)",
+      "age_group": "M80",
+      "db_event": "Ακόντιο",
+      "athlete": "Μαθιουδάκης, Κωνσταντίνος",
+      "mark": "27.20",
+      "date": "2025-03-16"
+    },
+    "Javelin Throw (400g) | M85": {
+      "ra_event": "Javelin Throw (400g)",
+      "age_group": "M85",
+      "db_event": "Ακόντιο",
+      "athlete": "Μπέλλος, Ιωάννης",
+      "mark": "19.32",
+      "date": "2025-08-30"
+    },
+    "Javelin Throw (400g) | M90": {
+      "ra_event": "Javelin Throw (400g)",
+      "age_group": "M90",
+      "db_event": "Ακόντιο",
+      "athlete": "Πετράκης, Στέφανος",
+      "mark": "15.57",
+      "date": "2016-04-17"
+    },
+    "Javelin Throw (500g) | M70": {
+      "ra_event": "Javelin Throw (500g)",
+      "age_group": "M70",
+      "db_event": "Ακόντιο",
+      "athlete": "Πανσέληνας, Γεώργιος",
+      "mark": "34.55",
+      "date": "2023-09-02"
+    },
+    "Javelin Throw (500g) | M75": {
+      "ra_event": "Javelin Throw (500g)",
+      "age_group": "M75",
+      "db_event": "Ακόντιο",
+      "athlete": "Σαββίδης, Γρηγόριος",
+      "mark": "26.66",
+      "date": "2019-01-01"
+    },
+    "Javelin Throw (600g) | M60": {
+      "ra_event": "Javelin Throw (600g)",
+      "age_group": "M60",
+      "db_event": "Ακόντιο",
+      "athlete": "Κοκκόλης, Βασίλειος",
+      "mark": "43.44",
+      "date": "1994-01-01"
+    },
+    "Javelin Throw (600g) | M65": {
+      "ra_event": "Javelin Throw (600g)",
+      "age_group": "M65",
+      "db_event": "Ακόντιο",
+      "athlete": "Ρόμπες, Συμεών",
+      "mark": "36.97",
+      "date": "2006-01-01"
+    },
+    "Javelin Throw (700g) | M50": {
+      "ra_event": "Javelin Throw (700g)",
+      "age_group": "M50",
+      "db_event": "Ακόντιο",
+      "athlete": "Ζανής, Εμμανουήλ",
+      "mark": "55.25",
+      "date": "2022-10-08"
+    },
+    "Javelin Throw (700g) | M55": {
+      "ra_event": "Javelin Throw (700g)",
+      "age_group": "M55",
+      "db_event": "Ακόντιο",
+      "athlete": "Πιερράκος, Χρήστος",
+      "mark": "45.02",
+      "date": "1996-01-01"
+    },
+    "Javelin Throw (800g) | M35": {
+      "ra_event": "Javelin Throw (800g)",
+      "age_group": "M35",
+      "db_event": "Ακόντιο",
+      "athlete": "Ηλτσιος, Γεώργιος",
+      "mark": "69.43",
+      "date": "2019-04-13"
+    },
+    "Javelin Throw (800g) | M40": {
+      "ra_event": "Javelin Throw (800g)",
+      "age_group": "M40",
+      "db_event": "Ακόντιο",
+      "athlete": "Κοτζιάς, Γεώργιος",
+      "mark": "65.80",
+      "date": "1985-01-01"
+    },
+    "Javelin Throw (800g) | M45": {
+      "ra_event": "Javelin Throw (800g)",
+      "age_group": "M45",
+      "db_event": "Ακόντιο",
+      "athlete": "Κοτζιάς, Γεώργιος",
+      "mark": "62.44",
+      "date": "1991-05-19"
+    },
+    "Weight Throw (16lbs / 7.26kg) | M70": {
+      "ra_event": "Weight Throw (16lbs / 7.26kg)",
+      "age_group": "M70",
+      "db_event": "Βαρύ Οργανο",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "18.09",
+      "date": "2025-10-11"
+    },
+    "Weight Throw (20lbs / 9.08kg) | M65": {
+      "ra_event": "Weight Throw (20lbs / 9.08kg)",
+      "age_group": "M65",
+      "db_event": "Βαρύ Οργανο",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "20.00",
+      "date": "2019-06-16"
+    },
+    "Weight Throw (25lbs / 11.34kg) | M50": {
+      "ra_event": "Weight Throw (25lbs / 11.34kg)",
+      "age_group": "M50",
+      "db_event": "Βαρύ Οργανο",
+      "athlete": "Μαγγανάς, Βασίλειος",
+      "mark": "22.82",
+      "date": "2004-06-20"
+    },
+    "5000m Race Walk | M35": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M35",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Παπαμιχαήλ, Αλέξανδρος",
+      "mark": "00:19:06.51",
+      "date": "2024-06-30"
+    },
+    "5000m Race Walk | M40": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M40",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Καραγιώργος, Χρήστος",
+      "mark": "00:20:52.00",
+      "date": "1993-01-01"
+    },
+    "5000m Race Walk | M45": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M45",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Καραγιώργος, Χρήστος",
+      "mark": "00:21:31.50",
+      "date": "2001-02-10"
+    },
+    "5000m Race Walk | M50": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M50",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Καραγιώργος, Χρήστος",
+      "mark": "00:23:23.10",
+      "date": "2004-01-01"
+    },
+    "5000m Race Walk | M55": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M55",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Καμπάς, Κωνσταντίνος",
+      "mark": "00:24:26.99",
+      "date": "2010-01-01"
+    },
+    "5000m Race Walk | M60": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M60",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Φακιολάς, Γεώργιος",
+      "mark": "00:25:43.40",
+      "date": "1996-01-01"
+    },
+    "5000m Race Walk | M65": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M65",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Φακιολάς, Γεώργιος",
+      "mark": "00:24:17.05",
+      "date": "2003-09-20"
+    },
+    "5000m Race Walk | M70": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M70",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Καμπάς, Κωνσταντίνος",
+      "mark": "00:27:32.18",
+      "date": "2022-09-24"
+    },
+    "5000m Race Walk | M75": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M75",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Κυρδήμος, Ιωάννης",
+      "mark": "00:32:25.61",
+      "date": "2019-09-21"
+    },
+    "5000m Race Walk | M80": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M80",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Βενετιάδης, Απόστολος",
+      "mark": "00:35:24.47",
+      "date": "2024-08-20"
+    },
+    "5000m Race Walk | M85": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M85",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Δούσης, Παναγιώτης",
+      "mark": "00:36:16.80",
+      "date": "2022-09-24"
+    },
+    "5000m Race Walk | M90": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "M90",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Δούσης, Παναγιώτης",
+      "mark": "00:38:39.21",
+      "date": "2024-07-06"
+    }
+  },
+  "Female": {
+    "100m | W35": {
+      "ra_event": "100m",
+      "age_group": "W35",
+      "db_event": "100μ",
+      "athlete": "Πατουλίδου, Παρακευή",
+      "mark": "00:00:11.32",
+      "date": "2000-07-08"
+    },
+    "100m | W40": {
+      "ra_event": "100m",
+      "age_group": "W40",
+      "db_event": "100μ",
+      "athlete": "Δάφτσου, Άννα",
+      "mark": "00:00:13.02",
+      "date": "2011-06-18"
+    },
+    "100m | W45": {
+      "ra_event": "100m",
+      "age_group": "W45",
+      "db_event": "100μ",
+      "athlete": "Δάφτσου, Άννα",
+      "mark": "00:00:13.14",
+      "date": "2016-06-11"
+    },
+    "100m | W50": {
+      "ra_event": "100m",
+      "age_group": "W50",
+      "db_event": "100μ",
+      "athlete": "Δάφτσου, Άννα",
+      "mark": "00:00:13.51",
+      "date": "2021-06-05"
+    },
+    "100m | W55": {
+      "ra_event": "100m",
+      "age_group": "W55",
+      "db_event": "100μ",
+      "athlete": "Μουρατίδου, Μαρία",
+      "mark": "00:00:13.72",
+      "date": "2024-07-06"
+    },
+    "100m | W60": {
+      "ra_event": "100m",
+      "age_group": "W60",
+      "db_event": "100μ",
+      "athlete": "Μιχαηλίδη, Ειρήνη",
+      "mark": "00:00:16.08",
+      "date": "2025-08-22"
+    },
+    "100m | W65": {
+      "ra_event": "100m",
+      "age_group": "W65",
+      "db_event": "100μ",
+      "athlete": "Σιακούλη, Μαρία",
+      "mark": "00:00:17.60",
+      "date": "2004-01-01"
+    },
+    "100m | W70": {
+      "ra_event": "100m",
+      "age_group": "W70",
+      "db_event": "100μ",
+      "athlete": "Γκούζια, Ελένη",
+      "mark": "00:00:18.85",
+      "date": "2015-09-18"
+    },
+    "100m | W75": {
+      "ra_event": "100m",
+      "age_group": "W75",
+      "db_event": "100μ",
+      "athlete": "Βαρέλη, Γεωργία",
+      "mark": "00:00:20.90",
+      "date": "2004-01-01"
+    },
+    "100m | W80": {
+      "ra_event": "100m",
+      "age_group": "W80",
+      "db_event": "100μ",
+      "athlete": "Φώτα, Σταματία",
+      "mark": "00:00:28.00",
+      "date": "2013-06-09"
+    },
+    "100m | W85": {
+      "ra_event": "100m",
+      "age_group": "W85",
+      "db_event": "100μ",
+      "athlete": "Μανδύλα, Σμαράγδα",
+      "mark": "00:00:25.19",
+      "date": "2025-08-29"
+    },
+    "100m | W90": {
+      "ra_event": "100m",
+      "age_group": "W90",
+      "db_event": "100μ",
+      "athlete": "Φώτα, Σταματία",
+      "mark": "00:00:40.20",
+      "date": "2025-07-06"
+    },
+    "200m | W35": {
+      "ra_event": "200m",
+      "age_group": "W35",
+      "db_event": "200μ",
+      "athlete": "Δάδα, Αριάδνη",
+      "mark": "00:00:24.30",
+      "date": "2016-06-19"
+    },
+    "200m | W40": {
+      "ra_event": "200m",
+      "age_group": "W40",
+      "db_event": "200μ",
+      "athlete": "Θωμάιδου, Αναστασία",
+      "mark": "00:00:26.85",
+      "date": "2021-07-17"
+    },
+    "200m | W45": {
+      "ra_event": "200m",
+      "age_group": "W45",
+      "db_event": "200μ",
+      "athlete": "Δάφτσου, Άννα",
+      "mark": "00:00:27.27",
+      "date": "2016-06-12"
+    },
+    "200m | W50": {
+      "ra_event": "200m",
+      "age_group": "W50",
+      "db_event": "200μ",
+      "athlete": "Δάφτσου, Άννα",
+      "mark": "00:00:27.72",
+      "date": "2022-07-02"
+    },
+    "200m | W55": {
+      "ra_event": "200m",
+      "age_group": "W55",
+      "db_event": "200μ",
+      "athlete": "Δάφτσου, Άννα",
+      "mark": "00:00:28.15",
+      "date": "2025-10-16"
+    },
+    "200m | W60": {
+      "ra_event": "200m",
+      "age_group": "W60",
+      "db_event": "200μ",
+      "athlete": "Παπαδημητρίου, Ελένη",
+      "mark": "00:00:35.22",
+      "date": "2009-06-13"
+    },
+    "200m | W65": {
+      "ra_event": "200m",
+      "age_group": "W65",
+      "db_event": "200μ",
+      "athlete": "Γκούζια, Ελένη",
+      "mark": "00:00:38.74",
+      "date": "2010-07-15"
+    },
+    "200m | W70": {
+      "ra_event": "200m",
+      "age_group": "W70",
+      "db_event": "200μ",
+      "athlete": "Γκούζια, Ελένη",
+      "mark": "00:00:40.89",
+      "date": "2015-09-19"
+    },
+    "200m | W75": {
+      "ra_event": "200m",
+      "age_group": "W75",
+      "db_event": "200μ",
+      "athlete": "Κατάκη, Σοφία",
+      "mark": "00:00:46.45",
+      "date": "2009-01-01"
+    },
+    "200m | W80": {
+      "ra_event": "200m",
+      "age_group": "W80",
+      "db_event": "200μ",
+      "athlete": "Φώτα, Σταματία",
+      "mark": "00:01:03.59",
+      "date": "2014-09-21"
+    },
+    "200m | W85": {
+      "ra_event": "200m",
+      "age_group": "W85",
+      "db_event": "200μ",
+      "athlete": "Μανδύλα, Σμαράγδα",
+      "mark": "00:00:54.22",
+      "date": "2025-08-30"
+    },
+    "200m | W90": {
+      "ra_event": "200m",
+      "age_group": "W90",
+      "db_event": "200μ",
+      "athlete": "Φώτα, Σταματία",
+      "mark": "00:02:01.38",
+      "date": "2025-07-06"
+    },
+    "400m | W35": {
+      "ra_event": "400m",
+      "age_group": "W35",
+      "db_event": "400μ",
+      "athlete": "Φέρρα, Ανδριάννα",
+      "mark": "00:00:53.67",
+      "date": "2025-08-02"
+    },
+    "400m | W40": {
+      "ra_event": "400m",
+      "age_group": "W40",
+      "db_event": "400μ",
+      "athlete": "Θωμάιδου, Αναστασία",
+      "mark": "00:00:58.96",
+      "date": "2018-06-10"
+    },
+    "400m | W55": {
+      "ra_event": "400m",
+      "age_group": "W55",
+      "db_event": "400μ",
+      "athlete": "Δάφτσου, Άννα",
+      "mark": "00:01:06.04",
+      "date": "2025-10-11"
+    },
+    "400m | W70": {
+      "ra_event": "400m",
+      "age_group": "W70",
+      "db_event": "400μ",
+      "athlete": "Μανδύλα, Σμαράγδα",
+      "mark": "00:01:48.37",
+      "date": "2013-01-01"
+    },
+    "800m | W35": {
+      "ra_event": "800m",
+      "age_group": "W35",
+      "db_event": "800μ",
+      "athlete": "Παπαδόπουλου, Μαρία",
+      "mark": "00:02:05.34",
+      "date": "2012-06-16"
+    },
+    "800m | W40": {
+      "ra_event": "800m",
+      "age_group": "W40",
+      "db_event": "800μ",
+      "athlete": "Θωμάιδου, Αναστασία",
+      "mark": "00:02:13.69",
+      "date": "2018-05-12"
+    },
+    "800m | W45": {
+      "ra_event": "800m",
+      "age_group": "W45",
+      "db_event": "800μ",
+      "athlete": "Θωμάιδου, Αναστασία",
+      "mark": "00:02:15.96",
+      "date": "2024-08-17"
+    },
+    "800m | W50": {
+      "ra_event": "800m",
+      "age_group": "W50",
+      "db_event": "800μ",
+      "athlete": "Κατσικαδέλη, Άλκιστης",
+      "mark": "00:02:37.67",
+      "date": "1994-01-01"
+    },
+    "800m | W55": {
+      "ra_event": "800m",
+      "age_group": "W55",
+      "db_event": "800μ",
+      "athlete": "Στεφανιδάκη, Ελένη",
+      "mark": "00:02:49.46",
+      "date": "2025-06-11"
+    },
+    "800m | W60": {
+      "ra_event": "800m",
+      "age_group": "W60",
+      "db_event": "800μ",
+      "athlete": "Στεφάνου, Γεωργία",
+      "mark": "00:03:05.42",
+      "date": "2024-09-27"
+    },
+    "800m | W65": {
+      "ra_event": "800m",
+      "age_group": "W65",
+      "db_event": "800μ",
+      "athlete": "Παπαβασιλείου, Σταυρούλα",
+      "mark": "00:03:27.42",
+      "date": "2022-07-17"
+    },
+    "800m | W70": {
+      "ra_event": "800m",
+      "age_group": "W70",
+      "db_event": "800μ",
+      "athlete": "Βίγκα, Δέσποινα",
+      "mark": "00:03:56.86",
+      "date": "2015-09-19"
+    },
+    "800m | W80": {
+      "ra_event": "800m",
+      "age_group": "W80",
+      "db_event": "800μ",
+      "athlete": "Μανδύλα, Σμαράγδα",
+      "mark": "00:05:46.74",
+      "date": "2024-07-07"
+    },
+    "800m | W85": {
+      "ra_event": "800m",
+      "age_group": "W85",
+      "db_event": "800μ",
+      "athlete": "Μανδύλα, Σμαράγδα",
+      "mark": "00:05:39.21",
+      "date": "2025-05-04"
+    },
+    "1500m | W35": {
+      "ra_event": "1500m",
+      "age_group": "W35",
+      "db_event": "1500μ",
+      "athlete": "Παπαδόπουλου, Μαρία",
+      "mark": "00:04:25.74",
+      "date": "2013-06-01"
+    },
+    "1500m | W70": {
+      "ra_event": "1500m",
+      "age_group": "W70",
+      "db_event": "1500μ",
+      "athlete": "Παναγοπούλου, Μαργαρίτα",
+      "mark": "00:07:14.31",
+      "date": "2024-04-07"
+    },
+    "5000m | W40": {
+      "ra_event": "5000m",
+      "age_group": "W40",
+      "db_event": "5000μ",
+      "athlete": "Αμπατζίδου, Γεωργία",
+      "mark": "00:16:20.21",
+      "date": "2009-01-01"
+    },
+    "5000m | W70": {
+      "ra_event": "5000m",
+      "age_group": "W70",
+      "db_event": "5000μ",
+      "athlete": "Παναγοπούλου, Μαργαρίτα",
+      "mark": "00:26:35.00",
+      "date": "2024-04-07"
+    },
+    "80m Hurdles (68.6cm / 7m) | W60": {
+      "ra_event": "80m Hurdles (68.6cm / 7m)",
+      "age_group": "W60",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Γκούζια, Ελένη",
+      "mark": "00:00:18.60",
+      "date": "2005-08-22"
+    },
+    "80m Hurdles (68.6cm / 7m) | W65": {
+      "ra_event": "80m Hurdles (68.6cm / 7m)",
+      "age_group": "W65",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Γκούζια, Ελένη",
+      "mark": "00:00:19.59",
+      "date": "2010-07-20"
+    },
+    "80m Hurdles (68.6cm / 6m) | W70": {
+      "ra_event": "80m Hurdles (68.6cm / 6m)",
+      "age_group": "W70",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Γκούζια, Ελένη",
+      "mark": "00:00:20.24",
+      "date": "2015-09-19"
+    },
+    "80m Hurdles (76.2cm / 8m) | W40": {
+      "ra_event": "80m Hurdles (76.2cm / 8m)",
+      "age_group": "W40",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Παναγιωτίδου, Μαρία",
+      "mark": "00:00:13.00",
+      "date": "2023-09-28"
+    },
+    "80m Hurdles (76.2cm / 8m) | W45": {
+      "ra_event": "80m Hurdles (76.2cm / 8m)",
+      "age_group": "W45",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Λύκου, Φανή",
+      "mark": "00:00:15.43",
+      "date": "2022-08-27"
+    },
+    "80m Hurdles (76.2cm / 7m) | W50": {
+      "ra_event": "80m Hurdles (76.2cm / 7m)",
+      "age_group": "W50",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Μουρατίδου, Μαρία",
+      "mark": "00:00:13.99",
+      "date": "2019-06-16"
+    },
+    "80m Hurdles (76.2cm / 7m) | W55": {
+      "ra_event": "80m Hurdles (76.2cm / 7m)",
+      "age_group": "W55",
+      "db_event": "80μ Εμπόδια",
+      "athlete": "Μουρατίδου, Μαρία",
+      "mark": "00:00:13.33",
+      "date": "2024-07-07"
+    },
+    "100m Hurdles (83.8cm / 8.5m) | W35": {
+      "ra_event": "100m Hurdles (83.8cm / 8.5m)",
+      "age_group": "W35",
+      "db_event": "100μ Εμπόδια",
+      "athlete": "Στρατάκη, Αργυρώ",
+      "mark": "00:00:13.96",
+      "date": "2010-05-29"
+    },
+    "300m Hurdles (76.2cm / 35m) | W50": {
+      "ra_event": "300m Hurdles (76.2cm / 35m)",
+      "age_group": "W50",
+      "db_event": "300μ Εμπόδια",
+      "athlete": "Μουρατίδου, Μαρία",
+      "mark": "00:00:56.25",
+      "date": "2020-09-20"
+    },
+    "300m Hurdles (76.2cm / 35m) | W55": {
+      "ra_event": "300m Hurdles (76.2cm / 35m)",
+      "age_group": "W55",
+      "db_event": "300μ Εμπόδια",
+      "athlete": "Μουρατίδου, Μαρία",
+      "mark": "00:00:56.00",
+      "date": "2022-05-28"
+    },
+    "400m Hurdles (76.2cm / 35m) | W35": {
+      "ra_event": "400m Hurdles (76.2cm / 35m)",
+      "age_group": "W35",
+      "db_event": "400μ Εμπόδια",
+      "athlete": "Χατζή-Νεάγκ, Χριστίνα",
+      "mark": "00:00:58.38",
+      "date": "2013-07-20"
+    },
+    "400m Hurdles (76.2cm / 35m) | W40": {
+      "ra_event": "400m Hurdles (76.2cm / 35m)",
+      "age_group": "W40",
+      "db_event": "400μ Εμπόδια",
+      "athlete": "Θωμάιδου, Αναστασία",
+      "mark": "00:01:09.28",
+      "date": "2022-09-23"
+    },
+    "400m Hurdles (76.2cm / 35m) | W45": {
+      "ra_event": "400m Hurdles (76.2cm / 35m)",
+      "age_group": "W45",
+      "db_event": "400μ Εμπόδια",
+      "athlete": "Θωμάιδου, Αναστασία",
+      "mark": "00:01:04.18",
+      "date": "2023-09-22"
+    },
+    "Pole Vault | W35": {
+      "ra_event": "Pole Vault",
+      "age_group": "W35",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Κυριακοπούλου, Νικολέτα",
+      "mark": "4.70",
+      "date": "2021-07-05"
+    },
+    "Pole Vault | W40": {
+      "ra_event": "Pole Vault",
+      "age_group": "W40",
+      "db_event": "Επι Κοντώ",
+      "athlete": "Μακρη, Χρυσούλα",
+      "mark": "3.10",
+      "date": "2025-05-17"
+    },
+    "Long Jump | W40": {
+      "ra_event": "Long Jump",
+      "age_group": "W40",
+      "db_event": "Μήκος",
+      "athlete": "Λύκου, Φανή",
+      "mark": "5.13",
+      "date": "2018-01-01"
+    },
+    "Long Jump | W55": {
+      "ra_event": "Long Jump",
+      "age_group": "W55",
+      "db_event": "Μήκος",
+      "athlete": "Μουρατίδου, Μαρία",
+      "mark": "3.90",
+      "date": "2024-06-02"
+    },
+    "Long Jump | W65": {
+      "ra_event": "Long Jump",
+      "age_group": "W65",
+      "db_event": "Μήκος",
+      "athlete": "Γκούζια, Ελένη",
+      "mark": "3.49",
+      "date": "2010-07-20"
+    },
+    "Shot Put (3kg) | W50": {
+      "ra_event": "Shot Put (3kg)",
+      "age_group": "W50",
+      "db_event": "Σφαίρα",
+      "athlete": "Δάλλα, Μαρία",
+      "mark": "12.00",
+      "date": "2025-05-31"
+    },
+    "Shot Put (3kg) | W55": {
+      "ra_event": "Shot Put (3kg)",
+      "age_group": "W55",
+      "db_event": "Σφαίρα",
+      "athlete": "Φιλιππάκη, Σοφία",
+      "mark": "11.52",
+      "date": "2019-09-21"
+    },
+    "Shot Put (3kg) | W65": {
+      "ra_event": "Shot Put (3kg)",
+      "age_group": "W65",
+      "db_event": "Σφαίρα",
+      "athlete": "Ροϊλλίδου, Μάγδα",
+      "mark": "11.30",
+      "date": "2019-05-10"
+    },
+    "Discus Throw (1kg) | W65": {
+      "ra_event": "Discus Throw (1kg)",
+      "age_group": "W65",
+      "db_event": "Δίσκος",
+      "athlete": "Ροϊλλίδου, Μάγδα",
+      "mark": "28.20",
+      "date": "2019-05-10"
+    },
+    "Hammer Throw (3kg) | W50": {
+      "ra_event": "Hammer Throw (3kg)",
+      "age_group": "W50",
+      "db_event": "Σφύρα",
+      "athlete": "Πολομαρκάκη, Μαρία",
+      "mark": "35.63",
+      "date": "2018-11-03"
+    },
+    "Hammer Throw (3kg) | W55": {
+      "ra_event": "Hammer Throw (3kg)",
+      "age_group": "W55",
+      "db_event": "Σφύρα",
+      "athlete": "Πολομαρκάκη, Μαρία",
+      "mark": "33.36",
+      "date": "2023-03-31"
+    },
+    "Hammer Throw (3kg) | W60": {
+      "ra_event": "Hammer Throw (3kg)",
+      "age_group": "W60",
+      "db_event": "Σφύρα",
+      "athlete": "Τουρσουνίδου, Μαρία",
+      "mark": "29.67",
+      "date": "2024-07-05"
+    },
+    "Hammer Throw (3kg) | W65": {
+      "ra_event": "Hammer Throw (3kg)",
+      "age_group": "W65",
+      "db_event": "Σφύρα",
+      "athlete": "Ροϊλλίδου, Μάγδα",
+      "mark": "24.68",
+      "date": "2020-03-08"
+    },
+    "Hammer Throw (3kg) | W70": {
+      "ra_event": "Hammer Throw (3kg)",
+      "age_group": "W70",
+      "db_event": "Σφύρα",
+      "athlete": "Ροϊλλίδου, Μάγδα",
+      "mark": "29.31",
+      "date": "2025-10-14"
+    },
+    "Hammer Throw (4kg) | W35": {
+      "ra_event": "Hammer Throw (4kg)",
+      "age_group": "W35",
+      "db_event": "Σφύρα",
+      "athlete": "Λάμπουρα, Αμαλία",
+      "mark": "63.61",
+      "date": "2003-05-03"
+    },
+    "Hammer Throw (4kg) | W40": {
+      "ra_event": "Hammer Throw (4kg)",
+      "age_group": "W40",
+      "db_event": "Σφύρα",
+      "athlete": "Πανάβογλου, Ιωάννα",
+      "mark": "45.92",
+      "date": "2017-07-01"
+    },
+    "Hammer Throw (4kg) | W45": {
+      "ra_event": "Hammer Throw (4kg)",
+      "age_group": "W45",
+      "db_event": "Σφύρα",
+      "athlete": "Πανάβογλου, Ιωάννα",
+      "mark": "41.87",
+      "date": "2022-09-23"
+    },
+    "Javelin Throw (500g) | W50": {
+      "ra_event": "Javelin Throw (500g)",
+      "age_group": "W50",
+      "db_event": "Ακόντιο",
+      "athlete": "Λίκα, Σάββα",
+      "mark": "41.12",
+      "date": "2022-09-04"
+    },
+    "Weight Throw (12lbs / 5.45kg) | W60": {
+      "ra_event": "Weight Throw (12lbs / 5.45kg)",
+      "age_group": "W60",
+      "db_event": "Βαρύ Οργανο",
+      "athlete": "Τουρσουνίδου, Μαρία",
+      "mark": "10.96",
+      "date": "2025-08-30"
+    },
+    "5000m Race Walk | W35": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "W35",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Ντρισμπιώτη, Αντιγόνη",
+      "mark": "00:21:06.40",
+      "date": "2022-06-23"
+    },
+    "5000m Race Walk | W40": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "W40",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Γαβαλάκη, Καλλιόπη",
+      "mark": "00:25:36.10",
+      "date": "2009-09-27"
+    },
+    "5000m Race Walk | W45": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "W45",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Μακρή, Αγγελική",
+      "mark": "00:27:39.24",
+      "date": "2024-07-06"
+    },
+    "5000m Race Walk | W50": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "W50",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Γαβαλάκη, Καλλιόπη",
+      "mark": "00:27:33.62",
+      "date": "2019-09-06"
+    },
+    "5000m Race Walk | W55": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "W55",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Γαβαλάκη, Καλλιόπη",
+      "mark": "00:29:19.63",
+      "date": "2025-10-11"
+    },
+    "5000m Race Walk | W60": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "W60",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Βαϊνά, Αθηνά",
+      "mark": "00:37:13.01",
+      "date": "2023-09-02"
+    },
+    "5000m Race Walk | W65": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "W65",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Σοούκουποβα, Γιάννα",
+      "mark": "00:43:28.44",
+      "date": "2024-07-06"
+    },
+    "5000m Race Walk | W80": {
+      "ra_event": "5000m Race Walk",
+      "age_group": "W80",
+      "db_event": "5000μ Βάδην",
+      "athlete": "Φώτα, Σταματία",
+      "mark": "00:49:29.94",
+      "date": "2016-09-24"
+    }
+  }
+}
