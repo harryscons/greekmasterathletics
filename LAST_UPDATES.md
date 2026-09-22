@@ -1,3 +1,6 @@
+# v2.22.002
+- **FIX - Custom Date Filter Visibility**: Fixed the From/To date pickers not appearing when selecting `📅 Custom` in the YEAR dropdown. Also renamed option from "Custom Date Range..." to simply "Custom".
+
 # v2.22.001
 - **Custom Date Range Filtering**: Added a `📅 Custom Date Range...` option to the Main Report's `YEAR` dropdown. Selecting this option displays `From` and `To` date pickers right in the report toolbar to filter records by specific start and end dates.
 

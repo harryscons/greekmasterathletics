@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.22.001";
+    const VERSION = "v2.22.002";
     const LAST_UPDATE = "2026-09-22";
 
     // v2.20.73: Persistent History Sort State
@@ -2274,9 +2274,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const fYear = document.getElementById('filterYear');
         if (!container || !fYear) return;
         if (fYear.value === 'custom') {
-            container.style.display = 'flex';
+            container.style.setProperty('display', 'flex', 'important');
         } else {
-            container.style.display = 'none';
+            container.style.setProperty('display', 'none', 'important');
         }
     }
     window.toggleCustomDateRangeContainer = toggleCustomDateRangeContainer;
@@ -2310,7 +2310,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const sortedYears = Array.from(years).sort((a, b) => b - a);
 
-        filterYear.innerHTML = '<option value="all" style="color:black;">All Years</option><option value="custom" style="color:black;">📅 Custom Date Range...</option>';
+        filterYear.innerHTML = '<option value="all" style="color:black;">All Years</option><option value="custom" style="color:black;">📅 Custom</option>';
         sortedYears.forEach(y => {
             const opt = document.createElement('option');
             opt.value = y.toString();
