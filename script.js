@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.22.003";
+    const VERSION = "v2.22.004";
     const LAST_UPDATE = "2026-09-22";
 
     // v2.20.73: Persistent History Sort State
@@ -2282,19 +2282,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${yyyy}-${mm}-${dd}`;
     }
 
-    // Auto-format text input to dd/mm/yyyy as user types
+    // Auto-format text input to dd/mm/yyyy — allows manual "/" too
     function autoFormatDateDDMMYYYY(e) {
         const el = e.target;
-        const prev = el.dataset.prevVal || '';
-        let raw = el.value.replace(/\D/g, '');
-        let out = '';
-        if (raw.length >= 1) out = raw.substring(0, Math.min(2, raw.length));
-        if (raw.length >= 3) out += '/' + raw.substring(2, Math.min(4, raw.length));
-        if (raw.length >= 5) out += '/' + raw.substring(4, Math.min(8, raw.length));
+        // Keep only digits and slashes; strip anything else
+        let val = el.value.replace(/[^\d/]/g, '');
+        // Split on slashes
+        const parts = val.split('/');
+        const dd   = (parts[0] || '').substring(0, 2);
+        const mm   = (parts[1] || '').substring(0, 2);
+        const yyyy = (parts[2] || '').substring(0, 4);
+        // Rebuild: only add a slash segment if user has passed 2 digits or typed '/'
+        let out = dd;
+        if (val.length > 2 || val.includes('/')) {
+            out += '/' + mm;
+            if (val.split('/').length > 2) {
+                out += '/' + yyyy;
+            }
+        }
         el.value = out;
-        el.dataset.prevVal = out;
     }
     window.autoFormatDateDDMMYYYY = autoFormatDateDDMMYYYY;
+
+    // Debounced render — only fires 400ms after user stops typing dates
+    let _dateFilterTimer = null;
+    function debouncedRenderReports() {
+        clearTimeout(_dateFilterTimer);
+        _dateFilterTimer = setTimeout(function() {
+            if (typeof renderReports === 'function') renderReports();
+        }, 400);
+    }
 
     function toggleCustomDateRangeContainer() {
         const panel = document.getElementById('customDateRangePanel');
@@ -2650,10 +2667,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     if (filterFromDate) {
-        filterFromDate.addEventListener('input', function(e) { autoFormatDateDDMMYYYY(e); renderReports(); });
+        filterFromDate.addEventListener('input', function(e) { autoFormatDateDDMMYYYY(e); debouncedRenderReports(); });
     }
     if (filterToDate) {
-        filterToDate.addEventListener('input', function(e) { autoFormatDateDDMMYYYY(e); renderReports(); });
+        filterToDate.addEventListener('input', function(e) { autoFormatDateDDMMYYYY(e); debouncedRenderReports(); });
     }
 
     // Close the custom date panel when clicking outside the year filter wrapper
@@ -2661,11 +2678,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wrapper = document.getElementById('yearFilterWrapper');
         const panel = document.getElementById('customDateRangePanel');
         if (panel && wrapper && !wrapper.contains(e.target)) {
-            // Only close if a year other than custom is not selected (keep panel if still on custom)
-            const fYear = document.getElementById('filterYear');
-            if (fYear && fYear.value !== 'custom') {
-                panel.style.display = 'none';
-            }
+            panel.style.display = 'none';
         }
     });
     if (filterAgeMismatch) filterAgeMismatch.addEventListener('change', renderReports);

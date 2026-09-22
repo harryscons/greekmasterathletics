@@ -1,3 +1,8 @@
+# v2.22.004
+- **FIX - Date panel closes on outside click**: Panel now closes when clicking anywhere outside it (no longer stays permanently open).
+- **FIX - Date input performance**: Filter now applies 400ms after you stop typing (debounced), not on every keystroke.
+- **FIX - Slash allowed in date input**: You can now type "/" manually in the date fields.
+
 # v2.22.003
 - **Date Filter Panel Inside Dropdown**: Custom date range inputs now appear inside a floating panel below the YEAR dropdown instead of appearing to the right. Date format is dd/mm/yyyy with auto-formatting as you type.
 
