@@ -1,3 +1,6 @@
+# v2.22.001
+- **Custom Date Range Filtering**: Added a `📅 Custom Date Range...` option to the Main Report's `YEAR` dropdown. Selecting this option displays `From` and `To` date pickers right in the report toolbar to filter records by specific start and end dates.
+
 # v2.22.000
 - **Minor Version Bump**: Bumping application minor version to `v2.22.000` for GitHub release deployment.
 

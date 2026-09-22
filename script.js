@@ -41,8 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.22.000";
-    const LAST_UPDATE = "2026-09-07";
+    const VERSION = "v2.22.001";
+    const LAST_UPDATE = "2026-09-22";
 
     // v2.20.73: Persistent History Sort State
     window.historySortKey = 'archivedAt';
@@ -134,6 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterGender = document.getElementById('filterGender');
     const filterAge = document.getElementById('filterAge');
     const filterYear = document.getElementById('filterYear');
+    const filterFromDate = document.getElementById('filterFromDate');
+    const filterToDate = document.getElementById('filterToDate');
     const filterAthlete = document.getElementById('filterAthlete');
     const filterAthleteName = document.getElementById('filterAthleteName');
     const filterAgeMismatch = document.getElementById('filterAgeMismatch');
@@ -2267,6 +2269,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function toggleCustomDateRangeContainer() {
+        const container = document.getElementById('customDateRangeContainer');
+        const fYear = document.getElementById('filterYear');
+        if (!container || !fYear) return;
+        if (fYear.value === 'custom') {
+            container.style.display = 'flex';
+        } else {
+            container.style.display = 'none';
+        }
+    }
+    window.toggleCustomDateRangeContainer = toggleCustomDateRangeContainer;
+
+    function clearCustomDateRange() {
+        const fromD = document.getElementById('filterFromDate');
+        const toD = document.getElementById('filterToDate');
+        if (fromD) fromD.value = '';
+        if (toD) toD.value = '';
+        if (typeof renderReports === 'function') renderReports();
+    }
+    window.clearCustomDateRange = clearCustomDateRange;
+
     function populateYearDropdown() {
         if (!filterYear) return;
 
@@ -2287,7 +2310,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const sortedYears = Array.from(years).sort((a, b) => b - a);
 
-        filterYear.innerHTML = '<option value="all" style="color:black;">All Years</option>';
+        filterYear.innerHTML = '<option value="all" style="color:black;">All Years</option><option value="custom" style="color:black;">📅 Custom Date Range...</option>';
         sortedYears.forEach(y => {
             const opt = document.createElement('option');
             opt.value = y.toString();
@@ -2301,6 +2324,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             filterYear.value = 'all';
         }
+        toggleCustomDateRangeContainer();
     }
 
     function populateEventDropdowns() {
@@ -2592,7 +2616,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (filterGender) filterGender.addEventListener('change', genderFilterChange);
     if (filterAge) filterAge.addEventListener('change', renderReports);
-    if (filterYear) filterYear.addEventListener('change', renderReports);
+    if (filterYear) {
+        filterYear.addEventListener('change', () => {
+            toggleCustomDateRangeContainer();
+            renderReports();
+        });
+    }
+    if (filterFromDate) {
+        filterFromDate.addEventListener('change', renderReports);
+        filterFromDate.addEventListener('input', renderReports);
+    }
+    if (filterToDate) {
+        filterToDate.addEventListener('change', renderReports);
+        filterToDate.addEventListener('input', renderReports);
+    }
     if (filterAgeMismatch) filterAgeMismatch.addEventListener('change', renderReports);
     if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
     if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
@@ -6333,9 +6370,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const matchesAthlete = athleteVal === 'all' || r.athlete === athleteVal;
             const matchesSearch = nameSearch === '' || r.athlete.toLowerCase().includes(nameSearch);
 
-            // Year filter
+            // Year / Custom Date Range filter
             let matchesYear = true;
-            if (yVal !== 'all') {
+            if (yVal === 'custom') {
+                const fromVal = filterFromDate && filterFromDate.value ? filterFromDate.value : null;
+                const toVal = filterToDate && filterToDate.value ? filterToDate.value : null;
+
+                if (fromVal || toVal) {
+                    let recDateStr = '';
+                    if (r.date) {
+                        if (typeof r.date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(r.date.trim())) {
+                            recDateStr = r.date.trim().substring(0, 10);
+                        } else {
+                            try {
+                                const dObj = new Date(r.date);
+                                if (!isNaN(dObj.getTime())) {
+                                    const y = dObj.getFullYear();
+                                    const m = String(dObj.getMonth() + 1).padStart(2, '0');
+                                    const day = String(dObj.getDate()).padStart(2, '0');
+                                    recDateStr = `${y}-${m}-${day}`;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+
+                    if (!recDateStr) {
+                        matchesYear = false;
+                    } else {
+                        if (fromVal && recDateStr < fromVal) matchesYear = false;
+                        if (toVal && recDateStr > toVal) matchesYear = false;
+                    }
+                }
+            } else if (yVal !== 'all') {
                 const rYear = r.date ? new Date(r.date).getFullYear().toString() : '';
                 matchesYear = rYear === yVal;
             }
