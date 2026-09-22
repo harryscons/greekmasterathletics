@@ -1,3 +1,6 @@
+# v2.22.003
+- **Date Filter Panel Inside Dropdown**: Custom date range inputs now appear inside a floating panel below the YEAR dropdown instead of appearing to the right. Date format is dd/mm/yyyy with auto-formatting as you type.
+
 # v2.22.002
 - **FIX - Custom Date Filter Visibility**: Fixed the From/To date pickers not appearing when selecting `📅 Custom` in the YEAR dropdown. Also renamed option from "Custom Date Range..." to simply "Custom".
 

@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.22.002";
+    const VERSION = "v2.22.003";
     const LAST_UPDATE = "2026-09-22";
 
     // v2.20.73: Persistent History Sort State
@@ -2269,14 +2269,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Parse a dd/mm/yyyy string to a yyyy-mm-dd string for comparison
+    function parseDDMMYYYY(str) {
+        if (!str) return null;
+        str = str.trim();
+        const parts = str.split('/');
+        if (parts.length !== 3) return null;
+        const dd = parts[0].padStart(2, '0');
+        const mm = parts[1].padStart(2, '0');
+        const yyyy = parts[2];
+        if (yyyy.length !== 4 || isNaN(parseInt(yyyy))) return null;
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // Auto-format text input to dd/mm/yyyy as user types
+    function autoFormatDateDDMMYYYY(e) {
+        const el = e.target;
+        const prev = el.dataset.prevVal || '';
+        let raw = el.value.replace(/\D/g, '');
+        let out = '';
+        if (raw.length >= 1) out = raw.substring(0, Math.min(2, raw.length));
+        if (raw.length >= 3) out += '/' + raw.substring(2, Math.min(4, raw.length));
+        if (raw.length >= 5) out += '/' + raw.substring(4, Math.min(8, raw.length));
+        el.value = out;
+        el.dataset.prevVal = out;
+    }
+    window.autoFormatDateDDMMYYYY = autoFormatDateDDMMYYYY;
+
     function toggleCustomDateRangeContainer() {
-        const container = document.getElementById('customDateRangeContainer');
+        const panel = document.getElementById('customDateRangePanel');
         const fYear = document.getElementById('filterYear');
-        if (!container || !fYear) return;
+        if (!panel || !fYear) return;
         if (fYear.value === 'custom') {
-            container.style.setProperty('display', 'flex', 'important');
+            panel.style.display = 'block';
         } else {
-            container.style.setProperty('display', 'none', 'important');
+            panel.style.display = 'none';
         }
     }
     window.toggleCustomDateRangeContainer = toggleCustomDateRangeContainer;
@@ -2623,13 +2650,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     if (filterFromDate) {
-        filterFromDate.addEventListener('change', renderReports);
-        filterFromDate.addEventListener('input', renderReports);
+        filterFromDate.addEventListener('input', function(e) { autoFormatDateDDMMYYYY(e); renderReports(); });
     }
     if (filterToDate) {
-        filterToDate.addEventListener('change', renderReports);
-        filterToDate.addEventListener('input', renderReports);
+        filterToDate.addEventListener('input', function(e) { autoFormatDateDDMMYYYY(e); renderReports(); });
     }
+
+    // Close the custom date panel when clicking outside the year filter wrapper
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('yearFilterWrapper');
+        const panel = document.getElementById('customDateRangePanel');
+        if (panel && wrapper && !wrapper.contains(e.target)) {
+            // Only close if a year other than custom is not selected (keep panel if still on custom)
+            const fYear = document.getElementById('filterYear');
+            if (fYear && fYear.value !== 'custom') {
+                panel.style.display = 'none';
+            }
+        }
+    });
     if (filterAgeMismatch) filterAgeMismatch.addEventListener('change', renderReports);
     if (filterAthlete) filterAthlete.addEventListener('change', renderReports);
     if (filterAthleteName) filterAthleteName.addEventListener('input', renderReports);
@@ -6373,8 +6411,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Year / Custom Date Range filter
             let matchesYear = true;
             if (yVal === 'custom') {
-                const fromVal = filterFromDate && filterFromDate.value ? filterFromDate.value : null;
-                const toVal = filterToDate && filterToDate.value ? filterToDate.value : null;
+                const fromVal = filterFromDate && filterFromDate.value ? parseDDMMYYYY(filterFromDate.value) : null;
+                const toVal = filterToDate && filterToDate.value ? parseDDMMYYYY(filterToDate.value) : null;
 
                 if (fromVal || toVal) {
                     let recDateStr = '';
