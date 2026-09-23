@@ -41,8 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.22.004";
+    const VERSION = "v2.22.005";
     const LAST_UPDATE = "2026-09-22";
+
+    // Stamp all version-label elements so they always show the current version
+    document.querySelectorAll('.version-label').forEach(function(el) { el.textContent = VERSION; });
 
     // v2.20.73: Persistent History Sort State
     window.historySortKey = 'archivedAt';
