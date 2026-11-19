@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.22.006";
+    const VERSION = "v2.23.000";
     const LAST_UPDATE = "2026-11-19";
 
     // Stamp all version-label elements so they always show the current version

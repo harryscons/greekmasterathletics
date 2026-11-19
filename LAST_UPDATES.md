@@ -1,3 +1,6 @@
+# v2.23.000
+- **Minor Version Bump**: Bumping application minor version to `v2.23.000` for GitHub release deployment (includes hidden `?admin` login entry).
+
 # v2.22.006
 - **Hidden Admin Login (`?admin`)**: The `🔐 Admin Login` button is now hidden on the main screen for regular visitors. Admins can open the site with `?admin` at the end of the URL to display the login button; once signed in, `?admin` is automatically cleaned from the address bar.
 
