@@ -1,3 +1,9 @@
+# v2.22.006
+- **Hidden Admin Login (`?admin`)**: The `🔐 Admin Login` button is now hidden on the main screen for regular visitors. Admins can open the site with `?admin` at the end of the URL to display the login button; once signed in, `?admin` is automatically cleaned from the address bar.
+
+# v2.22.005
+- **FIX - Dynamic Version Labels**: Version labels in `index.html` now populate automatically from the `VERSION` constant in `script.js` instead of being hardcoded.
+
 # v2.22.004
 - **FIX - Date panel closes on outside click**: Panel now closes when clicking anywhere outside it (no longer stays permanently open).
 - **FIX - Date input performance**: Filter now applies 400ms after you stop typing (debounced), not on every keystroke.

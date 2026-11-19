@@ -41,8 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.22.005";
-    const LAST_UPDATE = "2026-09-22";
+    const VERSION = "v2.22.006";
+    const LAST_UPDATE = "2026-11-19";
 
     // Stamp all version-label elements so they always show the current version
     document.querySelectorAll('.version-label').forEach(function(el) { el.textContent = VERSION; });
@@ -1221,6 +1221,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
+    // v2.22.006: Hide Admin Login button unless opened with ?admin URL parameter
+    const isAdminLoginRequested = (() => {
+        try {
+            return Array.from(new URLSearchParams(window.location.search).keys())
+                .some(k => k.toLowerCase() === 'admin');
+        } catch (e) {
+            return false;
+        }
+    })();
+
+    function cleanAdminQueryParam() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            let changed = false;
+            Array.from(params.keys()).forEach(k => {
+                if (k.toLowerCase() === 'admin') {
+                    params.delete(k);
+                    changed = true;
+                }
+            });
+            if (changed && window.history && typeof window.history.replaceState === 'function') {
+                const newSearch = params.toString();
+                const cleanUrl = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash;
+                window.history.replaceState({}, '', cleanUrl);
+            }
+        } catch (e) {
+            // Ignore history API errors (e.g. file://)
+        }
+    }
+
     // --- Login Handler (Robust) ---
     function handleLoginClick() {
         console.log("🔐 Login Button Clicked");
@@ -1302,6 +1332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     userProfile.classList.remove('hidden');
                     if (userAvatar) userAvatar.src = user.photoURL;
                 }
+                cleanAdminQueryParam();
             } else {
                 console.log("User logged out (Auth Check)");
 
@@ -1315,7 +1346,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateUIForAuth(null);
 
                 if (userProfile && btnLogin) {
-                    btnLogin.classList.remove('hidden');
+                    if (isAdminLoginRequested) {
+                        btnLogin.classList.remove('hidden');
+                    } else {
+                        btnLogin.classList.add('hidden');
+                    }
                     userProfile.classList.add('hidden');
                 }
             }
@@ -1698,12 +1733,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnLogin = document.getElementById('btnLogin');
         if (btnLogin) {
             btnLogin.onclick = handleLoginClick; // Robust attachment
+            if (isAdminLoginRequested && !currentUser) {
+                btnLogin.classList.remove('hidden');
+            }
         }
 
         const btnLogout = document.getElementById('btnLogout');
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
                 localStorage.setItem('tf_manual_logout', 'true');
+                cleanAdminQueryParam();
                 if (typeof firebase !== 'undefined' && firebase.auth && auth) {
                     auth.signOut().then(() => {
                         window.location.reload();
