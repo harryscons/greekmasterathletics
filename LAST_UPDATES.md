@@ -1,3 +1,6 @@
+# v2.23.001
+- **Bilingual UI (Greek / English)**: Added a complete 2-language system (`i18n.js`) with a compact `🇬🇷 ΕΛ | 🇬🇧 EN` switcher in the top bar (Greek default for first-time visitors, saved in browser). Translates all menus, headers, titles, filters, tables, forms, modals, charts, exports, and alert/confirmation messages while keeping all stored database data and internal program fields untouched.
+
 # v2.23.000
 - **Minor Version Bump**: Bumping application minor version to `v2.23.000` for GitHub release deployment (includes hidden `?admin` login entry).
 

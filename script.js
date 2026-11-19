@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentYearChartType = 'bar'; // Persistence for Statistics Chart Type
 
     let isManualUpdateMode = false; // Flag to force archival/filtering on manual Updates (🔄)
-    const VERSION = "v2.23.000";
+    const VERSION = "v2.23.001";
     const LAST_UPDATE = "2026-11-19";
 
     // Stamp all version-label elements so they always show the current version
@@ -261,37 +261,40 @@ document.addEventListener('DOMContentLoaded', () => {
             protocol === 'file:';
     }
 
+    let lastCloudStatus = 'disconnected';
+
     function updateCloudStatus(status) {
+        if (status) lastCloudStatus = status;
         if (!cloudIcon || !cloudText) return;
 
         const local = isLocalEnvironment();
 
-        switch (status) {
+        switch (lastCloudStatus) {
             case 'connected':
                 cloudIcon.style.color = '#10b981'; // Green
-                cloudText.textContent = 'Cloud Online';
+                cloudText.textContent = t('cloud.online');
                 cloudIcon.textContent = '●';
                 break;
             case 'connecting':
                 cloudIcon.style.color = '#f59e0b'; // Amber
-                cloudText.textContent = 'Connecting...';
+                cloudText.textContent = t('cloud.connecting');
                 cloudIcon.textContent = '●';
                 break;
             case 'permission_denied':
                 cloudIcon.style.color = '#ef4444'; // Red
-                cloudText.textContent = 'Permission Denied';
-                cloudIcon.title = "Firebase rules are blocking access.";
+                cloudText.textContent = t('cloud.permission_denied');
+                cloudIcon.title = t('cloud.permission_denied_title');
                 cloudIcon.textContent = '●';
                 break;
             case 'disconnected':
             default:
                 if (local) {
                     cloudIcon.style.color = '#3b82f6'; // Blue
-                    cloudText.textContent = 'Local Mode (Supervisor)';
+                    cloudText.textContent = t('cloud.local_mode');
                     cloudIcon.textContent = '🏠';
                 } else {
                     cloudIcon.style.color = '#ef4444'; // Red
-                    cloudText.textContent = 'Cloud Offline';
+                    cloudText.textContent = t('cloud.offline');
                     cloudIcon.textContent = '●';
                 }
                 break;
@@ -386,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (e) {
                 console.error("🔥 Error in Validating/Loading Records:", e);
-                alert("Data Sync Error: " + e.message);
+                alert(t('msg.sync_error', { msg: e.message }));
             }
         });
 
@@ -517,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // v2.21.015: Final check once users are loaded
         if (firebase.auth().currentUser && !isUserAllowed(firebase.auth().currentUser.email)) {
             console.warn("User unauthorized after data load. Signing out.");
-            alert(`Access Denied: The email ${firebase.auth().currentUser.email} is not authorized.`);
+            alert(t('msg.access_denied', { email: firebase.auth().currentUser.email }));
             firebase.auth().signOut();
             return;
         }
@@ -1047,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateAthleteFilter() {
         if (!filterAthlete) return;
         const currentVal = filterAthlete.value;
-        filterAthlete.innerHTML = '<option value="all">All Athletes</option>';
+        filterAthlete.innerHTML = `<option value="all">${t('reports.all_athletes')}</option>`;
 
         // Get unique names from records
         const names = [...new Set(records.map(r => r.athlete))].sort();
@@ -1269,7 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Cloud Login Failed:", error);
                 // Only alert if it's a real error (not user closed popup)
                 if (error.code !== 'auth/popup-closed-by-user') {
-                    alert("Cloud Login Failed: " + error.message);
+                    alert(t('msg.cloud_login_failed', { msg: error.message }));
                 }
             });
         } else if (local) {
@@ -1278,10 +1281,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (attemptLocalAdminLogin()) {
                 console.log("✅ Local Login Success");
             } else {
-                alert("Local Login Failed.");
+                alert(t('msg.local_login_failed'));
             }
         } else {
-            alert("Cloud Login is unavailable (Offline).");
+            alert(t('msg.cloud_login_offline'));
         }
     }
 
@@ -1311,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // v2.21.023: Be more patient with unauthorized check to avoid refresh logouts
                 if (!isAllowed && usersLoaded && isDataReady) {
                     console.warn(`User ${user.email} is not in the allowed list.`);
-                    alert(`Access Denied: The email ${user.email} is not authorized to edit records.`);
+                    alert(t('msg.access_denied_edit', { email: user.email }));
                     auth.signOut();
                     return;
                 }
@@ -1642,10 +1645,14 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.classList.remove('minimal');
         }
 
-        subtitle.textContent = `${pending.length} record${pending.length !== 1 ? 's' : ''} awaiting your approval`;
+        subtitle.textContent = pending.length === 1
+            ? t('pending.subtitle_one')
+            : t('pending.subtitle_many', { count: pending.length });
 
         tbody.innerHTML = pending.map(r => {
-            const type = r.isPendingDelete ? '<span style="color:#ef4444;font-weight:700;">🗑 Διαγραφή</span>' : '<span style="color:#16a34a;font-weight:700;">➕ Προσθήκη</span>';
+            const type = r.isPendingDelete
+                ? `<span style="color:#ef4444;font-weight:700;">${t('pending.type_delete')}</span>`
+                : `<span style="color:#16a34a;font-weight:700;">${t('pending.type_add')}</span>`;
             const athlete = r.athlete || '-';
             const event = r.event || '-';
             const mark = r.mark || '-';
@@ -1760,7 +1767,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setupEventListeners();
         setupTableSorting(); // Initialize sorting listeners
+        if (window.applyTranslations) window.applyTranslations(document);
+        updateCloudStatus(lastCloudStatus);
         renderAll();
+
+        // Re-render all dynamic views immediately when user toggles language (EL <-> EN)
+        window.addEventListener('app:languagechange', () => {
+            updateCloudStatus(lastCloudStatus);
+            populateAgeSelects();
+            populateYearDropdown();
+            populateEventDropdowns();
+            populateAthleteFilter();
+            populateAthleteDropdown();
+            populateCountryDropdown();
+            if (typeof populateIAAFEventDropdown === 'function') populateIAAFEventDropdown();
+            if (typeof populateWMAEventDropdown === 'function') populateWMAEventDropdown();
+            renderReports();
+            renderHistoryList();
+            renderAthleteList();
+            renderEventList();
+            renderCountryList();
+            renderUserList();
+            if (typeof renderStats === 'function') renderStats();
+            if (typeof renderWMAReport === 'function') renderWMAReport();
+            if (typeof renderRankings === 'function') renderRankings();
+            if (typeof window.renderRecordsByYearChart === 'function') {
+                window.renderRecordsByYearChart(window.currentYearChartType || 'bar');
+            }
+            if (typeof window.renderIAAFFilters === 'function' && isIAAFDataLoaded) window.renderIAAFFilters();
+            if (typeof window.renderWMAFilters === 'function') window.renderWMAFilters();
+            // Refresh pending popup if currently open
+            const pendingOverlay = document.getElementById('pendingPopupOverlay');
+            if (pendingOverlay && !pendingOverlay.classList.contains('hidden')) {
+                showPendingPopup();
+            }
+        });
 
         // Safety Timeout: Force Data Ready if Firebase hangs
         setTimeout(() => {
@@ -2288,7 +2329,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (ageGroupInput) {
             const currentVal = ageGroupInput.value;
-            ageGroupInput.innerHTML = '<option value="">Select Age Group</option>';
+            ageGroupInput.innerHTML = `<option value="">${t('modal.record.select_age_group')}</option>`;
             groups.forEach(g => {
                 const opt = document.createElement('option');
                 opt.value = g;
@@ -2300,7 +2341,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (filterAge) {
             const currentVal = filterAge.value;
-            filterAge.innerHTML = '<option value="all">All Age Groups</option>';
+            filterAge.innerHTML = `<option value="all">${t('reports.all_age_groups')}</option>`;
             groups.forEach(g => {
                 const opt = document.createElement('option');
                 opt.value = g;
@@ -2396,7 +2437,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const sortedYears = Array.from(years).sort((a, b) => b - a);
 
-        filterYear.innerHTML = '<option value="all" style="color:black;">All Years</option><option value="custom" style="color:black;">📅 Custom</option>';
+        filterYear.innerHTML = `<option value="all" style="color:black;">${t('reports.all_years')}</option><option value="custom" style="color:black;">${t('reports.custom_date')}</option>`;
         sortedYears.forEach(y => {
             const opt = document.createElement('option');
             opt.value = y.toString();
@@ -2416,7 +2457,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateEventDropdowns() {
         if (evtInput) {
             const currentVal = evtInput.value;
-            evtInput.innerHTML = '<option value="" disabled selected>Select Event</option>';
+            evtInput.innerHTML = `<option value="" disabled selected>${t('modal.record.select_event')}</option>`;
             events.forEach(ev => {
                 const opt = document.createElement('option');
                 opt.value = ev.name;
@@ -2428,7 +2469,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (filterEvent) {
             const currentVal = filterEvent.value;
-            filterEvent.innerHTML = '<option value="all">All Events</option>';
+            filterEvent.innerHTML = `<option value="all">${t('reports.all_events')}</option>`;
             events.forEach(ev => {
                 const opt = document.createElement('option');
                 opt.value = ev.name;
@@ -2475,12 +2516,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (athleteInput) {
             const currentVal = athleteInput.value;
-            athleteInput.innerHTML = '<option value="" disabled selected>Select Athlete</option>';
+            athleteInput.innerHTML = `<option value="" disabled selected>${t('modal.record.select_athlete')}</option>`;
             filteredAthletes.forEach(a => {
                 const opt = document.createElement('option');
                 const idText = a.idNumber ? ` (#${a.idNumber})` : '';
                 if (a.isTeam) {
-                    opt.textContent = `${a.teamName || 'Unnamed Team'}${idText} [TEAM]`;
+                    opt.textContent = `${a.teamName || t('msg.unnamed_team')}${idText} [${t('common.team')}]`;
                     opt.value = a.teamName || '';
                 } else {
                     opt.textContent = `${a.lastName}${a.lastName ? ', ' : ''}${a.firstName}${idText}`;
@@ -2502,7 +2543,7 @@ document.addEventListener('DOMContentLoaded', () => {
         relayDropdowns.forEach(dd => {
             if (!dd) return;
             const currentVal = dd.value;
-            dd.innerHTML = '<option value="">(Empty)</option>';
+            dd.innerHTML = `<option value="">${t('common.empty')}</option>`;
 
             // Filter athletes by gender if not "Mixed" or empty
             const filtered = athletes.filter(a => {
@@ -2603,7 +2644,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnToggleAthleteForm.addEventListener('click', () => {
                 const isHidden = athleteForm.classList.toggle('hidden');
                 // Do not change button text to "Hide Form" as per user request
-                btnToggleAthleteForm.innerHTML = '<span>➕ Add New Athlete</span>';
+                btnToggleAthleteForm.innerHTML = `<span>${t('athletes.btn_add')}</span>`;
 
                 // If opening the form, treat it as "Add New" and reset everything
                 if (!isHidden) {
@@ -2619,7 +2660,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (dobWarning) dobWarning.classList.add('hidden');
 
                     if (athleteSubmitBtn) {
-                        athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+                        athleteSubmitBtn.innerHTML = `<span>${t('athletes.btn_save')}</span>`;
                         athleteSubmitBtn.style.background = '';
                     }
                     newAthleteFirstName.focus();
@@ -2669,7 +2710,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 subEventsContainer.style.display = 'flex';
 
                 // Generate Options
-                let options = '<option value="" disabled selected>Select Event</option>';
+                let options = `<option value="" disabled selected>${t('modal.record.select_event')}</option>`;
                 // Filter out Combined and Relay events
                 const availableEvents = events.filter(e => !e.isCombined && !e.isRelay);
                 availableEvents.sort((a, b) => a.name.localeCompare(b.name));
@@ -2853,24 +2894,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllData);
     if (clearRecordsBtn) {
         clearRecordsBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to DELETE ALL RECORDS? This cannot be undone.')) {
+            if (confirm(t('msg.confirm_delete_all_records'))) {
                 records = [];
                 saveRecords();
                 renderReports();
                 renderHistoryList();
-                alert('All records deleted.');
+                alert(t('msg.all_records_deleted'));
             }
         });
     }
 
     if (clearAthletesBtn) {
         clearAthletesBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to DELETE ALL ATHLETES? This cannot be undone.')) {
+            if (confirm(t('msg.confirm_delete_all_athletes'))) {
                 athletes = [];
                 saveAthletes();
                 renderAthleteList();
                 populateAthleteDropdown();
-                alert('All athletes deleted.');
+                alert(t('msg.all_athletes_deleted'));
             }
         });
     }
@@ -2965,7 +3006,7 @@ document.addEventListener('DOMContentLoaded', () => {
             eventForm.style.display = 'block';
             editingEventId = null;
             eventForm.reset();
-            if (eventSubmitBtn) eventSubmitBtn.querySelector('span').textContent = '+ Add Event';
+            if (eventSubmitBtn) eventSubmitBtn.querySelector('span').textContent = t('events.btn_add');
             btnNewEvent.style.display = 'none';
         });
     }
@@ -3147,7 +3188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 data: {
                     labels: sortedYears,
                     datasets: [{
-                        label: "Number of Records",
+                        label: t('stats.chart_dataset_label'),
                         data: recordData,
                         backgroundColor: type === "bar" ? barColors.map(c => c + "90") : primaryColor + "40",
                         borderColor: type === "bar" ? barColors : primaryColor,
@@ -3211,7 +3252,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wmaReady = window.WMA_2023_DATA && window.WMA_2023_DATA.length > 0;
         const iaafReady = window.IAAF_SCORING_DATA && window.IAAF_SCORING_DATA.length > 0;
         if ((!wmaReady || !iaafReady) && retryCount < 10) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">⏳ Loading WMA data…</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">${t('stats.wma_loading')}</td></tr>`;
             setTimeout(() => renderRankings(retryCount + 1), 500);
             return;
         }
@@ -3295,7 +3336,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fAge !== 'all') data = data.filter(d => d.ageGroup === fAge);
 
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No WMA data found for selected filters.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">${t('stats.rankings_no_data')}</td></tr>`;
             return;
         }
 
@@ -3317,12 +3358,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update column headers with sort indicators
         const colDefs = [
             { field: 'rank', label: '#', align: 'center', width: '6%' },
-            { field: 'name', label: 'Athlete', align: 'left', width: '' },
-            { field: 'gender', label: 'Gender', align: 'left', width: '10%' },
-            { field: 'ageGroup', label: 'Age Group', align: 'left', width: '12%' },
-            { field: 'bestPts', label: 'Best WMA Pts', align: 'right', width: '13%' },
-            { field: 'avgPts', label: 'Avg WMA Pts', align: 'right', width: '13%' },
-            { field: 'count', label: 'Records', align: 'right', width: '10%' },
+            { field: 'name', label: t('reports.col_athlete'), align: 'left', width: '' },
+            { field: 'gender', label: t('reports.col_gender'), align: 'left', width: '10%' },
+            { field: 'ageGroup', label: t('modal.record.age_group'), align: 'left', width: '12%' },
+            { field: 'bestPts', label: t('stats.col_best_pts'), align: 'right', width: '13%' },
+            { field: 'avgPts', label: t('stats.col_avg_pts'), align: 'right', width: '13%' },
+            { field: 'count', label: t('stats.col_records'), align: 'right', width: '10%' },
         ];
         const thead = tbody.closest('table').querySelector('thead tr');
         if (thead) {
@@ -3339,16 +3380,16 @@ document.addEventListener('DOMContentLoaded', () => {
         data.forEach((item, idx) => {
             const rank = idx + 1;
             const rankDisplay = rank <= 3 ? `${rank} ${medals[rank - 1]}` : rank;
-            const genderLabel = item.gender === 'Male' ? 'Άνδρες' : (item.gender === 'Female' ? 'Γυναίκες' : (item.gender || '-'));
+            const genderLabel = tGender(item.gender);
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td data-label="#">${rankDisplay}</td>
-                <td data-label="Athlete" style="font-weight:600;">${item.name}</td>
-                <td data-label="Gender">${genderLabel}</td>
-                <td data-label="Age Group">${item.ageGroup || '-'}</td>
-                <td data-label="Best WMA Pts" style="text-align:right;"><b>${item.bestPts.toFixed(2)}</b></td>
-                <td data-label="Avg WMA Pts" style="text-align:right;">${item.avgPts.toFixed(2)}</td>
-                <td data-label="Records" style="text-align:right;">${item.count}</td>
+                <td data-label="${t('reports.col_athlete')}" style="font-weight:600;">${item.name}</td>
+                <td data-label="${t('reports.col_gender')}">${genderLabel}</td>
+                <td data-label="${t('modal.record.age_group')}">${item.ageGroup || '-'}</td>
+                <td data-label="${t('stats.col_best_pts')}" style="text-align:right;"><b>${item.bestPts.toFixed(2)}</b></td>
+                <td data-label="${t('stats.col_avg_pts')}" style="text-align:right;">${item.avgPts.toFixed(2)}</td>
+                <td data-label="${t('stats.col_records')}" style="text-align:right;">${item.count}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -3402,6 +3443,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         };
 
+        const allLabelMap = {
+            wmaReportFilterEvent: t('reports.all_events'),
+            wmaReportFilterAthlete: t('reports.all_athletes'),
+            wmaReportFilterAgeGroup: t('reports.all_age_groups'),
+            wmaReportFilterYear: t('reports.all_years')
+        };
+
         const updateSelect = (id, list, currentVal) => {
             const el = document.getElementById(id);
             if (!el) return;
@@ -3409,7 +3457,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Check if this is the active element to minimize disruption
             const isActive = (document.activeElement === el);
 
-            const newListHtml = `<option value="all">All ${id.replace('wmaReportFilter', '')}s</option>` +
+            const allLabel = allLabelMap[id] || t('common.all');
+            const newListHtml = `<option value="all">${allLabel}</option>` +
                 list.map(item => `<option value="${item}">${item}</option>`).join('');
 
             // Only update if content changed or if it was empty to avoid flicker/lose focus
@@ -3780,7 +3829,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wmaReady = window.WMA_2023_DATA && window.WMA_2023_DATA.length > 0;
         const iaafReady = window.IAAF_SCORING_DATA && window.IAAF_SCORING_DATA.length > 0;
         if ((!wmaReady || !iaafReady) && retryCount < 10) {
-            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:var(--text-muted);">⏳ Loading WMA data…</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; color:var(--text-muted);">${t('stats.wma_loading')}</td></tr>`;
             setTimeout(() => renderWMAReport(retryCount + 1), 500);
             return;
         }
@@ -3948,7 +3997,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (sortedRecords.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No records found.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;">${t('stats.wma_no_records')}</td></tr>`;
             return;
         }
 
@@ -4006,17 +4055,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const dateDisplay = r.date ? new Date(r.date).toLocaleDateString('en-GB') : '-';
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td data-label="Event">${r.event}</td>
-                <td data-label="Athlete" style="font-weight:600;">${r.athlete}</td>
-                <td data-label="Gender">${r.gender}</td>
-                <td data-label="Age">${r.ageGroup || '-'}</td>
-                <td data-label="Mark" style="text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td>
-                <td data-label="IDR" style="font-size:0.85em; color:var(--text-muted);">${r.idr || '-'}</td>
-                <td data-label="RateConv" style="font-size:0.85em; color:var(--text-muted);">${rateConv || '-'}</td>
-                <td data-label="AgeMark" style="font-size:0.85em; color:var(--text-muted);">${displayAgeMark || '-'}</td>
-                <td data-label="Pts" style="text-align:right; font-weight:700; color:var(--accent);">${pts || '-'}</td>
-                <td data-label="Date">${dateDisplay}</td>
-                <td data-label="Race Name" style="font-size:0.85em; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.raceName || ''}">${r.raceName || '-'}</td>
+                <td data-label="${t('reports.col_event')}">${r.event}</td>
+                <td data-label="${t('reports.col_athlete')}" style="font-weight:600;">${r.athlete}</td>
+                <td data-label="${t('reports.col_gender')}">${tGender(r.gender)}</td>
+                <td data-label="${t('stats.wma_filter_age')}">${r.ageGroup || '-'}</td>
+                <td data-label="${t('reports.col_mark')}" style="text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td>
+                <td data-label="${t('reports.col_idr')}" style="font-size:0.85em; color:var(--text-muted);">${r.idr || '-'}</td>
+                <td data-label="${t('stats.col_rate_conv')}" style="font-size:0.85em; color:var(--text-muted);">${rateConv || '-'}</td>
+                <td data-label="${t('stats.col_age_mark')}" style="font-size:0.85em; color:var(--text-muted);">${displayAgeMark || '-'}</td>
+                <td data-label="${t('stats.col_pts')}" style="text-align:right; font-weight:700; color:var(--accent);">${pts || '-'}</td>
+                <td data-label="${t('reports.col_date')}">${dateDisplay}</td>
+                <td data-label="${t('reports.col_race')}" style="font-size:0.85em; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.raceName || ''}">${r.raceName || '-'}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -4024,11 +4073,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function recalculateAllWMAStats() {
         if (!isAdmin) {
-            alert('You must be logged in as an administrator to recalculate and save statistics.');
+            alert(t('msg.recalc_admin_only'));
             return;
         }
 
-        if (!confirm('This will recalculate WMA Statistics for all records and save them to the database. This may take a few moments. Continue?')) return;
+        if (!confirm(t('msg.confirm_recalc'))) return;
 
         const modal = document.getElementById('recalcModal');
         const progressBar = document.getElementById('recalcProgressBar');
@@ -4038,8 +4087,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modal) {
             modal.classList.remove('hidden');
             if (progressBar) progressBar.style.width = '0%';
-            if (statusText) statusText.textContent = 'Calculating...';
-            if (progressText) progressText.textContent = `0 / ${records.length} records`;
+            if (statusText) statusText.textContent = t('recalc.calculating');
+            if (progressText) progressText.textContent = t('recalc.progress', { done: 0, total: records.length });
         }
 
         console.log("Starting global WMA recalculation...");
@@ -4055,36 +4104,36 @@ document.addEventListener('DOMContentLoaded', () => {
             if (count % batchSize === 0 || count === total) {
                 const percent = Math.round((count / total) * 100);
                 if (progressBar) progressBar.style.width = percent + '%';
-                if (progressText) progressText.textContent = `${count} / ${total} records`;
+                if (progressText) progressText.textContent = t('recalc.progress', { done: count, total });
                 // Brief pause to allow browser to render the update
                 await new Promise(r => setTimeout(r, 10));
             }
         }
 
         // Phase 2: Saving
-        if (statusText) statusText.textContent = 'Saving to Database...';
+        if (statusText) statusText.textContent = t('recalc.saving');
         localStorage.setItem('tf_records', JSON.stringify(records));
 
         if (db) {
             try {
                 await db.ref('records').set(records);
-                if (statusText) statusText.textContent = 'Success!';
+                if (statusText) statusText.textContent = t('recalc.success');
                 setTimeout(() => {
                     if (modal) modal.classList.add('hidden');
-                    alert(`Successfully recalculated and saved WMA stats for ${count} records.`);
+                    alert(t('msg.recalc_success', { count }));
                     renderWMAReport();
                     renderRankings();
                 }, 800);
             } catch (err) {
                 console.error("Firebase save failed:", err);
                 if (modal) modal.classList.add('hidden');
-                alert('Recalculation complete locally, but failed to sync with cloud. Check console for details.');
+                alert(t('msg.recalc_local_only'));
             }
         } else {
-            if (statusText) statusText.textContent = 'Success (Local)!';
+            if (statusText) statusText.textContent = t('recalc.success_local');
             setTimeout(() => {
                 if (modal) modal.classList.add('hidden');
-                alert(`Recalculated stats for ${count} records locally.`);
+                alert(t('msg.recalc_local_success', { count }));
                 renderWMAReport();
                 renderRankings();
             }, 800);
@@ -4137,7 +4186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const idNum = newAthleteID.value.trim();
 
         if (!first || !last) {
-            alert('First and Last names are required!');
+            alert(t('msg.names_required'));
             if (!first) newAthleteFirstName.focus();
             else newAthleteLastName.focus();
             return;
@@ -4211,7 +4260,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return a.idNumber === idNum;
             }));
 
-            if (exists) return alert('Another athlete already has this Name or ID!');
+            if (exists) return alert(t('msg.athlete_duplicate_other'));
 
             const idx = athletes.findIndex(a => a.id == editingAthleteId);
             if (idx !== -1) {
@@ -4231,7 +4280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             editingAthleteId = null;
-            athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+            athleteSubmitBtn.innerHTML = `<span>${t('athletes.btn_save')}</span>`;
             athleteSubmitBtn.style.background = '';
         } else {
             const exists = athletes.some(a => {
@@ -4239,7 +4288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     a.lastName.toLowerCase() === last.toLowerCase();
             }) || (idNum && athletes.some(a => a.idNumber === idNum));
 
-            if (exists) return alert('Athlete already exists (Name or ID match)!');
+            if (exists) return alert(t('msg.athlete_duplicate'));
 
             const newId = generate6DigitId();
             athletes.push({
@@ -4262,7 +4311,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (athleteForm) {
             athleteForm.classList.add('hidden');
-            if (btnToggleAthleteForm) btnToggleAthleteForm.innerHTML = '<span>➕ Add New Athlete</span>';
+            if (btnToggleAthleteForm) btnToggleAthleteForm.innerHTML = `<span>${t('athletes.btn_add')}</span>`;
         }
 
         newAthleteID.value = '';
@@ -4303,7 +4352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dobWarning) dobWarning.classList.add('hidden');
 
         editingAthleteId = id;
-        athleteSubmitBtn.innerHTML = '<span>Update Athlete</span>';
+        athleteSubmitBtn.innerHTML = `<span>${t('athletes.btn_update')}</span>`;
         athleteSubmitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
 
         // Scroll to form so user sees the change
@@ -4318,9 +4367,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullNameFL = `${athlete.firstName} ${athlete.lastName}`;
 
         const isUsed = records.some(r => r.athlete === fullNameLF || r.athlete === fullNameFL);
-        if (isUsed) return alert(`Cannot delete ${fullNameLF} because they have records.`);
+        if (isUsed) return alert(t('msg.athlete_cannot_delete', { name: fullNameLF }));
 
-        if (!confirm(`Delete profile for ${fullNameLF}?`)) return;
+        if (!confirm(t('msg.confirm_delete_athlete', { name: fullNameLF }))) return;
 
         athletes = athletes.filter(a => a.id != id);
         saveAthletes();
@@ -4341,7 +4390,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 newAthleteIsTeam.dispatchEvent(new Event('change'));
             }
             if (athleteSubmitBtn) {
-                athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+                athleteSubmitBtn.innerHTML = `<span>${t('athletes.btn_save')}</span>`;
                 athleteSubmitBtn.style.background = '';
             }
             newAthleteFirstName.focus(); // Focus on first name after clearing
@@ -4360,7 +4409,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 newAthleteIsTeam.dispatchEvent(new Event('change'));
             }
             if (athleteSubmitBtn) {
-                athleteSubmitBtn.innerHTML = '<span>+ Save Athlete</span>';
+                athleteSubmitBtn.innerHTML = `<span>${t('athletes.btn_save')}</span>`;
                 athleteSubmitBtn.style.background = '';
             }
             // Hide DOB warning on cancel
@@ -4454,23 +4503,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td data-label="ID">${a.idNumber || '-'}</td>
-                        <td data-label="Last Name" style="font-weight:600;">${a.lastName}</td>
-                        <td data-label="First Name">${a.firstName}</td>
-                        <td data-label="DOB">${a.dob ? new Date(a.dob).toLocaleDateString('en-GB') : '-'}</td>
-                        <td data-label="Gender">${a.gender || '-'}</td>
-                        <td class="actions-col" data-label="Actions">
-                            <button class="btn-icon edit edit-athlete-btn" data-id="${a.id}" title="Edit">✏️</button>
-                            <button class="btn-icon delete delete-athlete-btn" data-id="${a.id}" title="Delete">🗑️</button>
+                        <td data-label="${t('athletes.last_name')}" style="font-weight:600;">${a.lastName}</td>
+                        <td data-label="${t('athletes.first_name')}">${a.firstName}</td>
+                        <td data-label="${t('athletes.dob_short')}">${a.dob ? new Date(a.dob).toLocaleDateString('en-GB') : '-'}</td>
+                        <td data-label="${t('athletes.gender')}">${tGender(a.gender)}</td>
+                        <td class="actions-col" data-label="${t('common.actions')}">
+                            <button class="btn-icon edit edit-athlete-btn" data-id="${a.id}" title="${t('common.edit')}">✏️</button>
+                            <button class="btn-icon delete delete-athlete-btn" data-id="${a.id}" title="${t('common.delete')}">🗑️</button>
                         </td>
                     `;
                     athleteListBody.appendChild(tr);
                 });
             } else {
-                athleteListBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No athletes found.</td></tr>';
+                athleteListBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">${t('athletes.empty')}</td></tr>`;
             }
         } catch (e) {
             console.error("Error rendering athlete list:", e);
-            athleteListBody.innerHTML = `<tr><td colspan="6" style="color:red;">Error loading athletes: ${e.message}</td></tr>`;
+            athleteListBody.innerHTML = `<tr><td colspan="6" style="color:red;">${t('athletes.error_loading', { msg: e.message })}</td></tr>`;
         }
     }
 
@@ -4497,7 +4546,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("🚀 handleUserSubmit called");
 
         if (!currentUser || !isSupervisor(currentUser.email)) {
-            alert("Unauthorized: Only the Supervisor can manage users.");
+            alert(t('msg.only_supervisor_users'));
             return;
         }
 
@@ -4506,7 +4555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const role = newUserRole.value;
         const email = newUserEmail.value.trim();
 
-        if (!name || !email) return alert("All fields are required.");
+        if (!name || !email) return alert(t('msg.all_fields_required'));
 
         const existingIdx = appUsers.findIndex(u => u.id === id);
         const userObj = { id, name, role, email };
@@ -4520,12 +4569,12 @@ document.addEventListener('DOMContentLoaded', () => {
         saveUsers();
         userForm.reset();
         editingUserIdInput.value = '';
-        userSubmitBtn.textContent = 'Add';
+        userSubmitBtn.textContent = t('common.add');
     }
 
     function editUser(id) {
         if (!currentUser || !isSupervisor(currentUser.email)) {
-            alert("Unauthorized: Only the Supervisor can manage users.");
+            alert(t('msg.only_supervisor_users'));
             return;
         }
         const user = appUsers.find(u => u.id === id);
@@ -4534,17 +4583,17 @@ document.addEventListener('DOMContentLoaded', () => {
         newUserName.value = user.name;
         newUserRole.value = user.role;
         newUserEmail.value = user.email;
-        userSubmitBtn.textContent = 'Update';
+        userSubmitBtn.textContent = t('common.update');
         // Scroll to form
         userForm.scrollIntoView({ behavior: 'smooth' });
     }
 
     function deleteUser(id) {
         if (!isSupervisor(currentUser ? currentUser.email : null)) {
-            alert("Only Supervisors can delete users.");
+            alert(t('msg.only_supervisor_delete_users'));
             return;
         }
-        if (!confirm('Are you sure you want to delete this user?')) return;
+        if (!confirm(t('msg.confirm_delete_user'))) return;
         appUsers = appUsers.filter(u => u.id !== id);
         saveUsers();
     }
@@ -4564,14 +4613,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!Array.isArray(displayUsers)) {
             console.error("❌ displayUsers is not an array:", displayUsers);
-            userListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Critical Data Error: User list format invalid</td></tr>';
+            userListBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">${t('users.error_format')}</td></tr>`;
             return;
         }
 
         userListBody.innerHTML = '';
 
         if (displayUsers.length === 0) {
-            userListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 2rem;">No users found. Use the form above to add an administrator or supervisor.</td></tr>';
+            userListBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 2rem;">${t('users.empty')}</td></tr>`;
             return;
         }
 
@@ -4580,16 +4629,16 @@ document.addEventListener('DOMContentLoaded', () => {
         displayUsers.forEach(u => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td data-label="Name">${u.name || 'N/A'}</td>
-                <td data-label="Role"><span class="badge" style="background:var(--primary); color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${u.role || 'User'}</span></td>
-                <td data-label="Email">${u.email || 'N/A'}</td>
-                <td class="actions-col" data-label="Actions" style="text-align:center;">
+                <td data-label="${t('users.name')}">${u.name || t('common.na')}</td>
+                <td data-label="${t('users.role')}"><span class="badge" style="background:var(--primary); color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${tRole(u.role)}</span></td>
+                <td data-label="${t('users.email')}">${u.email || t('common.na')}</td>
+                <td class="actions-col" data-label="${t('common.actions')}" style="text-align:center;">
                     ${isSuper ? `
                     <div style="display:flex; gap:0.5rem; justify-content:center;">
-                        <button class="edit-user-btn btn-text" data-id="${u.id}" title="Edit">✏️</button>
-                        <button class="delete-user-btn btn-text" data-id="${u.id}" title="Delete">🗑️</button>
+                        <button class="edit-user-btn btn-text" data-id="${u.id}" title="${t('common.edit')}">✏️</button>
+                        <button class="delete-user-btn btn-text" data-id="${u.id}" title="${t('common.delete')}">🗑️</button>
                     </div>
-                    ` : '<span style="color:var(--text-muted); font-size: 0.8rem;">Read Only</span>'}
+                    ` : `<span style="color:var(--text-muted); font-size: 0.8rem;">${t('common.read_only')}</span>`}
                 </td>
             `;
             userListBody.appendChild(tr);
@@ -4642,7 +4691,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ev = events[idx]; // Define ev here
                 const oldName = ev.name;
                 if (oldName !== name && events.some(event => event.name === name)) { // Renamed ev to event to avoid conflict
-                    return alert('Event Name already exists!');
+                    return alert(t('msg.event_name_exists'));
                 }
 
                 ev.name = name;
@@ -4662,12 +4711,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             editingEventId = null;
-            eventSubmitBtn.innerHTML = '<span>+ Add Event</span>';
+            eventSubmitBtn.innerHTML = `<span>${t('events.btn_add')}</span>`;
             eventSubmitBtn.style.background = '';
         } else {
             // Create New
             if (events.some(ev => ev.name.toLowerCase() === name.toLowerCase())) {
-                return alert('Event already exists!');
+                return alert(t('msg.event_exists'));
             }
             events.push({
                 id: Date.now(),
@@ -4712,7 +4761,7 @@ document.addEventListener('DOMContentLoaded', () => {
             subEventsContainer.style.display = 'none';
         }
         if (eventSubmitBtn) {
-            eventSubmitBtn.innerHTML = '<span>+ Add Event</span>';
+            eventSubmitBtn.innerHTML = `<span>${t('events.btn_add')}</span>`;
             eventSubmitBtn.style.background = '';
         }
         editingEventId = null;
@@ -4723,7 +4772,7 @@ document.addEventListener('DOMContentLoaded', () => {
         eventForm.reset();
         eventForm.style.display = 'none';
         editingEventId = null;
-        if (eventSubmitBtn) eventSubmitBtn.querySelector('span').textContent = '+ Add Event';
+        if (eventSubmitBtn) eventSubmitBtn.querySelector('span').textContent = t('events.btn_add');
         const btnNewEvent = document.getElementById('btnNewEvent');
         if (btnNewEvent) btnNewEvent.style.display = 'block';
     }
@@ -4779,7 +4828,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const defOpt = document.createElement('option');
                     defOpt.value = "";
                     defOpt.disabled = true;
-                    defOpt.textContent = "Select Event";
+                    defOpt.textContent = t('modal.record.select_event');
                     if (!subName) defOpt.selected = true;
                     select.appendChild(defOpt);
 
@@ -4791,7 +4840,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         select.appendChild(opt);
                     });
 
-                    div.innerHTML = `<label style="font-size:0.75rem;">Event ${i + 1}</label>`;
+                    div.innerHTML = `<label style="font-size:0.75rem;">${t('reports.col_event')} ${i + 1}</label>`;
                     div.appendChild(select);
                     subEventsContainer.appendChild(div);
                 });
@@ -4809,7 +4858,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (newEventName) newEventName.focus();
         if (eventSubmitBtn) {
-            eventSubmitBtn.innerHTML = '<span>Update Event</span>';
+            eventSubmitBtn.innerHTML = `<span>${t('events.btn_update')}</span>`;
             eventSubmitBtn.style.background = 'linear-gradient(135deg, var(--warning), #f59e0b)';
         }
     }
@@ -4851,9 +4900,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!ev) return;
 
         const isUsed = records.some(r => r.event === ev.name);
-        if (isUsed) return alert(`Cannot delete "${ev.name}" because it has associated records.`);
+        if (isUsed) return alert(t('msg.event_cannot_delete', { name: ev.name }));
 
-        if (!confirm(`Delete event "${ev.name}"?`)) return;
+        if (!confirm(t('msg.confirm_delete_event', { name: ev.name }))) return;
 
         events = events.filter(e => e.id != id);
         saveEvents();
@@ -4875,7 +4924,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateCountryDropdown() {
         if (!countryInput) return;
-        let html = '<option value="" disabled>Select Country</option>';
+        let html = `<option value="" disabled>${t('modal.record.select_country')}</option>`;
         // Sort safely
         const safeCountries = Array.isArray(countries) ? countries : [];
         safeCountries.sort((a, b) => a.localeCompare(b)).forEach(c => {
@@ -4894,7 +4943,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isReadOnly && (!value || value === '')) {
             firstOpt.textContent = ''; // Hide "Select Country" text
         } else {
-            firstOpt.textContent = 'Select Country'; // Restore for entry/edit
+            firstOpt.textContent = t('modal.record.select_country'); // Restore for entry/edit
         }
     }
 
@@ -4904,7 +4953,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!name) return;
 
         if (countries.some(c => c.toLowerCase() === name.toLowerCase())) {
-            return alert('Country already exists!');
+            return alert(t('msg.country_exists'));
         }
 
         countries.push(name);
@@ -4916,7 +4965,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deleteCountry(name) {
-        if (!confirm(`Delete ${name}?`)) return;
+        if (!confirm(t('msg.confirm_delete_country', { name }))) return;
         countries = countries.filter(c => c !== name);
         saveCountries();
         renderCountryList();
@@ -4932,7 +4981,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td>${c}</td>
                 <td style="text-align:right;">
-                    <button class="btn-icon delete delete-country-btn" data-country="${c}" title="Delete">🗑️</button>
+                    <button class="btn-icon delete delete-country-btn" data-country="${c}" title="${t('common.delete')}">🗑️</button>
                 </td>
             `;
             countryListBody.appendChild(tr);
@@ -4957,39 +5006,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
             switch (eventType) {
                 case 'Field':
-                    typeBadge = '<span style="background:#10b981; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Field</span>';
+                    typeBadge = `<span style="background:#10b981; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">${tEventType('Field')}</span>`;
                     break;
                 case 'Track':
-                    typeBadge = '<span style="background:#3b82f6; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Track</span>';
+                    typeBadge = `<span style="background:#3b82f6; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">${tEventType('Track')}</span>`;
                     break;
                 case 'Road':
-                    typeBadge = '<span style="background:#f59e0b; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Road</span>';
+                    typeBadge = `<span style="background:#f59e0b; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">${tEventType('Road')}</span>`;
                     break;
                 case 'Combined':
                     const count = ev.subEvents ? ev.subEvents.length : 0;
-                    typeBadge = `<span style="background:var(--accent); color:black; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Combined (${count})</span>`;
+                    typeBadge = `<span style="background:var(--accent); color:black; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">${tEventType('Combined')} (${count})</span>`;
                     break;
                 case 'Relay':
-                    typeBadge = '<span style="background:var(--primary); color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">Relay</span>';
+                    typeBadge = `<span style="background:var(--primary); color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">${tEventType('Relay')}</span>`;
                     break;
             }
 
 
             tr.innerHTML = `
-                <td data-label="Order" style="text-align:center; white-space:nowrap;">
-                    <button class="btn-icon move-event-up" data-id="${ev.id}" title="Move Up" ${index === 0 ? 'disabled' : ''}>⬆️</button>
-                    <button class="btn-icon move-event-down" data-id="${ev.id}" title="Move Down" ${index === events.length - 1 ? 'disabled' : ''}>⬇️</button>
+                <td data-label="${t('events.col_order')}" style="text-align:center; white-space:nowrap;">
+                    <button class="btn-icon move-event-up" data-id="${ev.id}" title="${t('events.move_up')}" ${index === 0 ? 'disabled' : ''}>⬆️</button>
+                    <button class="btn-icon move-event-down" data-id="${ev.id}" title="${t('events.move_down')}" ${index === events.length - 1 ? 'disabled' : ''}>⬇️</button>
                 </td>
-                <td data-label="Event Name" style="font-weight:600;">${ev.name}</td>
-                <td data-label="Formula" style="font-size:0.85em; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${ev.formula || ''}">${ev.formula || '-'}</td>
-                <td data-label="Tech Specs" style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.specs || '-'}</td>
-                <td data-label="Notes" style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.notes || '-'}</td>
+                <td data-label="${t('events.name')}" style="font-weight:600;">${ev.name}</td>
+                <td data-label="${t('events.col_formula')}" style="font-size:0.85em; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${ev.formula || ''}">${ev.formula || '-'}</td>
+                <td data-label="${t('events.col_specs')}" style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.specs || '-'}</td>
+                <td data-label="${t('events.notes')}" style="font-size:0.9rem; color:var(--text-muted); white-space:pre-wrap;">${ev.notes || '-'}</td>
                 <td data-label="IAAF/WMA" style="font-size:0.85rem; color:var(--accent);">${ev.iaafEvent || '-'} / ${ev.wmaEvent || '-'}</td>
-                <td data-label="Type">${typeBadge}</td>
-                <td class="actions-col" data-label="Actions" style="white-space:nowrap;">
-                    <button class="btn-icon edit edit-event-btn" data-id="${ev.id}" title="Edit">✏️</button>
+                <td data-label="${t('events.col_type')}">${typeBadge}</td>
+                <td class="actions-col" data-label="${t('common.actions')}" style="white-space:nowrap;">
+                    <button class="btn-icon edit edit-event-btn" data-id="${ev.id}" title="${t('common.edit')}">✏️</button>
                     <button class="btn-icon delete delete-event-btn" data-id="${ev.id}" 
-                        title="${isUsed ? 'In use' : 'Delete'}" ${isUsed ? 'disabled' : ''}>🗑️</button>
+                        title="${isUsed ? t('common.in_use') : t('common.delete')}" ${isUsed ? 'disabled' : ''}>🗑️</button>
                 </td>
             `;
             eventListBody.appendChild(tr);
@@ -5020,7 +5069,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const id = delBtn.dataset.id;
                 const evObj = events.find(e => e.id == id);
                 const isUsed = records.some(r => r.event === evObj?.name) || (pendingrecs && pendingrecs.some(r => r.event === evObj?.name));
-                if (!isUsed && confirm(`Delete event "${evObj?.name}"?`)) {
+                if (!isUsed && confirm(t('msg.confirm_delete_event', { name: evObj?.name }))) {
                     events = events.filter(ev => ev.id != id);
                     saveEvents();
                     renderEventList();
@@ -5121,7 +5170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (db) {
             db.ref('pendingrecs').set(pendingrecs).catch(err => {
                 console.error("Firebase Save Failed (Pending):", err);
-                alert("Cloud Sync Error: Your proposal was not saved. " + err.message);
+                alert(t('msg.cloud_proposal_error', { msg: err.message }));
             });
         }
     }
@@ -5164,13 +5213,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             const warningDiv = document.getElementById('ageValidationWarning');
                             const messageP = document.getElementById('ageValidationMessage');
                             if (warningDiv && messageP) {
-                                messageP.innerHTML = `
-                                        <strong>Athlete Age:</strong> ${rawAge}<br>
-                                        <strong>Calculated Category:</strong> ${normalizedCalculated || 'None (Under 35)'}<br>
-                                        <strong>Selected Category:</strong> ${normalizedSelected || 'None'}<br>
-                                        <br>
-                                        The selected category does not match the athlete's age (${rawAge}).
-                                    `;
+                                messageP.innerHTML = t('modal.record.age_mismatch_msg', {
+                                    age: rawAge,
+                                    calc: normalizedCalculated || t('modal.record.age_under_35'),
+                                    sel: normalizedSelected || t('common.none')
+                                });
                                 warningDiv.classList.remove('hidden');
                                 warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 bypassAgeValidation = false; // Reset before returning
@@ -5182,11 +5229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const warningDiv = document.getElementById('ageValidationWarning');
                         const messageP = document.getElementById('ageValidationMessage');
                         if (warningDiv && messageP && !bypassAgeValidation) {
-                            messageP.innerHTML = `
-                                    <strong>Warning:</strong> No Date of Birth found for this athlete.<br>
-                                    <br>
-                                    Age group validation cannot be performed automatically. Please verify the category manually.
-                                `;
+                            messageP.innerHTML = t('modal.record.no_dob_msg');
                             warningDiv.classList.remove('hidden');
                             warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             bypassAgeValidation = false; // Reset before returning
@@ -5261,7 +5304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     populateHistoryFilters(localStorage.getItem('tf_history_sort_oldest') === 'true');
                     renderHistoryList();
                 }
-                submitBtn.querySelector('span').textContent = 'History Updated! ✓';
+                submitBtn.querySelector('span').textContent = t('modal.record.btn_history_updated');
                 setTimeout(() => {
                     cancelEdit();
 
@@ -5307,10 +5350,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             renderAthleteList();
                             populateYearDropdown();
 
-                            submitBtn.querySelector('span').textContent = 'Updated & Archived! ✓';
+                            submitBtn.querySelector('span').textContent = t('modal.record.btn_updated_archived');
                         } catch (err) {
                             console.error("Error archiving/updating record:", err);
-                            alert("Failed to update record: " + err.message);
+                            alert(t('msg.update_record_failed', { msg: err.message }));
                         }
                     } else {
                         // Admin proposing an edit -> Send to Staging (pendingrecs)
@@ -5321,12 +5364,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         pendingrecs.unshift(newRecord);
                         savePendingRecs();
 
-                        submitBtn.querySelector('span').textContent = 'Edit Proposed! ✓';
-                        alert("Your edit has been submitted for Supervisor approval.");
+                        submitBtn.querySelector('span').textContent = t('modal.record.btn_edit_proposed');
+                        alert(t('msg.edit_submitted_approval'));
                     }
                 } else {
                     console.error("Record to edit not found in array:", editingId);
-                    alert("Error: The record you are trying to edit could not be found.");
+                    alert(t('msg.edit_record_not_found'));
                 }
                 setTimeout(() => cancelEdit(), 1000);
             }
@@ -5338,16 +5381,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     newRecord.approvedBy = getCurrentUsername();
                     records.unshift(newRecord);
                     saveRecords();
-                    submitBtn.querySelector('span').textContent = 'Logged! ✓';
+                    submitBtn.querySelector('span').textContent = t('modal.record.btn_logged');
                 } else {
                     newRecord.isPending = true;
                     pendingrecs.unshift(newRecord);
                     savePendingRecs();
-                    submitBtn.querySelector('span').textContent = 'Proposed! ✓';
-                    alert("Your new record has been submitted for Supervisor approval.");
+                    submitBtn.querySelector('span').textContent = t('modal.record.btn_proposed');
+                    alert(t('msg.new_record_submitted_approval'));
                 }
 
-                setTimeout(() => submitBtn.querySelector('span').textContent = 'Log Record', 1500);
+                setTimeout(() => submitBtn.querySelector('span').textContent = t('modal.record.btn_log'), 1500);
             }
 
             populateYearDropdown();
@@ -5361,7 +5404,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1500);
         } catch (error) {
             console.error("Form Submit Error:", error);
-            alert("Error saving record: " + error.message);
+            alert(t('msg.error_saving_record', { msg: error.message }));
         }
     }
 
@@ -5369,7 +5412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openRecordModal = function (id = null, isUpdateFlow = false, isReadOnly = false) {
         isManualUpdateMode = !!isUpdateFlow; // Set global flag for form submit context
         if (!isAdmin && !isReadOnly) {
-            alert("Permission Denied: Only Supervisors or Admins can perform this action.");
+            alert(t('msg.permission_denied_action'));
             return;
         }
         const modal = document.getElementById('recordModal');
@@ -5386,9 +5429,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (recordForm) recordForm.reset();
             updateAthleteDobBadge(null);
             const formTitle = document.getElementById('formTitle');
-            if (formTitle) formTitle.textContent = 'Log New Record';
+            if (formTitle) formTitle.textContent = t('modal.record.log_title');
             const submitBtn = document.getElementById('submitBtn');
-            if (submitBtn) submitBtn.querySelector('span').textContent = 'Log Record';
+            if (submitBtn) submitBtn.querySelector('span').textContent = t('modal.record.btn_log');
             if (cancelBtn) cancelBtn.classList.add('hidden');
 
             // Set default date
@@ -5450,10 +5493,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         };
 
-        const updateSelect = (id, list, currentVal, label) => {
+        const updateSelect = (id, list, currentVal, allText) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const newListHtml = `<option value="all">All ${label}</option>` +
+            const newListHtml = `<option value="all">${allText}</option>` +
                 list.map(item => `<option value="${item}">${item}</option>`).join('');
 
             el.innerHTML = newListHtml;
@@ -5467,11 +5510,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Events
         const eventsList = [...new Set(baseRecords.filter(r => matches(r, { event: true })).map(r => r.event))].filter(Boolean).sort();
-        updateSelect('historyFilterEvent', eventsList, selEvent, 'Events');
+        updateSelect('historyFilterEvent', eventsList, selEvent, t('reports.all_events'));
 
         // 2. Athletes
         const athletesList = [...new Set(baseRecords.filter(r => matches(r, { athlete: true })).map(r => r.athlete))].filter(Boolean).sort();
-        updateSelect('historyFilterAthlete', athletesList, selAthlete, 'Athletes');
+        updateSelect('historyFilterAthlete', athletesList, selAthlete, t('reports.all_athletes'));
 
         // 3. Years
         const yearsList = [...new Set(baseRecords.filter(r => matches(r, { year: true })).map(r => {
@@ -5479,15 +5522,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const yStr = getYearFromDate(rDate);
             return yStr ? parseInt(yStr) : null;
         }))].filter(y => y !== null && !isNaN(y)).sort((a, b) => b - a).map(String);
-        updateSelect('historyFilterYear', yearsList, selYear, 'Years');
+        updateSelect('historyFilterYear', yearsList, selYear, t('reports.all_years'));
 
         // 4. Age Groups
         const ageList = [...new Set(baseRecords.filter(r => matches(r, { ageGroup: true })).map(r => r.ageGroup))].filter(Boolean).sort();
-        updateSelect('historyFilterAgeGroup', ageList, selAgeGroup, 'Ages');
+        updateSelect('historyFilterAgeGroup', ageList, selAgeGroup, t('reports.all_ages'));
 
         // 5. Archive Dates
         const dateList = [...new Set(baseRecords.filter(r => matches(r, { archDate: true })).map(r => r.archivedAt ? new Date(r.archivedAt).toLocaleDateString('en-CA') : null))].filter(Boolean).sort((a, b) => b.localeCompare(a));
-        updateSelect('historyFilterArchiveDate', dateList, selArchDate, 'Dates');
+        updateSelect('historyFilterArchiveDate', dateList, selArchDate, t('reports.all_dates'));
     }
     window.populateHistoryFilters = populateHistoryFilters;
 
@@ -5668,11 +5711,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (currentIndex !== -1 && currentIndex < versions.length - 1) {
                         linkedRec = versions[currentIndex + 1];
-                        linkedLabel = 'REPLACED BY (INTERMEDIATE VERSION)';
+                        linkedLabel = t('history.replaced_intermediate');
                     } else if (currentIndex === versions.length - 1 || currentIndex === -1) {
                         linkedRec = records.find(curr => getCatKey(curr) === rKey);
                         if (linkedRec && linkedRec.id !== r.id) {
-                            linkedLabel = 'REPLACED BY (CURRENT LIVE VERSION)';
+                            linkedLabel = t('history.replaced_live');
                         } else {
                             linkedRec = null;
                         }
@@ -5683,15 +5726,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         expansionHTML = `
                         <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
                             <span><strong>${linkedLabel}</strong></span>
-                            <span><strong>By:</strong> ${linkedRec.updatedBy || 'N/A'}</span>
+                            <span><strong>${t('history.by')}</strong> ${linkedRec.updatedBy || t('common.na')}</span>
                         </div>
                         <div style="display:flex; gap:1rem; align-items:center;">
                             <span style="font-weight:bold; color:var(--success);">${linkedRec.athlete}</span>
                             <span>${formatTimeMark(linkedRec.mark, r.event)} (${linkedRec.wind || '-'})</span>
                             <span>| ${new Date(linkedRec.date).toLocaleDateString('en-GB')}</span>
-                            <span>| Location: ${linkedRec.town || '-'}, ${linkedRec.country || '-'}</span>
-                            <span>| Race: ${linkedRec.raceName || '-'}</span>
-                            <span>| Notes: ${linkedRec.notes || '-'}</span>
+                            <span>| ${t('history.location')} ${linkedRec.town || '-'}, ${linkedRec.country || '-'}</span>
+                            <span>| ${t('history.race')} ${linkedRec.raceName || '-'}</span>
+                            <span>| ${t('history.notes')} ${linkedRec.notes || '-'}</span>
                         </div>
                     `;
                     }
@@ -5702,12 +5745,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         expansionHTML = r.historyBranch.map((h, idx) => `
                         <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: ${idx < r.historyBranch.length - 1 ? '12px' : '0'}; padding-bottom: ${idx < r.historyBranch.length - 1 ? '8px' : '0'}; border-bottom: ${idx < r.historyBranch.length - 1 ? '1px dashed rgba(var(--primary-rgb), 0.1)' : 'none'};">
                             <div style="font-size:0.85em; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
-                                <span><strong>REPLACED PREVIOUS VERSION ${idx === 0 ? '(LATEST ARCHIVE)' : '(HISTORICAL)'}</strong></span>
+                                <span><strong>${idx === 0 ? t('history.replaced_latest') : t('history.replaced_historical')}</strong></span>
                                 <div style="display:flex; align-items:center; gap:10px;">
-                                    <span><strong>Archived:</strong> ${new Date(h.archivedAt).toLocaleString('en-GB')} | <strong>By:</strong> ${h.updatedBy || 'N/A'}</span>
+                                    <span><strong>${t('history.archived')}</strong> ${new Date(h.archivedAt).toLocaleString('en-GB')} | <strong>${t('history.by')}</strong> ${h.updatedBy || t('common.na')}</span>
                                     <div class="expansion-actions" style="${isSup ? 'display:flex; gap:4px;' : 'display:none;'}">
-                                        <button class="btn-icon edit edit-history-btn" data-id="${h.id}" title="Edit Archived" style="padding: 2px; font-size: 0.9em;">✏️</button>
-                                        <button class="btn-icon delete delete-history-btn" data-id="${h.id}" title="Delete Permanent" style="padding: 2px; font-size: 0.9em;">🗑️</button>
+                                        <button class="btn-icon edit edit-history-btn" data-id="${h.id}" title="${t('history.edit_archived')}" style="padding: 2px; font-size: 0.9em;">✏️</button>
+                                        <button class="btn-icon delete delete-history-btn" data-id="${h.id}" title="${t('history.delete_permanent')}" style="padding: 2px; font-size: 0.9em;">🗑️</button>
                                     </div>
                                 </div>
                             </div>
@@ -5715,9 +5758,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span style="font-weight:bold; color:var(--success);">${h.athlete}</span>
                                 <span>${formatTimeMark(h.mark, r.event)} (${h.wind || '-'})</span>
                                 <span>| ${new Date(h.date).toLocaleDateString('en-GB')}</span>
-                                <span>| Location: ${h.town || '-'}, ${h.country || '-'}</span>
-                                <span>| Race: ${h.raceName || '-'}</span>
-                                <span>| Notes: ${h.notes || '-'}</span>
+                                <span>| ${t('history.location')} ${h.town || '-'}, ${h.country || '-'}</span>
+                                <span>| ${t('history.race')} ${h.raceName || '-'}</span>
+                                <span>| ${t('history.notes')} ${h.notes || '-'}</span>
                             </div>
                         </div>
                     `).join('');
@@ -5730,22 +5773,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
                 <td>${r.event}</td>
                 <td style="font-weight:600;">${r.athlete}</td>
-                <td>${r.gender || '-'}</td>
+                <td>${tGender(r.gender)}</td>
                 <td>${r.ageGroup || '-'}</td>
                 <td style="text-align:center;">${formatTimeMark(r.mark, r.event)}</td>
                 <td>${r.idr || '-'}</td>
                 <td>${r.wind || '-'}</td>
                 <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
                 <td>${r.raceName || '-'}</td>
-                <td>${r.updatedBy || 'N/A'}</td>
+                <td>${r.updatedBy || t('common.na')}</td>
                 <td style="font-size:0.85em; color:var(--text-muted);">
-                    ${r.isLive ? '<span style="color:var(--success); font-weight:bold;">LIVE RECORD</span>' : new Date(r.archivedAt).toLocaleString('en-GB')}
+                    ${r.isLive ? `<span style="color:var(--success); font-weight:bold;">${t('history.live_record')}</span>` : new Date(r.archivedAt).toLocaleString('en-GB')}
                 </td>
                  <td class="history-actions-col" style="${isSup ? '' : 'display:none;'}">
                     ${r.isLive
-                        ? `<button class="btn-icon edit" onclick="editRecord('${r.id}')" title="Edit Live">✏️</button>`
-                        : `<button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="Edit Archived">✏️</button>
-                           <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="Delete Permanent">🗑️</button>`
+                        ? `<button class="btn-icon edit" onclick="editRecord('${r.id}')" title="${t('history.edit_live')}">✏️</button>`
+                        : `<button class="btn-icon edit edit-history-btn" data-id="${r.id}" title="${t('history.edit_archived')}">✏️</button>
+                           <button class="btn-icon delete delete-history-btn" data-id="${r.id}" title="${t('history.delete_permanent')}">🗑️</button>`
                     }
                 </td>
             `;
@@ -5773,7 +5816,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function editHistory(id, isReadOnly = false) {
         if (!isSupervisor(currentUser ? currentUser.email : null) && !isReadOnly) {
-            alert("Only Supervisors can edit history.");
+            alert(t('msg.only_supervisor_edit_history'));
             return;
         }
 
@@ -5849,15 +5892,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Modal Title & UI
         const formTitle = document.getElementById('formTitle');
         if (isReadOnly) {
-            if (formTitle) formTitle.textContent = 'View Archived Record (Read-Only)';
+            if (formTitle) formTitle.textContent = t('modal.record.view_archived_title');
         } else {
             if (formTitle) {
-                formTitle.textContent = 'Edit Archived Record';
+                formTitle.textContent = t('modal.record.edit_archived_title');
                 formTitle.style.color = 'var(--text-muted)';
             }
             if (submitBtn) {
                 const span = submitBtn.querySelector('span');
-                if (span) span.textContent = 'Update Archive';
+                if (span) span.textContent = t('modal.record.btn_save_history');
                 submitBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)';
             }
             if (cancelBtn) cancelBtn.classList.remove('hidden');
@@ -5894,7 +5937,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isReadOnly && cancelBtn) {
             cancelBtn.disabled = false;
             cancelBtn.classList.remove('hidden');
-            cancelBtn.textContent = 'Close Window';
+            cancelBtn.textContent = t('common.close');
             // Surgical enablement for CSS-based lock
             cancelBtn.style.pointerEvents = 'auto';
             cancelBtn.style.position = 'relative';
@@ -5902,16 +5945,16 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (cancelBtn) {
             cancelBtn.style.zIndex = '';
             cancelBtn.style.pointerEvents = '';
-            cancelBtn.textContent = 'Cancel';
+            cancelBtn.textContent = t('common.cancel');
         }
     }
 
     function deleteHistory(id) {
         if (!isSupervisor(currentUser ? currentUser.email : null)) {
-            alert("Only Supervisors can delete history records.");
+            alert(t('msg.only_supervisor_delete_history'));
             return;
         }
-        if (!confirm('Permanently delete this archived record?')) return;
+        if (!confirm(t('msg.confirm_delete_history'))) return;
         const idStr = String(id);
         recordHistory = recordHistory.filter(h => String(h.id) !== idStr);
         saveHistory();
@@ -5959,18 +6002,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (athleteLabel) {
                 const labelText = athleteLabel.querySelector('.label-main-text');
                 if (labelText) {
-                    labelText.textContent = 'Team Name';
+                    labelText.textContent = t('modal.record.team_name');
                 } else {
                     // Fallback that doesn't wipe other elements (it finds the first text node)
                     let found = false;
                     for (let node of athleteLabel.childNodes) {
                         if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
-                            node.textContent = 'Team Name';
+                            node.textContent = t('modal.record.team_name');
                             found = true;
                             break;
                         }
                     }
-                    if (!found) athleteLabel.prepend(document.createTextNode('Team Name'));
+                    if (!found) athleteLabel.prepend(document.createTextNode(t('modal.record.team_name')));
                 }
             }
             if (participantsSection) participantsSection.classList.remove('hidden');
@@ -5991,18 +6034,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (athleteLabel) {
                 const labelText = athleteLabel.querySelector('.label-main-text');
                 if (labelText) {
-                    labelText.textContent = 'Athlete Name';
+                    labelText.textContent = t('modal.record.athlete_name');
                 } else {
                     // Fallback
                     let found = false;
                     for (let node of athleteLabel.childNodes) {
                         if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
-                            node.textContent = 'Athlete Name';
+                            node.textContent = t('modal.record.athlete_name');
                             found = true;
                             break;
                         }
                     }
-                    if (!found) athleteLabel.prepend(document.createTextNode('Athlete Name'));
+                    if (!found) athleteLabel.prepend(document.createTextNode(t('modal.record.athlete_name')));
                 }
             }
             if (participantsSection) participantsSection.classList.add('hidden');
@@ -6025,7 +6068,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formTitle = document.getElementById('formTitle');
         if (formTitle && isReadOnly) {
-            formTitle.textContent = 'View Record Details (Read-Only)';
+            formTitle.textContent = t('modal.record.view_title');
         }
 
         const idStr = String(id);
@@ -6033,7 +6076,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!r) {
             console.error("❌ Record not found for ID:", id);
-            alert("Error: Record not found!");
+            alert(t('msg.record_not_found'));
             return;
         }
 
@@ -6175,10 +6218,10 @@ document.addEventListener('DOMContentLoaded', () => {
         editingHistoryId = null;
 
         if (!isReadOnly) {
-            if (formTitle) formTitle.textContent = isUpdateFlow ? 'Update With New Record' : 'Edit Record (Archives Old)';
+            if (formTitle) formTitle.textContent = isUpdateFlow ? t('modal.record.update_title') : t('modal.record.edit_title');
             if (submitBtn) {
                 const span = submitBtn.querySelector('span');
-                if (span) span.textContent = isUpdateFlow ? 'Log New Record' : 'Update & Archive';
+                if (span) span.textContent = isUpdateFlow ? t('modal.record.log_title') : t('modal.record.btn_update_archive');
                 submitBtn.style.background = isUpdateFlow ? '' : 'linear-gradient(135deg, var(--warning), #f59e0b)';
             }
         }
@@ -6226,11 +6269,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (formTitle) {
-            formTitle.textContent = 'Log New Record';
+            formTitle.textContent = t('modal.record.log_title');
             formTitle.style.color = '';
         }
         if (submitBtn) {
-            submitBtn.querySelector('span').textContent = 'Log Record';
+            submitBtn.querySelector('span').textContent = t('modal.record.btn_log');
             submitBtn.style.background = '';
         }
         if (cancelBtn) cancelBtn.classList.add('hidden');
@@ -6250,12 +6293,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const isAdmin = isAdminUser(currentUser ? currentUser.email : null);
 
         if (!isSup && !isAdmin) {
-            alert("Only Supervisors or Admins can delete records.");
+            alert(t('msg.only_admin_delete_records'));
             return;
         }
 
         if (isSup) {
-            if (!confirm('Are you sure you want to PERMANENTLY delete this record?')) return;
+            if (!confirm(t('msg.confirm_delete_record_perm'))) return;
             const initialCount = records.length;
             const idStr = String(id);
             records = records.filter(r => String(r.id) !== idStr);
@@ -6269,7 +6312,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`Supervisor deleted record ${idStr}.`);
         } else {
             // Admin -> Propose Delete
-            if (!confirm('Propose this record for DELETION?')) return;
+            if (!confirm(t('msg.confirm_propose_delete'))) return;
             const record = records.find(r => String(r.id) === String(id));
             if (!record) return;
 
@@ -6282,7 +6325,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             pendingrecs.unshift(pendingDeleteRecord);
             savePendingRecs();
-            alert("Deletion proposed. A Supervisor must approve this removal.");
+            alert(t('msg.deletion_proposed'));
         }
 
         populateYearDropdown();
@@ -6292,7 +6335,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function clearAllData() {
-        if (confirm('Are you sure you want to clear ALL data?')) {
+        if (confirm(t('msg.confirm_clear_all'))) {
             records = [];
             localStorage.clear();
             // Set to current SEED_VERSION to prevent re-seeding empty database on reload
@@ -6319,7 +6362,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updatePersistentStats(); // Trigger stats update on record change
             }).catch(err => {
                 console.error("Firebase Save Failed (Records):", err);
-                alert("Cloud Sync Error: Your changes were reverted. " + err.message);
+                alert(t('msg.cloud_sync_reverted', { msg: err.message }));
             });
         }
         populateAthleteFilter();
@@ -6746,53 +6789,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 const calculatedGroup = calculateAgeGroup(athlete.dob, r.date);
                 if (String(r.ageGroup).trim() !== String(calculatedGroup).trim()) {
                     const exactAge = getExactAge(athlete.dob, r.date);
-                    ageDisplay = `<span class="age-indicator" title="Click to see exact age" style="cursor:pointer;" onclick="showExactAge(this, '${exactAge}')">${r.ageGroup}</span>`;
+                    ageDisplay = `<span class="age-indicator" title="${t('reports.click_exact_age')}" style="cursor:pointer;" onclick="showExactAge(this, '${exactAge}')">${r.ageGroup}</span>`;
                 }
             }
 
             // Create main row content
             tr.innerHTML = `
-                    <td class="expand-col" style="text-align:center;" data-label="Notes">
+                    <td class="expand-col" style="text-align:center;" data-label="${t('reports.col_notes')}">
                         ${(isHideNotesChecked && hasNotes) ? `<button class="toggle-notes-btn" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1.2rem; font-weight:bold; padding:0; width:24px; height:24px; line-height:24px;">+</button>` : ''}
                     </td>
-                    <td style="font-weight:600;" data-label="Αγώνισμα">${r.event}</td>
-                    <td style="white-space:nowrap;" data-label="Κατηγορία">${ageDisplay}</td>
-                    <td style="width:${athleteColWidth}px; min-width:${athleteColWidth}px;" data-label="Αθλητής/τρια">
+                    <td style="font-weight:600;" data-label="${t('reports.col_event')}">${r.event}</td>
+                    <td style="white-space:nowrap;" data-label="${t('reports.col_age')}">${ageDisplay}</td>
+                    <td style="width:${athleteColWidth}px; min-width:${athleteColWidth}px;" data-label="${t('reports.col_athlete')}">
                         <div style="font-weight:500; display:flex; align-items:center; gap:5px;">
                             ${r.athlete}
-                            ${(athlete && athlete.isTeam) ? '<span class="badge" style="background:var(--accent); color:white; font-size:0.7rem; padding: 2px 6px;">TEAM</span>' : ''}
+                            ${(athlete && athlete.isTeam) ? `<span class="badge" style="background:var(--accent); color:white; font-size:0.7rem; padding: 2px 6px;">${t('common.team')}</span>` : ''}
                         </div>
                         ${hasNotes ? `
                             <div class="record-notes ${isHideNotesChecked ? 'hidden' : ''}" style="font-size:0.85em; color:var(--text-muted); font-style:italic; margin-top:2px; white-space:pre-wrap;">${r.notes}</div>
                         ` : ''}
                     </td>
-                    <td data-label="Φύλο">${r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || '-'))}</td>
-                    <td style="font-weight:700; color:var(--accent); text-align:center;" data-label="Επίδοση">${formatTimeMark(r.mark, r.event)}</td>
-                    <td data-label="IDR">
+                    <td data-label="${t('reports.col_gender')}">${tGender(r.gender)}</td>
+                    <td style="font-weight:700; color:var(--accent); text-align:center;" data-label="${t('reports.col_mark')}">${formatTimeMark(r.mark, r.event)}</td>
+                    <td data-label="${t('reports.col_idr')}">
                         ${r.isPendingDelete ?
-                    `<span class="badge-pending" style="background:var(--danger); color:white;">⚠️ Προς Διαγραφή</span>` :
-                    (r.isPending ? `<span class="badge-pending">Προς Εγκριση</span>` : (r.idr || '-'))
+                    `<span class="badge-pending" style="background:var(--danger); color:white;">${t('reports.pending_delete_badge')}</span>` :
+                    (r.isPending ? `<span class="badge-pending">${t('reports.pending_approval_badge')}</span>` : (r.idr || '-'))
                 }
                     </td>
-                    <td data-label="Άνεμος">${r.wind || '-'}</td>
-                    <td style="white-space:nowrap;" data-label="Ημερομηνία">${new Date(r.date).toLocaleDateString('en-GB')}</td>
-                    <td data-label="Πόλη">${r.town || ''}</td>
-                    <td style="width:${raceColWidth}px; max-width:${raceColWidth}px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.raceName || ''}" data-label="Διοργάνωση">${r.raceName || ''}</td>
-                    <td class="actions-col" style="white-space:nowrap;" data-label="Ενέργειες">
+                    <td data-label="${t('reports.col_wind')}">${r.wind || '-'}</td>
+                    <td style="white-space:nowrap;" data-label="${t('reports.col_date')}">${new Date(r.date).toLocaleDateString('en-GB')}</td>
+                    <td data-label="${t('reports.col_town')}">${r.town || ''}</td>
+                    <td style="width:${raceColWidth}px; max-width:${raceColWidth}px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.raceName || ''}" data-label="${t('reports.col_race')}">${r.raceName || ''}</td>
+                    <td class="actions-col" style="white-space:nowrap;" data-label="${t('reports.col_actions')}">
                         ${(() => {
                     if (r.isPending || r.isPendingDelete) {
                         // Pending Record Logic
                         if (isSupervisor(currentUser ? currentUser.email : null)) {
                             return `
-                                        <button class="btn-icon approve-btn" onclick="approveRecord('${r.id}')" title="Approve Record" style="color:var(--success); margin-right:5px;">✅</button>
-                                        <button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="Reject/Cancel Proposal" style="color:var(--danger); margin-right:5px;">❌</button>
+                                        <button class="btn-icon approve-btn" onclick="approveRecord('${r.id}')" title="${t('reports.approve_record')}" style="color:var(--success); margin-right:5px;">✅</button>
+                                        <button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="${t('reports.reject_proposal')}" style="color:var(--danger); margin-right:5px;">❌</button>
                                     `;
                         } else {
                             // Admins can ONLY cancel their own proposals
                             const cEmail = currentUser ? String(currentUser.email).toLowerCase() : '';
                             const ub = r.updatedBy ? String(r.updatedBy).toLowerCase() : '';
                             if (ub === cEmail || ub === 'admin' || (currentUser && ub === String(currentUser.displayName).toLowerCase())) {
-                                return `<button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="Cancel Proposal" style="color:var(--danger);">❌</button>`;
+                                return `<button class="btn-icon reject-btn" onclick="rejectRecord('${r.id}')" title="${t('reports.cancel_proposal')}" style="color:var(--danger);">❌</button>`;
                             }
                             return ''; // Simple users see nothing
                         }
@@ -6811,14 +6854,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         if (isSup || isAdm) {
                             return `
-                                <button class="btn-icon update-btn" data-id="${r.id}" title="Update With New Record (Archives Old)" style="color:var(--text); margin:0; padding:2px;">🔄</button>
-                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin:0; padding:2px; margin-left:1px;">✏️</button>
-                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin:0; padding:2px; margin-left:1px;">🗑️</button>
+                                <button class="btn-icon update-btn" data-id="${r.id}" title="${t('reports.update_with_new')}" style="color:var(--text); margin:0; padding:2px;">🔄</button>
+                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="${t('common.edit')}" style="color:var(--text); margin:0; padding:2px; margin-left:1px;">✏️</button>
+                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="${t('common.delete')}" style="color:var(--text); margin:0; padding:2px; margin-left:1px;">🗑️</button>
                             `;
                         } else if (isAuthor) {
                             return `
-                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="Edit" style="color:var(--text); margin:0; padding:2px;">✏️</button>
-                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="Delete" style="color:var(--text); margin:0; padding:2px; margin-left:1px;">🗑️</button>
+                                <button class="btn-icon edit edit-btn" data-id="${r.id}" title="${t('common.edit')}" style="color:var(--text); margin:0; padding:2px;">✏️</button>
+                                <button class="btn-icon delete delete-btn" data-id="${r.id}" title="${t('common.delete')}" style="color:var(--text); margin:0; padding:2px; margin-left:1px;">🗑️</button>
                             `;
                         } else {
                             return ''; // Simple users don't see edit/delete on non-authored records
@@ -6830,7 +6873,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Add double-click listener for Read-Only view
             tr.style.cursor = 'pointer'; // Visual hint
-            tr.title = 'Double-click to view details';
+            tr.title = t('reports.dblclick_details');
             tr.addEventListener('dblclick', () => {
                 openRecordModal(r.id, false, true);
             });
@@ -6913,23 +6956,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function exportToExcel() {
         const data = getExportData();
-        if (!data.length) return alert('No approved data to export!');
+        if (!data.length) return alert(t('msg.no_approved_export'));
 
-        const timestamp = new Date().toLocaleString('el-GR');
-        let csv = `Ημερομηνία Εξαγωγής: ${timestamp}\n\n`;
+        const locale = getLang() === 'el' ? 'el-GR' : 'en-GB';
+        const timestamp = new Date().toLocaleString(locale);
+        let csv = `${t('export.date_label')} ${timestamp}\n\n`;
 
         // Grouping logic
         let currentGroupKey = null;
 
         data.forEach(r => {
-            const genderTitle = r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || 'Mixed'));
-            const trackTypeTitle = (r.trackType || 'Outdoor') === 'Outdoor' ? 'Ανοικτός Στίβος' : 'Κλειστός Στίβος';
+            const genderTitle = tGender(r.gender || 'Mixed');
+            const trackTypeTitle = tTrackType(r.trackType || 'Outdoor', 'full');
             const groupKey = `${r.ageGroup || '-'} - ${genderTitle} - ${trackTypeTitle}`;
 
             if (groupKey !== currentGroupKey) {
                 if (currentGroupKey !== null) csv += '\n'; // Spacer
                 csv += `"${groupKey}"\n`;
-                csv += 'Αγώνισμα,Κατηγ.,Αθλητής/τρια,Ημ. Γεν.,Επίδοση,IDR,Άνεμος,Ημερομηνία,Πόλη,Διοργάνωση,Σημειώσεις\n';
+                csv += `${t('reports.col_event')},${t('reports.col_age')},${t('reports.col_athlete')},${t('reports.col_dob')},${t('reports.col_mark')},${t('reports.col_idr')},${t('reports.col_wind')},${t('reports.col_date')},${t('reports.col_town')},${t('reports.col_race')},${t('reports.col_notes')}\n`;
                 currentGroupKey = groupKey;
             }
 
@@ -6947,9 +6991,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function exportToHTML() {
         const data = getExportData();
-        if (!data.length) return alert('No officially approved data to export!');
+        if (!data.length) return alert(t('msg.no_officially_approved_export'));
 
-        const timestamp = new Date().toLocaleString('el-GR');
+        const locale = getLang() === 'el' ? 'el-GR' : 'en-GB';
+        const timestamp = new Date().toLocaleString(locale);
 
         // --- Grouping: Track Type → Gender → Rows ---
         // Build a nested structure: { trackType: { gender: [rows] } }
@@ -6958,8 +7003,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const genderOrder = {};
 
         data.forEach(r => {
-            const trackTypeTitle = (r.trackType || 'Outdoor') === 'Outdoor' ? 'Ανοικτός Στίβος' : 'Κλειστός Στίβος';
-            const genderTitle = r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || 'Mixed'));
+            const trackTypeTitle = tTrackType(r.trackType || 'Outdoor', 'full');
+            const genderTitle = tGender(r.gender || 'Mixed');
 
             if (!grouped[trackTypeTitle]) {
                 grouped[trackTypeTitle] = {};
@@ -6975,16 +7020,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const tableHeaders = `
             <tr>
-                <th>Αγώνισμα</th>
-                <th>Κατηγ.</th>
-                <th>Αθλητής/τρια</th>
-                <th>Ημ. Γεν.</th>
-                <th>Επίδοση</th>
-                <th>IDR</th>
-                <th>Άνεμος</th>
-                <th>Ημερομηνία</th>
-                <th>Πόλη</th>
-                <th>Διοργάνωση</th>
+                <th>${t('reports.col_event')}</th>
+                <th>${t('reports.col_age')}</th>
+                <th>${t('reports.col_athlete')}</th>
+                <th>${t('reports.col_dob')}</th>
+                <th>${t('reports.col_mark')}</th>
+                <th>${t('reports.col_idr')}</th>
+                <th>${t('reports.col_wind')}</th>
+                <th>${t('reports.col_date')}</th>
+                <th>${t('reports.col_town')}</th>
+                <th>${t('reports.col_race')}</th>
             </tr>`;
 
         let htmlTables = '';
@@ -7046,10 +7091,10 @@ document.addEventListener('DOMContentLoaded', () => {
         </svg>`;
 
         const htmlLayout = `<!DOCTYPE html>
-<html lang="el">
+<html lang="${getLang()}">
 <head>
     <meta charset="UTF-8">
-    <title>Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου</title>
+    <title>${t('export.title')}</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a2e; background: #fff; }
         .report-header {
@@ -7086,9 +7131,9 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="report-header">
         ${greekFlagSVG}
         <div class="report-header-text">
-            <h1>Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου</h1>
-            <div class="subtitle">Greek Master Athletics – Πανελλήνια Ρεκόρ</div>
-            <div class="timestamp">Ημερομηνία Εξαγωγής: ${timestamp}</div>
+            <h1>${t('export.title')}</h1>
+            <div class="subtitle">${t('export.subtitle')}</div>
+            <div class="timestamp">${t('export.date_label')} ${timestamp}</div>
         </div>
     </div>
     ${htmlTables}
@@ -7105,7 +7150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     async function exportToPDF() {
-        if (!window.jspdf) return alert('PDF library not loaded.');
+        if (!window.jspdf) return alert(t('msg.pdf_lib_missing'));
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'mm', 'a4');
 
@@ -7117,29 +7162,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const data = getExportData();
-        if (!data.length) return alert('No approved data to export!');
+        if (!data.length) return alert(t('msg.no_approved_export'));
 
-        const timestamp = new Date().toLocaleString('el-GR');
+        const locale = getLang() === 'el' ? 'el-GR' : 'en-GB';
+        const timestamp = new Date().toLocaleString(locale);
 
         doc.setFontSize(16);
-        doc.text("🇬🇷 Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου", 14, 15);
+        doc.text(t('export.title'), 14, 15);
         doc.setFontSize(10);
-        doc.text(`Ημερομηνία Εξαγωγής: ${timestamp}`, doc.internal.pageSize.getWidth() - 15, 15, { align: 'right' });
+        doc.text(`${t('export.date_label')} ${timestamp}`, doc.internal.pageSize.getWidth() - 15, 15, { align: 'right' });
 
-        const headers = [['Αγώνισμα', 'Κατηγ.', 'Αθλητής/τρια', 'Ημ. Γεν.', 'Επίδοση', 'IDR', 'Άνεμος', 'Ημερομηνία', 'Πόλη', 'Διοργάνωση']];
+        const headers = [[t('reports.col_event'), t('reports.col_age'), t('reports.col_athlete'), t('reports.col_dob'), t('reports.col_mark'), t('reports.col_idr'), t('reports.col_wind'), t('reports.col_date'), t('reports.col_town'), t('reports.col_race')]];
         let finalY = 20;
 
         // Grouping logic for PDF
         const groupedData = {};
         data.forEach(r => {
-            const genderTitle = r.gender === 'Male' ? 'Άνδρες' : (r.gender === 'Female' ? 'Γυναίκες' : (r.gender || 'Mixed'));
-            const trackTypeTitle = (r.trackType || 'Outdoor') === 'Outdoor' ? 'Ανοικτός Στίβος' : 'Κλειστός Στίβος';
+            const genderTitle = tGender(r.gender || 'Mixed');
+            const trackTypeTitle = tTrackType(r.trackType || 'Outdoor', 'full');
             const groupKey = `${r.ageGroup || '-'} - ${genderTitle} - ${trackTypeTitle}`;
             if (!groupedData[groupKey]) groupedData[groupKey] = [];
             groupedData[groupKey].push([
                 r.event,
                 r.ageGroup || '-',
-                r.notes ? `${r.athlete}\n(Σημ: ${r.notes})` : r.athlete,
+                r.notes ? `${r.athlete}\n(${t('export.notes_prefix')} ${r.notes})` : r.athlete,
                 r.dob,
                 formatTimeMark(r.mark, r.event),
                 r.idr || '-',
@@ -7220,7 +7266,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const jsonData = JSON.parse(e.target.result);
                     processAthleteData(jsonData);
                 } catch (err) {
-                    alert('Error parsing JSON file: ' + err.message);
+                    alert(t('msg.err_parse_json', { msg: err.message }));
                 }
             };
             reader.readAsText(file);
@@ -7234,7 +7280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     processAthleteData(jsonData);
                 } catch (err) {
                     console.error(err);
-                    alert('Error processing Excel file: ' + err.message);
+                    alert(t('msg.err_process_excel', { msg: err.message }));
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -7258,10 +7304,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const afterCount = athletes.filter(a => a.dob && a.dob.trim() !== '').length;
                 const restored = afterCount - beforeCount;
 
-                alert(`Restoration complete! ${restored} Date of Birth entries were recovered.`);
+                alert(t('msg.dob_restored', { count: restored }));
                 console.log(`DOB Restoration: ${restored} restored, total with DOB: ${afterCount}`);
             } catch (err) {
-                alert('Error processing restoration file: ' + err.message);
+                alert(t('msg.err_process_restore', { msg: err.message }));
             }
         };
         reader.readAsText(file);
@@ -7375,13 +7421,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveAthletes();
                 renderAthleteList();
                 populateAthleteDropdown();
-                alert(`Successfully imported ${importedCount} athletes!`);
+                alert(t('msg.athletes_imported', { count: importedCount }));
             } else {
-                alert('No new athletes found or file format not recognized.');
+                alert(t('msg.no_new_athletes'));
             }
         } catch (err) {
             console.error('Error in processAthleteData:', err);
-            alert('Error processing athlete data: ' + err.message);
+            alert(t('msg.err_process_athletes', { msg: err.message }));
         }
     }
     function importRecordsFromFile(file) {
@@ -7395,7 +7441,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "", raw: true });
 
                 if (jsonData.length === 0) {
-                    alert('File appears to be empty.');
+                    alert(t('msg.file_empty'));
                     return;
                 }
 
@@ -7403,7 +7449,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (err) {
                 console.error(err);
-                alert('Error processing file: ' + err.message);
+                alert(t('msg.err_process_file', { msg: err.message }));
             }
             // Reset input
             recordImportFile.value = '';
@@ -7414,33 +7460,33 @@ document.addEventListener('DOMContentLoaded', () => {
     function showExcelMapping(jsonData) {
         const modal = document.getElementById('excelMappingModal');
         const content = document.getElementById('excelMappingContent');
-        if (!modal || !content) { alert('Modal not found.'); return; }
+        if (!modal || !content) { alert(t('msg.modal_not_found')); return; }
 
         const allKeys = new Set();
         jsonData.forEach(row => Object.keys(row).forEach(k => allKeys.add(k)));
         const headers = Array.from(allKeys);
 
         const targetFields = [
-            { id: 'event', label: 'Event' },
-            { id: 'athlete', label: 'Athlete Name' },
-            { id: 'firstName', label: 'First Name' },
-            { id: 'lastName', label: 'Last Name' },
-            { id: 'dob', label: 'Date of Birth' },
-            { id: 'gender', label: 'Gender' },
-            { id: 'ageGroup', label: 'Age Group' },
-            { id: 'trackType', label: 'Track Type' },
-            { id: 'raceName', label: 'Race Name' },
-            { id: 'town', label: 'Town' },
-            { id: 'date', label: 'Date' },
-            { id: 'mark', label: 'Mark' },
-            { id: 'idr', label: 'IDR' },
-            { id: 'wind', label: 'Wind' },
-            { id: 'notes', label: 'Notes' }
+            { id: 'event', label: 'Event', display: t('modal.record.event') },
+            { id: 'athlete', label: 'Athlete Name', display: t('modal.record.athlete_name') },
+            { id: 'firstName', label: 'First Name', display: t('athletes.first_name') },
+            { id: 'lastName', label: 'Last Name', display: t('athletes.last_name') },
+            { id: 'dob', label: 'Date of Birth', display: t('athletes.dob') },
+            { id: 'gender', label: 'Gender', display: t('modal.record.gender') },
+            { id: 'ageGroup', label: 'Age Group', display: t('modal.record.age_group') },
+            { id: 'trackType', label: 'Track Type', display: t('modal.record.track_type') },
+            { id: 'raceName', label: 'Race Name', display: t('modal.record.race_name') },
+            { id: 'town', label: 'Town', display: t('modal.record.town') },
+            { id: 'date', label: 'Date', display: t('modal.record.date') },
+            { id: 'mark', label: 'Mark', display: t('reports.col_mark') },
+            { id: 'idr', label: 'IDR', display: t('modal.record.idr') },
+            { id: 'wind', label: 'Wind', display: t('reports.col_wind') },
+            { id: 'notes', label: 'Notes', display: t('modal.record.notes') }
         ];
 
         let mappingHtml = '';
         targetFields.forEach(field => {
-            let options = `<option value="">-- Skip Field --</option>`;
+            let options = `<option value="">${t('import.skip_field')}</option>`;
             headers.forEach(h => {
                 const hNorm = h.trim().toLowerCase();
                 const selected = hNorm === field.label.toLowerCase() || hNorm === field.id.toLowerCase() ? 'selected' : '';
@@ -7448,7 +7494,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             mappingHtml += `
                 <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem; background:#fff; padding:0.75rem 1.25rem; border-radius:8px; border:1px solid #e5e7eb;">
-                    <span style="flex:1; font-weight:600; color:#4338ca;">${field.label}</span>
+                    <span style="flex:1; font-weight:600; color:#4338ca;">${field.display}</span>
                     <i style="color:#9ca3af;">→</i>
                     <select id="map_${field.id}" style="flex:2; padding:0.5rem; border-radius:6px; border:1px solid #d1d5db; font-family:inherit;">
                         ${options}
@@ -7475,30 +7521,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('excelValidationModal');
         const content = document.getElementById('excelValidationContent');
         const counter = document.getElementById('valRecordCount');
-        if (!modal || !content) { alert('Validation modal not found.'); return; }
+        if (!modal || !content) { alert(t('msg.val_modal_not_found')); return; }
 
         const targetFields = [
-            { id: 'event', label: 'Event' },
-            { id: 'athlete', label: 'Athlete Name' },
-            { id: 'firstName', label: 'First Name' },
-            { id: 'lastName', label: 'Last Name' },
-            { id: 'dob', label: 'Date of Birth' },
-            { id: 'gender', label: 'Gender' },
-            { id: 'ageGroup', label: 'Age Group' },
-            { id: 'trackType', label: 'Track Type' },
-            { id: 'raceName', label: 'Race Name' },
-            { id: 'town', label: 'Town' },
-            { id: 'date', label: 'Date' },
-            { id: 'mark', label: 'Mark' },
-            { id: 'idr', label: 'IDR' },
-            { id: 'wind', label: 'Wind' },
-            { id: 'notes', label: 'Notes' }
+            { id: 'event', label: t('modal.record.event') },
+            { id: 'athlete', label: t('modal.record.athlete_name') },
+            { id: 'firstName', label: t('athletes.first_name') },
+            { id: 'lastName', label: t('athletes.last_name') },
+            { id: 'dob', label: t('athletes.dob') },
+            { id: 'gender', label: t('modal.record.gender') },
+            { id: 'ageGroup', label: t('modal.record.age_group') },
+            { id: 'trackType', label: t('modal.record.track_type') },
+            { id: 'raceName', label: t('modal.record.race_name') },
+            { id: 'town', label: t('modal.record.town') },
+            { id: 'date', label: t('modal.record.date') },
+            { id: 'mark', label: t('reports.col_mark') },
+            { id: 'idr', label: t('modal.record.idr') },
+            { id: 'wind', label: t('reports.col_wind') },
+            { id: 'notes', label: t('modal.record.notes') }
         ];
 
         const mappedFields = targetFields.filter(f => mapping[f.id]);
 
         // Update record count label
-        if (counter) counter.textContent = `Found ${jsonData.length} records.`;
+        if (counter) counter.textContent = t('import.found_count', { count: jsonData.length });
 
         // Reset filter checkboxes
         const chkU = document.getElementById('chkUnmatched');
@@ -7689,7 +7735,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const importBtn = document.getElementById('completeImportBtn');
         importBtn.onclick = function () {
-            if (!confirm(`Confirm import of ${jsonData.length} records?`)) return;
+            if (!confirm(t('msg.confirm_import_records', { count: jsonData.length }))) return;
 
             const athleteOverrides = {};
             for (let i = 0; i < jsonData.length; i++) {
@@ -8068,19 +8114,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderEventList();
                 renderAthleteList();
 
-                alert(`Successfully imported ${importedCount} records.`);
+                alert(t('msg.records_imported', { count: importedCount }));
             } else {
-                alert('No valid records were imported. Please check your mapping or selections.');
+                alert(t('msg.no_valid_records_imported'));
             }
         } catch (err) {
             console.error('Import processing error:', err);
-            alert('Error during import processing: ' + err.message);
+            alert(t('msg.err_import_processing', { msg: err.message }));
         }
     };
 
     function importDatabase() {
         const file = fileRestore.files[0];
-        if (!file) return alert('Please select a JSON file first.');
+        if (!file) return alert(t('msg.select_json_first'));
 
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -8090,15 +8136,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('Invalid file format. Basic tables missing.');
                 }
 
-                const msg = `Found:
-            - ${dbData.records.length} records
-            - ${dbData.athletes ? dbData.athletes.length : 0} athletes
-            - ${dbData.events.length} events
-            - ${dbData.history ? dbData.history.length : 0} history entries
-            - ${dbData.pendingrecs ? dbData.pendingrecs.length : 0} pending entries
-            - ${dbData.users ? dbData.users.length : 0} users
-
-Replace ALL current data with this backup? This action is irreversible.`;
+                const msg = t('msg.confirm_restore_db', {
+                    records: dbData.records.length,
+                    athletes: dbData.athletes ? dbData.athletes.length : 0,
+                    events: dbData.events.length,
+                    history: dbData.history ? dbData.history.length : 0,
+                    pending: dbData.pendingrecs ? dbData.pendingrecs.length : 0,
+                    users: dbData.users ? dbData.users.length : 0
+                });
 
                 if (!confirm(msg)) return;
 
@@ -8136,15 +8181,15 @@ Replace ALL current data with this backup? This action is irreversible.`;
                         console.log("Cloud sync complete.");
                     } catch (syncErr) {
                         console.error("Cloud sync failed during restore:", syncErr);
-                        alert("Restored locally, but Cloud sync failed: " + syncErr.message);
+                        alert(t('msg.restore_local_cloud_fail', { msg: syncErr.message }));
                     }
                 }
 
-                alert('Database restored successfully! The page will now reload.');
+                alert(t('msg.restore_success'));
                 location.reload();
             } catch (err) {
                 console.error(err);
-                alert('Error parsing database file: ' + err.message);
+                alert(t('msg.err_parse_db', { msg: err.message }));
             }
         };
         reader.readAsText(file);
@@ -8396,7 +8441,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
         }
 
         if (statsData.length === 0) {
-            statsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No records found for selected filters.</td></tr>';
+            statsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${t('stats.no_records_filters')}</td></tr>`;
             return;
         }
 
@@ -8422,7 +8467,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
         statsData.forEach((item, index) => {
             const uniqueId = `stats-detail-${index}`;
             // Handle both null and undefined to prevent "Age: undefined"
-            let ageDisplay = (item.age !== null && item.age !== undefined) ? `<span style="background-color: var(--success); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9em; font-weight: 600; margin-left: 10px; margin-right: 15px;">Age: ${item.age}</span>` : '';
+            let ageDisplay = (item.age !== null && item.age !== undefined) ? `<span style="background-color: var(--success); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9em; font-weight: 600; margin-left: 10px; margin-right: 15px;">${t('stats.age_badge', { age: item.age })}</span>` : '';
 
             const athleteRecords = records.filter(r => r.athlete === item.name);
             const years = {};
@@ -8450,21 +8495,21 @@ Replace ALL current data with this backup? This action is irreversible.`;
             const athleteRecordsFiltered = athleteRecords.filter(r => trackTypeFilter === 'all' || (r.trackType || 'Outdoor') === trackTypeFilter);
             athleteRecordsFiltered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            let detailsHtml = `<div id="${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(6,182,212,0.3); padding-top:8px; background:var(--bg-card); border-radius:8px; padding:10px;"><table style="width:100%; font-size: 0.9em; border-collapse: collapse; background:var(--bg-card);"><thead><tr><th style="padding:6px 4px; text-align:left;">Event</th><th style="padding:6px 4px; text-align:left;">Track Type</th><th style="padding:6px 4px; text-align:left;">Age</th><th style="padding:6px 4px; text-align:left;">Mark</th><th style="padding:6px 4px; text-align:left;">Date</th><th style="padding:6px 4px; text-align:left;">Race</th><th style="padding:6px 4px; text-align:left;">Place</th></tr></thead><tbody>`;
+            let detailsHtml = `<div id="${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(6,182,212,0.3); padding-top:8px; background:var(--bg-card); border-radius:8px; padding:10px;"><table style="width:100%; font-size: 0.9em; border-collapse: collapse; background:var(--bg-card);"><thead><tr><th style="padding:6px 4px; text-align:left;">${t('reports.col_event')}</th><th style="padding:6px 4px; text-align:left;">${t('stats.sub_track_type')}</th><th style="padding:6px 4px; text-align:left;">${t('stats.wma_filter_age')}</th><th style="padding:6px 4px; text-align:left;">${t('reports.col_mark')}</th><th style="padding:6px 4px; text-align:left;">${t('reports.col_date')}</th><th style="padding:6px 4px; text-align:left;">${t('stats.sub_race')}</th><th style="padding:6px 4px; text-align:left;">${t('stats.sub_place')}</th></tr></thead><tbody>`;
             athleteRecordsFiltered.forEach(r => {
-                const ttLabel = (r.trackType || 'Outdoor') === 'Outdoor' ? '🏟️ Outdoor' : '🏠 Indoor';
+                const ttLabel = tTrackType(r.trackType || 'Outdoor', 'icon');
                 const dateDisplay = r.date ? new Date(r.date).toLocaleDateString('en-GB') : '-';
-                detailsHtml += `<tr style="cursor:pointer;" ondblclick="openRecordModal('${r.id}', false, true)" title="Double-click to view details"><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.event}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.85em; color:var(--text-muted);">${ttLabel}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.ageGroup || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${dateDisplay}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.raceName || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.town || r.location || '-'}</td></tr>`;
+                detailsHtml += `<tr style="cursor:pointer;" ondblclick="openRecordModal('${r.id}', false, true)" title="${t('reports.dblclick_details')}"><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.event}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.85em; color:var(--text-muted);">${ttLabel}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.ageGroup || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:center;"><b>${formatTimeMark(r.mark, r.event)}</b></td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${dateDisplay}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.raceName || '-'}</td><td style="padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.08);">${r.town || r.location || '-'}</td></tr>`;
             });
             detailsHtml += `</tbody></table></div>`;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td data-label="Gen Rank" style="text-align:center; font-weight:bold; color:var(--text-muted); vertical-align:top; padding-top:12px;">${genRankDisplay}</td>
-                <td data-label="Athlete" style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')"><div style="display:flex; align-items:center;"><span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>${ageDisplay}</div>${yearBadgesHtml}${detailsHtml}</td>
-                <td data-label="Ratio %" style="text-align:right; vertical-align:top; padding-top:12px;">${item.ratio}</td>
-                <td data-label="Age Rank" style="text-align:right; vertical-align:top; padding-top:12px;">${ageRankDisplay}</td>
-                <td data-label="Count" style="text-align:right; padding-right:15px; vertical-align:top; padding-top:12px;">${item.count}</td>
+                <td data-label="${t('stats.col_gen_rank')}" style="text-align:center; font-weight:bold; color:var(--text-muted); vertical-align:top; padding-top:12px;">${genRankDisplay}</td>
+                <td data-label="${t('reports.col_athlete')}" style="font-weight:600; cursor:pointer; color:var(--text-main);" onclick="toggleStatsDetail('${uniqueId}')"><div style="display:flex; align-items:center;"><span>${item.name} <span style="font-size:0.8em; opacity:0.7; margin-left:4px;">▼</span></span>${ageDisplay}</div>${yearBadgesHtml}${detailsHtml}</td>
+                <td data-label="${t('stats.col_ratio')}" style="text-align:right; vertical-align:top; padding-top:12px;">${item.ratio}</td>
+                <td data-label="${t('stats.col_age_rank')}" style="text-align:right; vertical-align:top; padding-top:12px;">${ageRankDisplay}</td>
+                <td data-label="${t('stats.col_count')}" style="text-align:right; padding-right:15px; vertical-align:top; padding-top:12px;">${item.count}</td>
             `;
             statsTableBody.appendChild(tr);
         });
@@ -8504,7 +8549,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
         const uniqueEvents = [...new Set(iaafData.map(d => d.event))].sort();
 
         // Keep the "None" option
-        newEventIAAF.innerHTML = '<option value="">None (No IAAF link)</option>';
+        newEventIAAF.innerHTML = `<option value="">${t('events.iaaf_none')}</option>`;
 
         // Add each unique event
         uniqueEvents.forEach(eventName => {
@@ -8522,7 +8567,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
         const uniqueEvents = [...new Set(wmaData.map(d => d.event))].sort();
 
         // Keep the "None" option
-        newEventWMA.innerHTML = '<option value="">None (No WMA link)</option>';
+        newEventWMA.innerHTML = `<option value="">${t('events.wma_none')}</option>`;
 
         // Add each unique event
         uniqueEvents.forEach(eventName => {
@@ -8570,7 +8615,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
                 renderIAAFFilters();
                 populateIAAFEventDropdown();  // Populate event creation dropdown
             } else {
-                alert('Error: Data loaded but variable not found.');
+                alert(t('msg.err_iaaf_var'));
             }
             if (loadingIndicator) loadingIndicator.classList.add('hidden');
             if (container) container.classList.remove('hidden');
@@ -8580,7 +8625,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
             console.error('Script load error:', e);
             // Fallback or error message
             // Maybe try fetch as backup if script fails? Unlikely if file missing.
-            alert('Failed to load IAAF Scoring Tables (data/iaaf_data.js). Please ensure the file exists.');
+            alert(t('msg.err_iaaf_load'));
             if (loadingIndicator) loadingIndicator.classList.add('hidden');
         };
 
@@ -8603,7 +8648,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
 
         // Save current selection if still valid
         const currentEvent = eventSelect.value;
-        eventSelect.innerHTML = '<option value="" disabled selected>Select Event...</option>';
+        eventSelect.innerHTML = `<option value="" disabled selected>${t('modal.record.select_event_dots')}</option>`;
 
         availableEvents.forEach(evt => {
             const option = document.createElement('option');
@@ -8657,9 +8702,9 @@ Replace ALL current data with this backup? This action is irreversible.`;
             <td class="iaaf-mark" data-original="${mark}">${mark}</td>
             <td class="iaaf-points" data-original="${points}">${points}</td>
             <td style="text-align:center;" class="iaaf-actions">
-                <button class="btn-icon edit" onclick="window.startIAAFEdit(${r.id})" title="Edit">✏️</button>
-                <button class="btn-icon delete" onclick="window.deleteIAAFRow(${r.id})" title="Delete Row">🗑️</button>
-                ${iaafUpdates[r.id] && !iaafUpdates[r.id].deleted ? `<button class="btn-icon" onclick="window.revertIAAFEdit(${r.id})" title="Revert Changes" style="color:var(--text-muted);">↺</button>` : ''}
+                <button class="btn-icon edit" onclick="window.startIAAFEdit(${r.id})" title="${t('common.edit')}">✏️</button>
+                <button class="btn-icon delete" onclick="window.deleteIAAFRow(${r.id})" title="${t('iaaf.delete_row')}">🗑️</button>
+                ${iaafUpdates[r.id] && !iaafUpdates[r.id].deleted ? `<button class="btn-icon" onclick="window.revertIAAFEdit(${r.id})" title="${t('iaaf.revert_changes')}" style="color:var(--text-muted);">↺</button>` : ''}
             </td>
         `;
             fragment.appendChild(tr);
@@ -8707,8 +8752,8 @@ Replace ALL current data with this backup? This action is irreversible.`;
 
         // Replace action buttons with Save/Cancel
         actionsCell.innerHTML = `
-            <button class="btn-icon save" onclick="window.saveIAAFEdit(${id})" title="Save" style="color:var(--success);">✓</button>
-            <button class="btn-icon cancel" onclick="window.cancelIAAFEdit(${id})" title="Cancel" style="color:var(--danger);">✗</button>
+            <button class="btn-icon save" onclick="window.saveIAAFEdit(${id})" title="${t('common.save')}" style="color:var(--success);">✓</button>
+            <button class="btn-icon cancel" onclick="window.cancelIAAFEdit(${id})" title="${t('common.cancel')}" style="color:var(--danger);">✗</button>
         `;
 
         // Focus first cell
@@ -8752,7 +8797,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
 
     // Delete a row (mark as deleted)
     window.deleteIAAFRow = function (id) {
-        if (confirm('Are you sure you want to delete this row?')) {
+        if (confirm(t('msg.confirm_delete_row'))) {
             if (!iaafUpdates[id]) iaafUpdates[id] = {};
             iaafUpdates[id].deleted = true;
             saveIAAFUpdates();
@@ -8761,7 +8806,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
     };
 
     window.revertIAAFEdit = function (id) {
-        if (confirm('Revert this record to original values?')) {
+        if (confirm(t('msg.confirm_revert_row'))) {
             delete iaafUpdates[id];
             saveIAAFUpdates();
             renderIAAFTable();
@@ -8781,7 +8826,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
             .map(d => d.ageGroup))].sort();
 
         const currentAgeGroup = wmaFilterAgeGroup.value;
-        wmaFilterAgeGroup.innerHTML = '<option value="" disabled selected>Select Age Group...</option>';
+        wmaFilterAgeGroup.innerHTML = `<option value="" disabled selected>${t('modal.record.select_age_group_dots')}</option>`;
         ageGroups.forEach(ag => {
             const opt = document.createElement('option');
             opt.value = ag;
@@ -8796,7 +8841,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
             .map(d => d.event))].sort();
 
         const currentEvent = wmaFilterEvent.value;
-        wmaFilterEvent.innerHTML = '<option value="" disabled selected>Select Event...</option>';
+        wmaFilterEvent.innerHTML = `<option value="" disabled selected>${t('modal.record.select_event_dots')}</option>`;
         wmaEvents.forEach(e => {
             const opt = document.createElement('option');
             opt.value = e;
@@ -8833,8 +8878,8 @@ Replace ALL current data with this backup? This action is irreversible.`;
                     <td><input type="number" value="${d.age}" class="edit-age" style="width:60px;"></td>
                     <td><input type="number" value="${d.factor}" step="0.00001" class="edit-factor" style="width:100px;"></td>
                     <td style="text-align:center;">
-                        <button class="btn-icon save" onclick="window.saveWMAEdit(${d.id})" title="Save">✅</button>
-                        <button class="btn-icon cancel" onclick="window.cancelWMAEdit(${d.id})" title="Cancel">❌</button>
+                        <button class="btn-icon save" onclick="window.saveWMAEdit(${d.id})" title="${t('common.save')}">✅</button>
+                        <button class="btn-icon cancel" onclick="window.cancelWMAEdit(${d.id})" title="${t('common.cancel')}">❌</button>
                     </td>
                 `;
             } else {
@@ -8842,8 +8887,8 @@ Replace ALL current data with this backup? This action is irreversible.`;
                     <td>${d.age}</td>
                     <td>${d.factor.toFixed(5)}</td>
                     <td style="text-align:center;">
-                        <button class="btn-icon edit" onclick="window.startWMAEdit(${d.id})" title="Edit">✏️</button>
-                        <button class="btn-icon delete" onclick="window.deleteWMARow(${d.id})" title="Delete">🗑️</button>
+                        <button class="btn-icon edit" onclick="window.startWMAEdit(${d.id})" title="${t('common.edit')}">✏️</button>
+                        <button class="btn-icon delete" onclick="window.deleteWMARow(${d.id})" title="${t('common.delete')}">🗑️</button>
                     </td>
                 `;
             }
@@ -8869,7 +8914,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
         const newFactor = parseFloat(tr.querySelector('.edit-factor').value);
 
         if (isNaN(newAge) || isNaN(newFactor)) {
-            alert('Please enter valid numbers');
+            alert(t('msg.enter_valid_numbers'));
             return;
         }
 
@@ -8886,7 +8931,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
     };
 
     window.deleteWMARow = function (id) {
-        if (!confirm('Are you sure you want to delete this factor?')) return;
+        if (!confirm(t('msg.confirm_delete_factor'))) return;
         wmaData = wmaData.filter(d => d.id !== id);
         localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
         rebuildPerformanceIndexes();
@@ -8903,7 +8948,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
             const event = wmaFilterEvent.value;
 
             if (!ageGroup || !event) {
-                alert('Please select Age Group and Event filters first');
+                alert(t('msg.select_wma_filters_first'));
                 return;
             }
 
@@ -8928,12 +8973,12 @@ Replace ALL current data with this backup? This action is irreversible.`;
     // --- Official WMA 2023 Import Logic ---
     function loadWMAOfficialData() {
         if (window.WMA_2023_DATA) {
-            if (confirm('This will replace your current WMA factors with the official WMA 2023 data. Continue?')) {
+            if (confirm(t('msg.confirm_reload_wma'))) {
                 wmaData = window.WMA_2023_DATA;
                 localStorage.setItem('tf_wma_data', JSON.stringify(wmaData));
                 renderWMAFilters();
                 populateWMAEventDropdown();
-                alert('Official WMA 2023 Tables loaded successfully!');
+                alert(t('msg.wma_loaded_success'));
             }
             return;
         }
@@ -8949,7 +8994,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
                 populateWMAEventDropdown();
             }
         };
-        script.onerror = () => alert('Failed to load official WMA 2023 data (data/wma_data_2023.js).');
+        script.onerror = () => alert(t('msg.wma_load_failed'));
         document.body.appendChild(script);
     }
 
@@ -9067,7 +9112,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
             } catch (e) {
                 console.error("Cloud Access: FAILED.", e.code, e.message);
                 if (e.code === 'PERMISSION_DENIED') {
-                    alert("Firebase Permission Denied! Please update your Firebase Realtime Database rules to 'Public' or 'Test Mode' in the Firebase Console.");
+                    alert(t('msg.firebase_permission_denied'));
                 }
             }
         } else {
@@ -9104,7 +9149,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
     window.approveRecord = function (id) {
         try {
             const idStr = String(id);
-            if (!confirm('Are you sure you want to approve this action?')) return;
+            if (!confirm(t('msg.confirm_approve'))) return;
 
             let pendingIndex = pendingrecs.findIndex(r => String(r.id) === idStr);
             let pendingRecord = null;
@@ -9127,7 +9172,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
                         pendingRecord.isPending = true;
                     }
                 } else {
-                    alert("Error: Record not found. It may have already been processed.");
+                    alert(t('msg.record_not_found_processed'));
                     return;
                 }
             }
@@ -9220,14 +9265,14 @@ Replace ALL current data with this backup? This action is irreversible.`;
 
         } catch (error) {
             console.error(error);
-            alert("Approve Error: " + error.message);
+            alert(t('msg.approve_error', { msg: error.message }));
         }
     };
 
     window.rejectRecord = function (id) {
         try {
             const idStr = String(id);
-            if (!confirm('Are you sure you want to discard this proposal?')) return;
+            if (!confirm(t('msg.confirm_reject'))) return;
 
             let removed = false;
 
@@ -9250,7 +9295,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
             }
 
             if (!removed) {
-                alert("Error: Record not found. It may have already been processed.");
+                alert(t('msg.record_not_found_processed'));
                 return;
             }
 
@@ -9258,7 +9303,7 @@ Replace ALL current data with this backup? This action is irreversible.`;
             console.log(`Discarded pending record ${idStr}.`);
         } catch (error) {
             console.error(error);
-            alert("Reject Error: " + error.message);
+            alert(t('msg.reject_error', { msg: error.message }));
         }
     };
 
