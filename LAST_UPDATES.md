@@ -1,3 +1,6 @@
+# v2.23.002
+- **Brand Title Preserved**: Kept "GREEK MASTER ATHLETICS" / "Greek Master Athletics" untranslated in Greek mode (subtitle and UI remain localized).
+
 # v2.23.001
 - **Bilingual UI (Greek / English)**: Added a complete 2-language system (`i18n.js`) with a compact `🇬🇷 ΕΛ | 🇬🇧 EN` switcher in the top bar (Greek default for first-time visitors, saved in browser). Translates all menus, headers, titles, filters, tables, forms, modals, charts, exports, and alert/confirmation messages while keeping all stored database data and internal program fields untouched.
 

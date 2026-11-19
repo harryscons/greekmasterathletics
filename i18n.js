@@ -506,10 +506,10 @@
 
         el: {
             // App & Header
-            'app.page_title': 'Ελληνικός Στίβος Βετεράνων',
-            'app.loading_title': 'Ελληνικός Στίβος Βετεράνων',
+            'app.page_title': 'Greek Master Athletics',
+            'app.loading_title': 'Greek Master Athletics',
             'app.loading_subtitle': 'Συγχρονισμός Δεδομένων...',
-            'app.main_title': 'ΕΛΛΗΝΙΚΟΣ ΣΤΙΒΟΣ ΒΕΤΕΡΑΝΩΝ',
+            'app.main_title': 'GREEK MASTER ATHLETICS',
             'app.subtitle': 'Ομοσπονδία Ελλήνων Βετεράνων Αθλητών Στίβου',
             'auth.admin_login': '🔐 Είσοδος Διαχειριστή',
             'auth.logout': 'Αποσύνδεση',
@@ -910,7 +910,7 @@
 
             // Exports
             'export.title': 'Πανελλήνια Ρεκόρ Βετεράνων Αθλητών Στίβου',
-            'export.subtitle': 'Ελληνικός Στίβος Βετεράνων – Πανελλήνια Ρεκόρ',
+            'export.subtitle': 'Greek Master Athletics – Πανελλήνια Ρεκόρ',
             'export.date_label': 'Ημερομηνία Εξαγωγής:',
             'export.notes_prefix': 'Σημ:',
 
